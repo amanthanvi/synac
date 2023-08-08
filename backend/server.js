@@ -27,11 +27,11 @@ app.use("/suggestions", suggestionsRouter);
 app.use("/terms", termsRouter);
 
 // Serve static files from the frontend directory
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // The "catchall" handler: for any request that doesn't match one above, send back the index.html file.
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
+  res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
 });
 
 app.listen(PORT, () => {
