@@ -1,9 +1,9 @@
-// import.js
 const fs = require("fs");
 const csv = require("csv-parser");
 const mongoose = require("mongoose");
 const Term = require("./models/Term");
 const dotenv = require("dotenv");
+const path = require("path"); // Added path module
 dotenv.config();
 const uri = process.env.MONGODB_URI;
 
@@ -18,7 +18,8 @@ function importTerms() {
   connection.once("open", function () {
     console.log("MongoDB database connection established successfully");
 
-    fs.createReadStream("terms.csv")
+    // Updated the path to the CSV file
+    fs.createReadStream(path.join(__dirname, 'terms.csv'))
       .pipe(csv())
       .on("data", (row) => {
         const term = new Term({
