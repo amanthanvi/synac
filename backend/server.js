@@ -23,8 +23,11 @@ mongoose.connection.once('open', () => {
 });
 
 // Import and use routes
-const usersRoute = require('./routes/users');
-app.use('/users', usersRoute);
+const termsRouter = require("./routes/terms");
+const suggestionsRouter = require("./routes/suggestions");
+
+app.use("/suggestions", suggestionsRouter);
+app.use("/terms", termsRouter);
 
 // Serve static files from the frontend directory
 app.use(express.static(path.join(__dirname, 'frontend')));
