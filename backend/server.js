@@ -7,6 +7,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 const uri = process.env.MONGODB_URI;
+const importTerms = require('./import');
 
 // Middleware
 app.use(express.json());
@@ -37,3 +38,10 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on Port: ${PORT}`);
 });
+
+// Schedule the importTerms function to run every 24 hours
+const importInterval = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+setInterval(importTerms, importInterval);
+
+// Run the import once when the server starts
+importTerms();
