@@ -1,34 +1,39 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const path = require('path');
+const dotenv = require('dotenv');
+dotenv.config();
 const app = express();
-const port = process.env.PORT || 5000; // Fallback to 5000 if running locally
-const connection = mongoose.connection;
-const termsRouter = require("./routes/terms");
-const suggestionsRouter = require("./routes/suggestions");
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Middleware
 app.use(express.json());
+app.use(cors());
 
-// Connection to MongoDB (the URI should be defined in an environment variable or directly here)
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/synac", {
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
+  useCreateIndex: true,
   useUnifiedTopology: true,
 });
 
-connection.once("open", function () {
-  console.log("MongoDB database connection established successfully");
+mongoose.connection.once('open', () => {
+  console.log('MongoDB database connection established successfully');
 });
 
-// Route for the root URL
-app.get("/", (req, res) => {
-  res.send("Welcome to Synac!");
+// Import and use routes
+const usersRoute = require('./routes/users');
+app.use('/users', usersRoute);
+
+// Serve static files from the frontend directory
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// The "catchall" handler: for any request that doesn't match one above, send back the index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
-app.use("/suggestions", suggestionsRouter);
-app.use("/terms", termsRouter);
-
-
-app.listen(port, () => {
-  console.log(`Server is running on Port: ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on Port: ${PORT}`);
 });
