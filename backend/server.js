@@ -30,6 +30,7 @@ const suggestionsRouter = require("./routes/suggestions");
 app.use("/suggestions", suggestionsRouter);
 app.use("/terms", termsRouter);
 
-app.listen(5000, () => {
-  console.log("Server is running on Port: 5000");
+const port = process.env.PORT || 5000; // Fallback to 5000 if running locally
+app.listen(port, () => {
+  console.log(`Server is running on Port: ${port}`);
 });
