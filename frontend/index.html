@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynAc</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+
+<body>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round"></div>
+        </label>
+    </div>
+    <h1>SynAc</h1>
+    <form id="search-form">
+        <input type="text" id="search-input" placeholder="Search for a term..." />
+        <button type="submit">Search</button>
+    </form>
+
+    <div id="filter-switch">
+        <select id="filter-type" onchange="switchFilter(this.value)">
+            <option value="alphabet">Alphabetical</option>
+            <option value="category">Category</option>
+        </select>
+    </div>
+
+    <div id="search-results"></div>
+    <div id="alphabet-filter">
+        <div id="alphabet-filter">
+            <a href="#" onclick="filterByLetter(event, 'A')">A</a>
+            <a href="#" onclick="filterByLetter(event, 'B')">B</a>
+            <a href="#" onclick="filterByLetter(event, 'C')">C</a>
+            <a href="#" onclick="filterByLetter(event, 'D')">D</a>
+            <a href="#" onclick="filterByLetter(event, 'E')">E</a>
+            <a href="#" onclick="filterByLetter(event, 'F')">F</a>
+            <a href="#" onclick="filterByLetter(event, 'G')">G</a>
+            <a href="#" onclick="filterByLetter(event, 'H')">H</a>
+            <a href="#" onclick="filterByLetter(event, 'I')">I</a>
+            <a href="#" onclick="filterByLetter(event, 'J')">J</a>
+            <a href="#" onclick="filterByLetter(event, 'K')">K</a>
+            <a href="#" onclick="filterByLetter(event, 'L')">L</a>
+            <a href="#" onclick="filterByLetter(event, 'M')">M</a>
+            <a href="#" onclick="filterByLetter(event, 'N')">N</a>
+            <a href="#" onclick="filterByLetter(event, 'O')">O</a>
+            <a href="#" onclick="filterByLetter(event, 'P')">P</a>
+            <a href="#" onclick="filterByLetter(event, 'Q')">Q</a>
+            <a href="#" onclick="filterByLetter(event, 'R')">R</a>
+            <a href="#" onclick="filterByLetter(event, 'S')">S</a>
+            <a href="#" onclick="filterByLetter(event, 'T')">T</a>
+            <a href="#" onclick="filterByLetter(event, 'U')">U</a>
+            <a href="#" onclick="filterByLetter(event, 'V')">V</a>
+            <a href="#" onclick="filterByLetter(event, 'W')">W</a>
+            <a href="#" onclick="filterByLetter(event, 'X')">X</a>
+            <a href="#" onclick="filterByLetter(event, 'Y')">Y</a>
+            <a href="#" onclick="filterByLetter(event, 'Z')">Z</a>
+            <a href="#" id="clear-filter">Clear filter</a>
+        </div>
+    </div>
+
+    <div id="category-filter" style="display: none;">
+        <select id="category-select" onchange="filterByCategory(this.value)">
+            <option value="">Select category</option>
+            <!-- Add your category options here -->
+        </select>
+    </div>
+
+    <ul id="term-list"></ul>
+    <h2>Suggest a Term</h2>
+    <form id="suggestion-form">
+        <input type="text" id="suggestion-term-input" placeholder="Term" required>
+        <input type="text" id="suggestion-definition-input" placeholder="Definition" required>
+        <button type="submit">Submit Suggestion</button>
+    </form>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>
