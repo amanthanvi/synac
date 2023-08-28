@@ -24,7 +24,7 @@ const client = new MongoClient(uri, {
   },
 });
 
-app.use(express.static("public"));
+app.use(express.static("frontend"));
 
 const termsRouter = require("./routes/terms");
 const suggestionsRouter = require("./routes/suggestions");
