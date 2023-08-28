@@ -1,17 +1,11 @@
 const router = require("express").Router();
 const Term = require("../models/Term");
 
-// Utility function for sending errors
-const sendError = (res, err) => {
-  console.error(err);
-  res.status(500).json({ error: "Internal server error" });
-};
-
 // Get all terms
 router.route("/").get((req, res) => {
   Term.find()
-    .then((terms) => res.json({ data: terms }))
-    .catch((err) => sendError(res, err));
+    .then((terms) => res.json(terms || []))
+    .catch((err) => res.status(400).json("Error: " + err));
 });
 
 // Add a term
@@ -42,13 +36,12 @@ router.route("/search").get((req, res) => {
     .catch((err) => sendError(res, err));
 });
 
-// Get terms starting with a specific letter
-router.route("/alphabet/:letter").get((req, res) => {
-  const letter = req.params.letter;
-  const regex = new RegExp("^" + letter, "i"); // Using '^' to match the start of the string
+// Get terms by starting letter
+router.route("/starts-with/:letter").get((req, res) => {
+  let regex = new RegExp("^" + req.params.letter, "i");
   Term.find({ term: regex })
-    .then((terms) => res.json({ data: terms }))
-    .catch((err) => sendError(res, err));
+    .then((terms) => res.json(terms || []))
+    .catch((err) => res.status(400).json("Error: " + err));
 });
 
 // Get a list of all unique categories and the count of terms in each
