@@ -51,21 +51,25 @@ document.addEventListener("DOMContentLoaded", () => {
   // Define getTerms function
   function getTerms() {
     fetch("/terms")
-      .then((response) => response.json())
-      .then((data) => {
-        let output = "<h2>List of Terms</h2>";
-        output += "<ul>";
-        data.forEach(function (term) {
-          output += `
-          <li>
-            <strong>${term.term}</strong>: ${term.definition}
-          </li>
-        `;
-        });
-        output += "</ul>";
-        document.getElementById("response").innerHTML = output;
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
       })
-      .catch((error) => console.error("Error fetching terms:", error));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          // Check if data is an array
+          data.forEach((term) => {
+            addTermToDOM(term);
+          });
+        } else {
+          console.error("Received data is not an array:", data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching terms:", error);
+      });
   }
 
   // Define filterByLetter function
