@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const term = suggestionTermInput.value;
     const definition = suggestionDefinitionInput.value;
 
-    fetch("http://localhost:5000/suggestions/add", {
+    fetch("/suggestions/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -49,31 +49,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Define getTerms function
-  window.getTerms = function getTerms() {
-    fetch("http://localhost:5000/terms")
+  function getTerms() {
+    fetch("/terms")
       .then((response) => response.json())
       .then((data) => {
-        termList.innerHTML = data
-          .map(
-            (term) => `
-                    <li>
-                        <strong>${term.term}:</strong> ${term.definition}
-                    </li>
-                `
-          )
-          .join("");
+        let output = "<h2>List of Terms</h2>";
+        output += "<ul>";
+        data.forEach(function (term) {
+          output += `
+          <li>
+            <strong>${term.term}</strong>: ${term.definition}
+          </li>
+        `;
+        });
+        output += "</ul>";
+        document.getElementById("response").innerHTML = output;
       })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
+      .catch((error) => console.error("Error fetching terms:", error));
+  }
 
   // Define filterByLetter function
   window.filterByLetter = function filterByLetter(event, letter) {
     event.preventDefault(); // Prevent the <a> tag from causing the page to jump
 
     // Make an HTTP GET request to our new API endpoint
-    fetch("http://localhost:5000/terms/starts-with/" + letter)
+    fetch("/terms/starts-with/" + letter)
       .then((response) => response.json())
       .then((data) => {
         // Get the term list element
@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         getTerms();
       } else {
         // Make an HTTP GET request to our search API endpoint
-        fetch("http://localhost:5000/terms/search/" + searchQuery)
+        fetch("/terms/search/" + searchQuery)
           .then((response) => response.json())
           .then((data) => {
             // Get the term list element
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   getCategories = function () {
-    fetch("http://localhost:5000/terms/categories")
+    fetch("/terms/categories")
       .then((response) => response.json())
       .then((data) => {
         const categoryFilter = document.getElementById("category-filter");
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   filterByCategory = function (category) {
-    fetch("http://localhost:5000/terms/category/" + category)
+    fetch("/terms/category/" + category)
       .then((response) => response.json())
       .then((data) => {
         const termList = document.getElementById("term-list");
