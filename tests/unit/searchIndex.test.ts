@@ -26,7 +26,8 @@ describe('search index builder', () => {
     ];
 
     const payload = buildIndexPayload(docs);
-    const mini = MiniSearch.loadJSON(JSON.parse(payload.index as string), payload.options as any);
+    // buildIndexPayload returns a JSON string of MiniSearch.toJSON(); pass it directly
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
 
     // search by acronym
     const r1 = mini.search('xss', payload.options.searchOptions);

@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry } from 'astro:content';
 import type { TermEntry } from '../../types/term';
+import { MIN_TOKEN_LENGTH, SIMILARITY_THRESHOLD } from '../../lib/constants';
 
 export async function getStaticPaths() {
   const terms = await getCollection('terms');
@@ -34,7 +35,6 @@ function badgeClass(kind: string) {
   }
 }
 
-const MIN_TOKEN_LENGTH = 2;
 function tokenize(s: string) {
   return new Set(
     (s || '')
@@ -64,7 +64,6 @@ function computeMinSimilarity(texts: string[]) {
   return min;
 }
 
-const SIMILARITY_THRESHOLD = 0.6;
 const sourceTexts: string[] = (data.sources || [])
   .map((s: any) => (s.excerpt || s.citation || '').toString())
   .filter(Boolean);

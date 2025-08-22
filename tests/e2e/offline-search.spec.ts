@@ -20,7 +20,7 @@ test('client search works offline after warming the index', async ({ page, conte
 
   // Clear and search again while offline - should use in-memory index
   await q.fill('');
-  await q.type('cross');
+  await q.fill('cross');
   await expect
     .poll(async () => await page.locator('#results li').count(), { timeout: 15000 })
     .toBeGreaterThan(0);
