@@ -14,30 +14,71 @@ const entry = await getEntry('terms', id);
 if (!entry) throw new Error(`Term not found: ${id}`);
 
 const { Content } = await entry.render();
-const data = entry.data;
+const data = entry.data as any;
 
-function badge(kind: string) {
-  const colors: Record<string, string> = {
-    NIST: 'background: #0b6; color: white;',
-    RFC: 'background: #06c; color: white;',
-    ATTACK: 'background: #c50; color: white;',
-    CWE: 'background: #a03; color: white;',
-    CAPEC: 'background: #630; color: white;',
-    OTHER: 'background: #555; color: white;',
-  };
-  return colors[kind] ?? 'background:#555;color:white;';
+function badgeClass(kind: string) {
+  switch (kind) {
+    case 'NIST':
+      return 'badge badge--nist';
+    case 'RFC':
+      return 'badge badge--rfc';
+    case 'ATTACK':
+      return 'badge badge--attack';
+    case 'CWE':
+      return 'badge badge--cwe';
+    case 'CAPEC':
+      return 'badge badge--capec';
+    default:
+      return 'badge badge--other';
+  }
 }
+
+function tokenize(s: string) {
+  return new Set(
+    (s || '')
+      .toLowerCase()
+      .split(/[^a-z0-9]+/g)
+      .filter((t) => t && t.length > 2),
+  );
+}
+function jaccard(a: Set<string>, b: Set<string>) {
+  if (!a.size && !b.size) return 1;
+  let inter = 0;
+  for (const t of a) if (b.has(t)) inter++;
+  const union = a.size + b.size - inter;
+  return union ? inter / union : 0;
+}
+function computeMinSimilarity(texts: string[]) {
+  const sets = texts.map(tokenize);
+  let min = 1;
+  for (let i = 0; i < sets.length; i++) {
+    for (let j = i + 1; j < sets.length; j++) {
+      const s = jaccard(sets[i], sets[j]);
+      if (s < min) min = s;
+    }
+  }
+  return min;
+}
+
+const sourceTexts: string[] = (data.sources || [])
+  .map((s: any) => (s.excerpt || s.citation || '').toString())
+  .filter(Boolean);
+
+const showDifferences =
+  Array.isArray(sourceTexts) && sourceTexts.length >= 2 && computeMinSimilarity(sourceTexts) < 0.6;
 ---
 
 <BaseLayout title={`SynAc — ${data.term}`}>
   <article>
-    <header style="margin-bottom: var(--space-6);">
+    <header class="section" style="margin-top:0;">
       <h1 style="margin: 0 0 var(--space-2) 0;">{data.term}</h1>
       {
         data.acronym && data.acronym.length ? (
           <p style="margin: 0; color: var(--color-muted);">
-            {data.acronym.map((a) => (
-              <span style="margin-right: .5rem;">[{a}]</span>
+            {data.acronym.map((a: string) => (
+              <span class="badge badge--muted" title={`Acronym: ${a}`}>
+                {a}
+              </span>
             ))}
           </p>
         ) : null
@@ -46,7 +87,7 @@ function badge(kind: string) {
       {
         data.tags?.length ? (
           <p style="margin-top: var(--space-2); color: var(--color-muted);">
-            {data.tags.map((t) => (
+            {data.tags.map((t: string) => (
               <span style="margin-right:.5rem;">#{t}</span>
             ))}
           </p>
@@ -57,15 +98,29 @@ function badge(kind: string) {
       </p>
     </header>
 
-    <section aria-labelledby="sources">
+    {
+      showDifferences ? (
+        <section aria-labelledby="differences" class="section">
+          <h2 id="differences">Differences across sources</h2>
+          <div class="callout">
+            Parallel sources use distinct terminology or emphasize different aspects. Review each
+            citation to understand scope and normative intent.
+          </div>
+        </section>
+      ) : null
+    }
+
+    <section aria-labelledby="sources" class="section">
       <h2 id="sources">Sources</h2>
-      <div style="display: grid; gap: var(--space-4);">
+      <div class="grid grid--2">
         {
-          data.sources.map((s) => (
-            <div style="padding: var(--space-4); border: 1px solid #2a2e35; border-radius: var(--radius-2); box-shadow: var(--shadow-1);">
+          (data.sources || []).map((s: any) => (
+            <div class="card">
               <div style="display:flex; align-items:center; gap:.5rem; margin-bottom: .5rem;">
                 <span
-                  style={`padding:.15rem .5rem; border-radius:999px; font-size:.8em; ${badge(s.kind)}`}
+                  class={badgeClass(String(s.kind))}
+                  aria-label={`Source kind: ${s.kind}`}
+                  title={`Source kind: ${s.kind}`}
                 >
                   {s.kind}
                 </span>
@@ -74,13 +129,13 @@ function badge(kind: string) {
                   <span style="color:var(--color-muted); font-size:.9em;">({s.date})</span>
                 ) : null}
                 {s.normative ? (
-                  <span style="color:var(--color-muted); font-size:.9em; margin-left:.5rem;">
+                  <span class="badge badge--muted" title="Normative definition">
                     normative
                   </span>
                 ) : null}
               </div>
               {s.excerpt ? <p style="margin:.25rem 0 .5rem 0;">{s.excerpt}</p> : null}
-              <a href={s.url} rel="noreferrer" style="color:var(--color-accent);">
+              <a class="link" href={s.url} rel="noreferrer">
                 View source
               </a>
             </div>
@@ -91,65 +146,80 @@ function badge(kind: string) {
 
     {
       data.mappings ? (
-        <section aria-labelledby="mappings" style="margin-top: var(--space-6);">
+        <section aria-labelledby="mappings" class="section">
           <h2 id="mappings">Mappings</h2>
-          <ul>
+          <div class="kv">
             {data.mappings.attack ? (
-              <li>
-                <strong>ATT&CK:</strong>
-                {data.mappings.attack.tactic ? ` tactic ${data.mappings.attack.tactic}` : ''}
+              <>
+                {data.mappings.attack.tactic ? (
+                  <span class="badge badge--attack" title="ATT&CK tactic">
+                    ATT&CK tactic: {data.mappings.attack.tactic}
+                  </span>
+                ) : null}
                 {data.mappings.attack.techniqueIds?.length
-                  ? ` techniques ${data.mappings.attack.techniqueIds.join(', ')}`
-                  : ''}
-              </li>
+                  ? data.mappings.attack.techniqueIds.map((tid: string) => (
+                      <span class="badge badge--attack" title={`ATT&CK technique ${tid}`}>
+                        {tid}
+                      </span>
+                    ))
+                  : null}
+              </>
             ) : null}
-            {data.mappings.cweIds?.length ? (
-              <li>
-                <strong>CWE:</strong> {data.mappings.cweIds.join(', ')}
-              </li>
-            ) : null}
-            {data.mappings.capecIds?.length ? (
-              <li>
-                <strong>CAPEC:</strong> {data.mappings.capecIds.join(', ')}
-              </li>
-            ) : null}
-            {data.mappings.examDomains?.length ? (
-              <li>
-                <strong>Exam:</strong> {data.mappings.examDomains.join(', ')}
-              </li>
-            ) : null}
-          </ul>
+            {data.mappings.cweIds?.length
+              ? data.mappings.cweIds.map((cid: string) => (
+                  <span class="badge badge--cwe" title={`CWE ${cid}`}>
+                    {cid}
+                  </span>
+                ))
+              : null}
+            {data.mappings.capecIds?.length
+              ? data.mappings.capecIds.map((cid: string) => (
+                  <span class="badge badge--capec" title={`CAPEC ${cid}`}>
+                    {cid}
+                  </span>
+                ))
+              : null}
+            {data.mappings.examDomains?.length
+              ? data.mappings.examDomains.map((ed: string) => (
+                  <span class="badge badge--muted" title="Exam domain">
+                    {ed}
+                  </span>
+                ))
+              : null}
+          </div>
         </section>
       ) : null
     }
 
     {
       data.examples?.length ? (
-        <section aria-labelledby="examples" style="margin-top: var(--space-6);">
+        <section aria-labelledby="examples" class="section">
           <h2 id="examples">Examples</h2>
-          {data.examples.map((ex) => (
-            <div style="margin-bottom: var(--space-4);">
-              <h3 style="margin-bottom:.25rem;">{ex.heading}</h3>
-              <p>{ex.body}</p>
+          {data.examples.map((ex: any) => (
+            <div class="card">
+              <h3 style="margin:.25rem 0 .25rem 0;">{ex.heading}</h3>
+              <p style="margin:0;">{ex.body}</p>
             </div>
           ))}
         </section>
       ) : null
     }
 
-    <section aria-labelledby="more" style="margin-top: var(--space-6);">
+    <section aria-labelledby="more" class="section">
       <h2 id="more">More context</h2>
       <Content />
     </section>
 
     {
       data.seeAlso?.length ? (
-        <section aria-labelledby="seealso" style="margin-top: var(--space-6);">
+        <section aria-labelledby="seealso" class="section">
           <h2 id="seealso">See also</h2>
           <ul>
-            {data.seeAlso.map((sid) => (
+            {data.seeAlso.map((sid: string) => (
               <li>
-                <a href={`/terms/${sid}`}>{sid}</a>
+                <a class="link" href={`/terms/${sid}`}>
+                  {sid}
+                </a>
               </li>
             ))}
           </ul>
