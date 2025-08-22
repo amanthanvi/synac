@@ -1,0 +1,29 @@
+---
+id: 'zero-trust'
+term: 'Zero Trust Architecture'
+acronym: ['ZTA']
+aliases: ['Zero Trust']
+summary: 'An enterprise cybersecurity architecture that assumes no implicit trust—continuously verifies users, devices, and contexts, and authorizes per‑request access to resources.'
+tags: ['architecture', 'identity', 'nist']
+sources:
+  - kind: 'NIST'
+    citation: 'NIST SP 800-207: Zero Trust Architecture'
+    url: 'https://csrc.nist.gov/publications/detail/sp/800-207/final'
+    date: '2020-08'
+    excerpt: 'Zero trust assumes that no implicit trust is granted to assets or user accounts based solely on their physical or network location.'
+    normative: true
+  - kind: 'OTHER'
+    citation: 'CISA Zero Trust Maturity Model v2.0'
+    url: 'https://www.cisa.gov/zero-trust-maturity-model'
+    date: '2023-04'
+    excerpt: 'Guidance for agencies to progress across identity, devices, networks, applications and workloads, and data pillars in a zero trust journey.'
+mappings:
+  examDomains: ['CISSP Domain 3', 'CISSP Domain 5']
+examples:
+  - heading: 'Per‑request authorization'
+    body: 'Every API call is authenticated and authorized with strong signals (user, device posture, risk), without relying on a “trusted network” boundary.'
+seeAlso: ['pki', 'tls']
+updatedAt: '2025-08-22T00:00:00.000Z'
+---
+
+Common tenets: explicit verification, least‑privilege access, assume breach, continuous monitoring, and strong identity and device health signals feeding policy decisions.

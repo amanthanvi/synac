@@ -1,0 +1,25 @@
+---
+id: 'ack'
+term: 'ACK (TCP Acknowledgment)'
+aliases: ['TCP ACK']
+summary: 'The ACK control bit acknowledges receipt of TCP segments and advances the acknowledgment number during the three‑way handshake and normal data transfer.'
+tags: ['network', 'rfc', 'tcp']
+sources:
+  - kind: 'RFC'
+    citation: 'RFC 9293 (Transmission Control Protocol)'
+    url: 'https://www.rfc-editor.org/rfc/rfc9293'
+    date: '2022-08'
+    excerpt: 'An ACK indicates that data with a sequence number less than the acknowledgment value has been received.'
+    normative: true
+  - kind: 'RFC'
+    citation: 'RFC 793 (TCP) [Obsoleted by RFC 9293]'
+    url: 'https://www.rfc-editor.org/rfc/rfc793'
+    date: '1981-09'
+    excerpt: 'The acknowledgment field contains the next sequence number the sender of the acknowledgment expects to receive.'
+mappings:
+  examDomains: ['Network+ TCP/IP', 'CISSP Domain 4']
+seeAlso: ['syn']
+updatedAt: '2025-08-22T00:00:00.000Z'
+---
+
+ACK is used in the TCP three‑way handshake (SYN → SYN‑ACK → ACK) and throughout a connection to confirm receipt and support reliable, in‑order delivery.

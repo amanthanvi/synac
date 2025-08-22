@@ -1,7 +1,29 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const seeds = await getCollection('terms');
+const seedList = seeds
+  .filter((e) => ['syn', 'ack', 'pki', 'tls', 'xss', 'zero-trust'].includes(e.slug))
+  .sort((a, b) => a.slug.localeCompare(b.slug));
 ---
+
 <BaseLayout title="SynAc">
   <h1>SynAc</h1>
-  <p>Source-anchored cybersecurity glossary. Fast, offline-capable, with evidence-first definitions.</p>
+  <p>
+    Source-anchored cybersecurity glossary. Fast, offline-capable, with evidence-first definitions.
+  </p>
+
+  <section style="margin-top: var(--space-6)">
+    <h2>Seed terms</h2>
+    <ul>
+      {
+        seedList.map((e) => (
+          <li>
+            <a href={`/terms/${e.slug}`}>{e.data.term}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
 </BaseLayout>

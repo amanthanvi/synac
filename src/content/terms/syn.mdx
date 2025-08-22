@@ -1,0 +1,25 @@
+---
+id: 'syn'
+term: 'SYN (TCP Synchronize)'
+aliases: ['TCP SYN']
+summary: 'The SYN control bit starts a TCP connection by initiating the three‑way handshake; a SYN packet indicates a request to synchronize sequence numbers.'
+tags: ['network', 'rfc', 'tcp']
+sources:
+  - kind: 'RFC'
+    citation: 'RFC 9293 (Transmission Control Protocol)'
+    url: 'https://www.rfc-editor.org/rfc/rfc9293'
+    date: '2022-08'
+    excerpt: 'A TCP connection is initiated by an active opener sending a SYN segment to the passive opener.'
+    normative: true
+  - kind: 'RFC'
+    citation: 'RFC 793 (TCP) [Obsoleted by RFC 9293]'
+    url: 'https://www.rfc-editor.org/rfc/rfc793'
+    date: '1981-09'
+    excerpt: 'The synchronization (SYN) segment is used to initiate a connection.'
+mappings:
+  examDomains: ['Network+ TCP/IP', 'CISSP Domain 4']
+seeAlso: ['ack']
+updatedAt: '2025-08-22T00:00:00.000Z'
+---
+
+SYN is the first step of the TCP three‑way handshake (SYN → SYN‑ACK → ACK). It establishes initial sequence numbers and negotiates connection parameters.

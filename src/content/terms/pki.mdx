@@ -1,0 +1,30 @@
+---
+id: 'pki'
+term: 'Public Key Infrastructure (PKI)'
+acronym: ['PKI']
+aliases: ['X.509 PKI']
+summary: 'A system of hardware, software, policies, and procedures needed to create, manage, distribute, use, store, and revoke digital certificates and public‑key pairs.'
+tags: ['crypto', 'nist', 'rfc', 'x509']
+sources:
+  - kind: 'NIST'
+    citation: 'NIST SP 800-57 Part 1 Rev. 5'
+    url: 'https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final'
+    date: '2020-05'
+    excerpt: 'An infrastructure that supports the management of public keys for cryptography.'
+    normative: true
+  - kind: 'RFC'
+    citation: 'RFC 5280 (Internet X.509 Public Key Infrastructure Certificate and CRL Profile)'
+    url: 'https://www.rfc-editor.org/rfc/rfc5280'
+    date: '2008-05'
+    excerpt: 'Specifies the profile for X.509 public key certificates and CRLs for use in the Internet.'
+    normative: true
+mappings:
+  examDomains: ['CISSP Domain 3']
+examples:
+  - heading: 'Enterprise TLS Certificates'
+    body: 'Organization‑wide issuance and renewal of server certificates via an internal CA or ACME‑integrated external CA.'
+seeAlso: ['tls', 'zero-trust']
+updatedAt: '2025-08-22T00:00:00.000Z'
+---
+
+PKI binds public keys to identities via certificates signed by trusted Certificate Authorities (CAs). Certificate status is managed via CRLs or OCSP; modern automation often uses ACME.
