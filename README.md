@@ -1,28 +1,85 @@
-# synac
+# SynAc — Source‑anchored cybersecurity glossary (PR0 scaffold)
 
-**SynAc Glossary**
+Fast, content‑first reference built with Astro. Minimal JS by default; add interactivity as needed. Deployed to Cloudflare Pages/Workers via the Cloudflare adapter.
 
-SynAc is a specialized glossary designed to provide users with a comprehensive understanding of various academic terms. Utilizing an extensive database of terms, definitions, and related resources, SynAc aims to support educational research and learning.
+This repository currently contains the PR0 scaffold: Astro + TS strict + MDX + Cloudflare adapter + lint/format/test/e2e + CI + minimal design tokens and layout.
 
-### Features:
-- **Search Functionality**: Users can quickly find detailed information about academic terms, including definitions, synonyms, and related concepts.
-- **Term Database**: A curated database of academic terms, constantly updated to include the latest terminology.
-- **Web Scraping**: Automated scraping of reputable sources ensures that the information is always up-to-date and accurate.
-- **Responsive Design**: The user-friendly interface is optimized for various devices and platforms, providing a seamless experience.
+## Stack
 
-### Technologies Used:
-- **Backend**: Node.js with Express to manage the server and routes.
-- **Database**: MongoDB to store the extensive-term database.
-- **Frontend**: HTML, CSS, and JavaScript to create an intuitive user interface.
-- **Web Scraping**: Python scripts to automate the collection of term data from various online sources.
+- Framework: Astro (TypeScript strict), MDX enabled
+- Adapter: @astrojs/cloudflare (SSR/Edge ready)
+- Lint/Format: ESLint, Prettier
+- Tests: Vitest (unit), Playwright (E2E)
+- CI: GitHub Actions (lint, typecheck, unit, build, e2e)
 
-### How to Use:
-1. Navigate to the search bar.
-2. Type in the academic term you're interested in.
-3. View detailed information, including definitions, related terms, and more.
+Recommended Node: 20 or 22 LTS to avoid engine warnings with Astro/Vite ecosystem.
 
-### Contribution:
-Contributions are welcome to SynAc! If you have suggestions or improvements or want to contribute to the code base, please feel free to open an issue or submit a pull request.
+## Dev quickstart
 
-### License:
-This project is licensed under the MIT License. See the `LICENSE` file for more information.
+- Install deps:
+  - npm ci
+- Development:
+  - npm run dev
+- Typecheck:
+  - npm run typecheck
+- Lint:
+  - npm run lint
+- Unit tests:
+  - npm run test
+- Build:
+  - npm run build
+- Preview (used by E2E):
+  - npm run preview
+- E2E (first time):
+  - npm run e2e:install
+  - npm run e2e
+
+Default preview base URL for tests: http://localhost:4321
+
+## Project structure
+
+```
+/
+├── public/
+│   └── favicon.svg
+├── src/
+│   ├── layouts/
+│   │   └── BaseLayout.astro
+│   ├── pages/
+│   │   └── index.astro
+│   └── ui/
+│       └── tokens.css
+├── tests/
+│   ├── e2e/
+│   │   └── home.spec.ts
+│   └── unit/
+│       └── smoke.test.ts
+├── astro.config.mjs
+├── playwright.config.ts
+├── tsconfig.json
+├── vitest.config.ts
+└── .github/workflows/ci.yml
+```
+
+## CI
+
+GitHub Actions runs on push and PR to main:
+- Install, lint, typecheck, unit tests, build
+- Install Playwright browsers
+- Run E2E
+- Upload Playwright report on failure
+
+Workflow: .github/workflows/ci.yml
+
+## Cloudflare deploy (SSR‑ready)
+
+This project uses @astrojs/cloudflare. To deploy on Cloudflare Pages:
+- Build command: npm run build
+- Build output: dist
+- Enable SSR (Pages Functions) per Astro Cloudflare guide if you add server routes.
+
+## Notes
+
+- Keep changes incremental and adhere to Conventional Commits.
+- TypeScript strict is enabled; keep the code clean (no implicit any, no unused).
+- Keep dependencies minimal.
