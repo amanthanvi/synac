@@ -1,0 +1,125 @@
+---
+/* Lightweight client search island using MiniSearch and the prebuilt /search.json */
+const title = 'Quick search';
+---
+
+<section aria-labelledby="search" style="margin-top: var(--space-6)">
+  <h2 id="search">{title}</h2>
+  <div id="search-box" style="display:flex; gap:.5rem; align-items:center;">
+    <label for="q" class="sr-only">Search terms</label>
+    <input
+      id="q"
+      type="search"
+      placeholder="Search terms, acronyms, tags..."
+      style="flex:1; padding:.5rem .75rem; border-radius:8px; border:1px solid #2a2e35; background:transparent; color:var(--color-fg);"
+      autocomplete="off"
+      enterkeyhint="search"
+    />
+    <span id="count" style="color:var(--color-muted); font-size:.9em;"></span>
+  </div>
+
+  <ul
+    id="results"
+    style="list-style:none; padding:0; margin: var(--space-4) 0 0 0; display:grid; gap:.5rem;"
+  >
+  </ul>
+</section>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .badge {
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    font-size: 0.75em;
+    border: 1px solid #2a2e35;
+    color: var(--color-muted);
+  }
+  .kind {
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75em;
+    margin-left: 0.25rem;
+  }
+</style>
+
+<script type="module">
+  const input = document.getElementById('q');
+  const list = document.getElementById('results');
+  const count = document.getElementById('count');
+
+  let mini = null;
+  let searchOptions = { prefix: true, fuzzy: 0.2 };
+
+  function render(items) {
+    list.innerHTML = '';
+    count.textContent = items.length
+      ? `${items.length} result${items.length === 1 ? '' : 's'}`
+      : '';
+    for (const it of items.slice(0, 50)) {
+      const li = document.createElement('li');
+      li.style.cssText = 'padding:.6rem .75rem; border:1px solid #2a2e35; border-radius:8px;';
+      const a = document.createElement('a');
+      a.href = `/terms/${it.id}`;
+      a.style.cssText = 'color:inherit; text-decoration:none;';
+      const title = document.createElement('div');
+      title.style.cssText = 'display:flex; align-items:center; gap:.5rem;';
+      title.innerHTML =
+        `<strong>${it.term}</strong>` +
+        (Array.isArray(it.acronym) && it.acronym.length
+          ? ` <span class="badge">${it.acronym.join(', ')}</span>`
+          : '') +
+        (Array.isArray(it.sourceKinds) && it.sourceKinds.length
+          ? it.sourceKinds.map((k) => `<span class="kind">${k}</span>`).join('')
+          : '');
+      const meta = document.createElement('div');
+      meta.style.cssText = 'color:var(--color-muted); font-size:.9em; margin-top:.25rem;';
+      if (Array.isArray(it.tags) && it.tags.length)
+        meta.textContent = it.tags.map((t) => `#${t}`).join(' ');
+      a.appendChild(title);
+      a.appendChild(meta);
+      li.appendChild(a);
+      list.appendChild(li);
+    }
+  }
+
+  async function ensureIndex() {
+    if (mini) return mini;
+    const res = await fetch('/search.json', { credentials: 'same-origin' });
+    if (!res.ok) return null;
+    const payload = await res.json();
+    const { default: MiniSearch } = await import('minisearch');
+    // revive index
+    mini = MiniSearch.loadJSON(payload.index, payload.options);
+    searchOptions = (payload.options && payload.options.searchOptions) || searchOptions;
+    return mini;
+  }
+
+  async function onInput() {
+    const q = input.value.trim();
+    const m = await ensureIndex();
+    if (!m) return;
+    if (!q) {
+      render([]);
+      return;
+    }
+    const results = m.search(q, searchOptions);
+    render(results.map((r) => r));
+  }
+
+  input.addEventListener('input', () => {
+    queueMicrotask(onInput);
+  });
+
+  // Warm index in background
+  ensureIndex().catch(() => {});
+</script>
