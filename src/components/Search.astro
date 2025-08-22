@@ -69,7 +69,7 @@ const title = 'Quick search';
   }
 </style>
 
-<script type="module">
+<script type="module" is:inline>
   const input = document.getElementById('q');
   const list = document.getElementById('results');
   const count = document.getElementById('count');
@@ -82,7 +82,8 @@ const title = 'Quick search';
     const isContentEditable = !!(active && active.isContentEditable);
     const isReadOnly = !!(active && 'readOnly' in active && active.readOnly);
     const isDisabled = !!(active && 'disabled' in active && active.disabled);
-    const isEditing = isFormEl || isContentEditable || isReadOnly || isDisabled;
+    // Only treat as editing if it's a form element AND not readOnly/disabled, or if it's contentEditable
+    const isEditing = (isFormEl && !isReadOnly && !isDisabled) || isContentEditable;
 
     if (e.key === '/' && !isEditing) {
       e.preventDefault();
@@ -139,23 +140,27 @@ const title = 'Quick search';
     if (!res.ok) {
       // Fallback: build a minimal index from visible term links on the page (seed list)
       const { default: MiniSearch } = await import('minisearch');
-      const anchors = Array.from(document.querySelectorAll('a[href^="/terms/"]')) as HTMLAnchorElement[];
-      const docs = anchors.map((a) => {
-        const href = a.getAttribute('href') || '';
-        const id = href.split('/').pop() || '';
-        const term = (a.textContent || '').trim();
-        return { id, term, text: term, tags: [], sourceKinds: [] };
-      }).filter(d => d.id && d.term);
+      const anchors = Array.from(document.querySelectorAll('a[href^="/terms/"]'));
+      const docs = anchors
+        .map((a) => {
+          const href = a.getAttribute('href') || '';
+          const id = href.split('/').pop() || '';
+          const term = (a.textContent || '').trim();
+          return { id, term, text: term, tags: [], sourceKinds: [] };
+        })
+        .filter((d) => d.id && d.term);
       if (docs.length) {
         const opts = {
           idField: 'id',
           fields: ['id', 'term', 'text'],
           storeFields: ['id', 'term'],
           searchOptions: { prefix: true, fuzzy: 0.2, boost: { id: 2, term: 2 } },
-        } as const;
-        mini = new MiniSearch(opts as any);
-        mini.addAll(docs as any);
-        try { window.__synacIndexReady = true; } catch {}
+        };
+        mini = new MiniSearch(opts);
+        mini.addAll(docs);
+        try {
+          window.__synacIndexReady = true;
+        } catch {}
         return mini;
       }
       return null;
@@ -168,15 +173,17 @@ const title = 'Quick search';
         typeof payload.index === 'string' ? JSON.parse(payload.index) : payload.index;
       mini = MiniSearch.loadJSON(indexObj, payload.options);
     } catch (err) {
+      // Log to aid in diagnosing index revival issues
       try {
-        const opts =
-          payload.options ||
-          ({
-            idField: 'id',
-            fields: ['term', 'acronym', 'aliases', 'text', 'tags', 'sourceKinds'],
-            storeFields: ['id', 'term', 'acronym', 'aliases', 'tags', 'sourceKinds'],
-            searchOptions: { prefix: true, fuzzy: 0.2, boost: { term: 2, acronym: 2, aliases: 1.5 } },
-          } as const);
+        console.error('Failed to revive MiniSearch index:', err);
+      } catch {}
+      try {
+        const opts = payload.options || {
+          idField: 'id',
+          fields: ['term', 'acronym', 'aliases', 'text', 'tags', 'sourceKinds'],
+          storeFields: ['id', 'term', 'acronym', 'aliases', 'tags', 'sourceKinds'],
+          searchOptions: { prefix: true, fuzzy: 0.2, boost: { term: 2, acronym: 2, aliases: 1.5 } },
+        };
         mini = new MiniSearch(opts);
         if (Array.isArray(payload.docs)) {
           mini.addAll(payload.docs);

@@ -44,6 +44,8 @@ function tokenize(s: string) {
   );
 }
 function jaccard(a: Set<string>, b: Set<string>) {
+  // Intentional: treat two empty sets as 0 similarity to avoid suppressing differences callout
+  // (we prefer to highlight uncertainty rather than assume perfect similarity with no evidence)
   if (!a.size && !b.size) return 0;
   let inter = 0;
   for (const t of a) if (b.has(t)) inter++;
@@ -140,7 +142,7 @@ const showDifferences =
                 ) : null}
               </div>
               {s.excerpt ? <p style="margin:.25rem 0 .5rem 0;">{s.excerpt}</p> : null}
-              <a class="link" href={s.url} target="_blank" rel="noreferrer">
+              <a class="link" href={s.url} target="_blank" rel="noopener noreferrer">
                 View source
               </a>
             </div>
