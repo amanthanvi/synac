@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const terms = await getCollection('terms');
+  return terms.map((t) => ({ params: { id: t.slug } }));
+}
+
+const { id } = Astro.params;
+if (!id) throw new Error('Missing term id');
+
+const entry = await getEntry('terms', id);
+if (!entry) throw new Error(`Term not found: ${id}`);
+
+const { Content } = await entry.render();
+const data = entry.data;
+
+function badge(kind: string) {
+  const colors: Record<string, string> = {
+    NIST: 'background: #0b6; color: white;',
+    RFC: 'background: #06c; color: white;',
+    ATTACK: 'background: #c50; color: white;',
+    CWE: 'background: #a03; color: white;',
+    CAPEC: 'background: #630; color: white;',
+    OTHER: 'background: #555; color: white;',
+  };
+  return colors[kind] ?? 'background:#555;color:white;';
+}
+---
+
+<BaseLayout title={`SynAc — ${data.term}`}>
+  <article>
+    <header style="margin-bottom: var(--space-6);">
+      <h1 style="margin: 0 0 var(--space-2) 0;">{data.term}</h1>
+      {
+        data.acronym && data.acronym.length ? (
+          <p style="margin: 0; color: var(--color-muted);">
+            {data.acronym.map((a) => (
+              <span style="margin-right: .5rem;">[{a}]</span>
+            ))}
+          </p>
+        ) : null
+      }
+      <p style="margin-top: var(--space-4);">{data.summary}</p>
+      {
+        data.tags?.length ? (
+          <p style="margin-top: var(--space-2); color: var(--color-muted);">
+            {data.tags.map((t) => (
+              <span style="margin-right:.5rem;">#{t}</span>
+            ))}
+          </p>
+        ) : null
+      }
+      <p style="margin-top: var(--space-2); color: var(--color-muted); font-size: .9em;">
+        Last updated: {data.updatedAt}
+      </p>
+    </header>
+
+    <section aria-labelledby="sources">
+      <h2 id="sources">Sources</h2>
+      <div style="display: grid; gap: var(--space-4);">
+        {
+          data.sources.map((s) => (
+            <div style="padding: var(--space-4); border: 1px solid #2a2e35; border-radius: var(--radius-2); box-shadow: var(--shadow-1);">
+              <div style="display:flex; align-items:center; gap:.5rem; margin-bottom: .5rem;">
+                <span
+                  style={`padding:.15rem .5rem; border-radius:999px; font-size:.8em; ${badge(s.kind)}`}
+                >
+                  {s.kind}
+                </span>
+                <strong>{s.citation}</strong>
+                {s.date ? (
+                  <span style="color:var(--color-muted); font-size:.9em;">({s.date})</span>
+                ) : null}
+                {s.normative ? (
+                  <span style="color:var(--color-muted); font-size:.9em; margin-left:.5rem;">
+                    normative
+                  </span>
+                ) : null}
+              </div>
+              {s.excerpt ? <p style="margin:.25rem 0 .5rem 0;">{s.excerpt}</p> : null}
+              <a href={s.url} rel="noreferrer" style="color:var(--color-accent);">
+                View source
+              </a>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    {
+      data.mappings ? (
+        <section aria-labelledby="mappings" style="margin-top: var(--space-6);">
+          <h2 id="mappings">Mappings</h2>
+          <ul>
+            {data.mappings.attack ? (
+              <li>
+                <strong>ATT&CK:</strong>
+                {data.mappings.attack.tactic ? ` tactic ${data.mappings.attack.tactic}` : ''}
+                {data.mappings.attack.techniqueIds?.length
+                  ? ` techniques ${data.mappings.attack.techniqueIds.join(', ')}`
+                  : ''}
+              </li>
+            ) : null}
+            {data.mappings.cweIds?.length ? (
+              <li>
+                <strong>CWE:</strong> {data.mappings.cweIds.join(', ')}
+              </li>
+            ) : null}
+            {data.mappings.capecIds?.length ? (
+              <li>
+                <strong>CAPEC:</strong> {data.mappings.capecIds.join(', ')}
+              </li>
+            ) : null}
+            {data.mappings.examDomains?.length ? (
+              <li>
+                <strong>Exam:</strong> {data.mappings.examDomains.join(', ')}
+              </li>
+            ) : null}
+          </ul>
+        </section>
+      ) : null
+    }
+
+    {
+      data.examples?.length ? (
+        <section aria-labelledby="examples" style="margin-top: var(--space-6);">
+          <h2 id="examples">Examples</h2>
+          {data.examples.map((ex) => (
+            <div style="margin-bottom: var(--space-4);">
+              <h3 style="margin-bottom:.25rem;">{ex.heading}</h3>
+              <p>{ex.body}</p>
+            </div>
+          ))}
+        </section>
+      ) : null
+    }
+
+    <section aria-labelledby="more" style="margin-top: var(--space-6);">
+      <h2 id="more">More context</h2>
+      <Content />
+    </section>
+
+    {
+      data.seeAlso?.length ? (
+        <section aria-labelledby="seealso" style="margin-top: var(--space-6);">
+          <h2 id="seealso">See also</h2>
+          <ul>
+            {data.seeAlso.map((sid) => (
+              <li>
+                <a href={`/terms/${sid}`}>{sid}</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null
+    }
+  </article>
+</BaseLayout>

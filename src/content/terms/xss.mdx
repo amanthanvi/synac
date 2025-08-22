@@ -1,0 +1,36 @@
+---
+id: 'xss'
+term: 'Cross-Site Scripting'
+acronym: ['XSS']
+aliases: ['Cross Site Scripting']
+summary: 'A class of injection vulnerabilities where untrusted input is executed as active content in a victim’s browser, enabling session theft, defacement, or redirection.'
+tags: ['appsec', 'web', 'cwe', 'capec']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-79: Improper Neutralization of Input During Web Page Generation (Cross-site Scripting)'
+    url: 'https://cwe.mitre.org/data/definitions/79.html'
+    excerpt: 'The software does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page.'
+    normative: true
+  - kind: 'CAPEC'
+    citation: 'CAPEC-63: Cross-Site Scripting'
+    url: 'https://capec.mitre.org/data/definitions/63.html'
+    excerpt: 'An adversary exploits improper input validation to inject malicious script that the victim’s browser executes in the context of a trusted site.'
+    normative: true
+  - kind: 'OTHER'
+    citation: 'OWASP Cross Site Scripting (XSS)'
+    url: 'https://owasp.org/www-community/attacks/xss/'
+    excerpt: 'XSS allows attackers to execute scripts in the victim’s browser which can hijack user sessions, deface web sites, or redirect the user to malicious sites.'
+mappings:
+  cweIds: ['CWE-79']
+  capecIds: ['CAPEC-63']
+  examDomains: ['CISSP Domain 8']
+examples:
+  - heading: 'Reflected XSS'
+    body: 'An application reflects unsanitized query parameters into HTML without proper encoding, executing attacker-controlled script on the victim’s browser.'
+  - heading: 'Stored XSS'
+    body: 'Malicious script stored in a database or comment is served to users and executed in their browsers.'
+seeAlso: ['tls']
+updatedAt: '2025-08-22T00:00:00.000Z'
+---
+
+Defense-in-depth includes output encoding, input validation, Content Security Policy (CSP), and avoiding dangerous sinks (e.g., innerHTML) or contexts (HTML/JS/URL/attributes).
