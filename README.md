@@ -83,3 +83,30 @@ This project uses @astrojs/cloudflare. To deploy on Cloudflare Pages:
 - Keep changes incremental and adhere to Conventional Commits.
 - TypeScript strict is enabled; keep the code clean (no implicit any, no unused).
 - Keep dependencies minimal.
+
+## ETL Importers (PR4)
+
+Scripts (scaffolds) to ingest authoritative sources without overwriting authored summaries:
+
+- Fetch NIST CSRC glossary JSON and normalize to fragments:
+  - npm run etl:nist
+  - Output: data/ingest/nist/*.json
+- Fetch MITRE datasets:
+  - ATT&CK STIX: npm run etl:mitre (writes data/ingest/attack.json)
+  - CWE/CAPEC JSON: npm run etl:mitre (writes data/ingest/cwe.json and data/ingest/capec.json)
+- Merge fragments into per-id merged files (review-only):
+  - npm run etl:merge
+  - Output: data/merged/*.json (does not modify src/content)
+
+Environment overrides
+- NIST_GLOSSARY_URL or NIST_GLOSSARY_FILE (local JSON export)
+- ATTACK_STIX_URL / ATTACK_STIX_FILE, CWE_JSON_URL / CWE_JSON_FILE, CAPEC_JSON_URL / CAPEC_JSON_FILE
+
+Security & Licensing
+- Static URLs; no dynamic code execution.
+- NIST (US Gov PD domestically per 17 USC §105). MITRE datasets (ATT&CK/CWE/CAPEC) free to use with attribution under MITRE Terms of Use.
+
+Review workflow
+1) Run fetch scripts to generate ingest artifacts
+2) Run merge to produce data/merged/*.json
+3) Manually integrate into content entries if desired (sources[], mappings), preserving authored summaries/examples.
