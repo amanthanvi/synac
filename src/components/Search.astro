@@ -3,10 +3,18 @@
 const title = 'Quick search';
 ---
 
-<section aria-labelledby="search" style="margin-top: var(--space-6)">
+<section
+  role="search"
+  aria-labelledby="search"
+  aria-describedby="search-help"
+  style="margin-top: var(--space-6)"
+>
   <h2 id="search">{title}</h2>
   <div id="search-box" style="display:flex; gap:.5rem; align-items:center;">
     <label for="q" class="sr-only">Search terms</label>
+    <span id="search-help" class="sr-only"
+      >Type to search. Press “/” to focus. Press Escape to clear.</span
+    >
     <input
       id="q"
       type="search"
@@ -14,12 +22,21 @@ const title = 'Quick search';
       style="flex:1; padding:.5rem .75rem; border-radius:8px; border:1px solid #2a2e35; background:transparent; color:var(--color-fg);"
       autocomplete="off"
       enterkeyhint="search"
+      aria-controls="results"
+      aria-autocomplete="list"
+      aria-describedby="search-help"
     />
-    <span id="count" style="color:var(--color-muted); font-size:.9em;"></span>
+    <span
+      id="count"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      style="color:var(--color-muted); font-size:.9em;"></span>
   </div>
 
   <ul
     id="results"
+    role="list"
     style="list-style:none; padding:0; margin: var(--space-4) 0 0 0; display:grid; gap:.5rem;"
   >
   </ul>
@@ -57,6 +74,22 @@ const title = 'Quick search';
   const list = document.getElementById('results');
   const count = document.getElementById('count');
 
+  // Keyboard shortcuts: "/" to focus search, "Escape" to clear/blur
+  window.addEventListener('keydown', (e) => {
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    const editable = /INPUT|TEXTAREA|SELECT/.test(tag);
+    if (e.key === '/' && !editable) {
+      e.preventDefault();
+      input.focus();
+    } else if (e.key === 'Escape') {
+      if (document.activeElement === input) {
+        input.value = '';
+        render([]);
+        input.blur();
+      }
+    }
+  });
+
   let mini = null;
   let searchOptions = { prefix: true, fuzzy: 0.2 };
 
@@ -68,9 +101,11 @@ const title = 'Quick search';
     for (const it of items.slice(0, 50)) {
       const li = document.createElement('li');
       li.style.cssText = 'padding:.6rem .75rem; border:1px solid #2a2e35; border-radius:8px;';
+      li.setAttribute('role', 'listitem');
       const a = document.createElement('a');
       a.href = `/terms/${it.id}`;
-      a.style.cssText = 'color:inherit; text-decoration:none;';
+      a.style.cssText =
+        'display:block; min-height:44px; padding:.75rem .75rem; color:inherit; text-decoration:none;';
       const title = document.createElement('div');
       title.style.cssText = 'display:flex; align-items:center; gap:.5rem;';
       title.innerHTML =
