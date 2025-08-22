@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry } from 'astro:content';
+import type { TermEntry } from '../../types/term';
 
 export async function getStaticPaths() {
   const terms = await getCollection('terms');
@@ -14,7 +15,7 @@ const entry = await getEntry('terms', id);
 if (!entry) throw new Error(`Term not found: ${id}`);
 
 const { Content } = await entry.render();
-const data = entry.data as any;
+const data = entry.data as TermEntry;
 
 function badgeClass(kind: string) {
   switch (kind) {
@@ -33,16 +34,17 @@ function badgeClass(kind: string) {
   }
 }
 
+const MIN_TOKEN_LENGTH = 2;
 function tokenize(s: string) {
   return new Set(
     (s || '')
       .toLowerCase()
       .split(/[^a-z0-9]+/g)
-      .filter((t) => t && t.length > 2),
+      .filter((t) => t && t.length >= MIN_TOKEN_LENGTH),
   );
 }
 function jaccard(a: Set<string>, b: Set<string>) {
-  if (!a.size && !b.size) return 1;
+  if (!a.size && !b.size) return 0;
   let inter = 0;
   for (const t of a) if (b.has(t)) inter++;
   const union = a.size + b.size - inter;
@@ -60,12 +62,15 @@ function computeMinSimilarity(texts: string[]) {
   return min;
 }
 
+const SIMILARITY_THRESHOLD = 0.6;
 const sourceTexts: string[] = (data.sources || [])
   .map((s: any) => (s.excerpt || s.citation || '').toString())
   .filter(Boolean);
 
 const showDifferences =
-  Array.isArray(sourceTexts) && sourceTexts.length >= 2 && computeMinSimilarity(sourceTexts) < 0.6;
+  Array.isArray(sourceTexts) &&
+  sourceTexts.length >= 2 &&
+  computeMinSimilarity(sourceTexts) < SIMILARITY_THRESHOLD;
 ---
 
 <BaseLayout title={`SynAc — ${data.term}`}>
@@ -135,7 +140,7 @@ const showDifferences =
                 ) : null}
               </div>
               {s.excerpt ? <p style="margin:.25rem 0 .5rem 0;">{s.excerpt}</p> : null}
-              <a class="link" href={s.url} rel="noreferrer">
+              <a class="link" href={s.url} target="_blank" rel="noreferrer">
                 View source
               </a>
             </div>
