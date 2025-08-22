@@ -13,6 +13,7 @@ export default defineConfig({
       strategies: 'generateSW',
       registerType: 'autoUpdate',
       includeAssets: ['/favicon.svg'],
+      devOptions: { enabled: true },
       manifest: {
         name: 'SynAc',
         short_name: 'SynAc',
