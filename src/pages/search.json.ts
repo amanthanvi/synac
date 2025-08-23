@@ -42,14 +42,8 @@ export async function GET() {
   });
 
   const payload = buildIndexPayload(docs as any);
-<<<<<<< HEAD
-  const responsePayload = { ...payload, docs };
-
-  return new Response(JSON.stringify(responsePayload), {
-=======
 
   return new Response(JSON.stringify(payload), {
->>>>>>> 3597186 (merge: resolve conflicts\n\n- Keep builder-based search.json (buildIndexPayload, no docs in payload)\n- Keep extracted client search script (safe DOM, fallbacks, shared searchOptions)\n- Keep offline E2E with documentation and default skip for CI determinism)
     headers: { 'content-type': 'application/json; charset=utf-8' },
   });
 }

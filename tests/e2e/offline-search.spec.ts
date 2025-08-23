@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-import { test, expect } from '@playwright/test';
-test.skip(true, 'Offline search test skipped by default due to flakiness; run locally if needed');
-=======
 /**
  * Note:
  * This offline search E2E is skipped by default because service worker lifecycle and caching
@@ -22,7 +18,6 @@ test.skip(
   true,
   'Skipped by default for CI determinism. See header comment for enable instructions.',
 );
->>>>>>> 3597186 (merge: resolve conflicts\n\n- Keep builder-based search.json (buildIndexPayload, no docs in payload)\n- Keep extracted client search script (safe DOM, fallbacks, shared searchOptions)\n- Keep offline E2E with documentation and default skip for CI determinism)
 
 test('client search works offline after warming the index', async ({ page, context }) => {
   // Go online and warm the client index
