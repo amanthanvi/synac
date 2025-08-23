@@ -40,7 +40,7 @@ declare global {
   // Will be replaced by payload.options.searchOptions if present
   let currentSearchOptions: any = searchOptions.searchOptions;
 
-  function render(items: any[]) {
+  const render = (items: any[]) => {
     list!.innerHTML = '';
     count!.textContent = items.length
       ? `${items.length} result${items.length === 1 ? '' : 's'}`
@@ -81,9 +81,9 @@ declare global {
       li.appendChild(a);
       list!.appendChild(li);
     }
-  }
+  };
 
-  async function buildFromDomFallback(): Promise<MiniSearch | null> {
+  const buildFromDomFallback = async (): Promise<MiniSearch | null> => {
     const anchors = Array.from(
       document.querySelectorAll('a[href^="/terms/"]'),
     ) as HTMLAnchorElement[];
@@ -105,9 +105,9 @@ declare global {
       }
     } catch {}
     return m;
-  }
+  };
 
-  async function ensureIndex(): Promise<MiniSearch | null> {
+  const ensureIndex = async (): Promise<MiniSearch | null> => {
     if (mini) return mini;
     try {
       const res = await fetch('/search.json', { credentials: 'same-origin' });
@@ -159,9 +159,9 @@ declare global {
       }
       return null;
     }
-  }
+  };
 
-  async function onInput() {
+  const onInput = async () => {
     const q = input!.value.trim();
     const m = await ensureIndex();
     if (!m) return;
@@ -171,7 +171,7 @@ declare global {
     }
     const results = m.search(q, currentSearchOptions);
     render(results);
-  }
+  };
 
   input.addEventListener('input', () => {
     queueMicrotask(onInput);
