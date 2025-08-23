@@ -17,7 +17,8 @@
     "e2e": "playwright test",
     "etl:nist": "node scripts/fetch-nist.mjs",
     "etl:mitre": "node scripts/fetch-mitre.mjs",
-    "etl:merge": "node scripts/build-merge.mjs"
+    "etl:merge": "node scripts/build-merge.mjs",
+    "etl:all": "npm run etl:nist && npm run etl:mitre && npm run etl:merge"
   },
   "dependencies": {
     "@vite-pwa/astro": "^1.1.0",

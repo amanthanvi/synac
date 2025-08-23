@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-export const SourceKind = z.enum(["NIST", "RFC", "ATTACK", "CWE", "CAPEC", "OTHER"]);
+export const SourceKind = z.enum(['NIST', 'RFC', 'ATTACK', 'CWE', 'CAPEC', 'OTHER']);
 
 export const termSchema = z.object({
   id: z.string(), // slug (should match file slug)
@@ -17,7 +17,7 @@ export const termSchema = z.object({
       date: z.string().optional(),
       excerpt: z.string().optional(),
       normative: z.boolean().optional(),
-    })
+    }),
   ),
   mappings: z
     .object({
@@ -37,10 +37,11 @@ export const termSchema = z.object({
       z.object({
         heading: z.string(),
         body: z.string(),
-      })
+      }),
     )
     .optional(),
   seeAlso: z.array(z.string()).optional(),
+  oftenConfusedWith: z.array(z.string()).optional(),
   updatedAt: z.string().datetime(), // ISO
 });
 

@@ -28,6 +28,7 @@ describe('content termSchema', () => {
     },
     examples: [{ heading: 'Reflected XSS', body: '...' }],
     seeAlso: ['tls'],
+    oftenConfusedWith: ['csrf'],
     updatedAt: new Date('2025-01-01T00:00:00.000Z').toISOString(),
   };
 

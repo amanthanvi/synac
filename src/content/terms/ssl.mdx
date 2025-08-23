@@ -1,0 +1,35 @@
+---
+id: 'ssl'
+term: 'Secure Sockets Layer (SSL)'
+acronym: ['SSL']
+aliases: ['SSLv2', 'SSLv3']
+summary: 'Legacy predecessor to TLS for securing application traffic; SSL is deprecated and insecure due to protocol and cryptographic weaknesses (e.g., POODLE). Modern systems must use TLS 1.2+.'
+tags: ['crypto', 'network', 'rfc']
+sources:
+  - kind: 'RFC'
+    citation: 'RFC 7568: Deprecating SSLv3'
+    url: 'https://www.rfc-editor.org/rfc/rfc7568'
+    date: '2015-06'
+    excerpt: 'SSLv3 is not sufficiently secure. This document requires that SSLv3 not be used.'
+    normative: true
+  - kind: 'RFC'
+    citation: 'RFC 6101: The Secure Sockets Layer (SSL) Protocol Version 3.0 (Historic)'
+    url: 'https://www.rfc-editor.org/rfc/rfc6101'
+    date: '2011-08'
+    excerpt: 'This document is provided for historical purposes and is not recommended for use.'
+    normative: true
+  - kind: 'OTHER'
+    citation: 'OWASP Transport Layer Protection Cheat Sheet'
+    url: 'https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html'
+    excerpt: 'Use TLS 1.2 or greater. SSL and early TLS versions are deprecated due to known vulnerabilities.'
+mappings:
+  examDomains: ['CISSP Domain 4']
+examples:
+  - heading: 'Disable SSL in Servers'
+    body: 'Web and API servers are configured to disable SSLv2/SSLv3 and TLS versions < 1.2, and to prefer modern AEAD cipher suites.'
+seeAlso: ['tls', 'pki']
+oftenConfusedWith: ['tls']
+updatedAt: '2025-08-23T00:00:00.000Z'
+---
+
+SSL is deprecated and replaced by TLS. Retain only for historical reference; enforce TLS 1.2+ (prefer TLS 1.3), strong cipher suites, and secure renegotiation/ALPN configurations.

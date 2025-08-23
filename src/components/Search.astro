@@ -35,6 +35,15 @@ import searchClientUrl from '../scripts/searchClient.ts?url';
       style="color:var(--color-muted); font-size:.9em;"></span>
   </div>
 
+  <div id="filters" class="chips" aria-label="Filter by source kind">
+    <button type="button" class="btn-chip" data-kind="NIST" aria-pressed="false">NIST</button>
+    <button type="button" class="btn-chip" data-kind="RFC" aria-pressed="false">RFC</button>
+    <button type="button" class="btn-chip" data-kind="ATTACK" aria-pressed="false">ATT&CK</button>
+    <button type="button" class="btn-chip" data-kind="CWE" aria-pressed="false">CWE</button>
+    <button type="button" class="btn-chip" data-kind="CAPEC" aria-pressed="false">CAPEC</button>
+    <button type="button" class="btn-chip" data-kind="OTHER" aria-pressed="false">Other</button>
+  </div>
+
   <ul
     id="results"
     role="list"

@@ -25,6 +25,7 @@
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchJsonPinned } from './_http.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -52,17 +53,6 @@ function buildTermUrl(term) {
   return `https://csrc.nist.gov/glossary/term/${encoded}`;
 }
 
-async function fetchJson(url) {
-  const ac = new AbortController();
-  const t = setTimeout(() => ac.abort(), 30000);
-  try {
-    const res = await fetch(url, { signal: ac.signal });
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    return await res.json();
-  } finally {
-    clearTimeout(t);
-  }
-}
 
 async function readLocalJson(path) {
   const raw = await readFile(path, 'utf8');
@@ -136,7 +126,7 @@ async function main() {
   } else {
     console.log(`[nist] Fetching: ${NIST_GLOSSARY_URL}`);
     try {
-      data = await fetchJson(NIST_GLOSSARY_URL);
+      data = await fetchJsonPinned(NIST_GLOSSARY_URL);
     } catch (err) {
       console.error(`[nist] Fetch failed: ${err.message}`);
       console.error(

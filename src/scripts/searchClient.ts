@@ -1,5 +1,6 @@
 import MiniSearch from 'minisearch';
 import { searchOptions } from '../lib/searchBuild';
+declare const __BUILD_TIME__: string | number;
 
 // Globals for test coordination
 declare global {
@@ -12,6 +13,8 @@ declare global {
   const input = document.getElementById('q') as HTMLInputElement | null;
   const list = document.getElementById('results') as HTMLUListElement | null;
   const count = document.getElementById('count') as HTMLElement | null;
+  const filters = document.getElementById('filters') as HTMLDivElement | null;
+  const activeKinds = new Set<string>();
 
   if (!input || !list || !count) return;
 
@@ -40,7 +43,32 @@ declare global {
   // Will be replaced by payload.options.searchOptions if present
   let currentSearchOptions: any = searchOptions.searchOptions;
 
-  const render = (items: any[]) => {
+  function escapeHtml(s: string) {
+    return String(s)
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"')
+      .replace(/'/g, '&#39;');
+  }
+
+  function escapeRegex(s: string) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function highlight(text: string, terms: string[]) {
+    if (!terms || !terms.length) return escapeHtml(String(text || ''));
+    let html = escapeHtml(String(text || ''));
+    for (const t of terms) {
+      const token = t.trim();
+      if (!token) continue;
+      const re = new RegExp(`(${escapeRegex(token)})`, 'ig');
+      html = html.replace(re, '<mark>$1</mark>');
+    }
+    return html;
+  }
+
+  const render = (items: any[], tokens: string[] = []) => {
     list!.innerHTML = '';
     count!.textContent = items.length
       ? `${items.length} result${items.length === 1 ? '' : 's'}`
@@ -56,7 +84,7 @@ declare global {
       const title = document.createElement('div');
       title.style.cssText = 'display:flex; align-items:center; gap:.5rem;';
       const strong = document.createElement('strong');
-      strong.textContent = String(it.term || '');
+      strong.innerHTML = highlight(String(it.term || ''), tokens);
       title.appendChild(strong);
       if (Array.isArray(it.acronym) && it.acronym.length) {
         const badge = document.createElement('span');
@@ -92,7 +120,8 @@ declare global {
         const href = a.getAttribute('href') || '';
         const id = href.split('/').pop() || '';
         const term = (a.textContent || '').trim();
-        return { id, term, text: term, tags: [] as string[], sourceKinds: [] as string[] };
+        // Include slug in text/tags so queries like "xss" match even in DOM fallback mode
+        return { id, term, text: `${term} ${id}`, tags: [id], sourceKinds: [] as string[] };
       })
       .filter((d) => d.id && d.term);
     if (!docs.length) return null;
@@ -110,7 +139,7 @@ declare global {
   const ensureIndex = async (): Promise<MiniSearch | null> => {
     if (mini) return mini;
     try {
-      const res = await fetch('/search.json', { credentials: 'same-origin' });
+      const res = await fetch(`/search.json?v=${__BUILD_TIME__}`, { credentials: 'same-origin' });
       if (!res.ok) {
         // DOM fallback when payload is unavailable
         const m = await buildFromDomFallback();
@@ -126,9 +155,9 @@ declare global {
       const payload = await res.json();
       // Try revive fast path
       try {
-        const indexObj =
-          typeof payload.index === 'string' ? JSON.parse(payload.index) : payload.index;
-        mini = MiniSearch.loadJSON(indexObj, payload.options);
+        const indexJson =
+          typeof payload.index === 'string' ? payload.index : JSON.stringify(payload.index);
+        mini = MiniSearch.loadJSON(indexJson, payload.options);
       } catch (err) {
         try {
           console.error('Failed to revive MiniSearch index:', err);
@@ -170,16 +199,54 @@ declare global {
     const m = await ensureIndex();
     if (!m) return;
     if (!q) {
-      render([]);
+      render([], []);
       return;
     }
     const results = m.search(q, currentSearchOptions);
-    render(results);
+    const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
+    // In DOM fallback mode, docs do not contain sourceKinds; bypass kind filtering
+    const isFallback = !!(
+      count &&
+      (count as HTMLElement).dataset &&
+      (count as HTMLElement).dataset.mode === 'fallback'
+    );
+    const filtered =
+      activeKinds.size && !isFallback
+        ? results.filter(
+            (r: any) =>
+              Array.isArray(r.sourceKinds) &&
+              r.sourceKinds.some((k: string) => activeKinds.has(String(k))),
+          )
+        : results;
+    render(filtered, tokens);
   };
 
   input.addEventListener('input', () => {
-    queueMicrotask(onInput);
+    // Flush microtasks, then schedule after a paint to ensure DOM is ready before assertions
+    queueMicrotask(() => requestAnimationFrame(() => onInput()));
   });
+
+  if (filters) {
+    filters.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest(
+        'button[data-kind]',
+      ) as HTMLButtonElement | null;
+      if (!target) return;
+      const kind = target.getAttribute('data-kind');
+      if (!kind) return;
+      if (activeKinds.has(kind)) {
+        activeKinds.delete(kind);
+        target.setAttribute('aria-pressed', 'false');
+        target.classList.remove('btn-chip--active');
+      } else {
+        activeKinds.add(kind);
+        target.setAttribute('aria-pressed', 'true');
+        target.classList.add('btn-chip--active');
+      }
+      // Re-run search with current query (may be empty)
+      queueMicrotask(onInput);
+    });
+  }
 
   // Warm index in background
   ensureIndex().catch(() => {});

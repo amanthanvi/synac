@@ -27,6 +27,7 @@
 import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fetchJsonPinned } from './_http.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,17 +45,6 @@ const ATTACK_STIX_FILE = process.env.ATTACK_STIX_FILE; // optional local file fo
 const CWE_JSON_FILE = process.env.CWE_JSON_FILE; // local file override
 const CAPEC_JSON_FILE = process.env.CAPEC_JSON_FILE; // local file override
 
-async function fetchJson(url) {
-  const ac = new AbortController();
-  const t = setTimeout(() => ac.abort(), 60000);
-  try {
-    const res = await fetch(url, { signal: ac.signal, headers: { accept: 'application/json' } });
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    return await res.json();
-  } finally {
-    clearTimeout(t);
-  }
-}
 
 async function readLocalJson(path) {
   const raw = await readFile(path, 'utf8');
@@ -156,7 +146,7 @@ async function main() {
   } else {
     console.log(`[mitre] Fetching ATT&CK STIX: ${ATTACK_STIX_URL}`);
     try {
-      stix = await fetchJson(ATTACK_STIX_URL);
+      stix = await fetchJsonPinned(ATTACK_STIX_URL);
     } catch (e) {
       console.error(`[mitre] Failed to fetch ATT&CK: ${e.message}`);
       stix = null;
@@ -178,7 +168,7 @@ async function main() {
   } else {
     console.log(`[mitre] Fetching CWE: ${CWE_JSON_URL}`);
     try {
-      cwe = await fetchJson(CWE_JSON_URL);
+      cwe = await fetchJsonPinned(CWE_JSON_URL);
     } catch (e) {
       console.error(`[mitre] Failed to fetch CWE: ${e.message}`);
       cwe = null;
@@ -198,7 +188,7 @@ async function main() {
   } else {
     console.log(`[mitre] Fetching CAPEC: ${CAPEC_JSON_URL}`);
     try {
-      capec = await fetchJson(CAPEC_JSON_URL);
+      capec = await fetchJsonPinned(CAPEC_JSON_URL);
     } catch (e) {
       console.error(`[mitre] Failed to fetch CAPEC: ${e.message}`);
       capec = null;

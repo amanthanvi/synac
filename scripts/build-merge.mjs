@@ -15,11 +15,11 @@
  */
 
 import { readdir, mkdir, readFile, writeFile, stat } from 'node:fs/promises';
-import { join, extname, basename } from 'node:path';
+import { join, extname, basename, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = new URL('.', import.meta.url).pathname;
+const __dirname = dirname(__filename);
 
 const TERMS_DIR = join(__dirname, '..', 'src', 'content', 'terms');
 const INGEST_NIST_DIR = join(__dirname, '..', 'data', 'ingest', 'nist');
@@ -51,7 +51,16 @@ function unionSources(a = [], b = []) {
   const map = new Map();
   for (const s of a) if (s && (s.citation || s.url)) map.set(key(s), s);
   for (const s of b) if (s && (s.citation || s.url)) map.set(key(s), { ...map.get(key(s)), ...s });
-  return Array.from(map.values());
+  const arr = Array.from(map.values());
+  arr.sort((s1, s2) => {
+    const c1 = String(s1.citation || '').toLowerCase();
+    const c2 = String(s2.citation || '').toLowerCase();
+    if (c1 !== c2) return c1 < c2 ? -1 : 1;
+    const u1 = String(s1.url || '').toLowerCase();
+    const u2 = String(s2.url || '').toLowerCase();
+    return u1 < u2 ? -1 : u1 > u2 ? 1 : 0;
+  });
+  return arr;
 }
 
 function unionArr(a = [], b = []) {
@@ -65,9 +74,13 @@ function mergeMappings(a = {}, b = {}) {
   const attack = {};
   attack.tactic = attackB.tactic || attackA.tactic || undefined;
   attack.techniqueIds = unionArr(attackA.techniqueIds, attackB.techniqueIds);
+  if (attack.techniqueIds && attack.techniqueIds.length) attack.techniqueIds.sort();
   const cweIds = unionArr(a.cweIds, b.cweIds);
+  if (cweIds && cweIds.length) cweIds.sort();
   const capecIds = unionArr(a.capecIds, b.capecIds);
+  if (capecIds && capecIds.length) capecIds.sort();
   const examDomains = unionArr(a.examDomains, b.examDomains);
+  if (examDomains && examDomains.length) examDomains.sort();
   const hasAttack = attack.tactic || (attack.techniqueIds && attack.techniqueIds.length);
   if (hasAttack) out.attack = attack;
   if (cweIds.length) out.cweIds = cweIds;
@@ -132,7 +145,8 @@ async function main() {
   console.log(`[merge] Wrote ${wrote} merged file(s) to ${MERGED_DIR}`);
 }
 
-if (import.meta.main) {
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (isMain) {
   main().catch((e) => {
     console.error(e);
     process.exit(1);

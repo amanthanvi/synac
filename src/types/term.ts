@@ -6,7 +6,7 @@ export interface TermEntry {
   summary: string; // concise, human-written overview
   tags: string[]; // ["network", "identity", "nist"]
   sources: Array<{
-    kind: "NIST" | "RFC" | "ATTACK" | "CWE" | "CAPEC" | "OTHER";
+    kind: 'NIST' | 'RFC' | 'ATTACK' | 'CWE' | 'CAPEC' | 'OTHER';
     citation: string; // e.g., "NIST SP 800-207"
     url: string;
     date?: string; // source pub date
@@ -21,5 +21,6 @@ export interface TermEntry {
   };
   examples?: Array<{ heading: string; body: string }>;
   seeAlso?: string[]; // other entry ids
+  oftenConfusedWith?: string[]; // related ids that are commonly conflated
   updatedAt: string; // ISO
 }

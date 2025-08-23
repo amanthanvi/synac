@@ -1,0 +1,35 @@
+---
+id: 'csrf'
+term: 'Cross-Site Request Forgery'
+acronym: ['CSRF']
+aliases: ['XSRF', 'One-Click Attack']
+summary: 'An attack that tricks a user’s browser into submitting an authenticated request to a target site without the user’s intent, leveraging existing cookies or credentials.'
+tags: ['appsec', 'web', 'cwe', 'capec']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-352: Cross-Site Request Forgery (CSRF)'
+    url: 'https://cwe.mitre.org/data/definitions/352.html'
+    excerpt: 'The web application does not, or cannot, sufficiently verify whether a well-formed, valid, consistent request was intentionally provided by the user.'
+    normative: true
+  - kind: 'CAPEC'
+    citation: 'CAPEC-62: Cross-Site Request Forgery'
+    url: 'https://capec.mitre.org/data/definitions/62.html'
+    excerpt: 'An adversary leverages existing authentication state to cause a victim’s browser to perform an action that benefits the adversary.'
+    normative: true
+  - kind: 'OTHER'
+    citation: 'OWASP Cross-Site Request Forgery (CSRF)'
+    url: 'https://owasp.org/www-community/attacks/csrf'
+    excerpt: 'CSRF forces a logged-on victim’s browser to send a forged HTTP request to a vulnerable web application.'
+mappings:
+  cweIds: ['CWE-352']
+  capecIds: ['CAPEC-62']
+  examDomains: ['CISSP Domain 8']
+examples:
+  - heading: 'Forged Money Transfer'
+    body: 'A logged-in banking user visits a malicious page that auto-submits a hidden form to the bank’s /transfer endpoint using the victim’s session cookies.'
+seeAlso: ['xss']
+oftenConfusedWith: ['xss']
+updatedAt: '2025-08-23T00:00:00.000Z'
+---
+
+Mitigations include state-changing requests using anti-CSRF tokens bound to the session, SameSite cookies, double-submit or synchronized token patterns, and requiring re-auth or re-authorization for sensitive actions. Ensure idempotent GETs and use appropriate CORS policies.

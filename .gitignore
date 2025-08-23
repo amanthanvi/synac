@@ -22,3 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# ETL artifacts
+data/ingest/
+data/merged/

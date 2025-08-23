@@ -7,6 +7,9 @@ import VitePWA from '@vite-pwa/astro';
 // https://astro.build/config
 export default defineConfig({
   adapter: cloudflare(),
+  vite: {
+    define: { __BUILD_TIME__: JSON.stringify(Date.now()) },
+  },
   integrations: [
     mdx(),
     VitePWA({
@@ -25,6 +28,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,json,txt,woff2,webp}'],
+        ignoreURLParametersMatching: [/^v$/],
       },
     }),
   ],
