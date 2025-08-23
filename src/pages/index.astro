@@ -5,28 +5,29 @@ import Search from '../components/Search.astro';
 
 const seeds = await getCollection('terms');
 const seedList = seeds
-  .filter((e) => ['syn', 'ack', 'pki', 'tls', 'xss', 'zero-trust'].includes(e.slug))
-  .sort((a, b) => a.slug.localeCompare(b.slug));
+	.filter((e) => ['syn', 'ack', 'pki', 'tls', 'xss', 'zero-trust'].includes(e.slug))
+	.sort((a, b) => a.slug.localeCompare(b.slug));
 ---
 
 <BaseLayout title="SynAc">
-  <h1>SynAc</h1>
-  <p>
-    Source-anchored cybersecurity glossary. Fast, offline-capable, with evidence-first definitions.
-  </p>
+	<h1>SynAc</h1>
+	<p>
+		Source-anchored cybersecurity glossary. Fast, offline-capable, with evidence-first
+		definitions.
+	</p>
 
-  <Search />
+	<Search />
 
-  <section style="margin-top: var(--space-6)">
-    <h2>Seed terms</h2>
-    <ul>
-      {
-        seedList.map((e) => (
-          <li>
-            <a href={`/terms/${e.slug}`}>{e.data.term}</a>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
+	<section class="section">
+		<h2>Seed terms</h2>
+		<ul>
+			{
+				seedList.map((e) => (
+					<li>
+						<a href={`/terms/${e.slug}`}>{e.data.term}</a>
+					</li>
+				))
+			}
+		</ul>
+	</section>
 </BaseLayout>

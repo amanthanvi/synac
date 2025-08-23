@@ -1,5 +1,6 @@
 import MiniSearch from 'minisearch';
 import { searchOptions } from '../lib/searchBuild';
+import { ENABLE_TELEMETRY } from '../lib/constants';
 declare const __BUILD_TIME__: string | number;
 
 // Globals for test coordination
@@ -70,19 +71,20 @@ declare global {
 
   const render = (items: any[], tokens: string[] = []) => {
     list!.innerHTML = '';
-    count!.textContent = items.length
-      ? `${items.length} result${items.length === 1 ? '' : 's'}`
-      : '';
+    if (items.length) {
+      count!.textContent = `${items.length} result${items.length === 1 ? '' : 's'}`;
+    } else {
+      count!.textContent = tokens.length ? 'No results' : '';
+    }
     for (const it of items.slice(0, 50)) {
       const li = document.createElement('li');
-      li.style.cssText = 'padding:.6rem .75rem; border:1px solid #2a2e35; border-radius:8px;';
+      li.className = 'result-item';
       li.setAttribute('role', 'listitem');
       const a = document.createElement('a');
       a.href = `/terms/${it.id}`;
-      a.style.cssText =
-        'display:block; min-height:44px; padding:.75rem .75rem; color:inherit; text-decoration:none;';
+      a.className = 'result-link';
       const title = document.createElement('div');
-      title.style.cssText = 'display:flex; align-items:center; gap:.5rem;';
+      title.className = 'result-title';
       const strong = document.createElement('strong');
       strong.innerHTML = highlight(String(it.term || ''), tokens);
       title.appendChild(strong);
@@ -101,7 +103,7 @@ declare global {
         }
       }
       const meta = document.createElement('div');
-      meta.style.cssText = 'color:var(--color-muted); font-size:.9em; margin-top:.25rem;';
+      meta.className = 'result-meta';
       if (Array.isArray(it.tags) && it.tags.length)
         meta.textContent = it.tags.map((t: string) => `#${t}`).join(' ');
       a.appendChild(title);
@@ -203,6 +205,23 @@ declare global {
       return;
     }
     const results = m.search(q, currentSearchOptions);
+    // When telemetry is enabled, log zero-result queries in a privacy-preserving way
+    if (ENABLE_TELEMETRY && results.length === 0) {
+      try {
+        const payload = JSON.stringify({ q, ts: Date.now() });
+        if (navigator.sendBeacon) {
+          const blob = new Blob([payload], { type: 'application/json' });
+          navigator.sendBeacon('/api/log-search', blob);
+        } else {
+          fetch('/api/log-search', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: payload,
+            keepalive: true,
+          }).catch(() => {});
+        }
+      } catch {}
+    }
     const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
     // In DOM fallback mode, docs do not contain sourceKinds; bypass kind filtering
     const isFallback = !!(

@@ -1,24 +1,35 @@
 ---
 import '../ui/tokens.css';
 const { title = 'SynAc', description = 'Source-anchored cybersecurity glossary' } = Astro.props;
+const CANONICAL_BASE = 'https://synac.app';
+const canonicalUrl = new URL(Astro.url.pathname || '/', CANONICAL_BASE).toString();
 ---
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  </head>
-  <body>
-    <a href="#main" class="skip-link">Skip to main content</a>
-    <header class="container" role="banner">
-      <a class="brand" href="/">SynAc</a>
-    </header>
-    <main id="main" class="container" role="main" tabindex="-1">
-      <slot />
-    </main>
-  </body>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonicalUrl} />
+		<meta property="og:site_name" content="SynAc" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	</head>
+	<body>
+		<a href="#main" class="skip-link">Skip to main content</a>
+		<header class="container" role="banner">
+			<a class="brand" href="/">SynAc</a>
+		</header>
+		<main id="main" class="container" role="main" tabindex="-1">
+			<slot />
+		</main>
+	</body>
 </html>

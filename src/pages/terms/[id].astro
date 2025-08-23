@@ -5,8 +5,8 @@ import type { TermEntry } from '../../types/term';
 import { MIN_TOKEN_LENGTH, SIMILARITY_THRESHOLD } from '../../lib/constants';
 
 export async function getStaticPaths() {
-  const terms = await getCollection('terms');
-  return terms.map((t) => ({ params: { id: t.slug } }));
+	const terms = await getCollection('terms');
+	return terms.map((t) => ({ params: { id: t.slug } }));
 }
 
 const { id } = Astro.params;
@@ -19,242 +19,244 @@ const { Content } = await entry.render();
 const data = entry.data as TermEntry;
 
 function badgeClass(kind: string) {
-  switch (kind) {
-    case 'NIST':
-      return 'badge badge--nist';
-    case 'RFC':
-      return 'badge badge--rfc';
-    case 'ATTACK':
-      return 'badge badge--attack';
-    case 'CWE':
-      return 'badge badge--cwe';
-    case 'CAPEC':
-      return 'badge badge--capec';
-    default:
-      return 'badge badge--other';
-  }
+	switch (kind) {
+		case 'NIST':
+			return 'badge badge--nist';
+		case 'RFC':
+			return 'badge badge--rfc';
+		case 'ATTACK':
+			return 'badge badge--attack';
+		case 'CWE':
+			return 'badge badge--cwe';
+		case 'CAPEC':
+			return 'badge badge--capec';
+		default:
+			return 'badge badge--other';
+	}
 }
 
 function tokenize(s: string) {
-  return new Set(
-    (s || '')
-      .toLowerCase()
-      .split(/[^a-z0-9]+/g)
-      .filter((t) => t && t.length >= MIN_TOKEN_LENGTH),
-  );
+	return new Set(
+		(s || '')
+			.toLowerCase()
+			.split(/[^a-z0-9]+/g)
+			.filter((t) => t && t.length >= MIN_TOKEN_LENGTH)
+	);
 }
 function jaccard(a: Set<string>, b: Set<string>) {
-  // Intentional: treat two empty sets as 0 similarity to avoid suppressing differences callout
-  // (we prefer to highlight uncertainty rather than assume perfect similarity with no evidence)
-  if (!a.size && !b.size) return 0;
-  let inter = 0;
-  for (const t of a) if (b.has(t)) inter++;
-  const union = a.size + b.size - inter;
-  return union ? inter / union : 0;
+	// Intentional: treat two empty sets as 0 similarity to avoid suppressing differences callout
+	// (we prefer to highlight uncertainty rather than assume perfect similarity with no evidence)
+	if (!a.size && !b.size) return 0;
+	let inter = 0;
+	for (const t of a) if (b.has(t)) inter++;
+	const union = a.size + b.size - inter;
+	return union ? inter / union : 0;
 }
 function computeMinSimilarity(texts: string[]) {
-  const sets = texts.map(tokenize);
-  let min = 1;
-  for (let i = 0; i < sets.length; i++) {
-    for (let j = i + 1; j < sets.length; j++) {
-      const s = jaccard(sets[i], sets[j]);
-      if (s < min) min = s;
-    }
-  }
-  return min;
+	const sets = texts.map(tokenize);
+	let min = 1;
+	for (let i = 0; i < sets.length; i++) {
+		for (let j = i + 1; j < sets.length; j++) {
+			const s = jaccard(sets[i], sets[j]);
+			if (s < min) min = s;
+		}
+	}
+	return min;
 }
 
 const sourceTexts: string[] = (data.sources || [])
-  .map((s: any) => (s.excerpt || s.citation || '').toString())
-  .filter(Boolean);
+	.map((s: any) => (s.excerpt || s.citation || '').toString())
+	.filter(Boolean);
 
 const showDifferences =
-  Array.isArray(sourceTexts) &&
-  sourceTexts.length >= 2 &&
-  computeMinSimilarity(sourceTexts) < SIMILARITY_THRESHOLD;
+	Array.isArray(sourceTexts) &&
+	sourceTexts.length >= 2 &&
+	computeMinSimilarity(sourceTexts) < SIMILARITY_THRESHOLD;
 ---
 
 <BaseLayout title={`SynAc — ${data.term}`}>
-  <article>
-    <script type="application/ld+json" src={`/terms/${id}.jsonld`}></script>
-    <header class="section" style="margin-top:0;">
-      <h1 style="margin: 0 0 var(--space-2) 0;">{data.term}</h1>
-      {
-        data.acronym && data.acronym.length ? (
-          <p style="margin: 0; color: var(--color-muted);">
-            {data.acronym.map((a: string) => (
-              <span class="badge badge--muted" title={`Acronym: ${a}`}>
-                {a}
-              </span>
-            ))}
-          </p>
-        ) : null
-      }
-      <p style="margin-top: var(--space-4);">{data.summary}</p>
-      {
-        data.tags?.length ? (
-          <p style="margin-top: var(--space-2); color: var(--color-muted);">
-            {data.tags.map((t: string) => (
-              <span style="margin-right:.5rem;">#{t}</span>
-            ))}
-          </p>
-        ) : null
-      }
-      <p style="margin-top: var(--space-2); color: var(--color-muted); font-size: .9em;">
-        Last updated: {data.updatedAt}
-      </p>
-    </header>
+	<article>
+		<script type="application/ld+json" src={`/terms/${id}.jsonld`}></script>
+		<header class="section mt-0">
+			<h1 class="m-0 mb-2">{data.term}</h1>
+			{
+				data.acronym && data.acronym.length ? (
+					<p class="m-0 muted">
+						{data.acronym.map((a: string) => (
+							<span class="badge badge--muted" title={`Acronym: ${a}`}>
+								{a}
+							</span>
+						))}
+					</p>
+				) : null
+			}
+			<p class="mt-4">{data.summary}</p>
+			{
+				data.tags?.length ? (
+					<p class="mt-2 muted">
+						{data.tags.map((t: string) => (
+							<span class="mr-2">#{t}</span>
+						))}
+					</p>
+				) : null
+			}
+			<p class="mt-2 muted fs-90">
+				Last updated: {data.updatedAt}
+			</p>
+		</header>
 
-    {
-      showDifferences ? (
-        <section aria-labelledby="differences" class="section">
-          <h2 id="differences">Differences across sources</h2>
-          <div class="callout">
-            Parallel sources use distinct terminology or emphasize different aspects. Review each
-            citation to understand scope and normative intent.
-          </div>
-        </section>
-      ) : null
-    }
+		{
+			showDifferences ? (
+				<section aria-labelledby="differences" class="section">
+					<h2 id="differences">Differences across sources</h2>
+					<div class="callout">
+						Parallel sources use distinct terminology or emphasize different aspects.
+						Review each citation to understand scope and normative intent.
+					</div>
+				</section>
+			) : null
+		}
 
-    <section aria-labelledby="sources" class="section">
-      <h2 id="sources">Sources</h2>
-      <div class="grid grid--2">
-        {
-          (data.sources || []).map((s: any) => (
-            <div class="card">
-              <div style="display:flex; align-items:center; gap:.5rem; margin-bottom: .5rem;">
-                <span
-                  class={badgeClass(String(s.kind))}
-                  aria-label={`Source kind: ${s.kind}`}
-                  title={`Source kind: ${s.kind}`}
-                >
-                  {s.kind}
-                </span>
-                <strong>{s.citation}</strong>
-                {s.date ? (
-                  <span style="color:var(--color-muted); font-size:.9em;">({s.date})</span>
-                ) : null}
-                {s.normative ? (
-                  <span class="badge badge--muted" title="Normative definition">
-                    normative
-                  </span>
-                ) : null}
-              </div>
-              {s.excerpt ? <p style="margin:.25rem 0 .5rem 0;">{s.excerpt}</p> : null}
-              <a
-                class="link"
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                referrerpolicy="no-referrer"
-              >
-                View source
-              </a>
-            </div>
-          ))
-        }
-      </div>
-    </section>
+		<section aria-labelledby="sources" class="section">
+			<h2 id="sources">Sources</h2>
+			<div class="grid grid--2">
+				{
+					(data.sources || []).map((s: any) => (
+						<div class="card">
+							<div class="flex items-center gap-2 mb-2">
+								<span
+									class={badgeClass(String(s.kind))}
+									aria-label={`Source kind: ${s.kind}`}
+									title={`Source kind: ${s.kind}`}
+								>
+									{s.kind}
+								</span>
+								<strong>{s.citation}</strong>
+								{s.date ? <span class="muted fs-90">({s.date})</span> : null}
+								{s.normative ? (
+									<span class="badge badge--muted" title="Normative definition">
+										normative
+									</span>
+								) : null}
+							</div>
+							{s.excerpt ? <p class="mt-1 mb-2">{s.excerpt}</p> : null}
+							<a
+								class="link"
+								href={s.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								referrerpolicy="no-referrer"
+							>
+								View source
+							</a>
+						</div>
+					))
+				}
+			</div>
+		</section>
 
-    {
-      data.mappings ? (
-        <section aria-labelledby="mappings" class="section">
-          <h2 id="mappings">Mappings</h2>
-          <div class="kv">
-            {data.mappings.attack ? (
-              <>
-                {data.mappings.attack.tactic ? (
-                  <span class="badge badge--attack" title="ATT&CK tactic">
-                    ATT&CK tactic: {data.mappings.attack.tactic}
-                  </span>
-                ) : null}
-                {data.mappings.attack.techniqueIds?.length
-                  ? data.mappings.attack.techniqueIds.map((tid: string) => (
-                      <span class="badge badge--attack" title={`ATT&CK technique ${tid}`}>
-                        {tid}
-                      </span>
-                    ))
-                  : null}
-              </>
-            ) : null}
-            {data.mappings.cweIds?.length
-              ? data.mappings.cweIds.map((cid: string) => (
-                  <span class="badge badge--cwe" title={`CWE ${cid}`}>
-                    {cid}
-                  </span>
-                ))
-              : null}
-            {data.mappings.capecIds?.length
-              ? data.mappings.capecIds.map((cid: string) => (
-                  <span class="badge badge--capec" title={`CAPEC ${cid}`}>
-                    {cid}
-                  </span>
-                ))
-              : null}
-            {data.mappings.examDomains?.length
-              ? data.mappings.examDomains.map((ed: string) => (
-                  <span class="badge badge--muted" title="Exam domain">
-                    {ed}
-                  </span>
-                ))
-              : null}
-          </div>
-        </section>
-      ) : null
-    }
+		{
+			data.mappings ? (
+				<section aria-labelledby="mappings" class="section">
+					<h2 id="mappings">Mappings</h2>
+					<div class="kv">
+						{data.mappings.attack ? (
+							<>
+								{data.mappings.attack.tactic ? (
+									<span class="badge badge--attack" title="ATT&CK tactic">
+										ATT&CK tactic: {data.mappings.attack.tactic}
+									</span>
+								) : null}
+								{data.mappings.attack.techniqueIds?.length
+									? data.mappings.attack.techniqueIds.map((tid: string) => (
+											<span
+												class="badge badge--attack"
+												title={`ATT&CK technique ${tid}`}
+											>
+												{tid}
+											</span>
+										))
+									: null}
+							</>
+						) : null}
+						{data.mappings.cweIds?.length
+							? data.mappings.cweIds.map((cid: string) => (
+									<span class="badge badge--cwe" title={`CWE ${cid}`}>
+										{cid}
+									</span>
+								))
+							: null}
+						{data.mappings.capecIds?.length
+							? data.mappings.capecIds.map((cid: string) => (
+									<span class="badge badge--capec" title={`CAPEC ${cid}`}>
+										{cid}
+									</span>
+								))
+							: null}
+						{data.mappings.examDomains?.length
+							? data.mappings.examDomains.map((ed: string) => (
+									<span class="badge badge--muted" title="Exam domain">
+										{ed}
+									</span>
+								))
+							: null}
+					</div>
+				</section>
+			) : null
+		}
 
-    {
-      data.examples?.length ? (
-        <section aria-labelledby="examples" class="section">
-          <h2 id="examples">Examples</h2>
-          {data.examples.map((ex: any) => (
-            <div class="card">
-              <h3 style="margin:.25rem 0 .25rem 0;">{ex.heading}</h3>
-              <p style="margin:0;">{ex.body}</p>
-            </div>
-          ))}
-        </section>
-      ) : null
-    }
+		{
+			data.examples?.length ? (
+				<section aria-labelledby="examples" class="section">
+					<h2 id="examples">Examples</h2>
+					{data.examples.map((ex: any) => (
+						<div class="card">
+							<h3 class="my-1">{ex.heading}</h3>
+							<p class="m-0">{ex.body}</p>
+						</div>
+					))}
+				</section>
+			) : null
+		}
 
-    <section aria-labelledby="more" class="section">
-      <h2 id="more">More context</h2>
-      <Content />
-    </section>
+		<section aria-labelledby="more" class="section">
+			<h2 id="more">More context</h2>
+			<Content />
+		</section>
 
-    {
-      Array.isArray((data as any).oftenConfusedWith) && (data as any).oftenConfusedWith.length ? (
-        <section aria-labelledby="confused" class="section">
-          <h2 id="confused">Often confused with</h2>
-          <ul>
-            {(data as any).oftenConfusedWith.map((sid: string) => (
-              <li>
-                <a class="link" href={`/terms/${sid}`}>
-                  {sid}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null
-    }
+		{
+			Array.isArray((data as any).oftenConfusedWith) &&
+			(data as any).oftenConfusedWith.length ? (
+				<section aria-labelledby="confused" class="section">
+					<h2 id="confused">Often confused with</h2>
+					<ul>
+						{(data as any).oftenConfusedWith.map((sid: string) => (
+							<li>
+								<a class="link" href={`/terms/${sid}`}>
+									{sid}
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+			) : null
+		}
 
-    {
-      data.seeAlso?.length ? (
-        <section aria-labelledby="seealso" class="section">
-          <h2 id="seealso">See also</h2>
-          <ul>
-            {data.seeAlso.map((sid: string) => (
-              <li>
-                <a class="link" href={`/terms/${sid}`}>
-                  {sid}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null
-    }
-  </article>
+		{
+			data.seeAlso?.length ? (
+				<section aria-labelledby="seealso" class="section">
+					<h2 id="seealso">See also</h2>
+					<ul>
+						{data.seeAlso.map((sid: string) => (
+							<li>
+								<a class="link" href={`/terms/${sid}`}>
+									{sid}
+								</a>
+							</li>
+						))}
+					</ul>
+				</section>
+			) : null
+		}
+	</article>
 </BaseLayout>

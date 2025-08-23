@@ -7,8 +7,12 @@ import VitePWA from '@vite-pwa/astro';
 // https://astro.build/config
 export default defineConfig({
   adapter: cloudflare(),
+  site: 'https://synac.app',
   vite: {
     define: { __BUILD_TIME__: JSON.stringify(Date.now()) },
+  },
+  build: {
+    inlineStylesheets: 'never',
   },
   integrations: [
     mdx(),
