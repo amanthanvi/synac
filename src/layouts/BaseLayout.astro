@@ -1,7 +1,8 @@
 ---
-import "../ui/tokens.css";
-const { title = "SynAc", description = "Source-anchored cybersecurity glossary" } = Astro.props;
+import '../ui/tokens.css';
+const { title = 'SynAc', description = 'Source-anchored cybersecurity glossary' } = Astro.props;
 ---
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -12,10 +13,11 @@ const { title = "SynAc", description = "Source-anchored cybersecurity glossary" 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body>
-    <header class="container">
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <header class="container" role="banner">
       <a class="brand" href="/">SynAc</a>
     </header>
-    <main class="container">
+    <main id="main" class="container" role="main" tabindex="-1">
       <slot />
     </main>
   </body>
