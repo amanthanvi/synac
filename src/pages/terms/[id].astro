@@ -141,7 +141,13 @@ const showDifferences =
                 ) : null}
               </div>
               {s.excerpt ? <p style="margin:.25rem 0 .5rem 0;">{s.excerpt}</p> : null}
-              <a class="link" href={s.url} target="_blank" rel="noopener noreferrer">
+              <a
+                class="link"
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerpolicy="no-referrer"
+              >
                 View source
               </a>
             </div>

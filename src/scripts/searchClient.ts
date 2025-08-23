@@ -29,12 +29,10 @@ declare global {
     if (e.key === '/' && !isEditing) {
       e.preventDefault();
       input.focus();
-    } else if (e.key === 'Escape') {
-      if (document.activeElement === input) {
-        input.value = '';
-        render([]);
-        input.blur();
-      }
+    } else if (e.key === 'Escape' && document.activeElement === input) {
+      input.value = '';
+      render([]);
+      input.blur();
     }
   });
 
@@ -57,14 +55,23 @@ declare global {
         'display:block; min-height:44px; padding:.75rem .75rem; color:inherit; text-decoration:none;';
       const title = document.createElement('div');
       title.style.cssText = 'display:flex; align-items:center; gap:.5rem;';
-      title.innerHTML =
-        `<strong>${it.term}</strong>` +
-        (Array.isArray(it.acronym) && it.acronym.length
-          ? ` <span class="badge">${it.acronym.join(', ')}</span>`
-          : '') +
-        (Array.isArray(it.sourceKinds) && it.sourceKinds.length
-          ? it.sourceKinds.map((k: string) => `<span class="kind">${k}</span>`).join('')
-          : '');
+      const strong = document.createElement('strong');
+      strong.textContent = String(it.term || '');
+      title.appendChild(strong);
+      if (Array.isArray(it.acronym) && it.acronym.length) {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = it.acronym.join(', ');
+        title.appendChild(badge);
+      }
+      if (Array.isArray(it.sourceKinds) && it.sourceKinds.length) {
+        for (const k of it.sourceKinds) {
+          const kind = document.createElement('span');
+          kind.className = 'kind';
+          kind.textContent = String(k || '');
+          title.appendChild(kind);
+        }
+      }
       const meta = document.createElement('div');
       meta.style.cssText = 'color:var(--color-muted); font-size:.9em; margin-top:.25rem;';
       if (Array.isArray(it.tags) && it.tags.length)
@@ -91,6 +98,12 @@ declare global {
     if (!docs.length) return null;
     const m = new MiniSearch(searchOptions as any);
     m.addAll(docs as any);
+    try {
+      if (count) {
+        count.setAttribute('data-mode', 'fallback');
+        count.title = 'Limited search index (DOM fallback)';
+      }
+    } catch {}
     return m;
   }
 
@@ -157,7 +170,7 @@ declare global {
       return;
     }
     const results = m.search(q, currentSearchOptions);
-    render(results.map((r: any) => r));
+    render(results);
   }
 
   input.addEventListener('input', () => {
