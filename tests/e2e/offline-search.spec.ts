@@ -14,10 +14,7 @@
  *   - The functional path remains covered by unit tests and the evidence E2E path.
  */
 import { test, expect } from '@playwright/test';
-test.skip(
-  true,
-  'Skipped by default for CI determinism. See header comment for enable instructions.',
-);
+/* unskipped for PR9 offline determinism */
 
 test('client search works offline after warming the index', async ({ page, context }) => {
   // Go online and warm the client index

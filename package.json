@@ -18,7 +18,9 @@
     "etl:nist": "node scripts/fetch-nist.mjs",
     "etl:mitre": "node scripts/fetch-mitre.mjs",
     "etl:merge": "node scripts/build-merge.mjs",
-    "etl:all": "npm run etl:nist && npm run etl:mitre && npm run etl:merge"
+    "etl:all": "npm run etl:nist && npm run etl:mitre && npm run etl:merge",
+    "lh:budget": "npx -y lighthouse http://localhost:4321 --quiet --chrome-flags='--headless=new' --budgets-path=./lighthouse/budgets.json --only-categories=performance --preset=desktop",
+    "lh:preview": "bash scripts/lh_preview.sh"
   },
   "dependencies": {
     "@vite-pwa/astro": "^1.1.0",
