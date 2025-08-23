@@ -1,4 +1,4 @@
-import MiniSearch from "minisearch";
+import MiniSearch from 'minisearch';
 
 export type SearchDoc = {
   id: string;
@@ -11,9 +11,9 @@ export type SearchDoc = {
 };
 
 export const searchOptions = {
-  idField: "id",
-  fields: ["term", "acronym", "aliases", "text", "tags", "sourceKinds"],
-  storeFields: ["id", "term", "acronym", "aliases", "tags", "sourceKinds"],
+  idField: 'id',
+  fields: ['term', 'acronym', 'aliases', 'text', 'tags', 'sourceKinds'],
+  storeFields: ['id', 'term', 'acronym', 'aliases', 'tags', 'sourceKinds'],
   searchOptions: {
     prefix: true,
     fuzzy: 0.2,
@@ -30,6 +30,6 @@ export function buildIndexPayload(docs: SearchDoc[]) {
   mini.addAll(docs);
   return {
     options: searchOptions,
-    index: mini.toJSON(),
+    index: JSON.stringify(mini.toJSON()),
   };
 }

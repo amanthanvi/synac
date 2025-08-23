@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry } from 'astro:content';
+import type { TermEntry } from '../../types/term';
+import { MIN_TOKEN_LENGTH, SIMILARITY_THRESHOLD } from '../../lib/constants';
 
 export async function getStaticPaths() {
   const terms = await getCollection('terms');
@@ -14,7 +16,7 @@ const entry = await getEntry('terms', id);
 if (!entry) throw new Error(`Term not found: ${id}`);
 
 const { Content } = await entry.render();
-const data = entry.data as any;
+const data = entry.data as TermEntry;
 
 function badgeClass(kind: string) {
   switch (kind) {
@@ -38,11 +40,13 @@ function tokenize(s: string) {
     (s || '')
       .toLowerCase()
       .split(/[^a-z0-9]+/g)
-      .filter((t) => t && t.length > 2),
+      .filter((t) => t && t.length >= MIN_TOKEN_LENGTH),
   );
 }
 function jaccard(a: Set<string>, b: Set<string>) {
-  if (!a.size && !b.size) return 1;
+  // Intentional: treat two empty sets as 0 similarity to avoid suppressing differences callout
+  // (we prefer to highlight uncertainty rather than assume perfect similarity with no evidence)
+  if (!a.size && !b.size) return 0;
   let inter = 0;
   for (const t of a) if (b.has(t)) inter++;
   const union = a.size + b.size - inter;
@@ -65,7 +69,9 @@ const sourceTexts: string[] = (data.sources || [])
   .filter(Boolean);
 
 const showDifferences =
-  Array.isArray(sourceTexts) && sourceTexts.length >= 2 && computeMinSimilarity(sourceTexts) < 0.6;
+  Array.isArray(sourceTexts) &&
+  sourceTexts.length >= 2 &&
+  computeMinSimilarity(sourceTexts) < SIMILARITY_THRESHOLD;
 ---
 
 <BaseLayout title={`SynAc — ${data.term}`}>
@@ -135,7 +141,13 @@ const showDifferences =
                 ) : null}
               </div>
               {s.excerpt ? <p style="margin:.25rem 0 .5rem 0;">{s.excerpt}</p> : null}
-              <a class="link" href={s.url} rel="noreferrer">
+              <a
+                class="link"
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerpolicy="no-referrer"
+              >
                 View source
               </a>
             </div>
