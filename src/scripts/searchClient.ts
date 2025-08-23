@@ -133,6 +133,7 @@ declare global {
         try {
           console.error('Failed to revive MiniSearch index:', err);
         } catch {}
+<<<<<<< HEAD
         // Fallback to rebuilding from payload.docs using provided options or default searchOptions
         const opts = payload.options || (searchOptions as any);
         const m = new MiniSearch(opts);
@@ -140,6 +141,19 @@ declare global {
           m.addAll(payload.docs);
         }
         mini = m;
+=======
+        // Fallback to rebuilding from payload.docs using provided options or default searchOptions.
+        // If docs are not present (production payload optimization), attempt DOM fallback.
+        const opts = payload.options || (searchOptions as any);
+        const rebuilt = new MiniSearch(opts);
+        if (Array.isArray(payload.docs) && payload.docs.length) {
+          rebuilt.addAll(payload.docs);
+          mini = rebuilt;
+        } else {
+          const domFallback = await buildFromDomFallback();
+          mini = domFallback || rebuilt; // rebuilt may be empty but preserves options
+        }
+>>>>>>> 3597186 (merge: resolve conflicts\n\n- Keep builder-based search.json (buildIndexPayload, no docs in payload)\n- Keep extracted client search script (safe DOM, fallbacks, shared searchOptions)\n- Keep offline E2E with documentation and default skip for CI determinism)
       }
       currentSearchOptions =
         (payload.options && payload.options.searchOptions) || currentSearchOptions;
