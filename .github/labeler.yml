@@ -1,0 +1,51 @@
+# Map labels to file path globs. Runs via actions/labeler.
+# Reference: https://github.com/actions/labeler
+ci:
+  - '.github/workflows/**'
+
+docs:
+  - 'README.md'
+  - 'CONTRIBUTING.md'
+  - 'CHANGELOG.md'
+  - 'docs/**'
+
+tests:
+  - 'tests/**'
+  - 'vitest.config.ts'
+  - 'playwright.config.ts'
+
+pwa:
+  - 'astro.config.mjs'
+  - 'public/**'
+  - 'src/scripts/**'
+
+search:
+  - 'src/lib/searchBuild.ts'
+  - 'src/scripts/searchClient.ts'
+  - 'src/pages/search.json.ts'
+
+content:
+  - 'src/content/**'
+
+cloudflare:
+  - 'wrangler.toml'
+  - 'src/pages/api/**'
+  - 'astro.config.mjs'
+
+security:
+  - '.github/workflows/codeql.yml'
+  - '.github/workflows/gitleaks.yml'
+
+build:
+  - 'package.json'
+  - 'package-lock.json'
+  - 'scripts/**'
+
+infra:
+  - '.husky/**'
+  - '.nvmrc'
+  - '.github/**'
+
+dependencies:
+  - 'package.json'
+  - 'package-lock.json'

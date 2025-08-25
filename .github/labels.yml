@@ -1,0 +1,115 @@
+labels:
+  - name: bug
+    color: d73a4a
+    description: Something isn't working
+  - name: fix
+    color: d73a4a
+    description: Bug fix
+  - name: feat
+    color: 0e8a16
+    description: New feature
+  - name: chore
+    color: d4c5f9
+    description: Routine maintenance or refactor
+  - name: docs
+    color: 0075ca
+    description: Documentation changes
+  - name: documentation
+    color: 0075ca
+    description: Improvements or additions to documentation
+  - name: build
+    color: fef2c0
+    description: Build system or external dependencies changes
+  - name: ci
+    color: 1d76db
+    description: Continuous integration and workflows
+  - name: tests
+    color: 6f42c1
+    description: Unit/E2E tests and coverage
+  - name: security
+    color: b60205
+    description: Security-related changes or findings
+  - name: performance
+    color: 80e8d1
+    description: Performance improvements
+  - name: refactor
+    color: cfd3d7
+    description: Refactoring without functional changes
+  - name: accessibility
+    color: a3f7a0
+    description: Accessibility improvements (a11y)
+  - name: pwa
+    color: 0e8a16
+    description: PWA and service worker
+  - name: search
+    color: 5319e7
+    description: MiniSearch/index/search UI
+  - name: content
+    color: cfd3d7
+    description: Content, schemas, and seeds
+  - name: cloudflare
+    color: 0fbdbd
+    description: Cloudflare Workers/Routes/Bindings
+  - name: infra
+    color: 0052cc
+    description: Infrastructure and tooling
+  - name: release
+    color: 5319e7
+    description: Release management and versioning
+  - name: dependencies
+    color: 0366d6
+    description: Dependency updates or pinning
+  - name: deps
+    color: 0366d6
+    description: Dependency updates or pinning (alias)
+  - name: good first issue
+    color: 7057ff
+    description: Good for newcomers
+  - name: help wanted
+    color: 008672
+    description: Extra attention is needed
+  - name: blocked
+    color: bdbdbd
+    description: Blocked by external or upstream dependency
+  - name: status: needs triage
+    color: d93f0b
+    description: Needs triage
+  - name: status: in progress
+    color: fbca04
+    description: Work is actively in progress
+  - name: status: ready
+    color: 0e8a16
+    description: Ready for review/merge
+  - name: priority: high
+    color: b60205
+    description: Must address ASAP
+  - name: priority: medium
+    color: fbca04
+    description: Important but not urgent
+  - name: priority: low
+    color: c2e0c6
+    description: Nice-to-have, low urgency
+  - name: size: XS
+    color: e4e669
+    description: <10 LOC or trivial
+  - name: size: S
+    color: e4e669
+    description: 10–50 LOC or small scope
+  - name: size: M
+    color: e4e669
+    description: 50–250 LOC or moderate scope
+  - name: size: L
+    color: e4e669
+    description: 250–500 LOC or broad scope
+  - name: size: XL
+    color: e4e669
+    description: 500+ LOC or very broad scope
+  - name: semver: major
+    color: b60205
+    description: Breaking change (major)
+  - name: semver: minor
+    color: 0e8a16
+    description: Backward-compatible feature (minor)
+  - name: semver: patch
+    color: 6a737d
+    description: Backward-compatible fix (patch)
