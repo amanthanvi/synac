@@ -13,6 +13,7 @@
     "format:fix": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:unit": "vitest run --coverage",
     "e2e:install": "npx playwright install --with-deps",
     "e2e": "playwright test",
     "etl:nist": "node scripts/fetch-nist.mjs",
