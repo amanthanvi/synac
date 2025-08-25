@@ -2,7 +2,11 @@
   "mcpServers": {
     "git": {
       "command": "uvx",
-      "args": ["mcp-server-git", "--repository", "/Users/amanthanvi/GitRepos/synac"],
+      "args": [
+        "mcp-server-git",
+        "--repository",
+        "/Users/amanthanvi/GitRepos/synac"
+      ],
       "alwaysAllow": [
         "git_status",
         "git_diff_unstaged",
@@ -16,8 +20,7 @@
         "git_checkout",
         "git_show",
         "git_branch",
-        "git_init",
-        "git_push"
+        "git_init"
       ]
     }
   }

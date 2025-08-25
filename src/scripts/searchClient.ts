@@ -46,10 +46,10 @@ declare global {
 
   function escapeHtml(s: string) {
     return String(s)
-      .replace(/&/g, '&')
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
-      .replace(/"/g, '"')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
   }
 
@@ -241,8 +241,7 @@ declare global {
   };
 
   input.addEventListener('input', () => {
-    // Flush microtasks, then schedule after a paint to ensure DOM is ready before assertions
-    queueMicrotask(() => requestAnimationFrame(() => onInput()));
+    void onInput();
   });
 
   if (filters) {
