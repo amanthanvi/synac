@@ -33,6 +33,16 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,json,txt,woff2,webp}'],
         ignoreURLParametersMatching: [/^v$/],
+        runtimeCaching: [
+          {
+            urlPattern: /\/search\.json$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'search-json-v1',
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run --coverage",
+    "test:offline": "playwright test tests/e2e/offline-search.spec.ts",
     "e2e:install": "npx playwright install --with-deps",
     "e2e": "playwright test",
     "etl:nist": "node scripts/fetch-nist.mjs",

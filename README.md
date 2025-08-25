@@ -96,6 +96,20 @@ Budgets are intended to fail the command if exceeded. Non‑interactive flags ar
   - `tests/e2e/term-jsonld.spec.ts` (JSON‑LD endpoint + link)
   - `tests/e2e/offline-search.spec.ts` (index warm‑up + offline search)
 
+## Offline determinism &amp; debugging
+
+- Quick validation:
+  - `npm run test:offline` (focused offline determinism)
+  - `npm run e2e` (full suite; spawns `astro dev` per Playwright config)
+- Runtime notes:
+  - The service worker is enabled in dev via VitePWA `devOptions.enabled: true` in astro.config.mjs.
+  - The client warms the MiniSearch index online and then reuses the in‑memory index offline.
+  - Input event directly triggers `onInput()` (no extra microtask/RAF indirection) to avoid flakiness in headless runs.
+- Data flow:
+  - Index is built at build time via `buildIndexPayload()` and served at `/search.json?v=__BUILD_TIME__`.
+  - The client revives the index via `MiniSearch.loadJSON(payload.index, payload.options)`; if unavailable, it falls back to a DOM‑derived mini index.
+- Manual check:
+  - Launch the site, type `cross` in the search box; results should include “Cross‑Site Scripting (XSS)” sourced from content (`src/content/terms/xss.mdx`).
 ## Project structure (selected)
 
 ```
