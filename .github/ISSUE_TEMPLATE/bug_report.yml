@@ -1,0 +1,53 @@
+name: Bug report
+description: Report a bug to help us improve
+title: 'fix: [scope] concise bug summary'
+labels: ['bug']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+        Please fill out the following details to help us reproduce and fix it quickly.
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: Node version (nvm use), OS, browser (if E2E/UI), and any relevant versions.
+      placeholder: 'Node 20.x, macOS 14.x, Chrome 126'
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected to happen.
+      placeholder: 'Observed X, expected Y'
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Provide a minimal, reliable reproduction (commands, inputs, pages).
+      placeholder: |
+        1) npm ci
+        2) npm run dev
+        3) Visit /
+        4) Type 'cross' in search...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or stack traces
+      description: Paste relevant logs, test output, or screenshots (redact secrets).
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submit checks
+      options:
+        - label: I ran `npm run lint` and `npm run typecheck`
+        - label: I ran `npm run test:unit` and `npm run e2e`
+        - label: I verified the issue on the latest main

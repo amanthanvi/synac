@@ -1,0 +1,10 @@
+# Issue templates configuration
+# Docs: https://docs.github.com/issues/using-labels-and-milestones-to-track-work/managing-issue-templates-in-your-repository
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability report
+    url: https://github.com/amanthanvi/synac/security/advisories/new
+    about: Please report security vulnerabilities privately via GitHub Security Advisories.
+  - name: Questions and support
+    url: https://github.com/amanthanvi/synac/discussions
+    about: Ask questions or get help here.

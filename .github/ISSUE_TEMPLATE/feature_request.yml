@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest an idea or improvement
+title: 'feat: [scope] concise feature summary'
+labels: ['enhancement']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a feature!
+        Please describe the problem and the desired outcome clearly.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What problem or user need does this feature address?
+      placeholder: 'Users cannot do X which leads to Y.'
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the solution, including UX/API changes. Include diagrams or sketches if helpful.
+      placeholder: 'Add ..., change ..., expose ...'
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you evaluate?
+      placeholder: 'Option A..., Option B...'
+  - type: checkboxes
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      options:
+        - label: Clear, testable criteria are listed below
+    validations:
+      required: false
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Criteria
+      description: Add bullet points of what must be true for this to be considered done.
+      placeholder: |
+        - [ ] UX implemented for ...
+        - [ ] Unit tests cover ...
+        - [ ] E2E validates ...
+  - type: textarea
+    id: scope
+    attributes:
+      label: Out of scope
+      description: Explicitly list known non-goals or follow-ups.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links to prior art, related issues, or references.
