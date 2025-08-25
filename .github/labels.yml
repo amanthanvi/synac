@@ -71,45 +71,45 @@ labels:
   - name: blocked
     color: bdbdbd
     description: Blocked by external or upstream dependency
-  - name: status: needs triage
+  - name: 'status: needs triage'
     color: d93f0b
     description: Needs triage
-  - name: status: in progress
+  - name: 'status: in progress'
     color: fbca04
     description: Work is actively in progress
-  - name: status: ready
+  - name: 'status: ready'
     color: 0e8a16
     description: Ready for review/merge
-  - name: priority: high
+  - name: 'priority: high'
     color: b60205
     description: Must address ASAP
-  - name: priority: medium
+  - name: 'priority: medium'
     color: fbca04
     description: Important but not urgent
-  - name: priority: low
+  - name: 'priority: low'
     color: c2e0c6
     description: Nice-to-have, low urgency
-  - name: size: XS
+  - name: 'size: XS'
     color: e4e669
     description: <10 LOC or trivial
-  - name: size: S
+  - name: 'size: S'
     color: e4e669
     description: 10–50 LOC or small scope
-  - name: size: M
+  - name: 'size: M'
     color: e4e669
     description: 50–250 LOC or moderate scope
-  - name: size: L
+  - name: 'size: L'
     color: e4e669
     description: 250–500 LOC or broad scope
-  - name: size: XL
+  - name: 'size: XL'
     color: e4e669
     description: 500+ LOC or very broad scope
-  - name: semver: major
+  - name: 'semver: major'
     color: b60205
     description: Breaking change (major)
-  - name: semver: minor
+  - name: 'semver: minor'
     color: 0e8a16
     description: Backward-compatible feature (minor)
-  - name: semver: patch
+  - name: 'semver: patch'
     color: 6a737d
     description: Backward-compatible fix (patch)
