@@ -5,22 +5,46 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+
       - run: npm ci
+
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm run test
+
+      # Enforce coverage thresholds via test:unit (vitest --coverage)
+      - run: npm run test:unit
+
       - run: npm run build
+
+      # Cache Playwright browsers for faster E2E
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
       - run: npx playwright install --with-deps
       - run: npm run e2e
+
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
