@@ -1,0 +1,9 @@
+# Default code ownership
+# Lines are evaluated top-to-bottom; keep catch-all last.
+# Reference: https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+* @amanthanvi
+
+# Optional: tighten ownership for workflow and docs if desired
+.github/ @amanthanvi
+docs/** @amanthanvi
