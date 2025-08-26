@@ -6,21 +6,28 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "05:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore(deps)"
+    rebase-strategy: auto
     labels:
       - "dependencies"
       - "scope: deps"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "05:15"
+      timezone: "UTC"
     open-pull-requests-limit: 5
-    commit-message:
-      prefix: "chore(ci)"
+    rebase-strategy: auto
     labels:
       - "dependencies"
       - "scope: ci"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"

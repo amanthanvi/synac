@@ -1,61 +1,66 @@
-labels:
-  - name: bug
-    color: d73a4a
-    description: Something isn't working
-  - name: enhancement
-    color: a2eeef
-    description: New feature or request
-  - name: chore
-    color: d4c5f9
-    description: Routine maintenance or refactor
-  - name: documentation
-    color: 0075ca
-    description: Improvements or additions to documentation
-  - name: ci
-    color: 1d76db
-    description: Continuous integration and workflows
-  - name: tests
-    color: 6f42c1
-    description: Unit/E2E tests and coverage
-  - name: security
-    color: b60205
-    description: Security-related changes or findings
-  - name: performance
-    color: 80e8d1
-    description: Performance improvements
-  - name: accessibility
-    color: a3f7a0
-    description: Accessibility improvements (a11y)
-  - name: pwa
-    color: 0e8a16
-    description: PWA and service worker
-  - name: search
-    color: 5319e7
-    description: MiniSearch/index/search UI
-  - name: content
-    color: cfd3d7
-    description: Content, schemas, and seeds
-  - name: cloudflare
-    color: 0fbdbd
-    description: Cloudflare Workers/Routes/Bindings
-  - name: dependencies
-    color: 0366d6
-    description: Dependency updates or pinning
-  - name: good first issue
-    color: 7057ff
-    description: Good for newcomers
-  - name: help wanted
-    color: 008672
-    description: Extra attention is needed
-  - name: blocked
-    color: bdbdbd
-    description: Blocked by external or upstream dependency
-  - name: priority: high
-    color: b60205
-    description: Must address ASAP
-  - name: priority: medium
-    color: fbca04
-    description: Important but not urgent
-  - name: priority: low
-    color: c2e0c6
-    description: Nice-to-have, low urgency
+- name: bug
+  color: d73a4a
+  description: Something isn't working
+- name: enhancement
+  color: a2eeef
+  description: New feature or request
+- name: chore
+  color: d4c5f9
+  description: Routine maintenance or refactor
+- name: documentation
+  color: 0075ca
+  description: Improvements or additions to documentation
+- name: ci
+  color: 1d76db
+  description: Continuous integration and workflows
+- name: tests
+  color: 6f42c1
+  description: Unit/E2E tests and coverage
+- name: security
+  color: b60205
+  description: Security-related changes or findings
+- name: performance
+  color: 80e8d1
+  description: Performance improvements
+- name: accessibility
+  color: a3f7a0
+  description: Accessibility improvements (a11y)
+- name: pwa
+  color: 0e8a16
+  description: PWA and service worker
+- name: search
+  color: 5319e7
+  description: MiniSearch/index/search UI
+- name: content
+  color: cfd3d7
+  description: Content, schemas, and seeds
+- name: cloudflare
+  color: 0fbdbd
+  description: Cloudflare Workers/Routes/Bindings
+- name: dependencies
+  color: 0366d6
+  description: Dependency updates or pinning
+- name: good first issue
+  color: 7057ff
+  description: Good for newcomers
+- name: help wanted
+  color: 008672
+  description: Extra attention is needed
+- name: blocked
+  color: bdbdbd
+  description: Blocked by external or upstream dependency
+- name: "priority: high"
+  color: b60205
+  description: Must address ASAP
+- name: "priority: medium"
+  color: fbca04
+  description: Important but not urgent
+- name: "priority: low"
+  color: c2e0c6
+  description: Nice-to-have, low urgency
+- name: "scope: deps"
+  color: 0366d6
+  description: Dependency-related scope
+- name: "scope: ci"
+  color: 1d76db
+  description: CI/workflows-related scope
