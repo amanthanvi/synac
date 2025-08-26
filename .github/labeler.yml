@@ -1,51 +1,93 @@
-# Map labels to file path globs. Runs via actions/labeler.
-# Reference: https://github.com/actions/labeler
+# actions/labeler@v5 advanced syntax
+# Ref: https://github.com/actions/labeler
+
+"dependencies":
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - package-lock.json
+          - pnpm-lock.yaml
+          - npm-shrinkwrap.json
+          - yarn.lock
+
+"scope: deps":
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - package-lock.json
+          - pnpm-lock.yaml
+          - npm-shrinkwrap.json
+          - yarn.lock
+
+"scope: ci":
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+          - .github/dependabot.yml
+          - .github/labeler.yml
+
 ci:
-  - '.github/workflows/**'
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
 
 docs:
-  - 'README.md'
-  - 'CONTRIBUTING.md'
-  - 'CHANGELOG.md'
-  - 'docs/**'
+  - changed-files:
+      - any-glob-to-any-file:
+          - README.md
+          - CONTRIBUTING.md
+          - CHANGELOG.md
+          - docs/**
 
 tests:
-  - 'tests/**'
-  - 'vitest.config.ts'
-  - 'playwright.config.ts'
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**
+          - vitest.config.ts
+          - playwright.config.ts
 
 pwa:
-  - 'astro.config.mjs'
-  - 'public/**'
-  - 'src/scripts/**'
+  - changed-files:
+      - any-glob-to-any-file:
+          - astro.config.mjs
+          - public/**
+          - src/scripts/**
 
 search:
-  - 'src/lib/searchBuild.ts'
-  - 'src/scripts/searchClient.ts'
-  - 'src/pages/search.json.ts'
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/lib/searchBuild.ts
+          - src/scripts/searchClient.ts
+          - src/pages/search.json.ts
 
 content:
-  - 'src/content/**'
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/content/**
 
 cloudflare:
-  - 'wrangler.toml'
-  - 'src/pages/api/**'
-  - 'astro.config.mjs'
+  - changed-files:
+      - any-glob-to-any-file:
+          - wrangler.toml
+          - src/pages/api/**
+          - astro.config.mjs
 
 security:
-  - '.github/workflows/codeql.yml'
-  - '.github/workflows/gitleaks.yml'
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/codeql.yml
+          - .github/workflows/gitleaks.yml
 
 build:
-  - 'package.json'
-  - 'package-lock.json'
-  - 'scripts/**'
+  - changed-files:
+      - any-glob-to-any-file:
+          - package.json
+          - package-lock.json
+          - scripts/**
 
 infra:
-  - '.husky/**'
-  - '.nvmrc'
-  - '.github/**'
-
-dependencies:
-  - 'package.json'
-  - 'package-lock.json'
+  - changed-files:
+      - any-glob-to-any-file:
+          - .husky/**
+          - .nvmrc
+          - .github/**

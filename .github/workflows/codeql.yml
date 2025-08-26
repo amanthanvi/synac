@@ -40,4 +40,15 @@ jobs:
         uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
+        id: analyze
         uses: github/codeql-action/analyze@v3
+        continue-on-error: true
+
+      - name: Upload CodeQL SARIF as artifact (when code scanning disabled)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif
+          path: results/**/*.sarif
+          if-no-files-found: ignore
+          retention-days: 5

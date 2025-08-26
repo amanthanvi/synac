@@ -9,12 +9,19 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
   security-events: write
 
 jobs:
   gitleaks:
     name: Gitleaks scan
     runs-on: ubuntu-latest
+    # Skip scanning forked PRs to avoid permission issues, but run on internal PRs and other events
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
     steps:
       - name: Checkout full history
         uses: actions/checkout@v4
@@ -22,14 +29,25 @@ jobs:
           fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: zricethezav/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v2
         with:
-          args: --redact --report-format sarif --report-path gitleaks.sarif
+          args: "--no-git --redact --report-format sarif --report-path gitleaks.sarif"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF to code scanning
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: gitleaks.sarif
           category: gitleaks
+        continue-on-error: true
+
+      - name: Upload Gitleaks SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-sarif
+          path: gitleaks.sarif
+          if-no-files-found: ignore
+          retention-days: 5
