@@ -31,7 +31,7 @@ jobs:
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         with:
-          args: '--no-git --redact --report-format sarif --report-path gitleaks.sarif'
+          args: "--no-git --redact --report-format sarif --report-path gitleaks.sarif"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
