@@ -12,6 +12,10 @@ permissions:
   pull-requests: read
   security-events: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   gitleaks:
     name: Gitleaks scan
@@ -27,11 +31,12 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         with:
-          args: "--no-git --redact --report-format sarif --report-path gitleaks.sarif"
+          args: '--no-git --redact --report-format sarif --report-path gitleaks.sarif'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
