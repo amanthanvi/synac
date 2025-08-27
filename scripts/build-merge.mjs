@@ -1,17 +1,15 @@
 /**
  * scripts/build-merge.mjs
- * Merge ingest fragments into per-id merged JSON without modifying authored MDX.
+ * Build merged catalogs and preserve per-id review files.
  *
- * Strategy:
- * - Identify authored ids from src/content/terms/*.mdx (file name = id).
- * - For each id, look for data/ingest/nist/{id}.json (and other fragment sources in future).
- * - Merge fields conservatively:
- *   - sources: union by (citation,url)
- *   - mappings: union arrays (attack.techniqueIds, cweIds, capecIds, examDomains)
- *   - updatedAt: newest ISO among fragments (fallback to now)
- * - Write data/merged/{id}.json for review/apply step.
+ * New:
+ * - Reads normalized raw datasets (NIST, CWE, CAPEC) and ATT&CK ingest/meta
+ * - Writes data/build/merged.json with deterministic ordering and meta
+ * - Tolerates missing sources
  *
- * This is a scaffold to keep the authored summaries/examples intact.
+ * Preserved:
+ * - Continues writing review-only per-id merged files to data/merged/{id}.json
+ *   using previous NIST fragment merge behavior
  */
 
 import { readdir, mkdir, readFile, writeFile, stat } from 'node:fs/promises';
@@ -21,9 +19,26 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Authored content and legacy outputs
 const TERMS_DIR = join(__dirname, '..', 'src', 'content', 'terms');
 const INGEST_NIST_DIR = join(__dirname, '..', 'data', 'ingest', 'nist');
 const MERGED_DIR = join(__dirname, '..', 'data', 'merged');
+const NIST_ALL_FILE = join(__dirname, '..', 'data', 'nist', 'glossary.json');
+
+// New build + normalized raw paths
+const BUILD_DIR = join(__dirname, '..', 'data', 'build');
+const BUILD_MERGED = join(BUILD_DIR, 'merged.json');
+
+const RAW_BASE = join(__dirname, '..', 'data', 'raw');
+const RAW_NIST = join(RAW_BASE, 'nist', 'glossary.json');
+const RAW_NIST_META = join(RAW_BASE, 'nist', 'meta.json');
+const RAW_CWE = join(RAW_BASE, 'cwe', 'cwec.json');
+const RAW_CWE_META = join(RAW_BASE, 'cwe', 'meta.json');
+const RAW_CAPEC = join(RAW_BASE, 'capec', 'capec.json');
+const RAW_CAPEC_META = join(RAW_BASE, 'capec', 'meta.json');
+const RAW_ATTACK_META = join(RAW_BASE, 'attack', 'meta.json');
+
+const INGEST_ATTACK = join(__dirname, '..', 'data', 'ingest', 'attack.json');
 
 async function exists(p) {
   try {
@@ -34,6 +49,11 @@ async function exists(p) {
   }
 }
 
+async function readJson(p) {
+  const raw = await readFile(p, 'utf8');
+  return JSON.parse(raw);
+}
+
 async function listAuthoredIds() {
   const entries = await readdir(TERMS_DIR, { withFileTypes: true });
   return entries
@@ -41,9 +61,23 @@ async function listAuthoredIds() {
     .map((e) => basename(e.name, '.mdx'));
 }
 
-async function readJson(p) {
-  const raw = await readFile(p, 'utf8');
-  return JSON.parse(raw);
+// Load consolidated NIST (legacy) for fallback to fragments
+async function loadNistAll() {
+  if (!(await exists(NIST_ALL_FILE))) return [];
+  try {
+    const payload = await readJson(NIST_ALL_FILE);
+    return Array.isArray(payload?.entries)
+      ? payload.entries
+      : Array.isArray(payload)
+        ? payload
+        : [];
+  } catch {
+    return [];
+  }
+}
+
+function unionArr(a = [], b = []) {
+  return Array.from(new Set([...(a || []), ...(b || [])]));
 }
 
 function unionSources(a = [], b = []) {
@@ -61,10 +95,6 @@ function unionSources(a = [], b = []) {
     return u1 < u2 ? -1 : u1 > u2 ? 1 : 0;
   });
   return arr;
-}
-
-function unionArr(a = [], b = []) {
-  return Array.from(new Set([...(a || []), ...(b || [])]));
 }
 
 function mergeMappings(a = {}, b = {}) {
@@ -95,6 +125,11 @@ function newestIso(...dates) {
   return new Date(Math.max(...ts)).toISOString();
 }
 
+/**
+ * Preserve prior per-id merge behavior for authored ids
+ * - NIST fragment if present: data/ingest/nist/{id}.json
+ * - Else fallback to consolidated NIST glossary: data/nist/glossary.json (entries[])
+ */
 async function mergeForId(id) {
   const fragments = [];
 
@@ -105,6 +140,13 @@ async function mergeForId(id) {
       fragments.push(await readJson(nistPath));
     } catch (e) {
       console.warn(`[merge] Failed to parse NIST fragment for ${id}: ${e.message}`);
+    }
+  }
+  if (!fragments.length) {
+    const all = await loadNistAll();
+    const hit = all.find((e) => e?.id === id);
+    if (hit) {
+      fragments.push(hit);
     }
   }
 
@@ -131,7 +173,7 @@ async function mergeForId(id) {
   return merged;
 }
 
-async function main() {
+async function buildPerIdMerged() {
   await mkdir(MERGED_DIR, { recursive: true });
   const ids = await listAuthoredIds();
   let wrote = 0;
@@ -143,6 +185,124 @@ async function main() {
     wrote++;
   }
   console.log(`[merge] Wrote ${wrote} merged file(s) to ${MERGED_DIR}`);
+  return wrote;
+}
+
+/**
+ * Build data/build/merged.json
+ * Structure:
+ * {
+ *   meta: {
+ *     sources: {
+ *       nist: { version?, retrievedAt?, count },
+ *       cwe:  { version?, retrievedAt?, count },
+ *       capec:{ version?, retrievedAt?, count },
+ *       attack:{ retrievedAt?, techniques, tactics }
+ *     }
+ *   },
+ *   data: { nist: [...], cwe: [...], capec: [...], attack: {...} }
+ * }
+ */
+async function buildUnifiedCatalog() {
+  await mkdir(BUILD_DIR, { recursive: true });
+
+  // Load sources tolerantly
+  let nist = [];
+  let nistMeta = {};
+  let cwe = [];
+  let cweMeta = {};
+  let capec = [];
+  let capecMeta = {};
+  let attack = null;
+  let attackMeta = {};
+
+  // NIST
+  try {
+    if (await exists(RAW_NIST)) nist = await readJson(RAW_NIST);
+    if (await exists(RAW_NIST_META)) nistMeta = await readJson(RAW_NIST_META);
+  } catch (e) {
+    console.warn(`[merge] NIST load failed: ${e.message}`);
+  }
+
+  // CWE
+  try {
+    if (await exists(RAW_CWE)) cwe = await readJson(RAW_CWE);
+    if (await exists(RAW_CWE_META)) cweMeta = await readJson(RAW_CWE_META);
+  } catch (e) {
+    console.warn(`[merge] CWE load failed: ${e.message}`);
+  }
+
+  // CAPEC
+  try {
+    if (await exists(RAW_CAPEC)) capec = await readJson(RAW_CAPEC);
+    if (await exists(RAW_CAPEC_META)) capecMeta = await readJson(RAW_CAPEC_META);
+  } catch (e) {
+    console.warn(`[merge] CAPEC load failed: ${e.message}`);
+  }
+
+  // ATT&CK
+  try {
+    if (await exists(INGEST_ATTACK)) attack = await readJson(INGEST_ATTACK);
+    if (await exists(RAW_ATTACK_META)) attackMeta = await readJson(RAW_ATTACK_META);
+  } catch (e) {
+    console.warn(`[merge] ATT&CK load failed: ${e.message}`);
+  }
+
+  // Deterministic ordering
+  if (Array.isArray(nist))
+    nist.sort((a, b) =>
+      (a?.id || '') < (b?.id || '') ? -1 : (a?.id || '') > (b?.id || '') ? 1 : 0,
+    );
+  if (Array.isArray(cwe)) cwe.sort((a, b) => (a?.id || 0) - (b?.id || 0));
+  if (Array.isArray(capec)) capec.sort((a, b) => (a?.id || 0) - (b?.id || 0));
+
+  const unified = {
+    meta: {
+      sources: {
+        nist: {
+          version: nistMeta?.version,
+          retrievedAt: nistMeta?.retrievedAt,
+          count: Array.isArray(nist) ? nist.length : 0,
+        },
+        cwe: {
+          version: cweMeta?.version,
+          retrievedAt: cweMeta?.retrievedAt,
+          count: Array.isArray(cwe) ? cwe.length : 0,
+        },
+        capec: {
+          version: capecMeta?.version,
+          retrievedAt: capecMeta?.retrievedAt,
+          count: Array.isArray(capec) ? capec.length : 0,
+        },
+        attack: {
+          retrievedAt: attackMeta?.retrievedAt,
+          techniques:
+            attackMeta?.techniques ??
+            (Array.isArray(attack?.techniques) ? attack.techniques.length : 0),
+          tactics:
+            attackMeta?.tactics ?? (Array.isArray(attack?.tactics) ? attack.tactics.length : 0),
+        },
+      },
+    },
+    data: {
+      nist: Array.isArray(nist) ? nist : [],
+      cwe: Array.isArray(cwe) ? cwe : [],
+      capec: Array.isArray(capec) ? capec : [],
+      attack: attack || null,
+    },
+  };
+
+  await writeFile(BUILD_MERGED, JSON.stringify(unified, null, 2), 'utf8');
+  console.log(`[merge] Unified catalog → ${BUILD_MERGED}`);
+  return unified;
+}
+
+async function main() {
+  // 1) Per-id review JSONs (legacy behavior)
+  await buildPerIdMerged();
+
+  // 2) Unified merged.json for UI
+  await buildUnifiedCatalog();
 }
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];

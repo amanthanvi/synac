@@ -25,5 +25,9 @@ pnpm-debug.log*
 .idea/
 
 # ETL artifacts
-data/ingest/
 data/merged/
+
+# ETL vendor cache (zips/xml/json from upstream; not committed)
+data/vendor/
+data/vendor/**
+data/vendor/**/*.xml

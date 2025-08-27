@@ -1,41 +1,47 @@
 /**
  * scripts/fetch-nist.mjs
- * Scaffold: fetch NIST CSRC Glossary JSON and normalize into data/ingest/nist/*.json
- *
- * Notes:
- * - This is a scaffold. Endpoint formats can change; prefer pinning via env var NIST_GLOSSARY_URL.
- * - If the public JSON endpoint is unavailable, you can export data manually and set NIST_GLOSSARY_FILE
- *   to a local JSON file, and this script will read from it instead of fetching.
- *
- * Output fragment shape (per id):
- * {
- *   id: "zero-trust",
- *   sources: [{
- *     kind: "NIST",
- *     citation: "NIST CSRC Glossary",
- *     url: "https://csrc.nist.gov/glossary/term/zero-trust",
- *     date: "YYYY-MM",
- *     excerpt: "Short definition/excerpt",
- *     normative: true
- *   }],
- *   updatedAt: "ISO-STRING"
- * }
+ * NIST CSRC Glossary ETL with vendor caching (ZIP), unzip, normalization, and back-compat outputs.
+ * - URL: https://csrc.nist.gov/csrc/media/glossary/glossary-export.zip
+ * - Caching: data/vendor/nist/glossary-export.zip + .meta.json with TTL, force-refresh, offline support
+ * - Normalized raw: data/raw/nist/glossary.json + meta.json
+ * - Back-compat: data/ingest/nist/*.json and data/nist/glossary.json
  */
-
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { mkdir, writeFile, readFile, stat } from 'node:fs/promises';
+import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { fetchJsonPinned } from './_http.mjs';
+import { unzipSync } from 'fflate';
+import { TextDecoder } from 'node:util';
+import { fetchBufferPinned } from './_http.mjs';
+import {
+  getDirs,
+  ensureDir,
+  sha256,
+  nowIso,
+  isFresh,
+  writeJson,
+  readJson,
+  writeBuffer,
+  readBuffer,
+} from './_cache.mjs';
+import { debugLog } from './_log.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const OUT_DIR = join(__dirname, '..', 'data', 'ingest', 'nist');
-const NIST_GLOSSARY_URL =
-  process.env.NIST_GLOSSARY_URL ||
-  // Potential (example) endpoint; replace with the confirmed export URL when available:
-  'https://csrc.nist.gov/glossary/api/terms?format=json';
-const NIST_GLOSSARY_FILE = process.env.NIST_GLOSSARY_FILE; // optional local override
+const { vendorDir, rawDir } = getDirs('nist');
+const OUT_DIR_FRAG = join(__dirname, '..', 'data', 'ingest', 'nist');
+const OUT_DIR_ALL = join(__dirname, '..', 'data', 'nist');
+const OUT_FILE_ALL = join(OUT_DIR_ALL, 'glossary.json');
+
+const NIST_ZIP_URL = 'https://csrc.nist.gov/csrc/media/glossary/glossary-export.zip';
+const VENDOR_ZIP = join(vendorDir, 'glossary-export.zip');
+const VENDOR_META = join(vendorDir, 'glossary-export.zip.meta.json');
+const RAW_JSON = join(rawDir, 'glossary.json');
+const RAW_META = join(rawDir, 'meta.json');
+
+const OFFLINE = /^(1|true|yes)$/i.test(String(process.env.ETL_OFFLINE || ''));
+const FORCE = /^(1|true|yes)$/i.test(String(process.env.ETL_FORCE_REFRESH || ''));
+const TTL_HOURS = Number.parseInt(String(process.env.ETL_CACHE_TTL_HOURS || '24'), 10) || 24;
 
 function slugify(s) {
   return String(s || '')
@@ -48,22 +54,31 @@ function slugify(s) {
 }
 
 function buildTermUrl(term) {
-  // CSRC term pages are typically: /glossary/term/{term} (URL-encoded)
   const encoded = encodeURIComponent(String(term || '').trim());
   return `https://csrc.nist.gov/glossary/term/${encoded}`;
 }
 
-
-async function readLocalJson(path) {
-  const raw = await readFile(path, 'utf8');
-  return JSON.parse(raw);
+async function fileExists(p) {
+  try {
+    await stat(p);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function normalizeEntries(json) {
-  // The shape of the CSRC JSON may vary. Try common field names; otherwise, attempt best-effort mapping.
-  // Expected fields we try to derive: term, definition/excerpt, date.
-  const list = Array.isArray(json) ? json : Array.isArray(json?.data) ? json.data : [];
-  const nowIso = new Date().toISOString();
+  // Try to accommodate both "entries"/"terms"/flat-array shapes
+  const list = Array.isArray(json?.entries)
+    ? json.entries
+    : Array.isArray(json?.data)
+      ? json.data
+      : Array.isArray(json?.terms)
+        ? json.terms
+        : Array.isArray(json)
+          ? json
+          : [];
+  const now = nowIso();
   const out = [];
 
   for (const item of list) {
@@ -71,17 +86,18 @@ function normalizeEntries(json) {
       item?.term ||
       item?.title ||
       item?.name ||
-      (typeof item === 'object' && Object.keys(item).includes('Term') ? item['Term'] : undefined);
-
+      (typeof item === 'object' && Object.prototype.hasOwnProperty.call(item, 'Term')
+        ? item['Term']
+        : undefined);
     if (!term) continue;
 
     const excerpt =
       item?.definition ||
-      item?.excerpt ||
-      item?.desc ||
       item?.Definition ||
+      item?.desc ||
       item?.Description ||
       item?.short_definition ||
+      item?.excerpt ||
       '';
 
     const date =
@@ -110,45 +126,116 @@ function normalizeEntries(json) {
           normative: true,
         },
       ],
-      updatedAt: nowIso,
+      updatedAt: now,
     });
   }
+
+  // Deterministic order by slug id
+  out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   return out;
 }
 
-async function main() {
-  await mkdir(OUT_DIR, { recursive: true });
-
-  let data;
-  if (NIST_GLOSSARY_FILE) {
-    console.log(`[nist] Reading local file: ${NIST_GLOSSARY_FILE}`);
-    data = await readLocalJson(NIST_GLOSSARY_FILE);
-  } else {
-    console.log(`[nist] Fetching: ${NIST_GLOSSARY_URL}`);
-    try {
-      data = await fetchJsonPinned(NIST_GLOSSARY_URL);
-    } catch (err) {
-      console.error(`[nist] Fetch failed: ${err.message}`);
-      console.error(
-        `[nist] Tip: export JSON locally and set NIST_GLOSSARY_FILE=/path/to/file.json`,
-      );
-      process.exitCode = 1;
-      return;
+function pickFirstJsonFromZip(buf) {
+  const files = unzipSync(buf);
+  let pickedName = null;
+  let picked = null;
+  for (const [name, content] of Object.entries(files)) {
+    if (name.toLowerCase().endsWith('.json')) {
+      pickedName = name;
+      picked = content;
+      break;
     }
   }
+  if (!picked) throw new Error('NIST ZIP did not contain a .json file');
+  const text = new TextDecoder('utf-8').decode(picked);
+  return { name: pickedName, json: JSON.parse(text) };
+}
 
-  const entries = normalizeEntries(data);
+async function loadVendorZip() {
+  // If offline, read the cached file regardless of TTL
+  if (OFFLINE) {
+    if (await fileExists(VENDOR_ZIP)) {
+      debugLog('[nist] Offline: using cached vendor ZIP', VENDOR_ZIP);
+      const buf = await readBuffer(VENDOR_ZIP);
+      const meta = (await fileExists(VENDOR_META)) ? await readJson(VENDOR_META) : null;
+      return { buf, meta, fromCache: true };
+    }
+    console.warn('[nist] Offline and no cached vendor ZIP present; skipping.');
+    return { buf: null, meta: null, fromCache: true };
+  }
+
+  // Online path: respect TTL unless force
+  const fresh = await isFresh(VENDOR_META, TTL_HOURS, FORCE);
+  if (fresh && (await fileExists(VENDOR_ZIP))) {
+    debugLog('[nist] Cache fresh: reusing vendor ZIP', VENDOR_ZIP);
+    const buf = await readBuffer(VENDOR_ZIP);
+    const meta = await readJson(VENDOR_META);
+    return { buf, meta, fromCache: true };
+  }
+
+  debugLog('[nist] Downloading ZIP:', NIST_ZIP_URL);
+  const buf = await fetchBufferPinned(NIST_ZIP_URL, { headers: { accept: '*/*' } });
+  await ensureDir(vendorDir);
+  await writeBuffer(VENDOR_ZIP, buf);
+
+  const meta = {
+    url: NIST_ZIP_URL,
+    retrievedAt: nowIso(),
+    sha256: sha256(buf),
+    etag: undefined,
+    lastModified: undefined,
+    version: undefined,
+    fromCache: false,
+  };
+  await writeJson(VENDOR_META, meta);
+  return { buf, meta, fromCache: false };
+}
+
+async function main() {
+  await ensureDir(vendorDir);
+  await ensureDir(rawDir);
+  await mkdir(OUT_DIR_FRAG, { recursive: true });
+  await mkdir(OUT_DIR_ALL, { recursive: true });
+
+  const { buf, meta, fromCache } = await loadVendorZip();
+  if (!buf) return; // offline skip
+
+  const { name: innerName, json } = pickFirstJsonFromZip(buf);
+  debugLog('[nist] Picked JSON from ZIP:', innerName);
+
+  // Normalize to raw dataset and write meta
+  const entries = normalizeEntries(json);
+  const rawMeta = {
+    sourceUrl: NIST_ZIP_URL,
+    retrievedAt: meta?.retrievedAt || nowIso(),
+    version: meta?.version,
+    etag: meta?.etag,
+    lastModified: meta?.lastModified,
+    sha256: meta?.sha256,
+    fromCache,
+    count: entries.length,
+  };
+  await writeJson(RAW_JSON, entries);
+  await writeJson(RAW_META, rawMeta);
+
+  // Back-compat outputs
   let count = 0;
   for (const frag of entries) {
     if (!frag?.id) continue;
-    const outPath = join(OUT_DIR, `${frag.id}.json`);
+    const outPath = join(OUT_DIR_FRAG, `${frag.id}.json`);
     await writeFile(outPath, JSON.stringify(frag, null, 2), 'utf8');
     count++;
   }
-  console.log(`[nist] Wrote ${count} fragment(s) to ${OUT_DIR}`);
+
+  const consolidated = { source: 'NIST CSRC', fetchedAt: rawMeta.retrievedAt, count, entries };
+  await writeFile(OUT_FILE_ALL, JSON.stringify(consolidated, null, 2), 'utf8');
+
+  console.log(`[nist] entries=${entries.length} raw=${RAW_JSON} meta=${RAW_META}`);
+  debugLog('[nist] Back-compat:', OUT_DIR_FRAG, OUT_FILE_ALL);
 }
 
-if (import.meta.main) {
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (isMain) {
   main().catch((e) => {
     console.error(e);
     process.exit(1);
