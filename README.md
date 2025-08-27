@@ -267,3 +267,36 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for project conventions, CSP posture, t
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+
+## Production deployment (Railway)
+
+This project supports a production deployment on Railway using an explicit start command and a minimal static server.
+
+- Start command and server
+  - `npm run start` runs `node server.mjs`, binding to `0.0.0.0:$PORT`.
+  - Health probe: `GET /health` returns `200` with body `ok`.
+- Nixpacks and Node
+  - Node 20 is pinned via `engines` in `package.json` and `nixpacks.toml` (`nodejs_20`).
+  - Phases:
+    - Install: `npm ci`
+    - Build: `npm run build`
+- How to deploy
+  - CI: Push to `main` or merge a PR into `main` to trigger a Railway build and deploy.
+  - CLI (optional):
+    ```bash
+    railway login
+    railway link    # once per local clone
+    railway status
+    railway logs -f
+    ```
+- Required environment variables
+  - `NODE_ENV=production` (set in Railway environment)
+  - No secrets are committed; manage secrets via Railway project variables.
+- Local production run (parity)
+  ```bash
+  npm ci
+  npm run build
+  PORT=3000 npm run start
+  ```
+- Rollback
+  - Revert the offending commit and push to `main`, or redeploy a previous successful deployment from the Railway UI.
