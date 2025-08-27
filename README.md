@@ -267,3 +267,74 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for project conventions, CSP posture, t
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+
+## Production deployment (Railway)
+
+Production previews and deployments run a hardened static server implemented in [server.mjs](server.mjs:1). The server streams files, validates canonical real paths (symlink‑safe), restricts SPA fallback to HTML‑eligible requests, and applies strict caching and headers.
+
+- Prereqs and environment
+  - Node 20 is enforced via `"engines": { "node": ">=20 <21" }` in [package.json](package.json:1) and `nodejs_20` in [nixpacks.toml](nixpacks.toml:1).
+  - Ensure `NODE_ENV=production` in your Railway environment.
+
+- Start command detection
+  - Package script: `"start": "node server.mjs"` in [package.json](package.json:1).
+  - Procfile: `web: node server.mjs` in [Procfile](Procfile:1).
+  - Nixpacks: `[start] cmd = "npm run start"` in [nixpacks.toml](nixpacks.toml:1).
+  - Railway will detect any of the above; all point to the same explicit entry.
+
+- Health
+  - `GET /health` returns `200` with body `ok`.
+  - Configure Railway health probe path to `/health`.
+
+- Caching and headers
+  - Fingerprinted assets (filenames containing `.[0-9a-f]{8,}.`) → `Cache-Control: public, max-age=31536000, immutable`.
+  - Other static assets → `Cache-Control: public, max-age=3600`.
+  - HTML (including fallbacks) → `Cache-Control: no-cache`.
+  - `X-Content-Type-Options: nosniff` and `Accept-Ranges: none` are set on responses.
+  - `Last-Modified` is set from the file’s mtime; `Content-Type` inferred by extension.
+
+- SPA fallback rules
+  - If the request is for a static asset extension and the file is missing → 404 (no index.html fallback).
+  - Fallback to `index.html` only when:
+    - The path is extensionless OR the `Accept` header prefers `text/html`.
+    - Path traversal protection still applies; the server validates real paths remain inside the build output.
+
+- Security and path validation
+  - All file responses validate canonical real paths remain within the canonical `dist` realpath to prevent traversal via symlinks.
+  - Directory listings and error stack traces are not exposed.
+
+- Graceful shutdown
+  - The server tracks sockets. On SIGTERM/SIGINT it:
+    1. Stops accepting new connections.
+    2. Attempts to end idle sockets.
+    3. Waits up to 10s for active connections to close, then force‑destroys remaining sockets.
+    4. Exits with code 0.
+
+- Server logs
+  - Minimal structured request logs are emitted: `method=GET path=/... status=200 ms=... bytes=...`.
+  - View logs in Railway: `railway logs -f` or via the project’s Logs UI.
+
+- Local production validation
+  ```bash
+  npm ci
+  npm run build
+  PORT=3000 npm run start
+  # In another shell:
+  curl -i http://localhost:3000/
+  curl -i http://localhost:3000/health
+  # Known asset (adjust path to a real built asset):
+  curl -I http://localhost:3000/assets/*.css
+  # Unknown asset → 404 (no SPA fallback):
+  curl -I http://localhost:3000/unknown-asset.png
+  # Extensionless route → HTML fallback (200):
+  curl -i http://localhost:3000/terms/xss
+  # Traversal attempt → blocked (400 or 404), must not escape dist:
+  curl -i "http://localhost:3000/%2e%2e/%2e%2e/package.json"
+  ```
+
+- Deploy and rollback
+  - Push to `main` (or merge PR) to trigger Railway build and deploy.
+  - Rollback by reverting the offending commit or redeploying a prior successful build from the Railway UI.
+
+Notes
+- PR preview builds on Railway should now be green with the explicit `npm run start → node server.mjs` and Procfile `web: node server.mjs`.

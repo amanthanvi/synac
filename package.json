@@ -2,10 +2,14 @@
   "name": "synac",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=20 <21"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview --port 4321 --host",
+    "start": "node server.mjs",
     "astro": "astro",
     "typecheck": "astro check",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx,.astro,.mdx",
