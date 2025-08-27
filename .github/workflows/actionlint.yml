@@ -1,0 +1,38 @@
+name: Actionlint
+
+permissions:
+  contents: read
+  checks: write
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/**/*.yml'
+      - '.github/workflows/**/*.yaml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/**/*.yml'
+      - '.github/workflows/**/*.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  actionlint:
+    name: Lint GitHub workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          persist-credentials: false
+
+      - name: Run actionlint via reviewdog
+        uses: reviewdog/action-actionlint@e37e2ca68a70112d21e135229272da28ce2d0d5a # v1
+        with:
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_error: 'true'
