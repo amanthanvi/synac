@@ -178,29 +178,87 @@ This project uses @astrojs/cloudflare. To deploy on Cloudflare Pages:
 
 ## ETL Importers
 
-Scripts to ingest authoritative sources without overwriting authored summaries:
+Scripts to ingest authoritative sources without overwriting authored summaries. Outputs are deterministic and idempotent.
 
-- Fetch NIST CSRC glossary JSON and normalize to fragments:
-  - `npm run etl:nist`
-  - Output: `data/ingest/nist/*.json`
-- Fetch MITRE datasets:
-  - ATT&CK STIX / CWE / CAPEC: `npm run etl:mitre` (writes multiple files in `data/ingest/`)
-- Merge fragments into per‑id merged files (review‑only):
-  - `npm run etl:merge`
-  - Output: `data/merged/*.json` (does not modify `src/content`)
+Commands
+- `npm run etl:all` (runs MITRE → NIST → merge)
+- `npm run etl:mitre` (ATT&CK, CWE, CAPEC)
+- `npm run etl:nist` (NIST CSRC glossary)
+- `npm run etl:merge` (build merged catalogs + review files)
 
-Environment overrides
-- `NIST_GLOSSARY_URL` or `NIST_GLOSSARY_FILE` (local JSON export)
-- `ATTACK_STIX_URL` / `ATTACK_STIX_FILE`, `CWE_JSON_URL` / `CWE_JSON_FILE`, `CAPEC_JSON_URL` / `CAPEC_JSON_FILE`
+Environment
+- `ETL_OFFLINE=1` → never attempt network; reuse vendor cache only
+- `ETL_FORCE_REFRESH=1` → bypass TTL and refresh vendor artifacts
+- `ETL_CACHE_TTL_HOURS=24` → cache freshness window (hours)
+- `DEBUG=etl` → verbose logs (HTTP, cache, parsing)
+- Optional legacy envs (still supported): `MITRE_ATTACK_URL`, `ATTACK_STIX_URL`, `MITRE_ATTACK_FILE`, `ATTACK_STIX_FILE`
+
+Sources and behavior
+- NIST CSRC glossary (ZIP export):
+  - Upstream: https://csrc.nist.gov/csrc/media/glossary/glossary-export.zip
+  - Behavior: download ZIP, cache to `data/vendor/nist/glossary-export.zip`, unzip in‑memory, locate JSON, normalize
+  - Outputs:
+    - Normalized raw: `data/raw/nist/glossary.json`, `data/raw/nist/meta.json`
+    - Back‑compat: per‑id fragments `data/ingest/nist/*.json`, consolidated `data/nist/glossary.json`
+- MITRE datasets:
+  - ATT&CK (unchanged normalization; now cached):
+    - Primary: GitHub STIX JSON on master; fallback to main
+    - Vendor cache: `data/vendor/attack/attack.json` (+ meta)
+    - Outputs: `data/ingest/attack.json`, `data/mitre/attack.json`, `data/raw/attack/meta.json` (counts)
+  - CWE:
+    - Try JSON zip first: https://cwe.mitre.org/data/json/cwec_latest.json.zip
+    - On 404: discover latest `cwec_*.xml.zip` on https://cwe.mitre.org/data/downloads.html (highest vX.Y), parse XML → JSON
+    - Vendor cache: `data/vendor/cwe/*`
+    - Outputs:
+      - Normalized raw array: `data/raw/cwe/cwec.json`, meta in `data/raw/cwe/meta.json`
+      - Raw XML-as-JSON (when XML fallback used): `data/raw/cwe/_raw.xml.json`
+      - Back‑compat map: `data/ingest/cwe.json` → `{ "CWE-79": "Improper ..." }`
+  - CAPEC:
+    - Try JSON zip first: https://capec.mitre.org/data/json/capec_latest.json.zip
+    - On 404: discover latest `capec_*.xml.zip` on https://capec.mitre.org/data/downloads.html
+    - Vendor cache: `data/vendor/capec/*`
+    - Outputs:
+      - Normalized raw array: `data/raw/capec/capec.json`, meta in `data/raw/capec/meta.json`
+      - Raw XML-as-JSON (when XML fallback used): `data/raw/capec/_raw.xml.json`
+      - Back‑compat map: `data/ingest/capec.json` → `{ "CAPEC-63": "Cross‑Site Scripting" }`
+
+Merge
+- `npm run etl:merge`
+- Reads normalized raw datasets:
+  - `data/raw/nist/glossary.json`
+  - `data/raw/cwe/cwec.json`
+  - `data/raw/capec/capec.json`
+  - `data/ingest/attack.json` (and `data/raw/attack/meta.json` for counts)
+- Writes canonical merged output for UI:
+  - `data/build/merged.json` with:
+    - `meta.sources` summary for nist/cwe/capec/attack (versions, retrievedAt, counts)
+    - `data` payloads with deterministic ordering (CWE/CAPEC ascending numeric ID; NIST by slug)
+    - CAPEC `relatedWeaknesses` are numeric CWE IDs to facilitate lookups
+- Preserves review‑only files:
+  - `data/merged/{id}.json` for authored terms (legacy NIST fragment merge), unchanged
+
+Outputs and version control
+- `data/vendor/**` — vendor caches (zips/XML/JSON) [excluded from git]
+- `data/raw/{nist,cwe,capec}/**` — normalized JSON + `meta.json` [committed]
+- `data/build/merged.json` — merged canonical output [committed]
+- Back‑compat still produced:
+  - `data/ingest/{attack.json,cwe.json,capec.json}`
+  - `data/ingest/nist/*.json`, `data/nist/glossary.json`
+
+Troubleshooting
+- Offline run: set `ETL_OFFLINE=1`; caches must already exist
+- Force refresh: `ETL_FORCE_REFRESH=1` to bypass TTL and re‑download
+- JSON endpoints 404 for CWE/CAPEC: automatic XML fallback via downloads pages discovery
+- Verbose: set `DEBUG=etl` to log HTTP, cache hits/misses, chosen XML links, and parsing stats
+- Offline: set `ETL_OFFLINE=1` and provide local files for each source.
 
 Security & Licensing
-- Static URLs; no dynamic code execution.
-- NIST (US Gov PD domestically per 17 USC §105). MITRE datasets (ATT&CK/CWE/CAPEC) free to use with attribution under MITRE Terms of Use.
+- NIST (US Gov PD domestically per 17 USC §105). MITRE ATT&CK (CC BY 4.0), CWE/CAPEC permitted with attribution. Store provenance and cite sources.
 
 Review workflow
-1) Run fetch scripts to generate ingest artifacts
-2) Run merge to produce `data/merged/*.json`
-3) Manually integrate into content entries if desired (sources[], mappings), preserving authored summaries/examples.
+1) Run `npm run etl:all` to generate/update ingest artifacts
+2) Run `npm run etl:merge` (included in `etl:all`) to produce `data/merged/*.json`
+3) Optionally integrate citations/mappings into content entries while preserving authored summaries/examples
 
 ## Contributing
 
