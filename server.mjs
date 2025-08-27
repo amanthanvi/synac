@@ -70,7 +70,7 @@ const ASSET_EXTS = new Set([
   '.wasm',
 ]);
 
-const HASH_RE = /\.[0-9a-f]{8,}\./i;
+const HASH_RE = /\.[A-Za-z0-9_-]{8,}\./;
 
 function isInside(child, parent) {
   const parentPath = parent.endsWith(sep) ? parent : parent + sep;
