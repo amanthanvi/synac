@@ -72,6 +72,78 @@ const ASSET_EXTS = new Set([
 
 const HASH_RE = /\.[A-Za-z0-9_-]{8,}\./;
 
+const ALLOWED_EXT = new Set([
+  '.html',
+  '.css',
+  '.js',
+  '.mjs',
+  '.map',
+  '.json',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.ico',
+  '.webp',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.otf',
+  '.wasm',
+  '.txt',
+  '.xml',
+  '.webmanifest',
+]);
+
+function resolveStaticPath(urlPath) {
+  if (typeof urlPath !== 'string') return null;
+  if (urlPath.includes('\0')) return null;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath);
+  } catch {
+    return null;
+  }
+  if (!decoded.startsWith('/')) decoded = '/' + decoded;
+  const candidate = resolve(DIST_DIR, '.' + decoded);
+  if (!isInside(candidate, DIST_DIR)) return null;
+  const ext = extname(candidate).toLowerCase();
+  if (!ALLOWED_EXT.has(ext)) return null;
+  return candidate;
+}
+
+// For SPA fallback eligibility: ensure URL maps within dist (no traversal), but do not enforce extension allowlist.
+function isSafeWithinDist(urlPath) {
+  if (typeof urlPath !== 'string') return false;
+  if (urlPath.includes('\0')) return false;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath);
+  } catch {
+    return false;
+  }
+  if (!decoded.startsWith('/')) decoded = '/' + decoded;
+  const candidate = resolve(DIST_DIR, '.' + decoded);
+  return isInside(candidate, DIST_DIR);
+}
+
+// Detect traversal attempts from the raw URL (before WHATWG URL normalization)
+// Checks both raw and percent-decoded forms for '..' path segments.
+function hasTraversal(rawUrl) {
+  if (typeof rawUrl !== 'string') return false;
+  const segPattern = /(^|[\/\\])\.\.([\/\\]|$)/;
+  try {
+    if (segPattern.test(rawUrl)) return true;
+    if (/%(?:2e){2}/i.test(rawUrl)) return true; // %2e%2e
+    const dec = decodeURIComponent(rawUrl);
+    if (segPattern.test(dec)) return true;
+  } catch {
+    // ignore decode errors here; handled elsewhere
+  }
+  return false;
+}
+
 function isInside(child, parent) {
   const parentPath = parent.endsWith(sep) ? parent : parent + sep;
   return child === parent || child.startsWith(parentPath);
@@ -90,29 +162,25 @@ function hasExtension(p) {
 }
 
 async function tryServeFile(absPath, method, res) {
-  // Ensure the resolved candidate path is within the dist dir before any attempt
-  if (!isInside(absPath, DIST_DIR)) {
-    return false;
-  }
-
-  let s;
-  try {
-    s = await stat(absPath);
-    if (!s.isFile()) return false;
-  } catch {
-    return false; // file does not exist
-  }
-
-  // Canonicalize and enforce that the real path is within DIST_REAL
+  // Canonicalize first; only proceed if inside allowed root
   let real;
   try {
     real = await realpath(absPath);
   } catch {
-    return false;
+    return false; // path does not exist or cannot be resolved
   }
   if (!isInside(real, DIST_REAL)) {
-    // Symlink escape attempt: deny
+    // Symlink or traversal attempt: deny
     return false;
+  }
+
+  // Stat the canonical path (no I/O on untrusted/non-canonical paths)
+  let s;
+  try {
+    s = await stat(real);
+    if (!s.isFile()) return false;
+  } catch {
+    return false; // file does not exist
   }
 
   const ext = extname(real).toLowerCase();
@@ -188,11 +256,13 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    // Decode and parse URL path
+    // Parse URL path (prefer URL API) and validate decoding for 400 on bad input
     let urlPathRaw;
     try {
-      const raw = (req.url || '/').split('?')[0] || '/';
-      urlPathRaw = decodeURIComponent(raw);
+      const u = new URL(req.url || '/', 'http://localhost');
+      urlPathRaw = u.pathname || '/';
+      // Validate decoding without using decoded value for filesystem yet
+      decodeURIComponent(urlPathRaw);
     } catch (e) {
       console.error(e?.stack || e);
       status = 400;
@@ -206,6 +276,23 @@ const server = createServer(async (req, res) => {
     }
 
     pathForLog = urlPathRaw;
+
+    // Block traversal attempts early (403), do not allow SPA fallback
+    {
+      const rawUrl = req.url || '/';
+      if (hasTraversal(rawUrl)) {
+        status = 403;
+        res.writeHead(403, {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'X-Content-Type-Options': 'nosniff',
+          'Accept-Ranges': 'none',
+          'Cache-Control': 'no-cache',
+        });
+        res.end('Forbidden');
+        bytes = 0;
+        return;
+      }
+    }
 
     // Health endpoint
     if (urlPathRaw === '/health') {
@@ -228,27 +315,25 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    // Normalize to a relative path (strip leading slash)
-    const stripped = urlPathRaw.startsWith('/') ? urlPathRaw.slice(1) : urlPathRaw;
-    const rel = normalize(stripped);
     const accept = String(req.headers['accept'] || '');
-
-    // Build candidate path within dist
     const endsWithSlash = urlPathRaw.endsWith('/');
-    const candidateRel = endsWithSlash ? normalize(rel + '/index.html') : rel;
-    const candidateAbs = resolve(DIST_DIR, candidateRel);
+    const candidatePathname = endsWithSlash ? urlPathRaw + 'index.html' : urlPathRaw;
 
-    // Try to serve the exact file if inside dist and exists
-    let result = await tryServeFile(candidateAbs, method, res);
-    if (result) {
-      status = result.status;
-      bytes = result.bytes;
-      return;
+    // Resolve candidate safely before any fs.* calls
+    let result;
+    const resolvedCandidate = resolveStaticPath(candidatePathname);
+    if (resolvedCandidate) {
+      result = await tryServeFile(resolvedCandidate, method, res);
+      if (result) {
+        status = result.status;
+        bytes = result.bytes;
+        return;
+      }
     }
 
-    // Not served: decide fallback vs 404
-    const reqHasExt = hasExtension(rel);
-    const reqTargetsAsset = isAssetRequest(rel);
+    // Not served: decide fallback vs 404 with SPA restrictions
+    const reqHasExt = hasExtension(urlPathRaw);
+    const reqTargetsAsset = isAssetRequest(urlPathRaw);
 
     if (reqTargetsAsset) {
       // Static asset missing -> 404 (no SPA fallback)
@@ -266,7 +351,21 @@ const server = createServer(async (req, res) => {
 
     const htmlEligible = !reqHasExt || wantsHtml(accept);
     if (htmlEligible) {
-      // SPA fallback to index.html
+      // Only allow SPA fallback if the request path itself is safe within dist (no traversal)
+      if (!isSafeWithinDist(urlPathRaw)) {
+        status = 403;
+        res.writeHead(403, {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'X-Content-Type-Options': 'nosniff',
+          'Accept-Ranges': 'none',
+          'Cache-Control': 'no-cache',
+        });
+        res.end('Forbidden');
+        bytes = 0;
+        return;
+      }
+
+      // SPA fallback to index.html (known safe path, not derived from URL)
       const indexAbs = resolve(DIST_DIR, 'index.html');
       result = await tryServeFile(indexAbs, method, res);
       if (result) {
