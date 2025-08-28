@@ -170,8 +170,25 @@ async function tryServeFile(absPath, method, req, res) {
       res.statusCode = 304;
       res.setHeader('ETag', etag);
       res.setHeader('Accept-Ranges', 'none');
+      res.setHeader('Last-Modified', new Date(s.mtimeMs).toUTCString());
       res.end();
       return { served: true, status: 304, bytes: 0 };
+    }
+    const imsHeader = req.headers['if-modified-since'];
+    if (!inm && imsHeader) {
+      const imsTime = Date.parse(String(imsHeader));
+      if (!Number.isNaN(imsTime)) {
+        const mtimeSec = Math.floor(s.mtimeMs / 1000);
+        const imsSec = Math.floor(imsTime / 1000);
+        if (mtimeSec <= imsSec) {
+          res.statusCode = 304;
+          res.setHeader('ETag', etag);
+          res.setHeader('Accept-Ranges', 'none');
+          res.setHeader('Last-Modified', new Date(s.mtimeMs).toUTCString());
+          res.end();
+          return { served: true, status: 304, bytes: 0 };
+        }
+      }
     }
 
     res.statusCode = 200;
@@ -218,6 +235,36 @@ async function tryServeFile(absPath, method, req, res) {
 
 function pickIndexPath(pathname) {
   return pathname.endsWith('/') ? pathname + 'index.html' : pathname + '/index.html';
+}
+
+async function serveHtmlEligible(urlPathRaw, method, req, res) {
+  // 1) Try directory index
+  const indexAbs = path.resolve(DIST_DIR, '.' + pickIndexPath(urlPathRaw));
+  const rIdx = await tryServeFile(indexAbs, method, req, res);
+  if (rIdx && rIdx.served) {
+    return { served: true, status: rIdx.status, bytes: rIdx.bytes || 0 };
+  }
+
+  // 2) If explicit .html, try that path
+  if (urlPathRaw.endsWith('.html')) {
+    const htmlAbs = path.resolve(DIST_DIR, '.' + urlPathRaw);
+    const rHtml = await tryServeFile(htmlAbs, method, req, res);
+    if (rHtml && rHtml.served) {
+      return { served: true, status: rHtml.status, bytes: rHtml.bytes || 0 };
+    }
+  }
+
+  // 3) SPA fallback only for safe paths
+  if (!isSafeWithinDist(urlPathRaw)) {
+    return { served: false, status: 403, bytes: 0 };
+  }
+  const spaAbs = path.resolve(DIST_DIR, 'index.html');
+  const rFb = await tryServeFile(spaAbs, method, req, res);
+  if (rFb && rFb.served) {
+    return { served: true, status: rFb.status, bytes: rFb.bytes || 0 };
+  }
+
+  return { served: false, status: 404, bytes: 0 };
 }
 
 const sockets = new Set();
@@ -335,39 +382,12 @@ const server = createServer(async (req, res) => {
 
     const htmlEligible = !reqHasExt || wantsHtml(req.headers['accept'] || '');
     if (htmlEligible) {
-      const indexAbs = path.resolve(DIST_DIR, '.' + pickIndexPath(urlPathRaw));
-      const rIdx = await tryServeFile(indexAbs, method, req, res);
-      if (rIdx && rIdx.served) {
-        status = rIdx.status;
-        bytes = rIdx.bytes;
+      const rHtml = await serveHtmlEligible(urlPathRaw, method, req, res);
+      if (rHtml && rHtml.served) {
+        status = rHtml.status;
+        bytes = rHtml.bytes;
         return;
       }
-
-      if (urlPathRaw.endsWith('.html')) {
-        const htmlAbs = path.resolve(DIST_DIR, '.' + urlPathRaw);
-        const rHtml = await tryServeFile(htmlAbs, method, req, res);
-        if (rHtml && rHtml.served) {
-          status = rHtml.status;
-          bytes = rHtml.bytes;
-          return;
-        }
-      }
-
-      if (!isSafeWithinDist(urlPathRaw)) {
-        status = 403;
-        sendText(res, 403, 'Forbidden', { 'Cache-Control': 'no-cache' });
-        bytes = 0;
-        return;
-      }
-
-      const spaAbs = path.resolve(DIST_DIR, 'index.html');
-      const rFb = await tryServeFile(spaAbs, method, req, res);
-      if (rFb && rFb.served) {
-        status = rFb.status;
-        bytes = rFb.bytes;
-        return;
-      }
-
       status = 404;
       sendText(res, 404, 'Not Found', { 'Cache-Control': 'no-cache' });
       bytes = 0;
