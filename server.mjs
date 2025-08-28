@@ -191,13 +191,7 @@ async function tryServeFile(absPath, method, req, res) {
 
     const stream = fs.createReadStream(real);
     const onClose = () => stream.destroy();
-    const onStreamError = () => stream.destroy();
-    const onResError = () => stream.destroy();
-
     res.on('close', onClose);
-    stream.on('error', onStreamError);
-    res.on('error', onResError);
-
     try {
       await pipeline(stream, res);
     } catch {
@@ -205,8 +199,6 @@ async function tryServeFile(absPath, method, req, res) {
       else res.destroy();
     } finally {
       res.off('close', onClose);
-      stream.off('error', onStreamError);
-      res.off('error', onResError);
     }
     return { served: true, status: 200, bytes: s.size };
   } catch (err) {
@@ -230,7 +222,7 @@ const server = createServer(async (req, res) => {
   const method = (req.method || 'GET').toUpperCase();
 
   let logged = false;
-  const logDone = () => {
+  function logDone() {
     if (logged) return;
     logged = true;
     const ms = Number(process.hrtime.bigint() - start) / 1_000_000;
@@ -240,7 +232,7 @@ const server = createServer(async (req, res) => {
     const parts = [`method=${method}`, `path=${pathForLog}`, `status=${st}`, `ms=${ms.toFixed(1)}`];
     if (loggedBytes > 0) parts.push(`bytes=${loggedBytes}`);
     console.log(parts.join(' '));
-  };
+  }
 
   res.once('finish', logDone);
   res.once('close', logDone);
