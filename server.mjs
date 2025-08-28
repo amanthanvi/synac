@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import { createServer } from 'node:http';
-import path from 'node:path';
 import fs from 'node:fs';
 import { promises as fsp } from 'node:fs';
+import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
 const HOST = process.env.HOST || '0.0.0.0';
@@ -27,29 +27,29 @@ const TYPES = {
   '.js': 'application/javascript; charset=utf-8',
   '.mjs': 'application/javascript; charset=utf-8',
   '.cjs': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
   '.map': 'application/json; charset=utf-8',
-  '.ico': 'image/x-icon',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
   '.gif': 'image/gif',
   '.webp': 'image/webp',
   '.avif': 'image/avif',
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.webmanifest': 'application/manifest+json',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf',
   '.otf': 'font/otf',
-  '.txt': 'text/plain; charset=utf-8',
-  '.xml': 'application/xml; charset=utf-8',
-  '.webmanifest': 'application/manifest+json',
   '.wasm': 'application/wasm',
 };
 
 const ALLOWED_EXT = new Set(Object.keys(TYPES));
-
-export const HASH_RE = /(?:\.[A-Za-z0-9_-]{8,}\.|[.-][a-f0-9]{8,}\.)/;
+const ASSET_EXTS = new Set([...ALLOWED_EXT].filter((e) => e !== '.html'));
+const HASH_RE = /(?:\.[A-Za-z0-9_-]{8,}\.|[.-][a-f0-9]{8,}\.)/;
 
 function getContentType(ext) {
   return TYPES[ext] || 'application/octet-stream';
@@ -58,6 +58,13 @@ function getContentType(ext) {
 function isInside(child, parent) {
   const rel = path.relative(parent, child);
   return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+}
+
+function wantsHtml(accept) {
+  return typeof accept === 'string' && accept.toLowerCase().includes('text/html');
+}
+function hasExtension(p) {
+  return /\.[^/]+$/.test(p);
 }
 
 function computeCacheControl(ext, baseName) {
@@ -84,14 +91,57 @@ function sendText(res, status, body, extra = {}) {
   res.end(body);
 }
 
-function wantsHtml(accept) {
-  return typeof accept === 'string' && accept.toLowerCase().includes('text/html');
-}
-function hasExtension(p) {
-  return /\.[^/]+$/.test(p);
+function resolveStaticPath(urlPath) {
+  if (typeof urlPath !== 'string') return null;
+  if (urlPath.includes('\0')) return null;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath);
+  } catch {
+    return null;
+  }
+  if (!decoded.startsWith('/')) decoded = '/' + decoded;
+  const candidate = path.resolve(DIST_DIR, '.' + decoded);
+  if (!isInside(candidate, DIST_DIR)) return null;
+  const ext = path.extname(candidate).toLowerCase();
+  if (!ALLOWED_EXT.has(ext)) return null;
+  return candidate;
 }
 
-async function tryServeFile(absPath, method, res) {
+function isSafeWithinDist(urlPath) {
+  if (typeof urlPath !== 'string') return false;
+  if (urlPath.includes('\0')) return false;
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath);
+  } catch {
+    return false;
+  }
+  if (!decoded.startsWith('/')) decoded = '/' + decoded;
+  const candidate = path.resolve(DIST_DIR, '.' + decoded);
+  return isInside(candidate, DIST_DIR);
+}
+
+function hasTraversal(rawUrl) {
+  if (typeof rawUrl !== 'string') return false;
+  const segPattern = /(^|[\/\\])\.\.([\/\\]|$)/;
+  try {
+    if (segPattern.test(rawUrl)) return true;
+    if (/%(?:2e){2}/i.test(rawUrl)) return true;
+    const dec = decodeURIComponent(rawUrl);
+    if (segPattern.test(dec)) return true;
+  } catch {
+    // ignore decode errors here
+  }
+  return false;
+}
+
+function isAssetRequest(relPath) {
+  const ext = path.extname(relPath).toLowerCase();
+  return Boolean(ext && (ASSET_EXTS.has(ext) || Object.prototype.hasOwnProperty.call(TYPES, ext)));
+}
+
+async function tryServeFile(absPath, method, req, res) {
   try {
     let real = absPath;
     if (DIST_REAL) {
@@ -99,14 +149,23 @@ async function tryServeFile(absPath, method, res) {
       if (!isInside(real, DIST_REAL)) {
         return { served: false, status: 403 };
       }
+    } else {
+      const maybeReal = await fsp.realpath(absPath).catch(() => null);
+      if (!maybeReal || !isInside(maybeReal, DIST_DIR)) {
+        return { served: false, status: 403 };
+      }
+      real = maybeReal;
     }
+
     const s = await fsp.stat(real);
     if (!s.isFile()) return { served: false, status: 404 };
+
     const ext = path.extname(real).toLowerCase();
     if (ext && !ALLOWED_EXT.has(ext)) return { served: false, status: 403 };
+
     const base = path.basename(real);
     const etag = `W/"${s.size}-${Math.floor(s.mtimeMs)}"`;
-    const inm = res.req?.headers?.['if-none-match'];
+    const inm = req.headers['if-none-match'];
     if (inm && inm === etag) {
       res.statusCode = 304;
       res.setHeader('ETag', etag);
@@ -114,6 +173,7 @@ async function tryServeFile(absPath, method, res) {
       res.end();
       return { served: true, status: 304, bytes: 0 };
     }
+
     res.statusCode = 200;
     res.setHeader('Content-Type', getContentType(ext));
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -123,18 +183,23 @@ async function tryServeFile(absPath, method, res) {
     const cache = computeCacheControl(ext, base);
     for (const [k, v] of Object.entries(cache)) res.setHeader(k, v);
     res.setHeader('Content-Length', String(s.size));
+
     if (method === 'HEAD') {
       res.end();
       return { served: true, status: 200, bytes: 0 };
     }
+
     const stream = fs.createReadStream(real);
     const onClose = () => stream.destroy();
     res.on('close', onClose);
-    await pipeline(stream, res).catch((err) => {
+    try {
+      await pipeline(stream, res);
+    } catch {
       if (!res.headersSent) sendText(res, 500, 'Internal Server Error');
       else res.destroy();
-    });
-    res.off('close', onClose);
+    } finally {
+      res.off('close', onClose);
+    }
     return { served: true, status: 200, bytes: s.size };
   } catch (err) {
     if (err && err.code === 'ENOENT') return { served: false, status: 404 };
@@ -151,24 +216,30 @@ const sockets = new Set();
 
 const server = createServer(async (req, res) => {
   const start = process.hrtime.bigint();
-  let bytes = 0;
   let status = 500;
+  let bytes;
   let pathForLog = '-';
   const method = (req.method || 'GET').toUpperCase();
 
-  const logDone = () => {
+  let logged = false;
+  function logDone() {
+    if (logged) return;
+    logged = true;
     const ms = Number(process.hrtime.bigint() - start) / 1_000_000;
     const st = typeof res.statusCode === 'number' ? res.statusCode : status;
-    const b = bytes || Number(res.getHeader('content-length') || 0) || 0;
-    console.log(
-      `method=${method} path=${pathForLog} status=${st} ms=${ms.toFixed(1)}${b ? ` bytes=${b}` : ''}`,
-    );
-  };
+    const loggedBytes =
+      typeof bytes === 'number' ? bytes : Number(res.getHeader('content-length') || 0);
+    const parts = [`method=${method}`, `path=${pathForLog}`, `status=${st}`, `ms=${ms.toFixed(1)}`];
+    if (loggedBytes > 0) parts.push(`bytes=${loggedBytes}`);
+    console.log(parts.join(' '));
+  }
+
   res.once('finish', logDone);
   res.once('close', logDone);
 
   try {
     if (method !== 'GET' && method !== 'HEAD') {
+      status = 405;
       res.writeHead(405, {
         'Content-Type': 'text/plain; charset=utf-8',
         'X-Content-Type-Options': 'nosniff',
@@ -176,27 +247,41 @@ const server = createServer(async (req, res) => {
         Allow: 'GET, HEAD',
       });
       res.end('Method Not Allowed');
-      status = 405;
       return;
     }
 
-    let urlPathRaw = '/';
+    let urlPathRaw;
     try {
       const u = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       urlPathRaw = u.pathname || '/';
       decodeURIComponent(urlPathRaw);
     } catch (e) {
       console.error(e?.stack || e);
-      sendText(res, 400, 'Bad Request');
       status = 400;
+      sendText(res, 400, 'Bad Request');
+      return;
+    }
+
+    if (urlPathRaw.includes('\0')) {
+      status = 400;
+      sendText(res, 400, 'Bad Request');
       return;
     }
 
     pathForLog = urlPathRaw;
 
+    const rawUrl = req.url || '/';
+    if (hasTraversal(rawUrl)) {
+      status = 403;
+      sendText(res, 403, 'Forbidden', { 'Cache-Control': 'no-cache' });
+      bytes = 0;
+      return;
+    }
+
     if (urlPathRaw === '/health') {
+      status = 200;
       const body = 'ok';
-      res.writeHead(200, {
+      const headers = {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         Pragma: 'no-cache',
@@ -204,7 +289,8 @@ const server = createServer(async (req, res) => {
         'X-Content-Type-Options': 'nosniff',
         'Accept-Ranges': 'none',
         'Content-Length': String(Buffer.byteLength(body)),
-      });
+      };
+      res.writeHead(200, headers);
       if (method === 'HEAD') {
         res.end();
         bytes = 0;
@@ -212,79 +298,85 @@ const server = createServer(async (req, res) => {
         res.end(body);
         bytes = Buffer.byteLength(body);
       }
-      status = 200;
       return;
     }
 
-    const candidate = path.resolve(DIST_DIR, '.' + (urlPathRaw || '/'));
-    const rel = path.relative(DIST_DIR, candidate);
-    if (rel.startsWith('..') || path.isAbsolute(rel) || urlPathRaw.includes('\0')) {
-      sendText(res, 403, 'Forbidden');
-      status = 403;
-      return;
-    }
+    const endsWithSlash = urlPathRaw.endsWith('/');
+    const candidatePathname = endsWithSlash ? urlPathRaw + 'index.html' : urlPathRaw;
 
-    const ext = path.extname(candidate).toLowerCase();
-
-    if (ext && ALLOWED_EXT.has(ext)) {
-      const r = await tryServeFile(candidate, method, res);
-      if (r?.served) {
-        status = r.status;
-        bytes = r.bytes || 0;
+    let result;
+    const resolvedCandidate = resolveStaticPath(candidatePathname);
+    if (resolvedCandidate) {
+      result = await tryServeFile(resolvedCandidate, method, req, res);
+      if (result && result.served) {
+        status = result.status;
+        bytes = result.bytes;
         return;
       }
-      if (r?.status === 404) {
-        sendText(res, 404, 'Not Found');
-        status = 404;
-        return;
-      }
-      sendText(res, 500, 'Internal Server Error');
-      status = 500;
+    }
+
+    const reqHasExt = hasExtension(urlPathRaw);
+    const reqTargetsAsset = isAssetRequest(urlPathRaw);
+
+    if (reqTargetsAsset) {
+      status = 404;
+      sendText(res, 404, 'Not Found', { 'Cache-Control': 'no-cache' });
+      bytes = 0;
       return;
     }
 
-    const accept = String(req.headers['accept'] || '').toLowerCase();
-    const htmlEligible = !ext || accept.includes('text/html');
-
+    const htmlEligible = !reqHasExt || wantsHtml(req.headers['accept'] || '');
     if (htmlEligible) {
-      const indexPath = path.resolve(DIST_DIR, '.' + pickIndexPath(urlPathRaw));
-      const indexRel = path.relative(DIST_DIR, indexPath);
-      if (!(indexRel.startsWith('..') || path.isAbsolute(indexRel))) {
-        const rIdx = await tryServeFile(indexPath, method, res);
-        if (rIdx?.served) {
-          status = rIdx.status;
-          bytes = rIdx.bytes || 0;
-          return;
-        }
+      const indexAbs = path.resolve(DIST_DIR, '.' + pickIndexPath(urlPathRaw));
+      const rIdx = await tryServeFile(indexAbs, method, req, res);
+      if (rIdx && rIdx.served) {
+        status = rIdx.status;
+        bytes = rIdx.bytes;
+        return;
       }
+
       if (urlPathRaw.endsWith('.html')) {
-        const rHtml = await tryServeFile(candidate, method, res);
-        if (rHtml?.served) {
+        const htmlAbs = path.resolve(DIST_DIR, '.' + urlPathRaw);
+        const rHtml = await tryServeFile(htmlAbs, method, req, res);
+        if (rHtml && rHtml.served) {
           status = rHtml.status;
-          bytes = rHtml.bytes || 0;
+          bytes = rHtml.bytes;
           return;
         }
       }
-      const fbPath = path.resolve(DIST_DIR, './index.html');
-      const fbRel = path.relative(DIST_DIR, fbPath);
-      if (!(fbRel.startsWith('..') || path.isAbsolute(fbRel))) {
-        const rFb = await tryServeFile(fbPath, method, res);
-        if (rFb?.served) {
-          status = rFb.status;
-          bytes = rFb.bytes || 0;
-          return;
-        }
+
+      if (!isSafeWithinDist(urlPathRaw)) {
+        status = 403;
+        sendText(res, 403, 'Forbidden', { 'Cache-Control': 'no-cache' });
+        bytes = 0;
+        return;
       }
+
+      const spaAbs = path.resolve(DIST_DIR, 'index.html');
+      const rFb = await tryServeFile(spaAbs, method, req, res);
+      if (rFb && rFb.served) {
+        status = rFb.status;
+        bytes = rFb.bytes;
+        return;
+      }
+
+      status = 404;
+      sendText(res, 404, 'Not Found', { 'Cache-Control': 'no-cache' });
+      bytes = 0;
+      return;
     }
 
-    sendText(res, 404, 'Not Found');
     status = 404;
+    sendText(res, 404, 'Not Found', { 'Cache-Control': 'no-cache' });
+    bytes = 0;
   } catch (err) {
     console.error(err?.stack || err);
+    status = 500;
     try {
       sendText(res, 500, 'Internal Server Error');
-    } catch {}
-    status = 500;
+    } catch {
+      // ignore
+    }
   }
 });
 
@@ -298,7 +390,9 @@ function initiateShutdown() {
   if (shuttingDown) return;
   shuttingDown = true;
   console.log('shutdown=initiated');
-  server.close(() => console.log('shutdown=server-closed'));
+  server.close(() => {
+    console.log('shutdown=server-closed');
+  });
   sockets.forEach((s) => {
     try {
       s.end();
