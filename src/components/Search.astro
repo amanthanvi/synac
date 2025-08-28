@@ -1,15 +1,9 @@
 ---
 /* Lightweight client search island using MiniSearch and the prebuilt /search.json */
 const title = 'Quick search';
-import searchClientUrl from '../scripts/searchClient.ts?url';
 ---
 
-<section
-  role="search"
-  aria-labelledby="search"
-  aria-describedby="search-help"
-  class="section"
->
+<section role="search" aria-labelledby="search" aria-describedby="search-help" class="section">
   <h2 id="search">{title}</h2>
   <div id="search-box" class="flex items-center gap-2">
     <label for="q" class="sr-only">Search terms</label>
@@ -27,12 +21,7 @@ import searchClientUrl from '../scripts/searchClient.ts?url';
       aria-autocomplete="list"
       aria-describedby="search-help"
     />
-    <span
-      id="count"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      class="muted fs-90"></span>
+    <span id="count" role="status" aria-live="polite" aria-atomic="true" class="muted fs-90"></span>
   </div>
 
   <div id="filters" class="chips" aria-label="Filter by source kind">
@@ -44,13 +33,7 @@ import searchClientUrl from '../scripts/searchClient.ts?url';
     <button type="button" class="btn-chip" data-kind="OTHER" aria-pressed="false">Other</button>
   </div>
 
-  <ul
-    id="results"
-    role="list"
-    class="list-unstyled grid gap-2 mt-4"
-  >
-  </ul>
+  <ul id="results" role="list" class="list-unstyled grid gap-2 mt-4"></ul>
 </section>
 
-
-<script type="module" src={searchClientUrl}></script>
+<script type="module" src="../scripts/searchClient.ts"></script>
