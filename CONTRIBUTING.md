@@ -109,7 +109,7 @@ Dependabot automatically opens PRs for dependency and GitHub Actions updates:
 - All dependency PRs are labeled `dependencies` and scoped (`scope: deps` for npm, `scope: ci` for GitHub Actions).
 - PR titles follow Conventional Commits (e.g., `chore(deps): bump ...` or `chore(ci): bump ...`).
 - CI must be green before merging. Review the PR for breaking changes or major version bumps.
-- For npm updates, check the [release notes/changelog](https://github.com/npm/cli/releases) or the dependency's repo for breaking changes.
+- For npm updates, check the release notes or changelog for the specific dependency (e.g., [npm CLI releases](https://github.com/npm/cli/releases)) or the dependency's repo for breaking changes.
 - For GitHub Actions, review the action's changelog for breaking changes.
 - If a PR is safe and CI passes, squash-merge it. If not, close with a comment explaining why.
 - After merging, pull the latest main and run `npm ci` locally to update your lockfile and environment.
