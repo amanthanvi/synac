@@ -12,6 +12,7 @@ on:
       - 'package-lock.json'
       - 'astro.config.mjs'
       - '.github/workflows/**'
+      - 'docs/**'
   pull_request:
     branches: [main]
     paths:
