@@ -27,7 +27,7 @@ jobs:
           node-version: 22.x
           cache: npm
 
-      - run: NODE_ENV= npm ci --ignore-scripts
+      - run: NODE_ENV='' npm ci --ignore-scripts
 
       - run: npm run typecheck
       - run: npm run lint -- --max-warnings=0
