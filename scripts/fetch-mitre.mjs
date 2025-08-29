@@ -130,7 +130,6 @@ function stripMarkupLocal(input) {
   s = s
     .replace(/</g, '<')
     .replace(/>/g, '>')
-    .replace(/&/g, '&')
     .replace(/&nbsp;/g, ' ');
   s = s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/'/g, "\\'");
   // remove tags and collapse
