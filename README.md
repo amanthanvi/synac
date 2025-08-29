@@ -268,51 +268,25 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for project conventions, CSP posture, t
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 
-## Production deployment (Railway)
+## Production (Railway)
 
-Production previews and deployments run a hardened static server implemented in [server.mjs](server.mjs:1). The server streams files, validates canonical real paths (symlink‑safe), restricts SPA fallback to HTML‑eligible requests, and applies strict caching and headers.
+Static deployment served from the built `dist/` directory using `sirv` with compression and long‑term caching for hashed assets.
 
-- Prereqs and environment
-  - Node 20 is enforced via `"engines": { "node": ">=20 <21" }` in [package.json](package.json:1) and `nodejs_20` in [nixpacks.toml](nixpacks.toml:1).
-  - Ensure `NODE_ENV=production` in your Railway environment.
+- Build
+  - `npm ci && npm run build`
 
-- Start command detection
-  - Package script: `"start": "node server.mjs"` in [package.json](package.json:1).
-  - Procfile: `web: node server.mjs` in [Procfile](Procfile:1).
-  - Nixpacks: `[start] cmd = "npm run start"` in [nixpacks.toml](nixpacks.toml:1).
-  - Railway will detect any of the above; all point to the same explicit entry.
+- Start
+  - `npm run start` (runs `sirv dist --single --port $PORT --immutable --maxage 31536000 --gzip --brotli`)
+  - Procfile uses `web: npm run start`
+  - Railway detects the start command automatically
 
 - Health
-  - `GET /health` returns `200` with body `ok`.
-  - Configure Railway health probe path to `/health`.
+  - `GET /healthz` returns `200` with body `ok`
+  - Configure Railway health probe path to `/healthz`
 
-- Caching and headers
-  - Fingerprinted assets (filenames containing `.[0-9a-f]{8,}.`) → `Cache-Control: public, max-age=31536000, immutable`.
-  - Other static assets → `Cache-Control: public, max-age=3600`.
-  - HTML (including fallbacks) → `Cache-Control: no-cache`.
-  - `X-Content-Type-Options: nosniff` and `Accept-Ranges: none` are set on responses.
-  - `Last-Modified` is set from the file’s mtime; `Content-Type` inferred by extension.
-
-- SPA fallback rules
-  - If the request is for a static asset extension and the file is missing → 404 (no index.html fallback).
-  - Fallback to `index.html` only when:
-    - The path is extensionless OR the `Accept` header prefers `text/html`.
-    - Path traversal protection still applies; the server validates real paths remain inside the build output.
-
-- Security and path validation
-  - All file responses validate canonical real paths remain within the canonical `dist` realpath to prevent traversal via symlinks.
-  - Directory listings and error stack traces are not exposed.
-
-- Graceful shutdown
-  - The server tracks sockets. On SIGTERM/SIGINT it:
-    1. Stops accepting new connections.
-    2. Attempts to end idle sockets.
-    3. Waits up to 10s for active connections to close, then force‑destroys remaining sockets.
-    4. Exits with code 0.
-
-- Server logs
-  - Minimal structured request logs are emitted: `method=GET path=/... status=200 ms=... bytes=...`.
-  - View logs in Railway: `railway logs -f` or via the project’s Logs UI.
+- Node/runtime
+  - Node 22 for local parity: `.nvmrc` is `22`
+  - Engines pinned: `"engines": { "node": ">=20.11 <23" }` in package.json
 
 - Local production validation
   ```bash
@@ -321,20 +295,13 @@ Production previews and deployments run a hardened static server implemented in 
   PORT=3000 npm run start
   # In another shell:
   curl -i http://localhost:3000/
-  curl -i http://localhost:3000/health
-  # Known asset (adjust path to a real built asset):
-  curl -I http://localhost:3000/assets/*.css
-  # Unknown asset → 404 (no SPA fallback):
+  curl -i http://localhost:3000/healthz
+  # Static asset (adjust path to a real built asset):
+  curl -I http://localhost:3000/_astro/*.js
+  # Unknown asset → 404
   curl -I http://localhost:3000/unknown-asset.png
-  # Extensionless route → HTML fallback (200):
-  curl -i http://localhost:3000/terms/xss
-  # Traversal attempt → blocked (400 or 404), must not escape dist:
-  curl -i "http://localhost:3000/%2e%2e/%2e%2e/package.json"
   ```
 
-- Deploy and rollback
-  - Push to `main` (or merge PR) to trigger Railway build and deploy.
-  - Rollback by reverting the offending commit or redeploying a prior successful build from the Railway UI.
-
-Notes
-- PR preview builds on Railway should now be green with the explicit `npm run start → node server.mjs` and Procfile `web: node server.mjs`.
+- Notes
+  - Static deploys do not expose `/api` routes. The telemetry endpoint remains in the codebase but is disabled by default and inactive in static hosting.
+  - CI runs typecheck, lint, build, installs Playwright browsers, and runs the offline determinism spec via `.github/workflows/ci.yml`.
