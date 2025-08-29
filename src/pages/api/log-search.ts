@@ -40,6 +40,6 @@ export const POST: APIRoute = async ({ request }) => {
 };
 
 // Non-POST methods are not supported
-export const GET: APIRoute = async () => new Response(null, { status: 204 });
+export const GET: APIRoute = async () => new Response(null, { status: 405 });
 export const PUT: APIRoute = async () => new Response(null, { status: 405 });
 export const DELETE: APIRoute = async () => new Response(null, { status: 405 });
