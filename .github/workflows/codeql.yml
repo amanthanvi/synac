@@ -13,6 +13,7 @@ on:
       - 'astro.config.mjs'
       - '.github/workflows/**'
       - 'docs/**'
+      - 'scripts/**'
   pull_request:
     branches: [main]
     paths:
@@ -24,6 +25,8 @@ on:
       - 'package-lock.json'
       - 'astro.config.mjs'
       - '.github/workflows/**'
+      - 'docs/**'
+      - 'scripts/**'
   schedule:
     - cron: '33 1 * * 1' # Weekly (Mon 01:33 UTC)
 
