@@ -5,7 +5,7 @@ import prettier from 'eslint-config-prettier';
 
 export default [
   // Ignore build artifacts and deps
-  { ignores: ['dist/**', 'node_modules/**', 'src/content/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'src/content/**', 'coverage/**'] },
 
   // Astro recommended (sets astro parser for .astro)
   ...astro.configs['flat/recommended'],
