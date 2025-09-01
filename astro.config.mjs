@@ -1,12 +1,11 @@
 /* @ts-check */
 import { defineConfig } from 'astro/config';
-import cloudflare from '@astrojs/cloudflare';
 import mdx from '@astrojs/mdx';
 import VitePWA from '@vite-pwa/astro';
 
 // https://astro.build/config
 export default defineConfig({
-  adapter: cloudflare(),
+  output: 'static',
   site: 'https://synac.app',
   vite: {
     define: { __BUILD_TIME__: JSON.stringify(Date.now()) },
