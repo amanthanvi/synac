@@ -1,1 +1,1 @@
-web: npm run start
+web: HOST=0.0.0.0 NODE_ENV=production node server.mjs

@@ -9,7 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview --port 4321 --host",
-    "start": "sirv dist --single --port $PORT --immutable --maxage 31536000 --gzip --brotli",
+    "start": "HOST=0.0.0.0 NODE_ENV=production node server.mjs",
     "astro": "astro",
     "typecheck": "astro check",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx,.astro,.mdx",
