@@ -5,8 +5,8 @@ import { promises as fsp } from 'node:fs';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
-const HOST = process.env.HOST || '0.0.0.0';
-const PORT = Number(process.env.PORT || 3000);
+const HOST = '0.0.0.0';
+const PORT = Number.parseInt(process.env.PORT ?? '8080', 10);
 const DIST_DIR = path.resolve(process.cwd(), 'dist');
 
 let DIST_REAL = null;
@@ -444,6 +444,7 @@ function initiateShutdown() {
 process.on('SIGTERM', initiateShutdown);
 process.on('SIGINT', initiateShutdown);
 
+console.log(`startup host=${HOST} port=${PORT} node=${process.version}`);
 server.listen(PORT, HOST, () => {
   console.log(`Static server listening on http://${HOST}:${PORT} serving ${DIST_DIR}`);
 });

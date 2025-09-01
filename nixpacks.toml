@@ -8,4 +8,4 @@ command = "npm ci"
 command = "npm run build"
 
 [start]
-cmd = "npm run start"
+cmd = "HOST=0.0.0.0 NODE_ENV=production node server.mjs"
