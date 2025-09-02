@@ -13,7 +13,11 @@ const UPDATED_AT = isoMidnightUTC();
 
 function ensureFile(p, c) {
   fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, c);
+  const dir = path.dirname(p);
+  const base = path.basename(p);
+  const temp = path.join(dir, `.${base}.tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  fs.writeFileSync(temp, c);
+  fs.renameSync(temp, p);
 }
 function q(s) {
   return String(s).replace(/'/g, "''");
