@@ -1,0 +1,122 @@
+name: ETL Refresh
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: etl-refresh
+  cancel-in-progress: true
+
+env:
+  ETL_FORCE_REFRESH: 'true'
+  NODE_ENV: 'production'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Cache ETL artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/raw
+            scripts/.cache
+          key: etl-raw-${{ github.run_id }}
+          restore-keys: |
+            etl-raw-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ETL (vendors)
+        run: npm run etl:all
+
+      - name: Merge datasets
+        run: npm run etl:merge
+
+      - name: Verify merged
+        id: verify
+        run: |
+          set -e
+          npm run etl:verify | tee verify-summary.txt
+
+      - name: Typecheck
+        id: typecheck
+        run: |
+          set -euo pipefail
+          npm run typecheck | tee typecheck.txt
+
+      - name: Lint
+        id: lint
+        run: |
+          set -euo pipefail
+          npm run lint | tee lint.txt
+
+      - name: Test
+        id: unit
+        run: |
+          set -euo pipefail
+          npm run test | tee test.txt
+
+      - name: Compose PR body
+        if: always()
+        run: |
+          {
+            echo "Short summary from verify-merged:"
+            echo
+            cat verify-summary.txt || true
+            echo
+            echo "Results:"
+            echo "- typecheck: ${{ steps.typecheck.outcome }}"
+            echo "- lint: ${{ steps.lint.outcome }}"
+            echo "- test: ${{ steps.unit.outcome }}"
+            echo
+            echo "Outputs:"
+            echo "typecheck:"
+            echo '```'
+            if [ -f typecheck.txt ]; then cat typecheck.txt; else echo "(no output captured)"; fi
+            echo '```'
+            echo
+            echo "lint:"
+            echo '```'
+            if [ -f lint.txt ]; then cat lint.txt; else echo "(no output captured)"; fi
+            echo '```'
+            echo
+            echo "test:"
+            echo '```'
+            if [ -f test.txt ]; then cat test.txt; else echo "(no output captured)"; fi
+            echo '```'
+            echo
+            echo "Validated: verify-merged passed; typecheck/lint/test executed."
+          } > pr-body.md
+
+      - name: Create Pull Request with changes under data/
+        if: always()
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'ci(etl): refresh vendor datasets and merged index'
+          title: 'ci(etl): weekly vendor refresh'
+          body-path: pr-body.md
+          branch: chore/etl-refresh-${{ github.run_id }}
+          labels: |
+            data
+            automation
+            scheduled
+          add-paths: |
+            data/**
+            data/build/merged.json

@@ -24,6 +24,7 @@
     "etl:nist": "node scripts/fetch-nist.mjs",
     "etl:mitre": "node scripts/fetch-mitre.mjs",
     "etl:merge": "node scripts/build-merge.mjs",
+    "etl:verify": "node scripts/verify-merged.mjs",
     "etl:all": "npm run etl:mitre && npm run etl:nist && npm run etl:merge",
     "etl:clean": "node scripts/etl-clean.mjs",
     "lh:budget": "npx -y lighthouse http://localhost:4321 --quiet --chrome-flags='--headless=new' --budgets-path=./lighthouse/budgets.json --only-categories=performance --preset=desktop",
