@@ -75,11 +75,13 @@ This document provides an evidence-first baseline of what currently exists in th
   - Acceptance: CI fails when JS budget exceeds 50 KB; 404/offline routes covered; UI shows provenance badges.
   - Validation: npm run lh:preview in CI; E2E for 404/offline; visual check of badges.
 
-## Validation snapshot (to be recorded post-commit)
+## Validation snapshot (2025-09-02, local)
 
-- npm run typecheck: PENDING — will be run by maintainer and pasted here.
-- npm run lint: PENDING — will be run by maintainer and pasted here.
-- npm run test: PENDING — will be run by maintainer and pasted here.
+- npm run typecheck: PASS — 0 errors, 0 warnings, 8 hints.
+  - Notable hints: [src/pages/terms/[id].astro](src/pages/terms/%5Bid%5D.astro:79) script tag treated as is:inline; unused imports in [scripts/fetch-nist.mjs](scripts/fetch-nist.mjs:9) and [scripts/fetch-nist.mjs](scripts/fetch-nist.mjs:10); Cloudflare adapter advisory notes printed during check.
+- npm run lint: PASS with warnings — 0 errors, 3 warnings in coverage artifacts:
+  - [coverage/block-navigation.js](coverage/block-navigation.js:1), [coverage/prettify.js](coverage/prettify.js:1), [coverage/sorter.js](coverage/sorter.js:1) — Unused eslint-disable directive.
+- npm run test: PASS — 4 files, 10 tests.
 
 ## Open questions and assumptions
 
