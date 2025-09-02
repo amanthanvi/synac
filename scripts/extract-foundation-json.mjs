@@ -1,10 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const src = fs.readFileSync("scripts/add-foundation-terms.mjs","utf8");
-const m = src.match(/const entries = JSON\.parse\(`([\s\S]*?)`\);/);
+/**
+ * This script extracts the embedded JSON from scripts/add-foundation-terms.mjs.
+ * It relies on the presence of a template literal assigned to 'const entries' and parsed via JSON.parse.
+ * If the assignment or formatting changes, this extraction may fail.
+ * Please update the regex or extraction logic if the code pattern in add-foundation-terms.mjs changes.
+ */
+const src = fs.readFileSync("scripts/add-foundation-terms.mjs", "utf8");
+
+// More flexible regex: allows for whitespace, line breaks, and variations in assignment formatting
+const m = src.match(/const\s+entries\s*=\s*JSON\.parse\(\s*`([\s\S]*?)`\s*\)/m);
+
 if (!m) {
-  console.error("Could not locate embedded JSON in add-foundation-terms.mjs");
+  console.error("Could not locate embedded JSON in add-foundation-terms.mjs. Please ensure the code pattern matches the expected assignment to 'const entries'.");
   process.exit(1);
 }
 const json = m[1];
