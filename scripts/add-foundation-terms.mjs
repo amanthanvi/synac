@@ -606,7 +606,11 @@ const entries = JSON.parse(`
 ]
 `);
 
-entries.sort((a, b) => a.term.localeCompare(b.term));
+entries.sort((a, b) => {
+  const termCompare = a.term.localeCompare(b.term);
+  if (termCompare !== 0) return termCompare;
+  return a.id.localeCompare(b.id);
+});
 for (const e of entries) {
   const outPath = path.join('src/content/terms', `${e.id}.mdx`);
   ensureFile(outPath, mdx(e));
