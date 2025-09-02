@@ -147,7 +147,20 @@ export async function fetchBufferPinned(
         return new Uint8Array(0);
       }
 
+      // NOTE: For large files, this approach loads the entire response into memory.
+      // To avoid excessive memory usage, we limit the maximum allowed response size.
+      // For files larger than MAX_RESPONSE_SIZE, consider using streaming APIs.
+      const MAX_RESPONSE_SIZE = 50 * 1024 * 1024; // 50MB
+
+      const contentLength = res.headers.get('content-length');
+      if (contentLength && Number(contentLength) > MAX_RESPONSE_SIZE) {
+        throw new Error(`Response too large (${contentLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`);
+      }
+
       const buf = await res.arrayBuffer();
+      if (buf.byteLength > MAX_RESPONSE_SIZE) {
+        throw new Error(`Response too large (${buf.byteLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`);
+      }
       return new Uint8Array(buf);
     } catch (err) {
       if (attempt < retries && shouldRetry(err)) {
