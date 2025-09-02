@@ -109,3 +109,56 @@ export async function fetchJsonPinned(
   // Should not reach here
   throw new Error('fetchJsonPinned: Exhausted retries without a response');
 }
+
+// Buffer fetch with same retry/backoff semantics as fetchJsonPinned
+export async function fetchBufferPinned(
+  url,
+  init = {},
+  retries = DEFAULT_RETRIES,
+  backoffMs = DEFAULT_BACKOFF_MS,
+) {
+  const ua = 'SynAc-ETL/1.0 (+https://synac.app)';
+  const baseHeaders = {
+    'user-agent': ua,
+    accept: '*/*',
+  };
+  const mergedHeaders = { ...baseHeaders, ...(init.headers || {}) };
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const ac = new AbortController();
+    const t = setTimeout(() => ac.abort(), DEFAULT_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        ...init,
+        headers: mergedHeaders,
+        signal: ac.signal,
+      });
+
+      if (!res.ok) {
+        if (attempt < retries && isTransientStatus(res.status)) {
+          const delay = backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
+          await new Promise((r) => setTimeout(r, delay));
+          continue;
+        }
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
+
+      if (res.status === 204) {
+        return new Uint8Array(0);
+      }
+
+      const buf = await res.arrayBuffer();
+      return new Uint8Array(buf);
+    } catch (err) {
+      if (attempt < retries && shouldRetry(err)) {
+        const delay = backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
+    } finally {
+      clearTimeout(t);
+    }
+  }
+  throw new Error('fetchBufferPinned: Exhausted retries without a response');
+}
