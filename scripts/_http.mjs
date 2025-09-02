@@ -164,6 +164,11 @@ export async function fetchBufferPinned(
       return new Uint8Array(buf);
     } catch (err) {
       if (attempt < retries && shouldRetry(err)) {
+        // Log retry attempt for observability
+        console.warn(
+          `Retrying request (attempt ${attempt + 1}/${retries}) after error:`,
+          err
+        );
         const delay = backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
         await new Promise((r) => setTimeout(r, delay));
         continue;
