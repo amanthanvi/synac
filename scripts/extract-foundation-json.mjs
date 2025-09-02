@@ -21,7 +21,10 @@ try {
   const arr = JSON.parse(json);
   if (!Array.isArray(arr)) throw new Error("foundation terms payload is not an array");
   fs.mkdirSync("data", { recursive: true });
-  fs.writeFileSync(path.join("data","foundation-terms.json"), JSON.stringify(arr, null, 2) + "\n");
+  const outPath = path.join("data", "foundation-terms.json");
+  const tmpPath = outPath + ".tmp";
+  fs.writeFileSync(tmpPath, JSON.stringify(arr, null, 2) + "\n");
+  fs.renameSync(tmpPath, outPath);
   console.log("Extracted", arr.length, "entries to data/foundation-terms.json");
 } catch (e) {
   console.error("Failed to parse embedded JSON:", e?.message || String(e));
