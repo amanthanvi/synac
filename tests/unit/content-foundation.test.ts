@@ -137,6 +137,11 @@ describe('content foundation guardrails (MDX frontmatter)', () => {
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(updatedAt as string),
         `updatedAt not ISO for ${slug}`,
       ).toBeTruthy();
+
+      // Assert updatedAt is not in the future
+      const updatedAtDate = new Date(updatedAt as string);
+      expect(!isNaN(updatedAtDate.getTime()), `updatedAt not parsable for ${slug}`).toBeTruthy();
+      expect(updatedAtDate.getTime() <= Date.now(), `updatedAt is in the future for ${slug}`).toBeTruthy();
     }
   });
 });
