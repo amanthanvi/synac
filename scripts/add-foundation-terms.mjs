@@ -16,8 +16,22 @@ function ensureFile(p, c) {
   const dir = path.dirname(p);
   const base = path.basename(p);
   const temp = path.join(dir, `.${base}.tmp-${Date.now()}-${Math.random().toString(16).slice(2)}`);
-  fs.writeFileSync(temp, c);
-  fs.renameSync(temp, p);
+  let tempCreated = false;
+  try {
+    fs.writeFileSync(temp, c);
+    tempCreated = true;
+    fs.renameSync(temp, p);
+  } catch (err) {
+    // Attempt to clean up temp file if it was created
+    if (tempCreated && fs.existsSync(temp)) {
+      try {
+        fs.unlinkSync(temp);
+      } catch (cleanupErr) {
+        // Optionally log cleanup error, but don't mask the original error
+      }
+    }
+    throw err;
+  }
 }
 function q(s) {
   return String(s).replace(/'/g, "''");
