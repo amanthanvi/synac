@@ -4,7 +4,7 @@ import { ENABLE_TELEMETRY } from '../../lib/constants';
 // This endpoint accepts zero-result search telemetry when ENABLE_TELEMETRY is true.
 // Payload format (JSON): { q: string, ts?: number }
 // It intentionally stores nothing; returns 204 to confirm receipt.
-export const prerender = false;
+export const prerender = true;
 
 export const POST: APIRoute = async ({ request }) => {
   if (!ENABLE_TELEMETRY) {
