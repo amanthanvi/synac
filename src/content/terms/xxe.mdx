@@ -1,0 +1,15 @@
+---
+id: 'xxe'
+term: 'XML External Entity (XXE)'
+summary: 'XXE arises when XML parsers process external entity references, enabling file disclosure or SSRF.'
+tags: ['appsec', 'cwe']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-611'
+    url: 'https://cwe.mitre.org/data/definitions/611.html'
+    normative: true
+mappings:
+  cweIds: ['CWE-611']
+updatedAt: '2025-09-02T00:00:00.000Z'
+---
+Disable external entity resolution and use secure parser configurations or alternative formats.

@@ -1,0 +1,15 @@
+---
+id: 'path-traversal'
+term: 'Path Traversal'
+summary: 'Path traversal accesses files outside intended directories by manipulating path inputs.'
+tags: ['appsec', 'cwe']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-22'
+    url: 'https://cwe.mitre.org/data/definitions/22.html'
+    normative: true
+mappings:
+  cweIds: ['CWE-22']
+updatedAt: '2025-09-02T00:00:00.000Z'
+---
+Normalize and validate paths, avoid mixing user input with filesystem operations, and enforce allowlists.

@@ -1,0 +1,15 @@
+---
+id: 'open-redirect'
+term: 'Open Redirect'
+summary: 'Open redirect occurs when an application redirects to a user‑provided URL without validation.'
+tags: ['appsec', 'cwe']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-601'
+    url: 'https://cwe.mitre.org/data/definitions/601.html'
+    normative: true
+mappings:
+  cweIds: ['CWE-601']
+updatedAt: '2025-09-02T00:00:00.000Z'
+---
+Validate and constrain redirect targets to allowlists; avoid reflecting arbitrary URLs.
