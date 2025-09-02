@@ -3,32 +3,8 @@ name: CodeQL
 on:
   push:
     branches: [main]
-    paths:
-      - '**/*.js'
-      - '**/*.ts'
-      - '**/*.tsx'
-      - 'src/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'astro.config.mjs'
-      - '.github/workflows/**'
-      - 'docs/**'
-      - 'scripts/**'
-      - '*.MD'
   pull_request:
     branches: [main]
-    paths:
-      - '**/*.js'
-      - '**/*.ts'
-      - '**/*.tsx'
-      - 'src/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'astro.config.mjs'
-      - '.github/workflows/**'
-      - 'docs/**'
-      - 'scripts/**'
-      - '*.MD'
   schedule:
     - cron: '33 1 * * 1' # Weekly (Mon 01:33 UTC)
 
