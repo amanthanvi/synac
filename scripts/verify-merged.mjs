@@ -93,8 +93,8 @@ function comparatorForItems(items) {
     const vb = key ? b?.[key] : b;
     if (typeof va === 'number' && typeof vb === 'number') return va - vb;
     // numeric-ish strings
-    const pa = typeof va === 'string' && /^\d+$/.test(va) ? parseInt(va, 10) : NaN;
-    const pb = typeof vb === 'string' && /^\d+$/.test(vb) ? parseInt(vb, 10) : NaN;
+    const pa = typeof va === 'string' && /^\d+$/.test(va) ? Number.parseInt(va, 10) : NaN;
+    const pb = typeof vb === 'string' && /^\d+$/.test(vb) ? Number.parseInt(vb, 10) : NaN;
     if (Number.isFinite(pa) && Number.isFinite(pb)) return pa - pb;
     return String(va).localeCompare(String(vb));
   };
