@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import YAML from 'yaml';
 
 function isoMidnightUTC() {
   const d = new Date();
@@ -31,57 +32,23 @@ function ensureFile(p, c) {
   }
 }
 
-function q(s) {
-  return String(s).replace(/'/g, "''");
-}
+/** deprecated: escaping handled by YAML serializer */
 
 function frontmatter(entry) {
   const { id, term, summary, tags, sources, mappings } = entry;
-  const lines = [];
-  lines.push('---');
-  lines.push(`id: '${q(id)}'`);
-  lines.push(`term: '${q(term)}'`);
-  lines.push(`summary: '${q(summary)}'`);
-  lines.push(`tags: [${(tags || []).map((t) => `'${q(t)}'`).join(', ')}]`);
-  lines.push('sources:');
-  for (const s of sources || []) {
-    lines.push(`  - kind: '${q(s.kind)}'`);
-    lines.push(`    citation: '${q(s.citation)}'`);
-    lines.push(`    url: '${q(s.url)}'`);
-    if (typeof s.normative === 'boolean') {
-      lines.push(`    normative: ${s.normative ? 'true' : 'false'}`);
-    }
-    if (s.date) lines.push(`    date: '${q(s.date)}'`);
-    if (s.excerpt) lines.push(`    excerpt: '${q(s.excerpt)}'`);
-  }
+  const doc = {
+    id,
+    term,
+    summary,
+    tags: Array.isArray(tags) ? tags : [],
+    sources: Array.isArray(sources) ? sources : [],
+    updatedAt: UPDATED_AT,
+  };
   if (mappings && Object.keys(mappings).length) {
-    lines.push('mappings:');
-    if (mappings.attack) {
-      lines.push('  attack:');
-      if (mappings.attack.tactic) lines.push(`    tactic: '${q(mappings.attack.tactic)}'`);
-      if (Array.isArray(mappings.attack.techniqueIds) && mappings.attack.techniqueIds.length) {
-        lines.push(
-          '    techniqueIds: [' +
-            mappings.attack.techniqueIds.map((x) => `'${q(x)}'`).join(', ') +
-            ']',
-        );
-      }
-    }
-    if (Array.isArray(mappings.cweIds) && mappings.cweIds.length) {
-      lines.push('  cweIds: [' + mappings.cweIds.map((x) => `'${q(x)}'`).join(', ') + ']');
-    }
-    if (Array.isArray(mappings.capecIds) && mappings.capecIds.length) {
-      lines.push('  capecIds: [' + mappings.capecIds.map((x) => `'${q(x)}'`).join(', ') + ']');
-    }
-    if (Array.isArray(mappings.examDomains) && mappings.examDomains.length) {
-      lines.push(
-        '  examDomains: [' + mappings.examDomains.map((x) => `'${q(x)}'`).join(', ') + ']',
-      );
-    }
+    doc.mappings = mappings;
   }
-  lines.push(`updatedAt: '${UPDATED_AT}'`);
-  lines.push('---');
-  return lines.join('\n');
+  const yaml = YAML.stringify(doc).trimEnd();
+  return ['---', yaml, '---'].join('\n');
 }
 
 function mdx(entry) {

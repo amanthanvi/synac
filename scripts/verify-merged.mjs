@@ -7,7 +7,20 @@ import { readFile, stat } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+
+import {
+  stableSortObject,
+  cloneDeep,
+  findArraysInSection,
+  pickPrimaryArray,
+  comparatorForItems,
+  isSorted,
+  normalizeForHash,
+  deriveCounts,
+  checkMeta,
+  prettySummary,
+} from './_verify_utils.mjs';
+import { sha256 } from './_cache.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -38,154 +51,6 @@ async function loadMerged() {
   } catch (e) {
     throw new Error(`Invalid JSON in ${MERGED_PATH}: ${e.message}`);
   }
-}
-
-function sha256(s) {
-  return createHash('sha256').update(s).digest('hex');
-}
-
-function stableSortObject(v) {
-  if (v === null || typeof v !== 'object') return v;
-  if (Array.isArray(v)) return v.map(stableSortObject);
-  const out = {};
-  for (const k of Object.keys(v).sort()) {
-    out[k] = stableSortObject(v[k]);
-  }
-  return out;
-}
-
-function cloneDeep(v) {
-  return v == null ? v : JSON.parse(JSON.stringify(v));
-}
-
-function findArraysInSection(val) {
-  const out = [];
-  if (Array.isArray(val)) {
-    out.push({ key: null, arr: val });
-  } else if (val && typeof val === 'object') {
-    const preferred = ['items', 'entries', 'list', 'values', 'data', 'techniques', 'tactics'];
-    for (const k of preferred) {
-      if (Array.isArray(val[k])) out.push({ key: k, arr: val[k] });
-    }
-    for (const [k, v] of Object.entries(val)) {
-      if (Array.isArray(v) && !out.find((e) => e.key === k)) out.push({ key: k, arr: v });
-    }
-  }
-  return out;
-}
-
-function pickPrimaryArray(arrays) {
-  if (!arrays.length) return null;
-  const copy = arrays.slice().sort((a, b) => (b.arr?.length || 0) - (a.arr?.length || 0));
-  return copy[0];
-}
-
-function comparatorForItems(items) {
-  const sample = items.find((it) => it && typeof it === 'object') ?? items[0];
-  let key = null;
-  if (sample && typeof sample === 'object') {
-    if ('id' in sample) key = 'id';
-    else if ('title' in sample) key = 'title';
-    else if ('name' in sample) key = 'name';
-  }
-  return (a, b) => {
-    const va = key ? a?.[key] : a;
-    const vb = key ? b?.[key] : b;
-    if (typeof va === 'number' && typeof vb === 'number') return va - vb;
-    // numeric-ish strings
-    const pa = typeof va === 'string' && /^\d+$/.test(va) ? Number.parseInt(va, 10) : NaN;
-    const pb = typeof vb === 'string' && /^\d+$/.test(vb) ? Number.parseInt(vb, 10) : NaN;
-    if (Number.isFinite(pa) && Number.isFinite(pb)) return pa - pb;
-    return String(va).localeCompare(String(vb));
-  };
-}
-
-function isSorted(arr, cmp) {
-  for (let i = 1; i < arr.length; i++) {
-    if (cmp(arr[i - 1], arr[i]) > 0) return false;
-  }
-  return true;
-}
-
-function normalizeForHash(merged, warnings) {
-  const copy = cloneDeep(merged);
-  const data = copy?.data;
-  if (!data || typeof data !== 'object') return copy;
-  for (const [secKey, secVal] of Object.entries(data)) {
-    const arrays = findArraysInSection(secVal);
-    for (const a of arrays) {
-      const cmp = comparatorForItems(a.arr);
-      if (!isSorted(a.arr, cmp)) {
-        const sorted = a.arr.slice().sort(cmp);
-        if (Array.isArray(secVal)) {
-          copy.data[secKey] = sorted;
-        } else if (a.key != null) {
-          copy.data[secKey][a.key] = sorted;
-        }
-        warnings.push(
-          `warn: ${secKey}${a.key ? '.' + a.key : ''} not sorted; used sorted order for hash`,
-        );
-      }
-    }
-  }
-  return copy;
-}
-
-function deriveCounts(merged) {
-  const sections = [];
-  const data = merged?.data && typeof merged.data === 'object' ? merged.data : {};
-  let overall = 0;
-  for (const [key, val] of Object.entries(data)) {
-    const arrays = findArraysInSection(val);
-    const primary = pickPrimaryArray(arrays);
-    const primaryCount = primary?.arr?.length ?? (Array.isArray(val) ? val.length : 0) ?? 0;
-    overall += primaryCount;
-    const details = arrays
-      .filter((a) => a.key)
-      .map((a) => `${a.key}=${a.arr.length}`)
-      .join(', ');
-    sections.push({ key, count: primaryCount, details });
-  }
-  return { sections, overall };
-}
-
-function checkMeta(merged) {
-  const vio = [];
-  const sources = merged?.meta?.sources;
-  const dataKeys = Object.keys(merged?.data || {});
-  if (!sources || typeof sources !== 'object') {
-    vio.push('meta.sources is missing or not an object');
-    return vio;
-  }
-  for (const k of dataKeys) {
-    const m = sources[k];
-    if (!m || typeof m !== 'object') {
-      vio.push(`meta.sources.${k} missing`);
-      continue;
-    }
-    const hasAny =
-      m.version != null ||
-      m.retrievedAt != null ||
-      Number.isFinite(m.count) ||
-      Number.isFinite(m.techniques) ||
-      Number.isFinite(m.tactics) ||
-      m.sha256 != null ||
-      m.url != null ||
-      m.sourceUrl != null;
-    if (!hasAny) vio.push(`meta.sources.${k} lacks provenance fields`);
-  }
-  return vio;
-}
-
-function prettySummary({ sections, overall }, contentHash) {
-  const parts = sections.map((s) =>
-    s.details ? `${s.key}: ${s.count} (${s.details})` : `${s.key}: ${s.count}`,
-  );
-  return [
-    `Counts → ${parts.join(' | ')}`,
-    `Total → ${overall}`,
-    `Content SHA-256 → ${contentHash}`,
-  ].join('\n');
 }
 
 async function main() {

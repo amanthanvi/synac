@@ -54,13 +54,18 @@ function computeDelay(backoffMs, attempt) {
 
 async function doFetchWithRetry(
   url,
-  init,
-  retries,
-  backoffMs,
-  acceptHeader,
-  parseFn,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
+  {
+    init = {},
+    retries = DEFAULT_RETRIES,
+    backoffMs = DEFAULT_BACKOFF_MS,
+    acceptHeader = '*/*',
+    parseFn,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+  } = {},
 ) {
+  if (typeof parseFn !== 'function') {
+    throw new Error('parseFn is required');
+  }
   const ua = 'SynAc-ETL/1.0 (+https://synac.app)';
   const headers = { 'user-agent': ua, accept: acceptHeader, ...(init?.headers || {}) };
 
@@ -96,13 +101,20 @@ export async function fetchJsonPinned(
   retries = DEFAULT_RETRIES,
   backoffMs = DEFAULT_BACKOFF_MS,
 ) {
-  return doFetchWithRetry(url, init, retries, backoffMs, 'application/json', async (res) => {
-    if (res.status === 204) return null;
-    try {
-      return await res.json();
-    } catch (e) {
-      throw new Error(`Failed to parse JSON from ${url}: ${e.message || e}`);
-    }
+  return doFetchWithRetry(url, {
+    init,
+    retries,
+    backoffMs,
+    acceptHeader: 'application/json',
+    parseFn: async (res) => {
+      if (res.status === 204) return null;
+      try {
+        return await res.json();
+      } catch (e) {
+        throw new Error(`Failed to parse JSON from ${url}: ${e.message || e}`);
+      }
+    },
+    // timeoutMs defaults inside doFetchWithRetry
   });
 }
 
@@ -117,13 +129,12 @@ export async function fetchBufferPinned(
   backoffMs = DEFAULT_BACKOFF_MS,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 ) {
-  return doFetchWithRetry(
-    url,
+  return doFetchWithRetry(url, {
     init,
     retries,
     backoffMs,
-    '*/*',
-    async (res) => {
+    acceptHeader: '*/*',
+    parseFn: async (res) => {
       if (res.status === 204) return new Uint8Array(0);
 
       // NOTE: For large files, this approach loads the entire response into memory.
@@ -150,5 +161,5 @@ export async function fetchBufferPinned(
       return new Uint8Array(buf);
     },
     timeoutMs,
-  );
+  });
 }
