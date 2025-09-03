@@ -106,6 +106,9 @@ function validateEntries(entries) {
     if (!e.summary || typeof e.summary !== 'string') throw new Error(`${ctx}: missing summary`);
     if (e.summary.length > 240) throw new Error(`${ctx}: summary > 240 chars`);
     if (!Array.isArray(e.tags)) throw new Error(`${ctx}: tags must be array`);
+    if (!e.tags.every(tag => typeof tag === 'string')) {
+      throw new Error(`${ctx}: all tags must be strings`);
+    }
     if (!Array.isArray(e.sources) || e.sources.length < 1 || e.sources.length > 3) {
       throw new Error(`${ctx}: sources must have 1-3 items`);
     }
