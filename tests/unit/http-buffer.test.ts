@@ -101,6 +101,31 @@ describe('fetchBufferPinned', () => {
     );
     expect(calls).toBe(1);
   });
+  it('does not retry on non-transient 400 and throws', async () => {
+    let calls = 0;
+    globalThis.fetch = vi.fn(async () => {
+      calls++;
+      return err(400, 'Bad Request');
+    }) as any;
+
+    await expect(fetchBufferPinned('https://example.test/bad-request', {}, 3, 1)).rejects.toThrow(
+      /HTTP 400/i,
+    );
+    expect(calls).toBe(1);
+  });
+
+  it('does not retry on non-transient 403 and throws', async () => {
+    let calls = 0;
+    globalThis.fetch = vi.fn(async () => {
+      calls++;
+      return err(403, 'Forbidden');
+    }) as any;
+
+    await expect(fetchBufferPinned('https://example.test/forbidden', {}, 3, 1)).rejects.toThrow(
+      /HTTP 403/i,
+    );
+    expect(calls).toBe(1);
+  });
 
   it('retries on network error (ECONNRESET) and succeeds', async () => {
     let calls = 0;

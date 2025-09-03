@@ -131,11 +131,14 @@ export async function fetchBufferPinned(
       // For files larger than MAX_RESPONSE_SIZE, consider using streaming APIs.
       const MAX_RESPONSE_SIZE = 50 * 1024 * 1024; // 50MB
 
-      const contentLength = res.headers.get('content-length');
-      if (contentLength && Number(contentLength) > MAX_RESPONSE_SIZE) {
-        throw new Error(
-          `Response too large (${contentLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`,
-        );
+      const contentLengthHeader = res.headers.get('content-length');
+      if (contentLengthHeader) {
+        const contentLength = Number.parseInt(contentLengthHeader, 10);
+        if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_SIZE) {
+          throw new Error(
+            `Response too large (${contentLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`,
+          );
+        }
       }
 
       const buf = await res.arrayBuffer();
