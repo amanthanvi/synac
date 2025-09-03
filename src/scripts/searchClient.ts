@@ -1,6 +1,7 @@
 import MiniSearch from 'minisearch';
-import { searchOptions } from '../lib/searchBuild';
+import { searchOptions } from '../lib/searchOptions';
 import { ENABLE_TELEMETRY } from '../lib/constants';
+import { normalizeQuery, normalizeTokens } from '../lib/tokenize';
 declare const __BUILD_TIME__: string | number;
 
 // Globals for test coordination
@@ -14,10 +15,29 @@ declare global {
   const input = document.getElementById('q') as HTMLInputElement | null;
   const list = document.getElementById('results') as HTMLUListElement | null;
   const count = document.getElementById('count') as HTMLElement | null;
-  const filters = document.getElementById('filters') as HTMLDivElement | null;
-  const activeKinds = new Set<string>();
+
+  // Facet containers
+  const sourceFilters = document.getElementById('filters') as HTMLDivElement | null; // Sources
+  const typeFilters = document.getElementById('type-filters') as HTMLDivElement | null; // Types
+  const tagFilters = document.getElementById('tag-filters') as HTMLDivElement | null; // Tags (chips, dynamic)
 
   if (!input || !list || !count) return;
+
+  // Supported facet values (stable)
+  const SUPPORTED_SOURCES = new Set(['NIST', 'ATTACK', 'CWE', 'CAPEC', 'RFC']);
+  const SUPPORTED_TYPES = new Set([
+    'protocol',
+    'vulnerability',
+    'attack-pattern',
+    'crypto',
+    'identity',
+    'concept',
+  ]);
+
+  // Current selections
+  let selectedSources = new Set<string>();
+  let selectedTypes = new Set<string>();
+  let selectedTags = new Set<string>();
 
   // Keyboard shortcuts: "/" to focus search, "Escape" to clear/blur
   window.addEventListener('keydown', (e) => {
@@ -27,7 +47,6 @@ declare global {
     const isContentEditable = !!(active && (active as HTMLElement).isContentEditable);
     const isReadOnly = !!(active && 'readOnly' in (active as any) && (active as any).readOnly);
     const isDisabled = !!(active && 'disabled' in (active as any) && (active as any).disabled);
-    // Only treat as editing if it's a form element AND not readOnly/disabled, or if it's contentEditable
     const isEditing = (isFormEl && !isReadOnly && !isDisabled) || isContentEditable;
 
     if (e.key === '/' && !isEditing) {
@@ -35,6 +54,7 @@ declare global {
       input.focus();
     } else if (e.key === 'Escape' && document.activeElement === input) {
       input.value = '';
+      updateUrlFromState();
       render([]);
       input.blur();
     }
@@ -43,6 +63,7 @@ declare global {
   let mini: MiniSearch | null = null;
   // Will be replaced by payload.options.searchOptions if present
   let currentSearchOptions: any = searchOptions.searchOptions;
+  let availableTags: string[] = [];
 
   function escapeHtml(s: string) {
     return String(s)
@@ -80,20 +101,37 @@ declare global {
       const li = document.createElement('li');
       li.className = 'result-item';
       li.setAttribute('role', 'listitem');
+
       const a = document.createElement('a');
       a.href = `/terms/${it.id}`;
       a.className = 'result-link';
+
       const title = document.createElement('div');
       title.className = 'result-title';
+
       const strong = document.createElement('strong');
       strong.innerHTML = highlight(String(it.term || ''), tokens);
       title.appendChild(strong);
+
+      // Alias badge (non-intrusive)
+      if (it.matchedViaAlias) {
+        const ab = document.createElement('span');
+        ab.className = 'badge';
+        ab.textContent = 'Alias match';
+        const sr = document.createElement('span');
+        sr.className = 'sr-only';
+        sr.textContent = ' (matched via alias)';
+        ab.appendChild(sr);
+        title.appendChild(ab);
+      }
+
       if (Array.isArray(it.acronym) && it.acronym.length) {
         const badge = document.createElement('span');
         badge.className = 'badge';
         badge.textContent = it.acronym.join(', ');
         title.appendChild(badge);
       }
+
       if (Array.isArray(it.sourceKinds) && it.sourceKinds.length) {
         for (const k of it.sourceKinds) {
           const kind = document.createElement('span');
@@ -102,10 +140,13 @@ declare global {
           title.appendChild(kind);
         }
       }
+
       const meta = document.createElement('div');
       meta.className = 'result-meta';
-      if (Array.isArray(it.tags) && it.tags.length)
+      if (Array.isArray(it.tags) && it.tags.length) {
         meta.textContent = it.tags.map((t: string) => `#${t}`).join(' ');
+      }
+
       a.appendChild(title);
       a.appendChild(meta);
       li.appendChild(a);
@@ -137,6 +178,101 @@ declare global {
     } catch {}
     return m;
   };
+
+  function parseUrlState() {
+    const usp = new URLSearchParams(location.search);
+    const q = usp.get('q') || '';
+    const splitCsv = (v: string | null) =>
+      (v ? v.split(',') : []).map((s) => s.trim()).filter(Boolean);
+    const sources = splitCsv(usp.get('sources'))
+      .map((s) => s.toUpperCase())
+      .filter((s) => SUPPORTED_SOURCES.has(s));
+    const types = splitCsv(usp.get('types')).filter((t) => SUPPORTED_TYPES.has(t));
+    const tags = splitCsv(usp.get('tags'));
+    return { q, sources, types, tags };
+  }
+
+  function updateUrlFromState(push = false) {
+    const usp = new URLSearchParams(location.search);
+    // Preserve unknown params by deleting only known keys
+    for (const k of ['q', 'sources', 'types', 'tags']) usp.delete(k);
+
+    const q = input!.value.trim();
+    if (q) usp.set('q', q);
+    if (selectedSources.size) usp.set('sources', Array.from(selectedSources).join(','));
+    if (selectedTypes.size) usp.set('types', Array.from(selectedTypes).join(','));
+    if (selectedTags.size) usp.set('tags', Array.from(selectedTags).join(','));
+
+    const newUrl = `${location.pathname}?${usp.toString()}${location.hash || ''}`;
+    if (push) {
+      history.pushState(null, '', newUrl);
+    } else {
+      history.replaceState(null, '', newUrl);
+    }
+  }
+
+  function syncUiFromState() {
+    const st = parseUrlState();
+    input!.value = st.q;
+    selectedSources = new Set(st.sources);
+    selectedTypes = new Set(st.types);
+    selectedTags = new Set(st.tags);
+
+    // sync source chips aria-pressed
+    if (sourceFilters) {
+      const buttons = Array.from(
+        sourceFilters.querySelectorAll('button[data-kind]'),
+      ) as HTMLButtonElement[];
+      for (const btn of buttons) {
+        const kind = btn.getAttribute('data-kind') || '';
+        const on = selectedSources.has(kind);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.classList.toggle('btn-chip--active', on);
+      }
+    }
+    // sync type chips
+    if (typeFilters) {
+      const buttons = Array.from(
+        typeFilters.querySelectorAll('button[data-type]'),
+      ) as HTMLButtonElement[];
+      for (const btn of buttons) {
+        const t = btn.getAttribute('data-type') || '';
+        const on = selectedTypes.has(t);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.classList.toggle('btn-chip--active', on);
+      }
+    }
+    // sync tags (if rendered already)
+    if (tagFilters) {
+      const buttons = Array.from(
+        tagFilters.querySelectorAll('button[data-tag]'),
+      ) as HTMLButtonElement[];
+      for (const btn of buttons) {
+        const t = btn.getAttribute('data-tag') || '';
+        const on = selectedTags.has(t);
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.classList.toggle('btn-chip--active', on);
+      }
+    }
+  }
+
+  function renderTagChips() {
+    if (!tagFilters) return;
+    tagFilters.innerHTML = '';
+    if (!availableTags || !availableTags.length) return;
+    const frag = document.createDocumentFragment();
+    for (const tag of availableTags) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn-chip';
+      b.setAttribute('data-tag', tag);
+      b.setAttribute('aria-pressed', selectedTags.has(tag) ? 'true' : 'false');
+      b.textContent = `#${tag}`;
+      if (selectedTags.has(tag)) b.classList.add('btn-chip--active');
+      frag.appendChild(b);
+    }
+    tagFilters.appendChild(frag);
+  }
 
   const ensureIndex = async (): Promise<MiniSearch | null> => {
     if (mini) return mini;
@@ -178,6 +314,13 @@ declare global {
       }
       currentSearchOptions =
         (payload.options && payload.options.searchOptions) || currentSearchOptions;
+
+      // tags meta for rendering tag chips
+      if (Array.isArray(payload.tags)) {
+        availableTags = payload.tags.slice(0, 300); // keep UI manageable
+        renderTagChips();
+      }
+
       try {
         window.__synacIndexReady = true;
       } catch {}
@@ -196,11 +339,57 @@ declare global {
     }
   };
 
+  function applyFacetFilters(results: any[], qTokens: string[]): any[] {
+    const srcSel = Array.from(selectedSources);
+    const typeSel = Array.from(selectedTypes);
+    const tagSel = Array.from(selectedTags);
+
+    // Decorate results with matchedViaAlias and apply deterministic tie-break
+    const decorated = results.map((r: any) => {
+      const aliasTokens: string[] = Array.isArray(r.aliasTokens) ? r.aliasTokens : [];
+      const aliasHit = aliasTokens.length ? aliasTokens.some((t) => qTokens.includes(t)) : false;
+      const idHit = normalizeTokens(String(r.id || '')).some((t) => qTokens.includes(t));
+      const titleHit = normalizeTokens(String(r.term || '')).some((t) => qTokens.includes(t));
+      const matchedViaAlias = !!(aliasHit && !(idHit || titleHit));
+      return { ...r, matchedViaAlias };
+    });
+
+    const filtered = decorated.filter((r: any) => {
+      // sources: AND within group (doc must include all selected source kinds)
+      if (srcSel.length) {
+        const kinds: string[] = Array.isArray(r.sourceKinds) ? r.sourceKinds : [];
+        for (const s of srcSel) if (!kinds.includes(s)) return false;
+      }
+      // types: membership (OR within group)
+      if (typeSel.length) {
+        const t = String(r.typeCategory || '');
+        if (!typeSel.includes(t)) return false;
+      }
+      // tags: AND within group (doc must include all selected tags)
+      if (tagSel.length) {
+        const tags: string[] = Array.isArray(r.tags) ? r.tags : [];
+        for (const t of tagSel) if (!tags.includes(t)) return false;
+      }
+      return true;
+    });
+
+    // Deterministic sort: score desc, then id asc
+    filtered.sort((a: any, b: any) => {
+      const sa = typeof a.score === 'number' ? a.score : 0;
+      const sb = typeof b.score === 'number' ? b.score : 0;
+      if (sb !== sa) return sb - sa;
+      return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+
+    return filtered;
+  }
+
   const onInput = async () => {
     const q = input!.value.trim();
     const m = await ensureIndex();
     if (!m) return;
     if (!q) {
+      updateUrlFromState();
       render([], []);
       return;
     }
@@ -222,50 +411,96 @@ declare global {
         }
       } catch {}
     }
-    const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
-    // In DOM fallback mode, docs do not contain sourceKinds; bypass kind filtering
+    const qTokens = normalizeQuery(q);
+    // In DOM fallback mode, docs do not contain facets; bypass filtering
     const isFallback = !!(
       count &&
       (count as HTMLElement).dataset &&
       (count as HTMLElement).dataset.mode === 'fallback'
     );
-    const filtered =
-      activeKinds.size && !isFallback
-        ? results.filter(
-            (r: any) =>
-              Array.isArray(r.sourceKinds) &&
-              r.sourceKinds.some((k: string) => activeKinds.has(String(k))),
-          )
-        : results;
-    render(filtered, tokens);
+    const filtered = isFallback ? results : applyFacetFilters(results, qTokens);
+    render(filtered, qTokens);
   };
 
+  // Input change -> update URL and search
   input.addEventListener('input', () => {
+    updateUrlFromState();
     void onInput();
   });
 
-  if (filters) {
-    filters.addEventListener('click', (e) => {
+  // Source facet toggles
+  if (sourceFilters) {
+    sourceFilters.addEventListener('click', (e) => {
       const target = (e.target as HTMLElement).closest(
         'button[data-kind]',
       ) as HTMLButtonElement | null;
       if (!target) return;
       const kind = target.getAttribute('data-kind');
       if (!kind) return;
-      if (activeKinds.has(kind)) {
-        activeKinds.delete(kind);
-        target.setAttribute('aria-pressed', 'false');
-        target.classList.remove('btn-chip--active');
-      } else {
-        activeKinds.add(kind);
-        target.setAttribute('aria-pressed', 'true');
-        target.classList.add('btn-chip--active');
-      }
-      // Re-run search with current query (may be empty)
+      const next = target.getAttribute('aria-pressed') !== 'true';
+      target.setAttribute('aria-pressed', next ? 'true' : 'false');
+      target.classList.toggle('btn-chip--active', next);
+      if (next) selectedSources.add(kind);
+      else selectedSources.delete(kind);
+      updateUrlFromState();
       queueMicrotask(onInput);
     });
   }
 
-  // Warm index in background
-  ensureIndex().catch(() => {});
+  // Type facet toggles
+  if (typeFilters) {
+    typeFilters.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest(
+        'button[data-type]',
+      ) as HTMLButtonElement | null;
+      if (!target) return;
+      const t = target.getAttribute('data-type');
+      if (!t) return;
+      const next = target.getAttribute('aria-pressed') !== 'true';
+      target.setAttribute('aria-pressed', next ? 'true' : 'false');
+      target.classList.toggle('btn-chip--active', next);
+      if (next) selectedTypes.add(t);
+      else selectedTypes.delete(t);
+      updateUrlFromState();
+      queueMicrotask(onInput);
+    });
+  }
+
+  // Tag facet toggles
+  if (tagFilters) {
+    tagFilters.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest(
+        'button[data-tag]',
+      ) as HTMLButtonElement | null;
+      if (!target) return;
+      const t = target.getAttribute('data-tag');
+      if (!t) return;
+      const next = target.getAttribute('aria-pressed') !== 'true';
+      target.setAttribute('aria-pressed', next ? 'true' : 'false');
+      target.classList.toggle('btn-chip--active', next);
+      if (next) selectedTags.add(t);
+      else selectedTags.delete(t);
+      updateUrlFromState();
+      queueMicrotask(onInput);
+    });
+  }
+
+  // Support back/forward navigation to update UI and rerun queries
+  window.addEventListener('popstate', () => {
+    syncUiFromState();
+    void onInput();
+  });
+
+  // Initialize from URL, warm index and render tags (if available in payload)
+  syncUiFromState();
+  ensureIndex()
+    .then(() => {
+      renderTagChips();
+      syncUiFromState();
+      if (input!.value.trim()) void onInput();
+      try {
+        window.__synacIndexReady = true;
+      } catch {}
+    })
+    .catch(() => {});
 })();
