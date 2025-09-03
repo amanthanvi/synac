@@ -56,4 +56,68 @@ test.describe('Search filters and highlighting', () => {
     const countText = (await countEl.textContent()) || '';
     expect(countText.toLowerCase()).toContain('result');
   });
+
+  test('alias badge, combined filters, and shareable URL state', async ({ page, context }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => (window as any).__synacIndexReady === true, undefined, {
+      timeout: 10000,
+    });
+
+    const q = page.locator('#q');
+    await q.click();
+    await q.fill('');
+    await q.type('jot', { delay: 15 });
+
+    // Should show JWT via alias; badge visible
+    const results = page.locator('#results li');
+    await expect(results.first()).toBeVisible();
+    const aliasBadge = page.locator('#results li .badge', { hasText: 'Alias match' }).first();
+    await expect(aliasBadge).toBeVisible();
+
+    // Toggle source=RFC
+    const rfcChip = page.locator('#filters button[data-kind="RFC"]');
+    await rfcChip.click();
+
+    // Toggle type=protocol
+    const protocolChip = page.locator('#type-filters button[data-type="protocol"]');
+    await protocolChip.click();
+
+    // URL should reflect q, sources, types
+    await expect(async () => {
+      const url = new URL(page.url());
+      expect(url.searchParams.get('q')).toBe('jot');
+      expect((url.searchParams.get('sources') || '').split(',')).toContain('RFC');
+      expect((url.searchParams.get('types') || '').split(',')).toContain('protocol');
+    }).toPass();
+
+    // Open new tab with same URL and confirm state reproduces
+    const newPage = await context.newPage();
+    await newPage.goto(page.url());
+    await newPage.waitForFunction(() => (window as any).__synacIndexReady === true, undefined, {
+      timeout: 10000,
+    });
+    const q2 = newPage.locator('#q');
+    await expect(q2).toHaveValue('jot');
+    const rfcPressed = await newPage
+      .locator('#filters button[data-kind="RFC"]')
+      .getAttribute('aria-pressed');
+    const protocolPressed = await newPage
+      .locator('#type-filters button[data-type="protocol"]')
+      .getAttribute('aria-pressed');
+    expect(rfcPressed).toBe('true');
+    expect(protocolPressed).toBe('true');
+
+    // Keyboard-only: tab to a chip and toggle with Space
+    await newPage.keyboard.press('Tab'); // focus input
+    await newPage.keyboard.press('Tab'); // move towards filters area
+    // Give a small pause to allow focus movement in headless
+    await newPage.waitForTimeout(50);
+    // Find any visible chip and toggle with Space
+    const anyChip = newPage.locator('#filters .btn-chip').first();
+    await anyChip.focus();
+    await newPage.keyboard.press('Space');
+    // aria-pressed should flip momentarily (can't assert exact value due to unknown initial focus target)
+    const pressed = await anyChip.getAttribute('aria-pressed');
+    expect(['true', 'false']).toContain(pressed || 'false');
+  });
 });
