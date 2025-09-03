@@ -1,0 +1,26 @@
+{
+  "jwt": {
+    "aliases": ["json web token", "jot", "jwt token"],
+    "sources": [{ "label": "rfc", "id": "7519", "type": "normative" }]
+  },
+  "tls": {
+    "aliases": ["ssl", "secure sockets layer", "ssl/tls"],
+    "sources": [{ "label": "rfc", "id": "8446", "type": "normative" }]
+  },
+  "aitm": {
+    "aliases": ["mitm", "man-in-the-middle", "man in the middle"],
+    "sources": [{ "label": "capec", "id": "94", "type": "normative" }]
+  },
+  "csrf": {
+    "aliases": ["cross site request forgery", "cross-site request forgery"]
+  },
+  "xss": {
+    "aliases": ["cross site scripting", "cross-site scripting"]
+  },
+  "dos": {
+    "aliases": ["denial-of-service", "denial of service", "dos attack"]
+  },
+  "http2": {
+    "aliases": ["http/2", "http 2"]
+  }
+}
