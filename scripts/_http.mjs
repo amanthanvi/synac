@@ -48,57 +48,38 @@ function shouldRetry(error, res) {
   );
 }
 
-export async function fetchJsonPinned(
+function computeDelay(backoffMs, attempt) {
+  return backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
+}
+
+async function doFetchWithRetry(
   url,
-  init = {},
-  retries = DEFAULT_RETRIES,
-  backoffMs = DEFAULT_BACKOFF_MS,
+  init,
+  retries,
+  backoffMs,
+  acceptHeader,
+  parseFn,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
 ) {
   const ua = 'SynAc-ETL/1.0 (+https://synac.app)';
-  const baseHeaders = {
-    'user-agent': ua,
-    accept: 'application/json',
-  };
-
-  // Merge headers (case-insensitive keys preserved as provided)
-  const mergedHeaders = { ...baseHeaders, ...(init.headers || {}) };
+  const headers = { 'user-agent': ua, accept: acceptHeader, ...(init?.headers || {}) };
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     const ac = new AbortController();
-    const t = setTimeout(() => ac.abort(), DEFAULT_TIMEOUT_MS);
+    const t = setTimeout(() => ac.abort(), timeoutMs);
     try {
-      const res = await fetch(url, {
-        ...init,
-        headers: mergedHeaders,
-        signal: ac.signal,
-      });
-
+      const res = await fetch(url, { ...init, headers, signal: ac.signal });
       if (!res.ok) {
-        // Retry on transient HTTP statuses
         if (attempt < retries && isTransientStatus(res.status)) {
-          const delay = backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
-          await sleep(delay);
+          await sleep(computeDelay(backoffMs, attempt));
           continue;
         }
         throw new Error(`HTTP ${res.status} ${res.statusText}`);
       }
-
-      // 204 No Content: return null
-      if (res.status === 204) {
-        return null;
-      }
-
-      // Prefer JSON; still attempt to parse as JSON even without explicit header
-      try {
-        return await res.json();
-      } catch (e) {
-        throw new Error(`Failed to parse JSON from ${url}: ${e.message || e}`);
-      }
+      return await parseFn(res);
     } catch (err) {
-      // Retry on network/transient errors
       if (attempt < retries && shouldRetry(err)) {
-        const delay = backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
-        await sleep(delay);
+        await sleep(computeDelay(backoffMs, attempt));
         continue;
       }
       throw err;
@@ -106,46 +87,44 @@ export async function fetchJsonPinned(
       clearTimeout(t);
     }
   }
-  // Should not reach here
-  throw new Error('fetchJsonPinned: Exhausted retries without a response');
+  throw new Error('Exhausted retries without a response');
 }
 
-// Buffer fetch with same retry/backoff semantics as fetchJsonPinned
-export async function fetchBufferPinned(
+export async function fetchJsonPinned(
   url,
   init = {},
   retries = DEFAULT_RETRIES,
   backoffMs = DEFAULT_BACKOFF_MS,
 ) {
-  const ua = 'SynAc-ETL/1.0 (+https://synac.app)';
-  const baseHeaders = {
-    'user-agent': ua,
-    accept: '*/*',
-  };
-  const mergedHeaders = { ...baseHeaders, ...(init.headers || {}) };
-
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const ac = new AbortController();
-    const t = setTimeout(() => ac.abort(), DEFAULT_TIMEOUT_MS);
+  return doFetchWithRetry(url, init, retries, backoffMs, 'application/json', async (res) => {
+    if (res.status === 204) return null;
     try {
-      const res = await fetch(url, {
-        ...init,
-        headers: mergedHeaders,
-        signal: ac.signal,
-      });
+      return await res.json();
+    } catch (e) {
+      throw new Error(`Failed to parse JSON from ${url}: ${e.message || e}`);
+    }
+  });
+}
 
-      if (!res.ok) {
-        if (attempt < retries && isTransientStatus(res.status)) {
-          const delay = backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
-          await new Promise((r) => setTimeout(r, delay));
-          continue;
-        }
-        throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      }
-
-      if (res.status === 204) {
-        return new Uint8Array(0);
-      }
+/**
+ * Buffer fetch with same retry/backoff semantics as fetchJsonPinned, delegating to doFetchWithRetry
+ * and enforcing a conservative maximum payload size to avoid excessive memory usage.
+ */
+export async function fetchBufferPinned(
+  url,
+  init = {},
+  retries = DEFAULT_RETRIES,
+  backoffMs = DEFAULT_BACKOFF_MS,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+) {
+  return doFetchWithRetry(
+    url,
+    init,
+    retries,
+    backoffMs,
+    '*/*',
+    async (res) => {
+      if (res.status === 204) return new Uint8Array(0);
 
       // NOTE: For large files, this approach loads the entire response into memory.
       // To avoid excessive memory usage, we limit the maximum allowed response size.
@@ -154,29 +133,19 @@ export async function fetchBufferPinned(
 
       const contentLength = res.headers.get('content-length');
       if (contentLength && Number(contentLength) > MAX_RESPONSE_SIZE) {
-        throw new Error(`Response too large (${contentLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`);
+        throw new Error(
+          `Response too large (${contentLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`,
+        );
       }
 
       const buf = await res.arrayBuffer();
       if (buf.byteLength > MAX_RESPONSE_SIZE) {
-        throw new Error(`Response too large (${buf.byteLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`);
+        throw new Error(
+          `Response too large (${buf.byteLength} bytes). Max allowed is ${MAX_RESPONSE_SIZE} bytes. Use streaming for large files.`,
+        );
       }
       return new Uint8Array(buf);
-    } catch (err) {
-      if (attempt < retries && shouldRetry(err)) {
-        // Log retry attempt for observability
-        console.warn(
-          `Retrying request (attempt ${attempt + 1}/${retries}) after error:`,
-          err
-        );
-        const delay = backoffMs * Math.pow(2, attempt) + Math.floor(Math.random() * 250);
-        await new Promise((r) => setTimeout(r, delay));
-        continue;
-      }
-      throw err;
-    } finally {
-      clearTimeout(t);
-    }
-  }
-  throw new Error('fetchBufferPinned: Exhausted retries without a response');
+    },
+    timeoutMs,
+  );
 }

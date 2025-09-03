@@ -22,16 +22,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4 pinned
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 pinned
         with:
           node-version-file: .nvmrc
           cache: npm
 
       - name: Cache ETL artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4 pinned
         with:
           path: |
             data/raw
@@ -73,6 +73,19 @@ jobs:
           set -euo pipefail
           npm run test | tee test.txt
 
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4 pinned
+        with:
+          name: etl-refresh-logs-${{ github.run_id }}
+          path: |
+            verify-summary.txt
+            typecheck.txt
+            lint.txt
+            test.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Compose PR body
         if: always()
         run: |
@@ -106,8 +119,8 @@ jobs:
           } > pr-body.md
 
       - name: Create Pull Request with changes under data/
-        if: always()
-        uses: peter-evans/create-pull-request@v6
+        if: ${{ success() }}
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6 pinned
         with:
           commit-message: 'ci(etl): refresh vendor datasets and merged index'
           title: 'ci(etl): weekly vendor refresh'
