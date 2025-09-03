@@ -1,0 +1,20 @@
+---
+id: 'sql-injection'
+term: 'SQL Injection'
+summary: 'SQL Injection occurs when untrusted input is concatenated into SQL queries, enabling execution of unintended commands.'
+tags: ['appsec', 'cwe', 'capec']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-89'
+    url: 'https://cwe.mitre.org/data/definitions/89.html'
+    normative: true
+  - kind: 'CAPEC'
+    citation: 'CAPEC-66'
+    url: 'https://capec.mitre.org/data/definitions/66.html'
+    normative: false
+mappings:
+  cweIds: ['CWE-89']
+  capecIds: ['CAPEC-66']
+updatedAt: '2025-09-02T00:00:00.000Z'
+---
+Use parameterized queries, least privilege, and input validation to prevent injection.

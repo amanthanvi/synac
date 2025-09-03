@@ -1,0 +1,15 @@
+---
+id: 'ssrf'
+term: 'Server-Side Request Forgery (SSRF)'
+summary: 'SSRF makes the server initiate requests to internal or external resources, often bypassing network access controls.'
+tags: ['appsec', 'cwe']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-918'
+    url: 'https://cwe.mitre.org/data/definitions/918.html'
+    normative: true
+mappings:
+  cweIds: ['CWE-918']
+updatedAt: '2025-09-02T00:00:00.000Z'
+---
+Mitigate with strict allowlists, metadata service protections, and egress controls.

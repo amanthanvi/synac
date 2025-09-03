@@ -1,0 +1,135 @@
+name: ETL Refresh
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: etl-refresh
+  cancel-in-progress: true
+
+env:
+  ETL_FORCE_REFRESH: 'true'
+  NODE_ENV: 'production'
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4 pinned
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 pinned
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Cache ETL artifacts
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4 pinned
+        with:
+          path: |
+            data/raw
+            scripts/.cache
+          key: etl-raw-${{ github.run_id }}
+          restore-keys: |
+            etl-raw-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ETL (vendors)
+        run: npm run etl:all
+
+      - name: Merge datasets
+        run: npm run etl:merge
+
+      - name: Verify merged
+        id: verify
+        run: |
+          set -e
+          npm run etl:verify | tee verify-summary.txt
+
+      - name: Typecheck
+        id: typecheck
+        run: |
+          set -euo pipefail
+          npm run typecheck | tee typecheck.txt
+
+      - name: Lint
+        id: lint
+        run: |
+          set -euo pipefail
+          npm run lint | tee lint.txt
+
+      - name: Test
+        id: unit
+        run: |
+          set -euo pipefail
+          npm run test | tee test.txt
+
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4 pinned
+        with:
+          name: etl-refresh-logs-${{ github.run_id }}
+          path: |
+            verify-summary.txt
+            typecheck.txt
+            lint.txt
+            test.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Compose PR body
+        if: always()
+        run: |
+          {
+            echo "Short summary from verify-merged:"
+            echo
+            cat verify-summary.txt || true
+            echo
+            echo "Results:"
+            echo "- typecheck: ${{ steps.typecheck.outcome }}"
+            echo "- lint: ${{ steps.lint.outcome }}"
+            echo "- test: ${{ steps.unit.outcome }}"
+            echo
+            echo "Outputs:"
+            echo "typecheck:"
+            echo '```'
+            if [ -f typecheck.txt ]; then cat typecheck.txt; else echo "(no output captured)"; fi
+            echo '```'
+            echo
+            echo "lint:"
+            echo '```'
+            if [ -f lint.txt ]; then cat lint.txt; else echo "(no output captured)"; fi
+            echo '```'
+            echo
+            echo "test:"
+            echo '```'
+            if [ -f test.txt ]; then cat test.txt; else echo "(no output captured)"; fi
+            echo '```'
+            echo
+            echo "Validated: verify-merged passed; typecheck/lint/test executed."
+          } > pr-body.md
+
+      - name: Create Pull Request with changes under data/
+        if: ${{ success() }}
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6 pinned
+        with:
+          commit-message: 'ci(etl): refresh vendor datasets and merged index'
+          title: 'ci(etl): weekly vendor refresh'
+          body-path: pr-body.md
+          branch: chore/etl-refresh-${{ github.run_id }}
+          labels: |
+            data
+            automation
+            scheduled
+          add-paths: |
+            data/**
+            data/build/merged.json

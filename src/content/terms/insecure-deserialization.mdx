@@ -1,0 +1,15 @@
+---
+id: 'insecure-deserialization'
+term: 'Insecure Deserialization'
+summary: 'Insecure deserialization occurs when untrusted data is deserialized, enabling code execution or logic manipulation.'
+tags: ['appsec', 'cwe']
+sources:
+  - kind: 'CWE'
+    citation: 'CWE-502'
+    url: 'https://cwe.mitre.org/data/definitions/502.html'
+    normative: true
+mappings:
+  cweIds: ['CWE-502']
+updatedAt: '2025-09-02T00:00:00.000Z'
+---
+Avoid deserializing untrusted data and use safe formats; enforce integrity checks and type constraints.
