@@ -25,6 +25,12 @@ function basicClean(s: string): string {
       .trim()
   );
 }
+// Configurable special-case expansions (regex -> canonical token)
+const SPECIAL_EQUIVS: Array<[RegExp, string]> = [
+  [/^denial[\s-]?of[\s-]?service$/i, 'dos'],
+  [/^dos$/i, 'dos'],
+  [/^(?:http\/?2|http 2|http2)$/i, 'http2'],
+];
 
 /**
  * Expand tokens for separators "/" and "-" into:
@@ -47,18 +53,12 @@ function expandSepVariants(tok: string): string[] {
     out.add(tok.replace(/-/g, ''));
   }
 
-  // Special-case expansions
+  // Special-case expansions via configurable rules
   const hyphensToSpace = tok.replace(/-/g, ' ');
-  // Match variants of "denial of service" (case-insensitive, with/without hyphens, abbreviation)
-  if (
-    /^denial[\s-]?of[\s-]?service$/i.test(tok) ||
-    /^denial[\s-]?of[\s-]?service$/i.test(hyphensToSpace) ||
-    /^dos$/i.test(tok)
-  ) {
-    out.add('dos');
-  }
-  if (tok === 'http/2' || hyphensToSpace === 'http 2' || tok === 'http2') {
-    out.add('http2');
+  for (const [re, canonical] of SPECIAL_EQUIVS) {
+    if (re.test(tok) || re.test(hyphensToSpace)) {
+      out.add(canonical);
+    }
   }
 
   return Array.from(out);

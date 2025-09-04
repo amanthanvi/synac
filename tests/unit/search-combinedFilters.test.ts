@@ -83,4 +83,58 @@ describe('search: combined facet filters', () => {
     expect(broaderIds).toEqual(expect.arrayContaining(['jwt', 'jws', 'jwe']));
     expect(broaderIds).not.toContain('tls');
   });
+
+  it('tag-only filtering: query "json web" + tags=jose yields only JOSE docs', () => {
+    const docs: SearchDoc[] = [
+      {
+        id: 'jwt',
+        term: 'JSON Web Token',
+        acronym: ['JWT'],
+        aliases: [],
+        text: 'token',
+        tags: ['jose'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'identity',
+      },
+      {
+        id: 'jws',
+        term: 'JSON Web Signature',
+        acronym: ['JWS'],
+        aliases: [],
+        text: 'signature',
+        tags: ['jose'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'concept',
+      },
+      {
+        id: 'jwe',
+        term: 'JSON Web Encryption',
+        acronym: ['JWE'],
+        aliases: [],
+        text: 'encryption',
+        tags: ['jose'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'concept',
+      },
+      {
+        id: 'tls',
+        term: 'Transport Layer Security',
+        acronym: ['TLS'],
+        aliases: [],
+        text: 'protocol',
+        tags: ['crypto'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'protocol',
+      },
+    ];
+    const payload = buildIndexPayload(docs);
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
+
+    const raw = mini.search('json web', payload.options.searchOptions);
+    const filtered = applyFacetFilters(raw as any, { tags: ['jose'] });
+    const ids = filtered.map((r: any) => r.id);
+
+    expect(ids).toEqual(expect.arrayContaining(['jwt', 'jws', 'jwe']));
+    expect(ids).not.toContain('tls');
+  });
 });

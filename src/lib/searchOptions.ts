@@ -16,7 +16,18 @@ export const searchOptions = {
     'tags', // lower: tags
   ],
   // Fields returned on each hit (keep minimal to control payload size)
-  storeFields: ['id', 'term', 'acronym', 'tags', 'sourceKinds', 'typeCategory', 'aliasTokens'],
+  // Include derived token fields to align with buildIndexPayload enrichment
+  storeFields: [
+    'id',
+    'term',
+    'acronym',
+    'tags',
+    'sourceKinds',
+    'typeCategory',
+    'aliasTokens',
+    'slugTokens',
+    'titleTokens',
+  ],
   searchOptions: {
     prefix: true,
     fuzzy: 0.2,

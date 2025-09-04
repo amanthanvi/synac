@@ -22,6 +22,15 @@ test('client search works offline after warming the index', async ({ page, conte
   const q = page.locator('#q');
   await q.waitFor({ state: 'visible' });
 
+  // Wait until client search index is revived/warmed
+  await expect
+    .poll(
+      async () =>
+        (await page.evaluate(() => (window as any).__synacIndexReady === true)) ? 'ready' : 'not',
+      { timeout: 20000 },
+    )
+    .toBe('ready');
+
   // Trigger ensureIndex by performing an initial search online
   await q.fill('cross');
   await expect
