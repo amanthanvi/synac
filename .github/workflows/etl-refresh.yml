@@ -137,6 +137,10 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Notify when data changed but auto-PR disabled
+        if: ${{ env.ETL_ENABLE_AUTOPR != 'true' && steps.changes.outputs.changed == 'true' }}
+        run: echo "::warning::Data changed under 'data/' but auto-PR is disabled (ETL_ENABLE_AUTOPR != 'true'). Please commit and open a PR manually."
+
       - name: Auto-PR disabled
         if: ${{ env.ETL_ENABLE_AUTOPR != 'true' }}
         run: echo "auto-PR disabled (ETL_ENABLE_AUTOPR != 'true'); build/verify ran; fallback preserved"

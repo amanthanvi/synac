@@ -95,6 +95,14 @@ function normalizeFragment(frag, now) {
   };
 }
 
+function stableStringify(value) {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map((v) => stableStringify(v)).join(',')}]`;
+  const keys = Object.keys(value).sort();
+  const entries = keys.map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`);
+  return `{${entries.join(',')}}`;
+}
+
 function dedupeSortById(list, { onConflict } = {}) {
   const byId = new Map();
   for (const item of list) {
@@ -102,7 +110,9 @@ function dedupeSortById(list, { onConflict } = {}) {
     const k = String(item.id).trim();
     if (byId.has(k)) {
       const existing = byId.get(k);
-      if (JSON.stringify(existing) !== JSON.stringify(item)) {
+      const a = stableStringify(existing);
+      const b = stableStringify(item);
+      if (a !== b) {
         if (typeof onConflict === 'function') {
           onConflict(k, existing, item);
         } else {
@@ -133,7 +143,7 @@ function validateEntries(arr) {
   return true;
 }
 
-function normalizeEntries(json) {
+function normalizeEntries(json, onConflict) {
   // Try to accommodate both "entries"/"terms"/flat-array shapes
   const list = Array.isArray(json?.entries)
     ? json.entries
@@ -197,7 +207,10 @@ function normalizeEntries(json) {
   }
 
   return dedupeSortById(out, {
-    onConflict: (id) => {
+    onConflict: (id, existing, incoming) => {
+      if (typeof onConflict === 'function') {
+        onConflict(id, existing, incoming);
+      }
       console.warn(
         `[fetch-nist] Duplicate fragment id "${id}" with conflicting data detected. Keeping first occurrence.`,
       );
@@ -273,6 +286,7 @@ async function main() {
   let meta = null;
   let fromCache = false;
   let fallbackSource = null;
+  let duplicateConflicts = 0;
 
   try {
     const res = await loadVendorZip();
@@ -314,7 +328,7 @@ async function main() {
 
     // Next, reconstruct from existing fragments under data/ingest/nist/*.json (committed back-compat)
     try {
-      const dirFiles = await readdir(OUT_DIR_FRAG).catch(() => []);
+      const dirFiles = await readdir(OUT_DIR_FRAG);
       debugLog(
         '[nist][fb] OUT_DIR_FRAG:',
         OUT_DIR_FRAG,
@@ -338,7 +352,14 @@ async function main() {
           }
         }
         debugLog('[nist][fb] fragments collected:', frags.length);
-        const normalized = dedupeSortById(frags.map((f) => normalizeFragment(f, nowIso())));
+        const normalized = dedupeSortById(
+          frags.map((f) => normalizeFragment(f, nowIso())),
+          {
+            onConflict: () => {
+              duplicateConflicts++;
+            },
+          },
+        );
         if (validateEntries(normalized)) return { entries: normalized, source: 'OUT_DIR_FRAG' };
       }
     } catch (e) {
@@ -366,19 +387,17 @@ async function main() {
           if (nistSources.length === 0) continue;
           arr.push({
             id,
-            sources: nistSources.map((s) => ({
-              ...s,
-              citation: s?.citation != null ? String(s.citation).trim() : s?.citation,
-              url: s?.url != null ? String(s.url).trim() : s?.url,
-              excerpt: s?.excerpt != null ? String(s.excerpt).trim().slice(0, 400) : s?.excerpt,
-              date: s?.date != null ? String(s.date).trim().slice(0, 7) : s?.date,
-              kind: s?.kind != null ? String(s.kind).trim() : s?.kind,
-              normative: s?.normative !== undefined ? !!s.normative : s?.normative,
-            })),
-            updatedAt: nowIso(),
+            sources: nistSources,
           });
         }
-        const normalized = dedupeSortById(arr.map((f) => normalizeFragment(f, nowIso())));
+        const normalized = dedupeSortById(
+          arr.map((f) => normalizeFragment(f, nowIso())),
+          {
+            onConflict: () => {
+              duplicateConflicts++;
+            },
+          },
+        );
         if (validateEntries(normalized)) return { entries: normalized, source: 'BUILD_MERGED' };
       } catch (e) {
         debugLog('[nist][fb] BUILD_MERGED read failed:', e?.message || e);
@@ -393,7 +412,9 @@ async function main() {
     try {
       const { name: innerName, json } = pickFirstJsonFromZip(buf);
       debugLog('[nist] Picked JSON from ZIP:', innerName);
-      entries = normalizeEntries(json);
+      entries = normalizeEntries(json, () => {
+        duplicateConflicts++;
+      });
     } catch (e) {
       console.warn(
         '[nist] Failed to parse/normalize upstream ZIP; attempting cached fallback. Error:',
@@ -423,7 +444,6 @@ async function main() {
 
   // Ensure deterministic normalized output: normalize, dedupe, sort by slug.
   const nowTs = nowIso();
-  let duplicateConflicts = 0;
   entries = dedupeSortById(
     entries.map((frag) => normalizeFragment(frag, nowTs)).filter((f) => f.id),
     {
