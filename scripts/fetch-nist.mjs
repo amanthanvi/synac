@@ -42,6 +42,8 @@ const RAW_META = join(rawDir, 'meta.json');
 const OFFLINE = /^(1|true|yes)$/i.test(String(process.env.ETL_OFFLINE || ''));
 const FORCE = /^(1|true|yes)$/i.test(String(process.env.ETL_FORCE_REFRESH || ''));
 const TTL_HOURS = Number.parseInt(String(process.env.ETL_CACHE_TTL_HOURS || '24'), 10) || 24;
+// Allow deterministic fallback by default; set ETL_ALLOW_FALLBACK=false to preserve fail-fast behavior.
+const ALLOW_FALLBACK = !/^(0|false|no)$/i.test(String(process.env.ETL_ALLOW_FALLBACK ?? 'true'));
 
 function slugify(s) {
   return String(s || '')
@@ -130,9 +132,16 @@ function normalizeEntries(json) {
     });
   }
 
-  // Deterministic order by slug id
-  out.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return out;
+  // Deterministic order by slug id + dedupe
+  const byId = new Map();
+  for (const frag of out) {
+    if (!frag?.id) continue;
+    const k = String(frag.id).trim();
+    if (!byId.has(k)) byId.set(k, frag);
+  }
+  const deduped = Array.from(byId.values());
+  deduped.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return deduped;
 }
 
 function pickFirstJsonFromZip(buf) {
@@ -197,14 +206,105 @@ async function main() {
   await mkdir(OUT_DIR_FRAG, { recursive: true });
   await mkdir(OUT_DIR_ALL, { recursive: true });
 
-  const { buf, meta, fromCache } = await loadVendorZip();
-  if (!buf) return; // offline skip
+  // Conservative fallback: if upstream is flaky or empty, reuse last-known-good cache.
+  // Controlled by ETL_ALLOW_FALLBACK (default "true"). Keeps outputs deterministic and non-empty for CI.
+  let buf = null;
+  let meta = null;
+  let fromCache = false;
 
-  const { name: innerName, json } = pickFirstJsonFromZip(buf);
-  debugLog('[nist] Picked JSON from ZIP:', innerName);
+  try {
+    const res = await loadVendorZip();
+    buf = res.buf;
+    meta = res.meta;
+    fromCache = res.fromCache;
+  } catch (e) {
+    console.warn('[nist] Error loading vendor ZIP:', e?.message || e);
+  }
 
-  // Normalize to raw dataset and write meta
-  const entries = normalizeEntries(json);
+  async function tryFallback() {
+    // Prefer normalized raw artifact
+    if (await fileExists(RAW_JSON)) {
+      try {
+        const cached = await readJson(RAW_JSON);
+        if (Array.isArray(cached) && cached.length > 0) return cached;
+      } catch {}
+    }
+    // Then consolidated back-compat file
+    if (await fileExists(OUT_FILE_ALL)) {
+      try {
+        const consolidated = await readJson(OUT_FILE_ALL);
+        const arr = Array.isArray(consolidated?.entries) ? consolidated.entries : [];
+        if (arr.length > 0) return arr;
+      } catch {}
+    }
+    return [];
+  }
+
+  let entries = [];
+
+  if (buf) {
+    try {
+      const { name: innerName, json } = pickFirstJsonFromZip(buf);
+      debugLog('[nist] Picked JSON from ZIP:', innerName);
+      entries = normalizeEntries(json);
+    } catch (e) {
+      console.warn(
+        '[nist] Failed to parse/normalize upstream ZIP; attempting cached fallback. Error:',
+        e?.message || e,
+      );
+      entries = [];
+    }
+  }
+
+  if (!entries || entries.length === 0) {
+    if (ALLOW_FALLBACK) {
+      const fb = await tryFallback();
+      if (fb.length > 0) {
+        console.warn(
+          '[nist] Upstream empty/invalid; reusing last-known-good cached dataset (ETL_ALLOW_FALLBACK=true).',
+        );
+        entries = fb;
+        fromCache = true;
+      } else {
+        throw new Error('[nist] Upstream empty/invalid and no cached fallback available');
+      }
+    } else {
+      throw new Error('[nist] Upstream empty/invalid and ETL_ALLOW_FALLBACK=false');
+    }
+  }
+
+  // Ensure deterministic normalized output: trim fields, dedupe, sort by slug.
+  // normalizeEntries already trims and lowercases; re-apply safeguards when using fallback inputs.
+  entries = entries
+    .map((frag) => ({
+      ...frag,
+      id: String(frag?.id || '')
+        .toLowerCase()
+        .trim(),
+      sources: Array.isArray(frag?.sources)
+        ? frag.sources.map((s) => ({
+            ...s,
+            citation: s?.citation != null ? String(s.citation).trim() : s?.citation,
+            url: s?.url != null ? String(s.url).trim() : s?.url,
+            excerpt: s?.excerpt != null ? String(s.excerpt).trim().slice(0, 400) : s?.excerpt,
+            date: s?.date != null ? String(s.date).trim().slice(0, 7) : s?.date,
+            kind: s?.kind != null ? String(s.kind).trim() : s?.kind,
+          }))
+        : frag?.sources,
+      updatedAt: frag?.updatedAt || nowIso(),
+    }))
+    .filter((f) => f.id);
+
+  const seen = new Set();
+  const deduped = [];
+  for (const f of entries) {
+    if (seen.has(f.id)) continue;
+    seen.add(f.id);
+    deduped.push(f);
+  }
+  deduped.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  entries = deduped;
+
   const rawMeta = {
     sourceUrl: NIST_ZIP_URL,
     retrievedAt: meta?.retrievedAt || nowIso(),
