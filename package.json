@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/cloudflare": "^12.6.5",
+    "@astrojs/cloudflare": "^12.6.6",
     "@astrojs/mdx": "^4.3.4",
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.3.0",
