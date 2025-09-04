@@ -24,6 +24,7 @@ const title = 'Quick search';
     <span id="count" role="status" aria-live="polite" aria-atomic="true" class="muted fs-90"></span>
   </div>
 
+  <!-- Sources facet -->
   <div id="filters" class="chips" aria-label="Filter by source kind">
     <button type="button" class="btn-chip" data-kind="NIST" aria-pressed="false">NIST</button>
     <button type="button" class="btn-chip" data-kind="RFC" aria-pressed="false">RFC</button>
@@ -32,6 +33,27 @@ const title = 'Quick search';
     <button type="button" class="btn-chip" data-kind="CAPEC" aria-pressed="false">CAPEC</button>
     <button type="button" class="btn-chip" data-kind="OTHER" aria-pressed="false">Other</button>
   </div>
+
+  <!-- Types facet -->
+  <div id="type-filters" class="chips mt-2" aria-label="Filter by type or category">
+    <button type="button" class="btn-chip" data-type="protocol" aria-pressed="false"
+      >Protocol</button
+    >
+    <button type="button" class="btn-chip" data-type="vulnerability" aria-pressed="false"
+      >Vulnerability</button
+    >
+    <button type="button" class="btn-chip" data-type="attack-pattern" aria-pressed="false"
+      >Attack pattern</button
+    >
+    <button type="button" class="btn-chip" data-type="crypto" aria-pressed="false">Crypto</button>
+    <button type="button" class="btn-chip" data-type="identity" aria-pressed="false"
+      >Identity</button
+    >
+    <button type="button" class="btn-chip" data-type="concept" aria-pressed="false">Concept</button>
+  </div>
+
+  <!-- Tags facet (chips are injected by client) -->
+  <div id="tag-filters" class="chips mt-2" aria-label="Filter by tags"></div>
 
   <ul id="results" role="list" class="list-unstyled grid gap-2 mt-4"></ul>
 </section>

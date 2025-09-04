@@ -1,43 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import MiniSearch from 'minisearch';
 import { buildIndexPayload, type SearchDoc } from '../../src/lib/searchBuild';
-
-function applyFacetFilters(
-  results: any[],
-  opts: { sources?: string[]; types?: string[]; tags?: string[] },
-) {
-  const srcSel = opts.sources || [];
-  const typeSel = opts.types || [];
-  const tagSel = opts.tags || [];
-
-  const filtered = results.filter((r: any) => {
-    if (srcSel.length) {
-      const kinds: string[] = Array.isArray(r.sourceKinds) ? r.sourceKinds : [];
-      for (const s of srcSel) if (!kinds.includes(s)) return false;
-    }
-    if (typeSel.length) {
-      const t = String(r.typeCategory || '');
-      if (!typeSel.includes(t)) return false;
-    }
-    if (tagSel.length) {
-      const tags: string[] = Array.isArray(r.tags) ? r.tags : [];
-      for (const t of tagSel) if (!tags.includes(t)) return false;
-    }
-    return true;
-  });
-
-  filtered.sort((a: any, b: any) => {
-    const sa = typeof a.score === 'number' ? a.score : 0;
-    const sb = typeof b.score === 'number' ? b.score : 0;
-    if (sb !== sa) return sb - sa;
-    return String(a.id || '').localeCompare(String(b.id || ''));
-  });
-
-  return filtered;
-}
+import { applyFacetFilters } from '../../src/lib/facetFilter';
 
 describe('search: combined facet filters', () => {
-  it('query "token" + source=RFC + type ∈ {concept,identity} yields JWT/JWS/JWE subset', () => {
+  it('query "token" + source=RFC + type ∈ {concept,identity} yields JWT/JWS/JWE subset; removing source keeps set stable (no TLS)', () => {
     const docs: SearchDoc[] = [
       // JOSE family (RFC + token-related)
       {
@@ -48,9 +15,7 @@ describe('search: combined facet filters', () => {
         text: 'token rfc claims',
         tags: ['auth', 'tokens', 'rfc'],
         sourceKinds: ['RFC'],
-        // keep consistent with our heuristic (identity)
-        // stored in payload storeFields
-        // @ts-expect-error test-only field
+        // stored in payload storeFields (test-only field)
         typeCategory: 'identity',
       },
       {
@@ -61,7 +26,6 @@ describe('search: combined facet filters', () => {
         text: 'token signature rfc',
         tags: ['tokens', 'rfc'],
         sourceKinds: ['RFC'],
-        // @ts-expect-error test-only field
         typeCategory: 'concept',
       },
       {
@@ -72,7 +36,6 @@ describe('search: combined facet filters', () => {
         text: 'token encryption rfc',
         tags: ['tokens', 'rfc'],
         sourceKinds: ['RFC'],
-        // @ts-expect-error test-only field
         typeCategory: 'concept',
       },
       // A protocol but not a token; used to validate narrowing
@@ -84,7 +47,6 @@ describe('search: combined facet filters', () => {
         text: 'protocol cryptography',
         tags: ['crypto', 'rfc'],
         sourceKinds: ['RFC'],
-        // @ts-expect-error test-only field
         typeCategory: 'protocol',
       },
       // A vulnerability (non-RFC)
@@ -96,7 +58,6 @@ describe('search: combined facet filters', () => {
         text: 'web vulnerability cwe capec',
         tags: ['web', 'cwe', 'capec'],
         sourceKinds: ['CWE', 'CAPEC'],
-        // @ts-expect-error test-only field
         typeCategory: 'vulnerability',
       },
     ];
@@ -104,7 +65,7 @@ describe('search: combined facet filters', () => {
     const payload = buildIndexPayload(docs);
     const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
 
-    const raw = mini.search('token');
+    const raw = mini.search('token', payload.options.searchOptions);
     const filtered = applyFacetFilters(raw as any, {
       sources: ['RFC'],
       types: ['concept', 'identity'],
@@ -116,10 +77,64 @@ describe('search: combined facet filters', () => {
     expect(ids).not.toContain('tls');
     expect(ids).not.toContain('xss');
 
-    // Removing source=RFC alone does not include TLS (type=protocol) for query "token"; set remains stable
+    // Removing source=RFC alone should not introduce TLS (type=protocol) for query "token"
     const broader = applyFacetFilters(raw as any, { types: ['concept', 'identity'] });
     const broaderIds = broader.map((r: any) => r.id);
     expect(broaderIds).toEqual(expect.arrayContaining(['jwt', 'jws', 'jwe']));
     expect(broaderIds).not.toContain('tls');
+  });
+
+  it('tag-only filtering: query "json web" + tags=jose yields only JOSE docs', () => {
+    const docs: SearchDoc[] = [
+      {
+        id: 'jwt',
+        term: 'JSON Web Token',
+        acronym: ['JWT'],
+        aliases: [],
+        text: 'token',
+        tags: ['jose'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'identity',
+      },
+      {
+        id: 'jws',
+        term: 'JSON Web Signature',
+        acronym: ['JWS'],
+        aliases: [],
+        text: 'signature',
+        tags: ['jose'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'concept',
+      },
+      {
+        id: 'jwe',
+        term: 'JSON Web Encryption',
+        acronym: ['JWE'],
+        aliases: [],
+        text: 'encryption',
+        tags: ['jose'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'concept',
+      },
+      {
+        id: 'tls',
+        term: 'Transport Layer Security',
+        acronym: ['TLS'],
+        aliases: [],
+        text: 'protocol',
+        tags: ['crypto'],
+        sourceKinds: ['RFC'],
+        typeCategory: 'protocol',
+      },
+    ];
+    const payload = buildIndexPayload(docs);
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
+
+    const raw = mini.search('json web', payload.options.searchOptions);
+    const filtered = applyFacetFilters(raw as any, { tags: ['jose'] });
+    const ids = filtered.map((r: any) => r.id);
+
+    expect(ids).toEqual(expect.arrayContaining(['jwt', 'jws', 'jwe']));
+    expect(ids).not.toContain('tls');
   });
 });
