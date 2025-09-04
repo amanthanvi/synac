@@ -2,6 +2,7 @@ import MiniSearch from 'minisearch';
 import { searchOptions } from '../lib/searchOptions';
 import { ENABLE_TELEMETRY } from '../lib/constants';
 import { normalizeQuery, normalizeTokens } from '../lib/tokenize';
+import { applyFacetFilters as filterShared, type FacetSelections } from '../lib/facetFilter';
 declare const __BUILD_TIME__: string | number;
 
 // Globals for test coordination
@@ -65,20 +66,20 @@ declare global {
   let currentSearchOptions: any = searchOptions.searchOptions;
   let availableTags: string[] = [];
 
-  function escapeHtml(s: string) {
+  const escapeHtml = (s: string) => {
     return String(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
+  };
 
-  function escapeRegex(s: string) {
+  const escapeRegex = (s: string) => {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
+  };
 
-  function highlight(text: string, terms: string[]) {
+  const highlight = (text: string, terms: string[]) => {
     if (!terms || !terms.length) return escapeHtml(String(text || ''));
     let html = escapeHtml(String(text || ''));
     for (const t of terms) {
@@ -88,7 +89,7 @@ declare global {
       html = html.replace(re, '<mark>$1</mark>');
     }
     return html;
-  }
+  };
 
   const render = (items: any[], tokens: string[] = []) => {
     list!.innerHTML = '';
@@ -179,7 +180,7 @@ declare global {
     return m;
   };
 
-  function parseUrlState() {
+  const parseUrlState = () => {
     const usp = new URLSearchParams(location.search);
     const q = usp.get('q') || '';
     const splitCsv = (v: string | null) =>
@@ -190,9 +191,9 @@ declare global {
     const types = splitCsv(usp.get('types')).filter((t) => SUPPORTED_TYPES.has(t));
     const tags = splitCsv(usp.get('tags'));
     return { q, sources, types, tags };
-  }
+  };
 
-  function updateUrlFromState(push = false) {
+  const updateUrlFromState = (push = false) => {
     const usp = new URLSearchParams(location.search);
     // Preserve unknown params by deleting only known keys
     for (const k of ['q', 'sources', 'types', 'tags']) usp.delete(k);
@@ -209,9 +210,9 @@ declare global {
     } else {
       history.replaceState(null, '', newUrl);
     }
-  }
+  };
 
-  function syncUiFromState() {
+  const syncUiFromState = () => {
     const st = parseUrlState();
     input!.value = st.q;
     selectedSources = new Set(st.sources);
@@ -254,9 +255,9 @@ declare global {
         btn.classList.toggle('btn-chip--active', on);
       }
     }
-  }
+  };
 
-  function renderTagChips() {
+  const renderTagChips = () => {
     if (!tagFilters) return;
     tagFilters.innerHTML = '';
     if (!availableTags || !availableTags.length) return;
@@ -265,14 +266,14 @@ declare global {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'btn-chip';
-      b.setAttribute('data-tag', tag);
+      b.setAttribute('data-tag', encodeURIComponent(tag));
       b.setAttribute('aria-pressed', selectedTags.has(tag) ? 'true' : 'false');
       b.textContent = `#${tag}`;
       if (selectedTags.has(tag)) b.classList.add('btn-chip--active');
       frag.appendChild(b);
     }
     tagFilters.appendChild(frag);
-  }
+  };
 
   const ensureIndex = async (): Promise<MiniSearch | null> => {
     if (mini) return mini;
@@ -339,12 +340,7 @@ declare global {
     }
   };
 
-  function applyFacetFilters(results: any[], qTokens: string[]): any[] {
-    const srcSel = Array.from(selectedSources);
-    const typeSel = Array.from(selectedTypes);
-    const tagSel = Array.from(selectedTags);
-
-    // Decorate results with matchedViaAlias and apply deterministic tie-break
+  const decorateAndFilter = (results: any[], qTokens: string[]): any[] => {
     const decorated = results.map((r: any) => {
       const aliasTokens: string[] = Array.isArray(r.aliasTokens) ? r.aliasTokens : [];
       const aliasHit = aliasTokens.length ? aliasTokens.some((t) => qTokens.includes(t)) : false;
@@ -353,36 +349,13 @@ declare global {
       const matchedViaAlias = !!(aliasHit && !(idHit || titleHit));
       return { ...r, matchedViaAlias };
     });
-
-    const filtered = decorated.filter((r: any) => {
-      // sources: AND within group (doc must include all selected source kinds)
-      if (srcSel.length) {
-        const kinds: string[] = Array.isArray(r.sourceKinds) ? r.sourceKinds : [];
-        for (const s of srcSel) if (!kinds.includes(s)) return false;
-      }
-      // types: membership (OR within group)
-      if (typeSel.length) {
-        const t = String(r.typeCategory || '');
-        if (!typeSel.includes(t)) return false;
-      }
-      // tags: AND within group (doc must include all selected tags)
-      if (tagSel.length) {
-        const tags: string[] = Array.isArray(r.tags) ? r.tags : [];
-        for (const t of tagSel) if (!tags.includes(t)) return false;
-      }
-      return true;
-    });
-
-    // Deterministic sort: score desc, then id asc
-    filtered.sort((a: any, b: any) => {
-      const sa = typeof a.score === 'number' ? a.score : 0;
-      const sb = typeof b.score === 'number' ? b.score : 0;
-      if (sb !== sa) return sb - sa;
-      return String(a.id || '').localeCompare(String(b.id || ''));
-    });
-
-    return filtered;
-  }
+    const sel: FacetSelections = {
+      sources: Array.from(selectedSources),
+      types: Array.from(selectedTypes),
+      tags: Array.from(selectedTags),
+    };
+    return filterShared(decorated, sel) as any[];
+  };
 
   const onInput = async () => {
     const q = input!.value.trim();
@@ -418,14 +391,18 @@ declare global {
       (count as HTMLElement).dataset &&
       (count as HTMLElement).dataset.mode === 'fallback'
     );
-    const filtered = isFallback ? results : applyFacetFilters(results, qTokens);
+    const filtered = isFallback ? results : decorateAndFilter(results, qTokens);
     render(filtered, qTokens);
   };
 
-  // Input change -> update URL and search
+  // Input change -> update URL and search (debounced)
+  let __typingTimer: number | undefined;
   input.addEventListener('input', () => {
-    updateUrlFromState();
-    void onInput();
+    if (__typingTimer) window.clearTimeout(__typingTimer);
+    __typingTimer = window.setTimeout(() => {
+      updateUrlFromState();
+      void onInput();
+    }, 120) as unknown as number;
   });
 
   // Source facet toggles
@@ -473,8 +450,9 @@ declare global {
         'button[data-tag]',
       ) as HTMLButtonElement | null;
       if (!target) return;
-      const t = target.getAttribute('data-tag');
-      if (!t) return;
+      const raw = target.getAttribute('data-tag');
+      if (!raw) return;
+      const t = decodeURIComponent(raw);
       const next = target.getAttribute('aria-pressed') !== 'true';
       target.setAttribute('aria-pressed', next ? 'true' : 'false');
       target.classList.toggle('btn-chip--active', next);

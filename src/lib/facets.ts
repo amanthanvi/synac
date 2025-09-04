@@ -17,7 +17,20 @@ export function deriveSourceKinds(data: any): SourceKind[] {
     }
     const url = String(s?.url || '');
     const citation = String(s?.citation || '');
-    if (url.includes('nist.gov') || citation.toUpperCase().includes('NIST')) kinds.add('NIST');
+    // Robust hostname check for NIST: require hostname to be nist.gov or a subdomain of it.
+    let hostname = '';
+    try {
+      if (url) hostname = new URL(url).hostname.toLowerCase();
+    } catch {
+      // ignore invalid URL
+    }
+    if (
+      hostname === 'nist.gov' ||
+      (hostname.endsWith('.nist.gov') && hostname.length > 'nist.gov'.length) ||
+      citation.toUpperCase().includes('NIST')
+    ) {
+      kinds.add('NIST');
+    }
   }
 
   // From mappings presence
