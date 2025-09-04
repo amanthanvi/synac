@@ -227,8 +227,16 @@ async function main() {
     if (await fileExists(RAW_JSON)) {
       try {
         const cached = await readJson(RAW_JSON);
+        debugLog(
+          '[nist][fb] RAW_JSON present:',
+          RAW_JSON,
+          'len=',
+          Array.isArray(cached) ? cached.length : -1,
+        );
         if (Array.isArray(cached) && cached.length > 0) return cached;
-      } catch {}
+      } catch (e) {
+        debugLog('[nist][fb] RAW_JSON read failed:', e?.message || e);
+      }
     }
 
     // Then consolidated back-compat file
@@ -236,13 +244,22 @@ async function main() {
       try {
         const consolidated = await readJson(OUT_FILE_ALL);
         const arr = Array.isArray(consolidated?.entries) ? consolidated.entries : [];
+        debugLog('[nist][fb] OUT_FILE_ALL present:', OUT_FILE_ALL, 'len=', arr.length);
         if (arr.length > 0) return arr;
-      } catch {}
+      } catch (e) {
+        debugLog('[nist][fb] OUT_FILE_ALL read failed:', e?.message || e);
+      }
     }
 
     // Next, reconstruct from existing fragments under data/ingest/nist/*.json (committed back-compat)
     try {
       const dirFiles = await readdir(OUT_DIR_FRAG).catch(() => []);
+      debugLog(
+        '[nist][fb] OUT_DIR_FRAG:',
+        OUT_DIR_FRAG,
+        'files=',
+        Array.isArray(dirFiles) ? dirFiles.length : -1,
+      );
       if (Array.isArray(dirFiles) && dirFiles.length > 0) {
         const frags = [];
         for (const name of dirFiles) {
@@ -254,13 +271,16 @@ async function main() {
             if (json && typeof json === 'object' && json.id && Array.isArray(json.sources)) {
               frags.push(json);
             }
-          } catch {
+          } catch (e) {
+            debugLog('[nist][fb] fragment read failed for', name, ':', e?.message || e);
             // ignore individual parse errors; continue best-effort
           }
         }
+        debugLog('[nist][fb] fragments collected:', frags.length);
         if (frags.length > 0) return frags;
       }
-    } catch {
+    } catch (e) {
+      debugLog('[nist][fb] OUT_DIR_FRAG read failed:', e?.message || e);
       // ignore and proceed to next fallback
     }
 

@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TZ: UTC
+      ETL_ENABLE_AUTOPR: ${{ vars.ETL_ENABLE_AUTOPR || 'false' }}
+      ETL_ALLOW_FALLBACK: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4 pinned
@@ -120,8 +122,22 @@ jobs:
             echo "Validated: verify-merged passed; typecheck/lint/test executed."
           } > pr-body.md
 
+      - name: Detect data changes
+        id: changes
+        run: |
+          if git status --porcelain -- data | grep .; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Auto-PR disabled
+        if: ${{ env.ETL_ENABLE_AUTOPR != 'true' }}
+        run: echo "auto-PR disabled (ETL_ENABLE_AUTOPR != 'true'); build/verify ran; fallback preserved"
+
+      # Note: Some repositories restrict GITHUB_TOKEN from creating PRs; this step is opt-in via ETL_ENABLE_AUTOPR
       - name: Create Pull Request with changes under data/
-        if: ${{ success() }}
+        if: ${{ env.ETL_ENABLE_AUTOPR == 'true' && steps.changes.outputs.changed == 'true' }}
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6 pinned
         with:
           commit-message: 'ci(etl): refresh vendor datasets and merged index'
