@@ -70,6 +70,69 @@ async function fileExists(p) {
   }
 }
 
+function normalizeFragment(frag, now) {
+  const id = String(frag?.id || '')
+    .toLowerCase()
+    .trim();
+
+  const normalizedSources = Array.isArray(frag?.sources)
+    ? frag.sources.map((s) => ({
+        ...s,
+        citation: s?.citation != null ? String(s.citation).trim() : s?.citation,
+        url: s?.url != null ? String(s.url).trim() : s?.url,
+        excerpt: s?.excerpt != null ? String(s.excerpt).trim().slice(0, 400) : s?.excerpt,
+        date: s?.date != null ? String(s.date).trim().slice(0, 7) : s?.date,
+        kind: s?.kind != null ? String(s.kind).trim() : s?.kind,
+        normative: s?.normative !== undefined ? !!s.normative : s?.normative,
+      }))
+    : frag?.sources;
+
+  return {
+    ...frag,
+    id,
+    sources: normalizedSources,
+    updatedAt: frag?.updatedAt || now,
+  };
+}
+
+function dedupeSortById(list, { onConflict } = {}) {
+  const byId = new Map();
+  for (const item of list) {
+    if (!item?.id) continue;
+    const k = String(item.id).trim();
+    if (byId.has(k)) {
+      const existing = byId.get(k);
+      if (JSON.stringify(existing) !== JSON.stringify(item)) {
+        if (typeof onConflict === 'function') {
+          onConflict(k, existing, item);
+        } else {
+          console.warn(
+            `[fetch-nist] Duplicate fragment id "${k}" with conflicting data detected. Keeping first occurrence.`,
+          );
+        }
+      }
+      continue;
+    }
+    byId.set(k, item);
+  }
+  const deduped = Array.from(byId.values());
+  deduped.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return deduped;
+}
+
+function validateEntries(arr) {
+  if (!Array.isArray(arr) || arr.length < 1) return false;
+  for (const e of arr) {
+    if (!e || typeof e !== 'object') return false;
+    const id = String(e?.id || '').trim();
+    if (!id) return false;
+    const sources = e?.sources;
+    if (!Array.isArray(sources) || sources.length === 0) return false;
+    if (!sources.some((s) => String(s?.kind || '').toUpperCase() === 'NIST')) return false;
+  }
+  return true;
+}
+
 function normalizeEntries(json) {
   // Try to accommodate both "entries"/"terms"/flat-array shapes
   const list = Array.isArray(json?.entries)
@@ -133,16 +196,13 @@ function normalizeEntries(json) {
     });
   }
 
-  // Deterministic order by slug id + dedupe
-  const byId = new Map();
-  for (const frag of out) {
-    if (!frag?.id) continue;
-    const k = String(frag.id).trim();
-    if (!byId.has(k)) byId.set(k, frag);
-  }
-  const deduped = Array.from(byId.values());
-  deduped.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return deduped;
+  return dedupeSortById(out, {
+    onConflict: (id) => {
+      console.warn(
+        `[fetch-nist] Duplicate fragment id "${id}" with conflicting data detected. Keeping first occurrence.`,
+      );
+    },
+  });
 }
 
 function pickFirstJsonFromZip(buf) {
@@ -212,6 +272,7 @@ async function main() {
   let buf = null;
   let meta = null;
   let fromCache = false;
+  let fallbackSource = null;
 
   try {
     const res = await loadVendorZip();
@@ -222,7 +283,7 @@ async function main() {
     console.warn('[nist] Error loading vendor ZIP:', e?.message || e);
   }
 
-  async function tryFallback() {
+  const tryFallback = async () => {
     // Prefer normalized raw artifact
     if (await fileExists(RAW_JSON)) {
       try {
@@ -233,7 +294,7 @@ async function main() {
           'len=',
           Array.isArray(cached) ? cached.length : -1,
         );
-        if (Array.isArray(cached) && cached.length > 0) return cached;
+        if (validateEntries(cached)) return { entries: cached, source: 'RAW_JSON' };
       } catch (e) {
         debugLog('[nist][fb] RAW_JSON read failed:', e?.message || e);
       }
@@ -245,7 +306,7 @@ async function main() {
         const consolidated = await readJson(OUT_FILE_ALL);
         const arr = Array.isArray(consolidated?.entries) ? consolidated.entries : [];
         debugLog('[nist][fb] OUT_FILE_ALL present:', OUT_FILE_ALL, 'len=', arr.length);
-        if (arr.length > 0) return arr;
+        if (validateEntries(arr)) return { entries: arr, source: 'OUT_FILE_ALL' };
       } catch (e) {
         debugLog('[nist][fb] OUT_FILE_ALL read failed:', e?.message || e);
       }
@@ -277,7 +338,8 @@ async function main() {
           }
         }
         debugLog('[nist][fb] fragments collected:', frags.length);
-        if (frags.length > 0) return frags;
+        const normalized = dedupeSortById(frags.map((f) => normalizeFragment(f, nowIso())));
+        if (validateEntries(normalized)) return { entries: normalized, source: 'OUT_DIR_FRAG' };
       }
     } catch (e) {
       debugLog('[nist][fb] OUT_DIR_FRAG read failed:', e?.message || e);
@@ -316,11 +378,14 @@ async function main() {
             updatedAt: nowIso(),
           });
         }
-        if (arr.length > 0) return arr;
-      } catch {}
+        const normalized = dedupeSortById(arr.map((f) => normalizeFragment(f, nowIso())));
+        if (validateEntries(normalized)) return { entries: normalized, source: 'BUILD_MERGED' };
+      } catch (e) {
+        debugLog('[nist][fb] BUILD_MERGED read failed:', e?.message || e);
+      }
     }
-    return [];
-  }
+    return { entries: [], source: null };
+  };
 
   let entries = [];
 
@@ -341,51 +406,32 @@ async function main() {
   if (!entries || entries.length === 0) {
     if (ALLOW_FALLBACK) {
       const fb = await tryFallback();
-      if (fb.length > 0) {
+      if (fb && Array.isArray(fb.entries) && fb.entries.length > 0) {
         console.warn(
-          '[nist] Upstream empty/invalid; reusing last-known-good cached dataset (ETL_ALLOW_FALLBACK=true).',
+          `[nist] Upstream empty/invalid; reusing cached dataset via fallback=${fb.source} entries=${fb.entries.length} (ETL_ALLOW_FALLBACK=true).`,
         );
-        entries = fb;
+        entries = fb.entries;
         fromCache = true;
+        fallbackSource = fb.source;
       } else {
-        throw new Error('[nist] Upstream empty/invalid and no cached fallback available');
+        throw new Error('[nist] Upstream empty/invalid and no valid cached fallback available');
       }
     } else {
       throw new Error('[nist] Upstream empty/invalid and ETL_ALLOW_FALLBACK=false');
     }
   }
 
-  // Ensure deterministic normalized output: trim fields, dedupe, sort by slug.
-  // normalizeEntries already trims and lowercases; re-apply safeguards when using fallback inputs.
-  entries = entries
-    .map((frag) => ({
-      ...frag,
-      id: String(frag?.id || '')
-        .toLowerCase()
-        .trim(),
-      sources: Array.isArray(frag?.sources)
-        ? frag.sources.map((s) => ({
-            ...s,
-            citation: s?.citation != null ? String(s.citation).trim() : s?.citation,
-            url: s?.url != null ? String(s.url).trim() : s?.url,
-            excerpt: s?.excerpt != null ? String(s.excerpt).trim().slice(0, 400) : s?.excerpt,
-            date: s?.date != null ? String(s.date).trim().slice(0, 7) : s?.date,
-            kind: s?.kind != null ? String(s.kind).trim() : s?.kind,
-          }))
-        : frag?.sources,
-      updatedAt: frag?.updatedAt || nowIso(),
-    }))
-    .filter((f) => f.id);
-
-  const seen = new Set();
-  const deduped = [];
-  for (const f of entries) {
-    if (seen.has(f.id)) continue;
-    seen.add(f.id);
-    deduped.push(f);
-  }
-  deduped.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  entries = deduped;
+  // Ensure deterministic normalized output: normalize, dedupe, sort by slug.
+  const nowTs = nowIso();
+  let duplicateConflicts = 0;
+  entries = dedupeSortById(
+    entries.map((frag) => normalizeFragment(frag, nowTs)).filter((f) => f.id),
+    {
+      onConflict: () => {
+        duplicateConflicts++;
+      },
+    },
+  );
 
   const rawMeta = {
     sourceUrl: NIST_ZIP_URL,
@@ -395,6 +441,9 @@ async function main() {
     lastModified: meta?.lastModified,
     sha256: meta?.sha256,
     fromCache,
+    usedFallback: Boolean(fallbackSource),
+    fallbackSource: fallbackSource || undefined,
+    duplicateConflicts,
     count: entries.length,
   };
   await writeJson(RAW_JSON, entries);

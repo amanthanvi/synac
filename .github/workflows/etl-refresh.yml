@@ -45,7 +45,8 @@ jobs:
             etl-raw-
 
       - name: Install dependencies
-        run: NODE_ENV='' npm ci --ignore-scripts
+        # Allow lifecycle scripts to run but disable Husky specifically to avoid hook failures in CI
+        run: HUSKY=0 npm ci
 
       - name: Run ETL (vendors)
         run: npm run etl:all
@@ -58,6 +59,11 @@ jobs:
         run: |
           set -e
           npm run etl:verify | tee verify-summary.txt
+
+      - name: Report NIST fallback usage
+        if: always()
+        run: |
+          node -e "const fs=require('fs');let out;try{const m=JSON.parse(fs.readFileSync('data/raw/nist/meta.json','utf8')); out = m.usedFallback ? \`usedFallback=true source=\${m.fallbackSource||'unknown'} entries=\${m.count}\` : 'usedFallback=false'; } catch(e){ out='usedFallback=unknown error='+e.message } fs.writeFileSync('etl-fallback.txt', out); if(out.startsWith('usedFallback=true')) console.log('::warning::NIST ETL used fallback: ' + out); else console.log('NIST ETL used upstream');"
 
       - name: Typecheck
         id: typecheck
