@@ -32,5 +32,20 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint -- --max-warnings=0
       - run: npm run build
+
+      # Enforce Lighthouse budgets (source of truth: lighthouse/budgets.json)
+      - name: Check Lighthouse budgets
+        run: npm run lh:preview
+
+      - name: Upload Lighthouse preview artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-preview
+          path: |
+            lighthouse/*.json
+            lighthouse/*.html
+            .lighthouse/**
+
       - run: npx playwright install --with-deps
       - run: npm run test:offline

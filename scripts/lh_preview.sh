@@ -33,7 +33,8 @@ for i in $(seq 1 $ATTEMPTS); do
 done
 
 echo "[lh_preview] Running Lighthouse budgets..."
-npx -y lighthouse http://localhost:4321 --quiet --chrome-flags='--headless=new' --budgets-path=./lighthouse/budgets.json --only-categories=performance --preset=desktop --no-enable-error-reporting
+# Save both JSON and HTML reports under ./lighthouse for CI artifact upload
+npx -y lighthouse http://localhost:4321 --quiet --chrome-flags='--headless=new' --budgets-path=./lighthouse/budgets.json --only-categories=performance --preset=desktop --no-enable-error-reporting --output=json --output=html --output-path=lighthouse/preview
 CODE=$?
 
 echo "[lh_preview] Stopping preview (PID: $PREVIEW_PID)..."
