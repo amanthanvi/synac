@@ -6,7 +6,7 @@
  * - Normalized raw: data/raw/nist/glossary.json + meta.json
  * - Back-compat: data/ingest/nist/*.json and data/nist/glossary.json
  */
-import { mkdir, writeFile, readFile, stat } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, stat, readdir } from 'node:fs/promises';
 import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { unzipSync } from 'fflate';
@@ -230,6 +230,7 @@ async function main() {
         if (Array.isArray(cached) && cached.length > 0) return cached;
       } catch {}
     }
+
     // Then consolidated back-compat file
     if (await fileExists(OUT_FILE_ALL)) {
       try {
@@ -238,6 +239,31 @@ async function main() {
         if (arr.length > 0) return arr;
       } catch {}
     }
+
+    // Next, reconstruct from existing fragments under data/ingest/nist/*.json (committed back-compat)
+    try {
+      const dirFiles = await readdir(OUT_DIR_FRAG).catch(() => []);
+      if (Array.isArray(dirFiles) && dirFiles.length > 0) {
+        const frags = [];
+        for (const name of dirFiles) {
+          if (!name.toLowerCase().endsWith('.json')) continue;
+          try {
+            const fp = join(OUT_DIR_FRAG, name);
+            const text = await readFile(fp, 'utf8');
+            const json = JSON.parse(text);
+            if (json && typeof json === 'object' && json.id && Array.isArray(json.sources)) {
+              frags.push(json);
+            }
+          } catch {
+            // ignore individual parse errors; continue best-effort
+          }
+        }
+        if (frags.length > 0) return frags;
+      }
+    } catch {
+      // ignore and proceed to next fallback
+    }
+
     // Finally, derive from canonical merged cache if present (stable, last-known-good)
     if (await fileExists(BUILD_MERGED)) {
       try {
