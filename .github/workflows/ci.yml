@@ -33,7 +33,7 @@ jobs:
       - run: npm run lint -- --max-warnings=0
       - run: npm run build
 
-      # Enforce Lighthouse budgets using lighthouse/budgets.json
+      # Enforce Lighthouse budgets (source of truth: lighthouse/budgets.json)
       - name: Check Lighthouse budgets
         run: npm run lh:preview
 
