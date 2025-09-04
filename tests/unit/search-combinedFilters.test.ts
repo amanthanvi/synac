@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import MiniSearch from 'minisearch';
 import { buildIndexPayload, type SearchDoc } from '../../src/lib/searchBuild';
-import { searchOptions } from '../../src/lib/searchOptions';
 
 function applyFacetFilters(
   results: any[],
@@ -50,7 +49,8 @@ describe('search: combined facet filters', () => {
         tags: ['auth', 'tokens', 'rfc'],
         sourceKinds: ['RFC'],
         // keep consistent with our heuristic (identity)
-        // @ts-ignore stored by MiniSearch via storeFields
+        // stored in payload storeFields
+        // @ts-expect-error test-only field
         typeCategory: 'identity',
       },
       {
@@ -61,7 +61,7 @@ describe('search: combined facet filters', () => {
         text: 'token signature rfc',
         tags: ['tokens', 'rfc'],
         sourceKinds: ['RFC'],
-        // @ts-ignore
+        // @ts-expect-error test-only field
         typeCategory: 'concept',
       },
       {
@@ -72,7 +72,7 @@ describe('search: combined facet filters', () => {
         text: 'token encryption rfc',
         tags: ['tokens', 'rfc'],
         sourceKinds: ['RFC'],
-        // @ts-ignore
+        // @ts-expect-error test-only field
         typeCategory: 'concept',
       },
       // A protocol but not a token; used to validate narrowing
@@ -84,7 +84,7 @@ describe('search: combined facet filters', () => {
         text: 'protocol cryptography',
         tags: ['crypto', 'rfc'],
         sourceKinds: ['RFC'],
-        // @ts-ignore
+        // @ts-expect-error test-only field
         typeCategory: 'protocol',
       },
       // A vulnerability (non-RFC)
@@ -96,7 +96,7 @@ describe('search: combined facet filters', () => {
         text: 'web vulnerability cwe capec',
         tags: ['web', 'cwe', 'capec'],
         sourceKinds: ['CWE', 'CAPEC'],
-        // @ts-ignore
+        // @ts-expect-error test-only field
         typeCategory: 'vulnerability',
       },
     ];
@@ -104,7 +104,7 @@ describe('search: combined facet filters', () => {
     const payload = buildIndexPayload(docs);
     const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
 
-    const raw = mini.search('token', searchOptions.searchOptions);
+    const raw = mini.search('token');
     const filtered = applyFacetFilters(raw as any, {
       sources: ['RFC'],
       types: ['concept', 'identity'],

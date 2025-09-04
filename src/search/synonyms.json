@@ -1,31 +1,79 @@
 {
-  "jwt": {
-    "aliases": ["json web token", "jot", "jwt token"],
-    "sources": [{ "label": "rfc", "id": "7519", "type": "normative" }]
+  "aead": {
+    "aliases": ["authenticated encryption with associated data"]
   },
-  "tls": {
-    "aliases": ["ssl", "secure sockets layer", "ssl/tls", "tls 1.3", "tls1.3"],
-    "sources": [{ "label": "rfc", "id": "8446", "type": "normative" }]
+  "aes": {
+    "aliases": ["advanced encryption standard", "aes 128", "aes 256", "aes-128", "aes-256"]
   },
   "aitm": {
-    "aliases": ["mitm", "man-in-the-middle", "man in the middle"],
+    "aliases": ["man in the middle", "man-in-the-middle", "mitm"],
     "sources": [{ "label": "capec", "id": "94", "type": "normative" }]
+  },
+  "authentication": {
+    "aliases": ["authenticate", "authn"]
+  },
+  "authorization": {
+    "aliases": ["authorisation", "authz"]
+  },
+  "certificate-revocation-list": {
+    "aliases": ["crl", "revocation list"]
+  },
+  "certificate-transparency": {
+    "aliases": ["certificate transparency", "ct", "transparency log"]
   },
   "csrf": {
     "aliases": ["cross site request forgery", "cross-site request forgery"]
   },
-  "xss": {
-    "aliases": ["cross site scripting", "cross-site scripting"]
+  "dns": {
+    "aliases": ["domain name system"]
+  },
+  "dnssec": {
+    "aliases": ["dns sec", "dns security extensions"]
+  },
+  "doh": {
+    "aliases": ["dns over https"]
   },
   "dos": {
-    "aliases": ["denial-of-service", "denial of service", "dos attack", "ddos"]
+    "aliases": ["ddos", "denial of service", "denial-of-service", "dos attack"]
+  },
+  "ecdsa": {
+    "aliases": ["ec-dsa", "elliptic curve digital signature algorithm"]
+  },
+  "ed25519": {
+    "aliases": ["ed-25519", "edwards-curve 25519"]
+  },
+  "gcm": {
+    "aliases": ["aes gcm", "aes-gcm", "galois counter mode"]
+  },
+  "hkdf": {
+    "aliases": ["hmac-based key derivation function"]
+  },
+  "hmac": {
+    "aliases": ["hash-based message authentication code", "hmac-sha"]
+  },
+  "hsts": {
+    "aliases": ["http strict transport security"]
+  },
+  "http-semantics": {
+    "aliases": ["http semantics", "rfc 9110"]
   },
   "http2": {
-    "aliases": ["http/2", "http 2"]
+    "aliases": ["http 2", "http/2"]
   },
-
-  "jws": {
-    "aliases": ["json web signature", "jws token"]
+  "http3": {
+    "aliases": ["h3", "http 3", "http/3"]
+  },
+  "improper-authentication": {
+    "aliases": ["authn bypass", "improper authn", "weak authentication"]
+  },
+  "insecure-deserialization": {
+    "aliases": ["insecure deserialisation", "unsafe deserialization"]
+  },
+  "insufficient-entropy": {
+    "aliases": ["insufficient randomness", "low entropy"]
+  },
+  "ipv6": {
+    "aliases": ["internet protocol version 6", "ip v6", "ip6"]
   },
   "jwe": {
     "aliases": ["json web encryption"]
@@ -33,141 +81,84 @@
   "jwk": {
     "aliases": ["json web key", "jwks"]
   },
-  "oauth2": {
-    "aliases": ["oauth 2.0", "oauth2.0", "oauth"]
+  "jws": {
+    "aliases": ["json web signature", "jws token"]
   },
-  "openid-connect": {
-    "aliases": ["oidc", "open id connect", "openid connect"]
-  },
-  "pkce": {
-    "aliases": ["proof key for code exchange", "oauth pkce"]
-  },
-  "mutual-tls": {
-    "aliases": ["mtls", "tls client authentication", "client cert auth"]
-  },
-  "http3": {
-    "aliases": ["http/3", "http 3", "h3"]
-  },
-  "quic": {
-    "aliases": ["quick udp internet connections", "quic transport", "http/3 transport"]
-  },
-  "x509-certificate": {
-    "aliases": ["x509", "x.509", "x.509 certificate", "x509 certificate"]
-  },
-  "pki": {
-    "aliases": ["public key infrastructure"]
-  },
-  "ocsp": {
-    "aliases": ["online certificate status protocol", "certificate status"]
-  },
-  "ocsp-stapling": {
-    "aliases": ["tls stapling", "status_request", "ocsp stapling"]
-  },
-  "certificate-transparency": {
-    "aliases": ["ct", "transparency log", "certificate transparency"]
-  },
-  "certificate-revocation-list": {
-    "aliases": ["crl", "revocation list"]
-  },
-
-  "aead": {
-    "aliases": ["authenticated encryption with associated data"]
-  },
-  "aes": {
-    "aliases": ["advanced encryption standard", "aes-256", "aes 256", "aes-128", "aes 128"]
-  },
-  "gcm": {
-    "aliases": ["galois counter mode", "aes-gcm", "aes gcm"]
-  },
-  "hkdf": {
-    "aliases": ["hmac-based key derivation function", "hkdf"]
-  },
-  "pbkdf2": {
-    "aliases": ["password-based key derivation function 2", "pbkdf-2", "pbkdf 2"]
+  "jwt": {
+    "aliases": ["jot", "json web token", "jwt token"],
+    "sources": [{ "label": "rfc", "id": "7519", "type": "normative" }]
   },
   "kdf": {
     "aliases": ["key derivation function"]
   },
-  "sha-256": {
-    "aliases": ["sha256", "sha 256"]
+  "missing-authorization": {
+    "aliases": ["authorization missing", "missing authz"]
   },
-  "rsa": {
-    "aliases": ["rsa encryption"]
+  "mutual-tls": {
+    "aliases": ["client cert auth", "mtls", "tls client authentication"]
   },
-  "ecdsa": {
-    "aliases": ["elliptic curve digital signature algorithm", "ec-dsa"]
+  "oauth2": {
+    "aliases": ["oauth", "oauth 2.0", "oauth2.0"]
   },
-  "ed25519": {
-    "aliases": ["edwards-curve 25519", "ed-25519"]
+  "ocsp": {
+    "aliases": ["certificate status", "online certificate status protocol"]
   },
-  "hmac": {
-    "aliases": ["hash-based message authentication code", "hmac-sha"]
-  },
-
-  "hsts": {
-    "aliases": ["http strict transport security"]
-  },
-  "dns": {
-    "aliases": ["domain name system"]
-  },
-  "dnssec": {
-    "aliases": ["dns security extensions", "dns sec"]
-  },
-  "doh": {
-    "aliases": ["dns over https", "doh"]
-  },
-  "ipv6": {
-    "aliases": ["internet protocol version 6", "ip v6", "ip6"]
-  },
-  "udp": {
-    "aliases": ["user datagram protocol"]
-  },
-  "http-semantics": {
-    "aliases": ["http semantics", "rfc 9110"]
-  },
-
-  "pfs": {
-    "aliases": ["perfect forward secrecy", "forward secrecy", "pfs"]
-  },
-  "ssrf": {
-    "aliases": ["server side request forgery", "server-side request forgery"]
-  },
-  "sql-injection": {
-    "aliases": ["sqli", "sql inj", "sql injection attack"]
+  "ocsp-stapling": {
+    "aliases": ["ocsp stapling", "status_request", "tls stapling"]
   },
   "open-redirect": {
-    "aliases": ["unvalidated redirect", "open redirection"]
+    "aliases": ["open redirection", "unvalidated redirect"]
+  },
+  "openid-connect": {
+    "aliases": ["oidc", "open id connect", "openid connect"]
   },
   "path-traversal": {
-    "aliases": ["directory traversal", "dot-dot-slash", "../"]
+    "aliases": ["../", "directory traversal", "dot-dot-slash"]
   },
-  "xxe": {
-    "aliases": ["xml external entity", "xml external entity injection", "xxe attack"]
+  "pbkdf2": {
+    "aliases": ["password-based key derivation function 2", "pbkdf 2", "pbkdf-2"]
+  },
+  "pfs": {
+    "aliases": ["forward secrecy", "perfect forward secrecy"]
+  },
+  "pki": {
+    "aliases": ["public key infrastructure"]
+  },
+  "pkce": {
+    "aliases": ["oauth pkce", "proof key for code exchange"]
+  },
+  "quic": {
+    "aliases": ["http/3 transport", "quic transport", "quick udp internet connections"]
   },
   "replay-attack": {
     "aliases": ["replay", "replay attacks"]
   },
-
-  "missing-authorization": {
-    "aliases": ["missing authz", "authorization missing"]
+  "rsa": {
+    "aliases": ["rsa encryption"]
   },
-  "improper-authentication": {
-    "aliases": ["improper authn", "authn bypass", "weak authentication"]
+  "sha-256": {
+    "aliases": ["sha 256", "sha256"]
   },
-  "hard-coded-credentials": {
-    "aliases": ["hardcoded credentials", "embedded credentials"]
+  "sql-injection": {
+    "aliases": ["sql inj", "sql injection attack", "sqli"]
   },
-  "insecure-deserialization": {
-    "aliases": ["insecure deserialisation", "unsafe deserialization"]
+  "ssrf": {
+    "aliases": ["server side request forgery", "server-side request forgery"]
   },
-  "insufficient-entropy": {
-    "aliases": ["low entropy", "insufficient randomness"]
+  "tls": {
+    "aliases": ["secure sockets layer", "ssl", "ssl/tls", "tls 1.3", "tls1.3"],
+    "sources": [{ "label": "rfc", "id": "8446", "type": "normative" }]
   },
-
-  "authentication": {
-    "aliases": ["authn", "authenticate"]
+  "udp": {
+    "aliases": ["user datagram protocol"]
   },
-  "authorization": {
-    "aliases": ["authz", "authorisation"]
+  "x509-certificate": {
+    "aliases": ["x.509", "x.509 certificate", "x509", "x509 certificate"]
+  },
+  "xss": {
+    "aliases": ["cross site scripting", "cross-site scripting"]
+  },
+  "xxe": {
+    "aliases": ["xml external entity", "xml external entity injection", "xxe attack"]
   }
 }

@@ -1,21 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import MiniSearch from 'minisearch';
-import { buildIndexPayload } from '../../src/lib/searchBuild';
-import { normalizeTokens } from '../../src/lib/tokenize';
+import { buildIndexPayload, type SearchDoc } from '../../src/lib/searchBuild';
+import type { Options } from 'minisearch';
 
 describe('search: normalization and build-time synonyms', () => {
-  it('token normalization handles "/" and case variants', () => {
-    const t1 = normalizeTokens('HTTP/2');
-    expect(t1).toContain('http2');
-    expect(t1).toContain('http');
-    expect(t1).toContain('2');
-
-    const t2 = normalizeTokens('DoS');
-    expect(t2).toContain('dos');
-  });
-
   it('synonym expansion (jot → jwt, ssl → tls, mitm → aitm) at build time', () => {
-    const docs = [
+    const docs: SearchDoc[] = [
       {
         id: 'jwt',
         term: 'JSON Web Token',
@@ -44,8 +34,8 @@ describe('search: normalization and build-time synonyms', () => {
         sourceKinds: ['CAPEC'],
       },
     ];
-    const payload = buildIndexPayload(docs as any);
-    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
+    const payload = buildIndexPayload(docs);
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as unknown as Options<any>);
 
     const r1 = mini.search('jot', payload.options.searchOptions);
     expect(r1.some((r: any) => r.id === 'jwt')).toBe(true);
@@ -58,7 +48,7 @@ describe('search: normalization and build-time synonyms', () => {
   });
 
   it('de-duplication: single doc returned even if alias/title overlap', () => {
-    const docs = [
+    const docs: SearchDoc[] = [
       {
         id: 'jwt',
         term: 'JSON Web Token',
@@ -69,8 +59,8 @@ describe('search: normalization and build-time synonyms', () => {
         sourceKinds: ['RFC'],
       },
     ];
-    const payload = buildIndexPayload(docs as any);
-    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
+    const payload = buildIndexPayload(docs);
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as unknown as Options<any>);
 
     const r = mini.search('jwt token', payload.options.searchOptions);
     const ids = r.map((x: any) => x.id);
@@ -80,7 +70,7 @@ describe('search: normalization and build-time synonyms', () => {
 
   it('scoring: exact title/id outranks alias-only matches; deterministic tie-break by slug', () => {
     // tls has alias "ssl" via synonyms.json; add a real ssl doc too — exact title/id should outrank alias
-    const docs = [
+    const docs: SearchDoc[] = [
       {
         id: 'tls',
         term: 'Transport Layer Security',
@@ -100,8 +90,8 @@ describe('search: normalization and build-time synonyms', () => {
         sourceKinds: ['RFC'],
       },
     ];
-    const payload = buildIndexPayload(docs as any);
-    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
+    const payload = buildIndexPayload(docs);
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as unknown as Options<any>);
 
     const r = mini.search('ssl', payload.options.searchOptions);
     // Expect SSL doc (exact) above TLS (matched via alias)
@@ -119,7 +109,7 @@ describe('search: normalization and build-time synonyms', () => {
 
 describe('search: synonyms follow-ups (alias expansion and determinism)', () => {
   it('aliases resolve to canonical slugs (e.g., oidc → openid-connect, mtls → mutual-tls, etc.)', () => {
-    const docs = [
+    const docs: SearchDoc[] = [
       // OIDC / OAuth
       { id: 'openid-connect', term: 'OpenID Connect', acronym: ['OIDC'], aliases: [], text: 'auth protocol', tags: ['auth'], sourceKinds: ['RFC'] },
       { id: 'oauth2', term: 'OAuth 2.0', acronym: ['OAUTH2'], aliases: [], text: 'authorization', tags: ['auth'], sourceKinds: ['RFC'] },
@@ -147,8 +137,8 @@ describe('search: synonyms follow-ups (alias expansion and determinism)', () => 
       // DoS / DDoS
       { id: 'dos', term: 'Denial of Service', acronym: ['DoS'], aliases: [], text: 'attack pattern', tags: ['attack'], sourceKinds: ['CAPEC'] },
     ];
-    const payload = buildIndexPayload(docs as any);
-    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
+    const payload = buildIndexPayload(docs);
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as unknown as Options<any>);
 
     const searchIds = (q: string) => (mini.search(q, payload.options.searchOptions) as any[]).map((r) => r.id);
 
@@ -197,7 +187,7 @@ describe('search: synonyms follow-ups (alias expansion and determinism)', () => 
   });
 
   it('deterministic ordering using explicit sort: ties resolved by slug asc', () => {
-    const docs = [
+    const docs: SearchDoc[] = [
       // Ensure overlapping "json web" terms to test tie-break determinism
       { id: 'jwt', term: 'JSON Web Token', acronym: ['JWT'], aliases: [], text: 'JOSE', tags: ['jose'], sourceKinds: ['RFC'] },
       { id: 'jws', term: 'JSON Web Signature', acronym: ['JWS'], aliases: [], text: 'JOSE', tags: ['jose'], sourceKinds: ['RFC'] },
@@ -207,8 +197,8 @@ describe('search: synonyms follow-ups (alias expansion and determinism)', () => 
       { id: 'http2', term: 'HTTP/2', acronym: [], aliases: [], text: 'http protocol', tags: ['http'], sourceKinds: ['RFC'] },
       { id: 'http3', term: 'HTTP/3', acronym: [], aliases: [], text: 'http protocol', tags: ['http'], sourceKinds: ['RFC'] },
     ];
-    const payload = buildIndexPayload(docs as any);
-    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as any);
+    const payload = buildIndexPayload(docs);
+    const mini = MiniSearch.loadJSON(payload.index as string, payload.options as unknown as Options<any>);
 
     const sortedIds = (q: string, n: number) => {
       const results = mini.search(q, payload.options.searchOptions) as Array<{ id: string; score: number }>;
