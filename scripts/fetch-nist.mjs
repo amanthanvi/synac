@@ -38,6 +38,7 @@ const VENDOR_ZIP = join(vendorDir, 'glossary-export.zip');
 const VENDOR_META = join(vendorDir, 'glossary-export.zip.meta.json');
 const RAW_JSON = join(rawDir, 'glossary.json');
 const RAW_META = join(rawDir, 'meta.json');
+const BUILD_MERGED = join(__dirname, '..', 'data', 'build', 'merged.json');
 
 const OFFLINE = /^(1|true|yes)$/i.test(String(process.env.ETL_OFFLINE || ''));
 const FORCE = /^(1|true|yes)$/i.test(String(process.env.ETL_FORCE_REFRESH || ''));
@@ -234,6 +235,41 @@ async function main() {
       try {
         const consolidated = await readJson(OUT_FILE_ALL);
         const arr = Array.isArray(consolidated?.entries) ? consolidated.entries : [];
+        if (arr.length > 0) return arr;
+      } catch {}
+    }
+    // Finally, derive from canonical merged cache if present (stable, last-known-good)
+    if (await fileExists(BUILD_MERGED)) {
+      try {
+        const merged = await readJson(BUILD_MERGED);
+        const data = Array.isArray(merged?.data)
+          ? merged.data
+          : Array.isArray(merged)
+            ? merged
+            : [];
+        const arr = [];
+        for (const item of data) {
+          const id = String(item?.id || '')
+            .toLowerCase()
+            .trim();
+          if (!id) continue;
+          const srcs = Array.isArray(item?.sources) ? item.sources : [];
+          const nistSources = srcs.filter((s) => String(s?.kind || '').toUpperCase() === 'NIST');
+          if (nistSources.length === 0) continue;
+          arr.push({
+            id,
+            sources: nistSources.map((s) => ({
+              ...s,
+              citation: s?.citation != null ? String(s.citation).trim() : s?.citation,
+              url: s?.url != null ? String(s.url).trim() : s?.url,
+              excerpt: s?.excerpt != null ? String(s.excerpt).trim().slice(0, 400) : s?.excerpt,
+              date: s?.date != null ? String(s.date).trim().slice(0, 7) : s?.date,
+              kind: s?.kind != null ? String(s.kind).trim() : s?.kind,
+              normative: s?.normative !== undefined ? !!s.normative : s?.normative,
+            })),
+            updatedAt: nowIso(),
+          });
+        }
         if (arr.length > 0) return arr;
       } catch {}
     }
