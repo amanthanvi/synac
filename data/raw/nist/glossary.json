@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "zero-trust",
+    "sources": [
+      {
+        "kind": "NIST",
+        "citation": "NIST CSRC Glossary",
+        "url": "https://csrc.nist.gov/glossary/term/zero-trust",
+        "date": "2020-08",
+        "excerpt": "An evolving set of security paradigms that narrows defenses from wide network perimeters to individual resources.",
+        "normative": true
+      }
+    ],
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  }
+]

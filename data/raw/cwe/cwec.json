@@ -70,7 +70,7 @@
   {
     "id": 8,
     "name": "J2EE Misconfiguration: Entity Bean Declared Remote",
-    "description": "When an application exposes a remote interface for an entity bean, it might also expose methods that get or set the bean's data. These methods could be leveraged to read sensitive information, or to change data in ways that violate the application's expectations, potentially leading to other vulnerabilities.",
+    "description": "When an application exposes a remote interface for an entity bean, it might also expose methods that get or set the bean\\'s data. These methods could be leveraged to read sensitive information, or to change data in ways that violate the application\\'s expectations, potentially leading to other vulnerabilities.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -144,7 +144,7 @@
   {
     "id": 12,
     "name": "ASP.NET Misconfiguration: Missing Custom Error Page",
-    "description": "An ASP .NET application must enable custom error pages in order to prevent attackers from mining information from the framework's built-in responses.",
+    "description": "An ASP .NET application must enable custom error pages in order to prevent attackers from mining information from the framework\\'s built-in responses.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -190,7 +190,7 @@
   {
     "id": 14,
     "name": "Compiler Removal of Code to Clear Buffers",
-    "description": "Sensitive memory is cleared according to the source code, but compiler optimizations leave the memory untouched when it is not read from again, aka \"dead store removal.\"",
+    "description": "Sensitive memory is cleared according to the source code, but compiler optimizations leave the memory untouched when it is not read from again, aka \\\"dead store removal.\\\"",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -417,7 +417,7 @@
   {
     "id": 23,
     "name": "Relative Path Traversal",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize sequences such as \"..\" that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize sequences such as \\\"..\\\" that can resolve to a location that is outside of that directory.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -452,7 +452,7 @@
   {
     "id": 24,
     "name": "Path Traversal: '../filedir'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \"../\" sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\\"../\\\" sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -479,7 +479,7 @@
   {
     "id": 25,
     "name": "Path Traversal: '/../filedir'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \"/../\" sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\\"/../\\\" sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -506,7 +506,7 @@
   {
     "id": 26,
     "name": "Path Traversal: '/dir/../filename'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \"/dir/../filename\" sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\\"/dir/../filename\\\" sequences that can resolve to a location that is outside of that directory.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -533,7 +533,7 @@
   {
     "id": 27,
     "name": "Path Traversal: 'dir/../../filename'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize multiple internal \"../\" sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize multiple internal \\\"../\\\" sequences that can resolve to a location that is outside of that directory.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -560,7 +560,7 @@
   {
     "id": 28,
     "name": "Path Traversal: '..\\filedir'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \"..\\\" sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\\"..\\\\\\\" sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -587,7 +587,7 @@
   {
     "id": 29,
     "name": "Path Traversal: '\\..\\filename'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize '\\..\\filename' (leading backslash dot dot) sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\'\\\\..\\\\filename\\' (leading backslash dot dot) sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -614,7 +614,7 @@
   {
     "id": 30,
     "name": "Path Traversal: '\\dir\\..\\filename'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize '\\dir\\..\\filename' (leading backslash dot dot) sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\'\\\\dir\\\\..\\\\filename\\' (leading backslash dot dot) sequences that can resolve to a location that is outside of that directory.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -641,7 +641,7 @@
   {
     "id": 31,
     "name": "Path Traversal: 'dir\\..\\..\\filename'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize 'dir\\..\\..\\filename' (multiple internal backslash dot dot) sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\'dir\\\\..\\\\..\\\\filename\\' (multiple internal backslash dot dot) sequences that can resolve to a location that is outside of that directory.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -668,7 +668,7 @@
   {
     "id": 32,
     "name": "Path Traversal: '...' (Triple Dot)",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize '...' (triple dot) sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\'...\\' (triple dot) sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -695,7 +695,7 @@
   {
     "id": 33,
     "name": "Path Traversal: '....' (Multiple Dot)",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize '....' (multiple dot) sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\'....\\' (multiple dot) sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -722,7 +722,7 @@
   {
     "id": 34,
     "name": "Path Traversal: '....//'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize '....//' (doubled dot dot slash) sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\'....//\\' (doubled dot dot slash) sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -749,7 +749,7 @@
   {
     "id": 35,
     "name": "Path Traversal: '.../...//'",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize '.../...//' (doubled triple dot slash) sequences that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize \\'.../...//\\' (doubled triple dot slash) sequences that can resolve to a location that is outside of that directory.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -776,7 +776,7 @@
   {
     "id": 36,
     "name": "Absolute Path Traversal",
-    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize absolute path sequences such as \"/abs/path\" that can resolve to a location that is outside of that directory.",
+    "description": "The product uses external input to construct a pathname that should be within a restricted directory, but it does not properly neutralize absolute path sequences such as \\\"/abs/path\\\" that can resolve to a location that is outside of that directory.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -811,7 +811,7 @@
   {
     "id": 37,
     "name": "Path Traversal: '/absolute/pathname/here'",
-    "description": "The product accepts input in the form of a slash absolute path ('/absolute/pathname/here') without appropriate validation, which can allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts input in the form of a slash absolute path (\\'/absolute/pathname/here\\') without appropriate validation, which can allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -847,7 +847,7 @@
   {
     "id": 38,
     "name": "Path Traversal: '\\absolute\\pathname\\here'",
-    "description": "The product accepts input in the form of a backslash absolute path ('\\absolute\\pathname\\here') without appropriate validation, which can allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts input in the form of a backslash absolute path (\\'\\\\absolute\\\\pathname\\\\here\\') without appropriate validation, which can allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -879,7 +879,7 @@
   {
     "id": 39,
     "name": "Path Traversal: 'C:dirname'",
-    "description": "The product accepts input that contains a drive letter or Windows volume letter ('C:dirname') that potentially redirects access to an unintended location or arbitrary file.",
+    "description": "The product accepts input that contains a drive letter or Windows volume letter (\\'C:dirname\\') that potentially redirects access to an unintended location or arbitrary file.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -911,7 +911,7 @@
   {
     "id": 40,
     "name": "Path Traversal: '\\\\UNC\\share\\name\\' (Windows UNC Share)",
-    "description": "The product accepts input that identifies a Windows UNC share ('\\\\UNC\\share\\name') that potentially redirects access to an unintended location or arbitrary file.",
+    "description": "The product accepts input that identifies a Windows UNC share (\\'\\\\\\\\UNC\\\\share\\\\name\\') that potentially redirects access to an unintended location or arbitrary file.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -965,7 +965,7 @@
   {
     "id": 42,
     "name": "Path Equivalence: 'filename.' (Trailing Dot)",
-    "description": "The product accepts path input in the form of trailing dot ('filedir.') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of trailing dot (\\'filedir.\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -996,7 +996,7 @@
   {
     "id": 43,
     "name": "Path Equivalence: 'filename....' (Multiple Trailing Dot)",
-    "description": "The product accepts path input in the form of multiple trailing dot ('filedir....') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of multiple trailing dot (\\'filedir....\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1027,7 +1027,7 @@
   {
     "id": 44,
     "name": "Path Equivalence: 'file.name' (Internal Dot)",
-    "description": "The product accepts path input in the form of internal dot ('file.ordir') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of internal dot (\\'file.ordir\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1054,7 +1054,7 @@
   {
     "id": 45,
     "name": "Path Equivalence: 'file...name' (Multiple Internal Dot)",
-    "description": "The product accepts path input in the form of multiple internal dot ('file...dir') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of multiple internal dot (\\'file...dir\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1085,7 +1085,7 @@
   {
     "id": 46,
     "name": "Path Equivalence: 'filename ' (Trailing Space)",
-    "description": "The product accepts path input in the form of trailing space ('filedir ') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of trailing space (\\'filedir \\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1120,7 +1120,7 @@
   {
     "id": 47,
     "name": "Path Equivalence: ' filename' (Leading Space)",
-    "description": "The product accepts path input in the form of leading space (' filedir') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of leading space (\\' filedir\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1147,7 +1147,7 @@
   {
     "id": 48,
     "name": "Path Equivalence: 'file name' (Internal Whitespace)",
-    "description": "The product accepts path input in the form of internal space ('file(SPACE)name') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of internal space (\\'file(SPACE)name\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1180,7 +1180,7 @@
   {
     "id": 49,
     "name": "Path Equivalence: 'filename/' (Trailing Slash)",
-    "description": "The product accepts path input in the form of trailing slash ('filedir/') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of trailing slash (\\'filedir/\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1212,7 +1212,7 @@
   {
     "id": 50,
     "name": "Path Equivalence: '//multiple/leading/slash'",
-    "description": "The product accepts path input in the form of multiple leading slash ('//multiple/leading/slash') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of multiple leading slash (\\'//multiple/leading/slash\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1243,7 +1243,7 @@
   {
     "id": 51,
     "name": "Path Equivalence: '/multiple//internal/slash'",
-    "description": "The product accepts path input in the form of multiple internal slash ('/multiple//internal/slash/') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of multiple internal slash (\\'/multiple//internal/slash/\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1270,7 +1270,7 @@
   {
     "id": 52,
     "name": "Path Equivalence: '/multiple/trailing/slash//'",
-    "description": "The product accepts path input in the form of multiple trailing slash ('/multiple/trailing/slash//') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of multiple trailing slash (\\'/multiple/trailing/slash//\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1305,7 +1305,7 @@
   {
     "id": 53,
     "name": "Path Equivalence: '\\multiple\\\\internal\\backslash'",
-    "description": "The product accepts path input in the form of multiple internal backslash ('\\multiple\\trailing\\\\slash') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of multiple internal backslash (\\'\\\\multiple\\\\trailing\\\\\\\\slash\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1336,7 +1336,7 @@
   {
     "id": 54,
     "name": "Path Equivalence: 'filedir\\' (Trailing Backslash)",
-    "description": "The product accepts path input in the form of trailing backslash ('filedir\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of trailing backslash (\\'filedir\\\\\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1367,7 +1367,7 @@
   {
     "id": 55,
     "name": "Path Equivalence: '/./' (Single Dot Directory)",
-    "description": "The product accepts path input in the form of single dot directory exploit ('/./') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of single dot directory exploit (\\'/./\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1394,7 +1394,7 @@
   {
     "id": 56,
     "name": "Path Equivalence: 'filedir*' (Wildcard)",
-    "description": "The product accepts path input in the form of asterisk wildcard ('filedir*') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
+    "description": "The product accepts path input in the form of asterisk wildcard (\\'filedir*\\') without appropriate validation, which can lead to ambiguous path resolution and allow an attacker to traverse the file system to unintended locations or access arbitrary files.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1425,7 +1425,7 @@
   {
     "id": 57,
     "name": "Path Equivalence: 'fakedir/../realdir/filename'",
-    "description": "The product contains protection mechanisms to restrict access to 'realdir/filename', but it constructs pathnames using external input in the form of 'fakedir/../realdir/filename' that are not handled by those mechanisms. This allows attackers to perform unauthorized actions against the targeted file.",
+    "description": "The product contains protection mechanisms to restrict access to \\'realdir/filename\\', but it constructs pathnames using external input in the form of \\'fakedir/../realdir/filename\\' that are not handled by those mechanisms. This allows attackers to perform unauthorized actions against the targeted file.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1452,7 +1452,7 @@
   {
     "id": 58,
     "name": "Path Equivalence: Windows 8.3 Filename",
-    "description": "The product contains a protection mechanism that restricts access to a long filename on a Windows operating system, but it does not properly restrict access to the equivalent short \"8.3\" filename.",
+    "description": "The product contains a protection mechanism that restricts access to a long filename on a Windows operating system, but it does not properly restrict access to the equivalent short \\\"8.3\\\" filename.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -1664,7 +1664,7 @@
   {
     "id": 66,
     "name": "Improper Handling of File Names that Identify Virtual Resources",
-    "description": "The product does not handle or incorrectly handles a file name that identifies a \"virtual\" resource that is not directly specified within the directory that is associated with the file name, causing the product to perform file-based operations on a resource that is not a file.",
+    "description": "The product does not handle or incorrectly handles a file name that identifies a \\\"virtual\\\" resource that is not directly specified within the directory that is associated with the file name, causing the product to perform file-based operations on a resource that is not a file.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -2130,7 +2130,7 @@
   {
     "id": 80,
     "name": "Improper Neutralization of Script-Related HTML Tags in a Web Page (Basic XSS)",
-    "description": "The product receives input from an upstream component, but it does not neutralize or incorrectly neutralizes special characters such as \" \", and \"&\" that could be interpreted as web-scripting elements when they are sent to a downstream component that processes web pages.",
+    "description": "The product receives input from an upstream component, but it does not neutralize or incorrectly neutralizes special characters such as \\\" \\\", and \\\"&\\\" that could be interpreted as web-scripting elements when they are sent to a downstream component that processes web pages.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -2221,7 +2221,7 @@
   {
     "id": 83,
     "name": "Improper Neutralization of Script in Attributes in a Web Page",
-    "description": "The product does not neutralize or incorrectly neutralizes \"javascript:\" or other URIs from dangerous attributes within tags, such as onmouseover, onload, onerror, or style.",
+    "description": "The product does not neutralize or incorrectly neutralizes \\\"javascript:\\\" or other URIs from dangerous attributes within tags, such as onmouseover, onload, onerror, or style.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -2583,7 +2583,7 @@
   {
     "id": 92,
     "name": "DEPRECATED: Improper Sanitization of Custom Special Characters",
-    "description": "This entry has been deprecated. It originally came from PLOVER, which sometimes defined \"other\" and \"miscellaneous\" categories in order to satisfy exhaustiveness requirements for taxonomies. Within the context of CWE, the use of a more abstract entry is preferred in mapping situations. CWE-75 is a more appropriate mapping.",
+    "description": "This entry has been deprecated. It originally came from PLOVER, which sometimes defined \\\"other\\\" and \\\"miscellaneous\\\" categories in order to satisfy exhaustiveness requirements for taxonomies. Within the context of CWE, the use of a more abstract entry is preferred in mapping situations. CWE-75 is a more appropriate mapping.",
     "status": "Deprecated",
     "abstraction": "Base"
   },
@@ -2684,7 +2684,7 @@
   {
     "id": 95,
     "name": "Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')",
-    "description": "The product receives input from an upstream component, but it does not neutralize or incorrectly neutralizes code syntax before using the input in a dynamic evaluation call (e.g. \"eval\").",
+    "description": "The product receives input from an upstream component, but it does not neutralize or incorrectly neutralizes code syntax before using the input in a dynamic evaluation call (e.g. \\\"eval\\\").",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -2786,7 +2786,7 @@
   {
     "id": 98,
     "name": "Improper Control of Filename for Include/Require Statement in PHP Program ('PHP Remote File Inclusion')",
-    "description": "The PHP application receives input from an upstream component, but it does not restrict or incorrectly restricts the input before its usage in \"require,\" \"include,\" or similar functions.",
+    "description": "The PHP application receives input from an upstream component, but it does not restrict or incorrectly restricts the input before its usage in \\\"require,\\\" \\\"include,\\\" or similar functions.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -3442,7 +3442,7 @@
   {
     "id": 119,
     "name": "Improper Restriction of Operations within the Bounds of a Memory Buffer",
-    "description": "The product performs operations on a memory buffer, but it reads from or writes to a memory location outside the buffer's intended boundary. This may result in read or write operations on unexpected memory locations that could be linked to other variables, data structures, or internal program data.",
+    "description": "The product performs operations on a memory buffer, but it reads from or writes to a memory location outside the buffer\\'s intended boundary. This may result in read or write operations on unexpected memory locations that could be linked to other variables, data structures, or internal program data.",
     "status": "Stable",
     "abstraction": "Class",
     "relationships": [
@@ -3952,7 +3952,7 @@
   {
     "id": 128,
     "name": "Wrap-around Error",
-    "description": "Wrap around errors occur whenever a value is incremented past the maximum value for its type and therefore \"wraps around\" to a very small, negative, or undefined value.",
+    "description": "Wrap around errors occur whenever a value is incremented past the maximum value for its type and therefore \\\"wraps around\\\" to a very small, negative, or undefined value.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -4548,7 +4548,7 @@
   {
     "id": 148,
     "name": "Improper Neutralization of Input Leaders",
-    "description": "The product does not properly handle when a leading character or sequence (\"leader\") is missing or malformed, or if multiple leaders are used when only one should be allowed.",
+    "description": "The product does not properly handle when a leading character or sequence (\\\"leader\\\") is missing or malformed, or if multiple leaders are used when only one should be allowed.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -5487,7 +5487,7 @@
   {
     "id": 182,
     "name": "Collapse of Data into Unsafe Value",
-    "description": "The product filters data in a way that causes it to be reduced or \"collapsed\" into an unsafe value that violates an expected security property.",
+    "description": "The product filters data in a way that causes it to be reduced or \\\"collapsed\\\" into an unsafe value that violates an expected security property.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -6355,7 +6355,7 @@
   {
     "id": 205,
     "name": "Observable Behavioral Discrepancy",
-    "description": "The product's behaviors indicate important differences that may be observed by unauthorized actors in a way that reveals (1) its internal state or decision process, or (2) differences from other products with equivalent functionality.",
+    "description": "The product\\'s behaviors indicate important differences that may be observed by unauthorized actors in a way that reveals (1) its internal state or decision process, or (2) differences from other products with equivalent functionality.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -6611,7 +6611,7 @@
   {
     "id": 213,
     "name": "Exposure of Sensitive Information Due to Incompatible Policies",
-    "description": "The product's intended functionality exposes information to certain actors in accordance with the developer's security policy, but this information is regarded as sensitive according to the intended security policies of other stakeholders such as the product's administrator, users, or others whose information is being processed.",
+    "description": "The product\\'s intended functionality exposes information to certain actors in accordance with the developer\\'s security policy, but this information is regarded as sensitive according to the intended security policies of other stakeholders such as the product\\'s administrator, users, or others whose information is being processed.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -6704,7 +6704,7 @@
   {
     "id": 216,
     "name": "DEPRECATED: Containment Errors (Container Errors)",
-    "description": "This entry has been deprecated, as it was not effective as a weakness and was structured more like a category. In addition, the name is inappropriate, since the \"container\" term is widely understood by developers in different ways than originally intended by PLOVER, the original source for this entry.",
+    "description": "This entry has been deprecated, as it was not effective as a weakness and was structured more like a category. In addition, the name is inappropriate, since the \\\"container\\\" term is widely understood by developers in different ways than originally intended by PLOVER, the original source for this entry.",
     "status": "Deprecated",
     "abstraction": "Class"
   },
@@ -6878,7 +6878,7 @@
   {
     "id": 226,
     "name": "Sensitive Information in Resource Not Removed Before Reuse",
-    "description": "The product releases a resource such as memory or a file so that it can be made available for reuse, but it does not clear or \"zeroize\" the information contained in the resource before the product performs a critical state transition or makes the resource available for reuse by other entities.",
+    "description": "The product releases a resource such as memory or a file so that it can be made available for reuse, but it does not clear or \\\"zeroize\\\" the information contained in the resource before the product performs a critical state transition or makes the resource available for reuse by other entities.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -7362,7 +7362,7 @@
   {
     "id": 245,
     "name": "J2EE Bad Practices: Direct Management of Connections",
-    "description": "The J2EE application directly manages connections, instead of using the container's connection management facilities.",
+    "description": "The J2EE application directly manages connections, instead of using the container\\'s connection management facilities.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -10361,7 +10361,7 @@
   {
     "id": 338,
     "name": "Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)",
-    "description": "The product uses a Pseudo-Random Number Generator (PRNG) in a security context, but the PRNG's algorithm is not cryptographically strong.",
+    "description": "The product uses a Pseudo-Random Number Generator (PRNG) in a security context, but the PRNG\\'s algorithm is not cryptographically strong.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -10499,7 +10499,7 @@
   {
     "id": 343,
     "name": "Predictable Value Range from Previous Values",
-    "description": "The product's random number generator produces a series of values which, when observed, can be used to infer a relatively small range of possibilities for the next value that could be generated.",
+    "description": "The product\\'s random number generator produces a series of values which, when observed, can be used to infer a relatively small range of possibilities for the next value that could be generated.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -10924,7 +10924,7 @@
   {
     "id": 354,
     "name": "Improper Validation of Integrity Check Value",
-    "description": "The product does not validate or incorrectly validates the integrity check values or \"checksums\" of a message. This may prevent it from detecting if the data has been modified or corrupted in transmission.",
+    "description": "The product does not validate or incorrectly validates the integrity check values or \\\"checksums\\\" of a message. This may prevent it from detecting if the data has been modified or corrupted in transmission.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -10965,7 +10965,7 @@
   {
     "id": 356,
     "name": "Product UI does not Warn User of Unsafe Actions",
-    "description": "The product's user interface does not warn the user before undertaking an unsafe action on behalf of that user. This makes it easier for attackers to trick users into inflicting damage to their system.",
+    "description": "The product\\'s user interface does not warn the user before undertaking an unsafe action on behalf of that user. This makes it easier for attackers to trick users into inflicting damage to their system.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -11046,7 +11046,7 @@
   {
     "id": 359,
     "name": "Exposure of Private Personal Information to an Unauthorized Actor",
-    "description": "The product does not properly prevent a person's private, personal information from being accessed by actors who either (1) are not explicitly authorized to access the information or (2) do not have the implicit consent of the person about whom the information is collected.",
+    "description": "The product does not properly prevent a person\\'s private, personal information from being accessed by actors who either (1) are not explicitly authorized to access the information or (2) do not have the implicit consent of the person about whom the information is collected.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -11227,7 +11227,7 @@
   {
     "id": 365,
     "name": "DEPRECATED: Race Condition in Switch",
-    "description": "This entry has been deprecated. There are no documented cases in which a switch's control expression is evaluated more than once.",
+    "description": "This entry has been deprecated. There are no documented cases in which a switch\\'s control expression is evaluated more than once.",
     "status": "Deprecated",
     "abstraction": "Base"
   },
@@ -11298,7 +11298,7 @@
   {
     "id": 367,
     "name": "Time-of-check Time-of-use (TOCTOU) Race Condition",
-    "description": "The product checks the state of a resource before using that resource, but the resource's state can change between the check and the use in a way that invalidates the results of the check. This can cause the product to perform invalid actions when the resource is in an unexpected state.",
+    "description": "The product checks the state of a resource before using that resource, but the resource\\'s state can change between the check and the use in a way that invalidates the results of the check. This can cause the product to perform invalid actions when the resource is in an unexpected state.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -11347,7 +11347,7 @@
   {
     "id": 368,
     "name": "Context Switching Race Condition",
-    "description": "A product performs a series of non-atomic actions to switch between contexts that cross privilege or other security boundaries, but a race condition allows an attacker to modify or misrepresent the product's behavior during the switch.",
+    "description": "A product performs a series of non-atomic actions to switch between contexts that cross privilege or other security boundaries, but a race condition allows an attacker to modify or misrepresent the product\\'s behavior during the switch.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -11634,7 +11634,7 @@
   {
     "id": 379,
     "name": "Creation of Temporary File in Directory with Insecure Permissions",
-    "description": "The product creates a temporary file in a directory whose permissions allow unintended actors to determine the file's existence or otherwise access that file.",
+    "description": "The product creates a temporary file in a directory whose permissions allow unintended actors to determine the file\\'s existence or otherwise access that file.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -12462,7 +12462,7 @@
   {
     "id": 405,
     "name": "Asymmetric Resource Consumption (Amplification)",
-    "description": "The product does not properly control situations in which an adversary can cause the product to consume or produce excessive resources without requiring the adversary to invest equivalent work or otherwise prove authorization, i.e., the adversary's influence is \"asymmetric.\"",
+    "description": "The product does not properly control situations in which an adversary can cause the product to consume or produce excessive resources without requiring the adversary to invest equivalent work or otherwise prove authorization, i.e., the adversary\\'s influence is \\\"asymmetric.\\\"",
     "status": "Incomplete",
     "abstraction": "Class",
     "relationships": [
@@ -12610,7 +12610,7 @@
   {
     "id": 410,
     "name": "Insufficient Resource Pool",
-    "description": "The product's resource pool is not large enough to handle peak demand, which allows an attacker to prevent others from accessing the resource by using a (relatively) large number of requests for resources.",
+    "description": "The product\\'s resource pool is not large enough to handle peak demand, which allows an attacker to prevent others from accessing the resource by using a (relatively) large number of requests for resources.",
     "status": "Incomplete",
     "abstraction": "Class",
     "relationships": [
@@ -12857,7 +12857,7 @@
   {
     "id": 416,
     "name": "Use After Free",
-    "description": "The product reuses or references memory after it has been freed. At some point afterward, the memory may be allocated again and saved in another pointer, while the original pointer references a location somewhere within the new allocation. Any operations using the original pointer are no longer valid because the memory \"belongs\" to the code that operates on the new pointer.",
+    "description": "The product reuses or references memory after it has been freed. At some point afterward, the memory may be allocated again and saved in another pointer, while the original pointer references a location somewhere within the new allocation. Any operations using the original pointer are no longer valid because the memory \\\"belongs\\\" to the code that operates on the new pointer.",
     "status": "Stable",
     "abstraction": "Variant",
     "relationships": [
@@ -13143,7 +13143,7 @@
   {
     "id": 426,
     "name": "Untrusted Search Path",
-    "description": "The product searches for critical resources using an externally-supplied search path that can point to resources that are not under the product's direct control.",
+    "description": "The product searches for critical resources using an externally-supplied search path that can point to resources that are not under the product\\'s direct control.",
     "status": "Stable",
     "abstraction": "Base",
     "relationships": [
@@ -13243,7 +13243,7 @@
   {
     "id": 430,
     "name": "Deployment of Wrong Handler",
-    "description": "The wrong \"handler\" is assigned to process an object.",
+    "description": "The wrong \\\"handler\\\" is assigned to process an object.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -13422,7 +13422,7 @@
   {
     "id": 436,
     "name": "Interpretation Conflict",
-    "description": "Product A handles inputs or steps differently than Product B, which causes A to perform incorrect actions based on its perception of B's state.",
+    "description": "Product A handles inputs or steps differently than Product B, which causes A to perform incorrect actions based on its perception of B\\'s state.",
     "status": "Incomplete",
     "abstraction": "Class",
     "relationships": [
@@ -13450,7 +13450,7 @@
   {
     "id": 437,
     "name": "Incomplete Model of Endpoint Features",
-    "description": "A product acts as an intermediary or monitor between two or more endpoints, but it does not have a complete model of an endpoint's features, behaviors, or state, potentially causing the product to perform incorrect actions based on this incomplete model.",
+    "description": "A product acts as an intermediary or monitor between two or more endpoints, but it does not have a complete model of an endpoint\\'s features, behaviors, or state, potentially causing the product to perform incorrect actions based on this incomplete model.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -13473,7 +13473,7 @@
   {
     "id": 439,
     "name": "Behavioral Change in New Version or Environment",
-    "description": "A's behavior or functionality changes with a new version of A, or a new environment, which is not known (or manageable) by B.",
+    "description": "A\\'s behavior or functionality changes with a new version of A, or a new environment, which is not known (or manageable) by B.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -13520,7 +13520,7 @@
   {
     "id": 441,
     "name": "Unintended Proxy or Intermediary ('Confused Deputy')",
-    "description": "The product receives a request, message, or directive from an upstream component, but the product does not sufficiently preserve the original source of the request before forwarding the request to an external actor that is outside of the product's control sphere. This causes the product to appear to be the source of the request, leading it to act as a proxy or other intermediary between the upstream component and the external actor.",
+    "description": "The product receives a request, message, or directive from an upstream component, but the product does not sufficiently preserve the original source of the request before forwarding the request to an external actor that is outside of the product\\'s control sphere. This causes the product to appear to be the source of the request, leading it to act as a proxy or other intermediary between the upstream component and the external actor.",
     "status": "Draft",
     "abstraction": "Class",
     "relationships": [
@@ -13669,7 +13669,7 @@
   {
     "id": 449,
     "name": "The UI Performs the Wrong Action",
-    "description": "The UI performs the wrong action with respect to the user's request.",
+    "description": "The UI performs the wrong action with respect to the user\\'s request.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -13958,7 +13958,7 @@
   {
     "id": 459,
     "name": "Incomplete Cleanup",
-    "description": "The product does not properly \"clean up\" and remove temporary or supporting resources after they have been used.",
+    "description": "The product does not properly \\\"clean up\\\" and remove temporary or supporting resources after they have been used.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -15499,7 +15499,7 @@
   {
     "id": 512,
     "name": "Spyware",
-    "description": "The product collects personally identifiable information about a human user or the user's activities, but the product accesses this information using other resources besides itself, and it does not require that user's explicit approval or direct input into the product.",
+    "description": "The product collects personally identifiable information about a human user or the user\\'s activities, but the product accesses this information using other resources besides itself, and it does not require that user\\'s explicit approval or direct input into the product.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -15517,7 +15517,7 @@
   {
     "id": 514,
     "name": "Covert Channel",
-    "description": "A covert channel is a path that can be used to transfer information in a way not intended by the system's designers.",
+    "description": "A covert channel is a path that can be used to transfer information in a way not intended by the system\\'s designers.",
     "status": "Incomplete",
     "abstraction": "Class",
     "relationships": [
@@ -16451,7 +16451,7 @@
   {
     "id": 563,
     "name": "Assignment to Variable without Use",
-    "description": "The variable's value is assigned but never used, making it a dead store.",
+    "description": "The variable\\'s value is assigned but never used, making it a dead store.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -16485,7 +16485,7 @@
   {
     "id": 564,
     "name": "SQL Injection: Hibernate",
-    "description": "Using Hibernate to execute a dynamic SQL statement built with user-controlled input can allow an attacker to modify the statement's meaning or to execute arbitrary SQL commands.",
+    "description": "Using Hibernate to execute a dynamic SQL statement built with user-controlled input can allow an attacker to modify the statement\\'s meaning or to execute arbitrary SQL commands.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -16714,7 +16714,7 @@
   {
     "id": 572,
     "name": "Call to Thread run() instead of start()",
-    "description": "The product calls a thread's run() method instead of calling start(), which causes the code to run in the thread of the caller instead of the callee.",
+    "description": "The product calls a thread\\'s run() method instead of calling start(), which causes the code to run in the thread of the caller instead of the callee.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -16961,7 +16961,7 @@
   {
     "id": 582,
     "name": "Array Declared Public, Final, and Static",
-    "description": "The product declares an array public, final, and static, which is not sufficient to prevent the array's contents from being modified.",
+    "description": "The product declares an array public, final, and static, which is not sufficient to prevent the array\\'s contents from being modified.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -17358,7 +17358,7 @@
   {
     "id": 597,
     "name": "Use of Wrong Operator in String Comparison",
-    "description": "The product uses the wrong operator when comparing a string, such as using \"==\" when the .equals() method should be used instead.",
+    "description": "The product uses the wrong operator when comparing a string, such as using \\\"==\\\" when the .equals() method should be used instead.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -17795,7 +17795,7 @@
   {
     "id": 613,
     "name": "Insufficient Session Expiration",
-    "description": "According to WASC, \"Insufficient Session Expiration is when a web site permits an attacker to reuse old session credentials or session IDs for authorization.\"",
+    "description": "According to WASC, \\\"Insufficient Session Expiration is when a web site permits an attacker to reuse old session credentials or session IDs for authorization.\\\"",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -17926,7 +17926,7 @@
   {
     "id": 618,
     "name": "Exposed Unsafe ActiveX Method",
-    "description": "An ActiveX control is intended for use in a web browser, but it exposes dangerous methods that perform actions that are outside of the browser's security model (e.g. the zone or domain).",
+    "description": "An ActiveX control is intended for use in a web browser, but it exposes dangerous methods that perform actions that are outside of the browser\\'s security model (e.g. the zone or domain).",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -17943,7 +17943,7 @@
   {
     "id": 619,
     "name": "Dangling Database Cursor ('Cursor Injection')",
-    "description": "If a database cursor is not closed properly, then it could become accessible to other users while retaining the same privileges that were originally assigned, leaving the cursor \"dangling.\"",
+    "description": "If a database cursor is not closed properly, then it could become accessible to other users while retaining the same privileges that were originally assigned, leaving the cursor \\\"dangling.\\\"",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -18265,7 +18265,7 @@
   {
     "id": 638,
     "name": "Not Using Complete Mediation",
-    "description": "The product does not perform access checks on a resource every time the resource is accessed by an entity, which can create resultant weaknesses if that entity's rights or privileges change over time.",
+    "description": "The product does not perform access checks on a resource every time the resource is accessed by an entity, which can create resultant weaknesses if that entity\\'s rights or privileges change over time.",
     "status": "Draft",
     "abstraction": "Class",
     "relationships": [
@@ -18293,7 +18293,7 @@
   {
     "id": 639,
     "name": "Authorization Bypass Through User-Controlled Key",
-    "description": "The system's authorization functionality does not prevent one user from gaining access to another user's data or record by modifying the key value identifying the data.",
+    "description": "The system\\'s authorization functionality does not prevent one user from gaining access to another user\\'s data or record by modifying the key value identifying the data.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -18906,7 +18906,7 @@
   {
     "id": 666,
     "name": "Operation on Resource in Wrong Phase of Lifetime",
-    "description": "The product performs an operation on a resource at the wrong phase of the resource's lifecycle, which can lead to unexpected behaviors.",
+    "description": "The product performs an operation on a resource at the wrong phase of the resource\\'s lifecycle, which can lead to unexpected behaviors.",
     "status": "Draft",
     "abstraction": "Class",
     "relationships": [
@@ -19060,7 +19060,7 @@
   {
     "id": 671,
     "name": "Lack of Administrator Control over Security",
-    "description": "The product uses security features in a way that prevents the product's administrator from tailoring security settings to reflect the environment in which the product is being used. This introduces resultant weaknesses or prevents it from operating at a level of security that is desired by the administrator.",
+    "description": "The product uses security features in a way that prevents the product\\'s administrator from tailoring security settings to reflect the environment in which the product is being used. This introduces resultant weaknesses or prevents it from operating at a level of security that is desired by the administrator.",
     "status": "Draft",
     "abstraction": "Class",
     "relationships": [
@@ -19569,7 +19569,7 @@
   {
     "id": 689,
     "name": "Permission Race Condition During Resource Copy",
-    "description": "The product, while copying or cloning a resource, does not set the resource's permissions or access control until the copy is complete, leaving the resource exposed to other spheres while the copy is taking place.",
+    "description": "The product, while copying or cloning a resource, does not set the resource\\'s permissions or access control until the copy is complete, leaving the resource exposed to other spheres while the copy is taking place.",
     "status": "Draft",
     "abstraction": "Compound",
     "relationships": [
@@ -21285,7 +21285,7 @@
   {
     "id": 796,
     "name": "Only Filtering Special Elements Relative to a Marker",
-    "description": "The product receives data from an upstream component, but only accounts for special elements positioned relative to a marker (e.g. \"at the beginning/end of a string; the second argument\"), thereby missing remaining special elements that may exist before sending it to a downstream component.",
+    "description": "The product receives data from an upstream component, but only accounts for special elements positioned relative to a marker (e.g. \\\"at the beginning/end of a string; the second argument\\\"), thereby missing remaining special elements that may exist before sending it to a downstream component.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -21301,7 +21301,7 @@
   {
     "id": 797,
     "name": "Only Filtering Special Elements at an Absolute Position",
-    "description": "The product receives data from an upstream component, but only accounts for special elements at an absolute position (e.g. \"byte number 10\"), thereby missing remaining special elements that may exist before sending it to a downstream component.",
+    "description": "The product receives data from an upstream component, but only accounts for special elements at an absolute position (e.g. \\\"byte number 10\\\"), thereby missing remaining special elements that may exist before sending it to a downstream component.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -22221,7 +22221,7 @@
   {
     "id": 912,
     "name": "Hidden Functionality",
-    "description": "The product contains functionality that is not documented, not part of the specification, and not accessible through an interface or command sequence that is obvious to the product's users or administrators.",
+    "description": "The product contains functionality that is not documented, not part of the specification, and not accessible through an interface or command sequence that is obvious to the product\\'s users or administrators.",
     "status": "Incomplete",
     "abstraction": "Class",
     "relationships": [
@@ -22835,7 +22835,7 @@
   {
     "id": 1042,
     "name": "Static Member Data Element outside of a Singleton Class Element",
-    "description": "The code contains a member element that is declared as static (but not final), in which its parent class element is not a singleton class - that is, a class element that can be used only once in the 'to' association of a Create action.",
+    "description": "The code contains a member element that is declared as static (but not final), in which its parent class element is not a singleton class - that is, a class element that can be used only once in the \\'to\\' association of a Create action.",
     "status": "Incomplete",
     "abstraction": "Variant",
     "relationships": [
@@ -22873,7 +22873,7 @@
   {
     "id": 1044,
     "name": "Architecture with Number of Horizontal Layers Outside of Expected Range",
-    "description": "The product's architecture contains too many - or too few - horizontal layers.",
+    "description": "The product\\'s architecture contains too many - or too few - horizontal layers.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -23506,7 +23506,7 @@
   {
     "id": 1075,
     "name": "Unconditional Control Flow Transfer outside of Switch Block",
-    "description": "The product performs unconditional control transfer (such as a \"goto\") in code outside of a branching structure such as a switch block.",
+    "description": "The product performs unconditional control transfer (such as a \\\"goto\\\") in code outside of a branching structure such as a switch block.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -23525,7 +23525,7 @@
   {
     "id": 1076,
     "name": "Insufficient Adherence to Expected Conventions",
-    "description": "The product's architecture, source code, design, documentation, or other artifact does not follow required conventions.",
+    "description": "The product\\'s architecture, source code, design, documentation, or other artifact does not follow required conventions.",
     "status": "Incomplete",
     "abstraction": "Class",
     "relationships": [
@@ -23779,7 +23779,7 @@
   {
     "id": 1091,
     "name": "Use of Object without Invoking Destructor Method",
-    "description": "The product contains a method that accesses an object but does not later invoke the element's associated finalize/destructor method.",
+    "description": "The product contains a method that accesses an object but does not later invoke the element\\'s associated finalize/destructor method.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -23941,7 +23941,7 @@
   {
     "id": 1099,
     "name": "Inconsistent Naming Conventions for Identifiers",
-    "description": "The product's code, documentation, or other artifacts do not consistently use the same naming conventions for variables, callables, groups of related callables, I/O capabilities, data types, file names, or similar types of elements.",
+    "description": "The product\\'s code, documentation, or other artifacts do not consistently use the same naming conventions for variables, callables, groups of related callables, I/O capabilities, data types, file names, or similar types of elements.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -24092,7 +24092,7 @@
   {
     "id": 1110,
     "name": "Incomplete Design Documentation",
-    "description": "The product's design documentation does not adequately describe control flow, data flow, system initialization, relationships between tasks, components, rationales, or other important aspects of the design.",
+    "description": "The product\\'s design documentation does not adequately describe control flow, data flow, system initialization, relationships between tasks, components, rationales, or other important aspects of the design.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -24105,7 +24105,7 @@
   {
     "id": 1111,
     "name": "Incomplete I/O Documentation",
-    "description": "The product's documentation does not adequately define inputs, outputs, or system/software interfaces.",
+    "description": "The product\\'s documentation does not adequately define inputs, outputs, or system/software interfaces.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -24183,7 +24183,7 @@
   {
     "id": 1117,
     "name": "Callable with Insufficient Behavioral Summary",
-    "description": "The code contains a function or method whose signature and/or associated inline documentation does not sufficiently describe the callable's inputs, outputs, side effects, assumptions, or return codes.",
+    "description": "The code contains a function or method whose signature and/or associated inline documentation does not sufficiently describe the callable\\'s inputs, outputs, side effects, assumptions, or return codes.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -24209,7 +24209,7 @@
   {
     "id": 1119,
     "name": "Excessive Use of Unconditional Branching",
-    "description": "The code uses too many unconditional branches (such as \"goto\").",
+    "description": "The code uses too many unconditional branches (such as \\\"goto\\\").",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -24627,7 +24627,7 @@
   {
     "id": 1224,
     "name": "Improper Restriction of Write-Once Bit Fields",
-    "description": "The hardware design control register \"sticky bits\" or write-once bit fields are improperly implemented, such that they can be reprogrammed by software.",
+    "description": "The hardware design control register \\\"sticky bits\\\" or write-once bit fields are improperly implemented, such that they can be reprogrammed by software.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -24918,7 +24918,7 @@
   {
     "id": 1245,
     "name": "Improper Finite State Machines (FSMs) in Hardware Logic",
-    "description": "Faulty finite state machines (FSMs) in the hardware logic allow an attacker to put the system in an undefined state, to cause a denial of service (DoS) or gain privileges on the victim's system.",
+    "description": "Faulty finite state machines (FSMs) in the hardware logic allow an attacker to put the system in an undefined state, to cause a denial of service (DoS) or gain privileges on the victim\\'s system.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -25002,7 +25002,7 @@
   {
     "id": 1249,
     "name": "Application-Level Admin Tool with Inconsistent View of Underlying Operating System",
-    "description": "The product provides an application for administrators to manage parts of the underlying operating system, but the application does not accurately identify all of the relevant entities or resources that exist in the OS; that is, the application's model of the OS's state is inconsistent with the OS's actual state.",
+    "description": "The product provides an application for administrators to manage parts of the underlying operating system, but the application does not accurately identify all of the relevant entities or resources that exist in the OS; that is, the application\\'s model of the OS\\'s state is inconsistent with the OS\\'s actual state.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -25032,7 +25032,7 @@
   {
     "id": 1251,
     "name": "Mirrored Regions with Different Values",
-    "description": "The product's architecture mirrors regions without ensuring that their contents always stay in sync.",
+    "description": "The product\\'s architecture mirrors regions without ensuring that their contents always stay in sync.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -25078,7 +25078,7 @@
   {
     "id": 1254,
     "name": "Incorrect Comparison Logic Granularity",
-    "description": "The product's comparison logic is performed over a series of steps rather than across the entire string in one operation. If there is a comparison logic failure on one of these steps, the operation may be vulnerable to a timing attack that can result in the interception of the process for nefarious purposes.",
+    "description": "The product\\'s comparison logic is performed over a series of steps rather than across the entire string in one operation. If there is a comparison logic failure on one of these steps, the operation may be vulnerable to a timing attack that can result in the interception of the process for nefarious purposes.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -25099,7 +25099,7 @@
   {
     "id": 1255,
     "name": "Comparison Logic is Vulnerable to Power Side-Channel Attacks",
-    "description": "A device's real time power consumption may be monitored during security token evaluation and the information gleaned may be used to determine the value of the reference token.",
+    "description": "A device\\'s real time power consumption may be monitored during security token evaluation and the information gleaned may be used to determine the value of the reference token.",
     "status": "Draft",
     "abstraction": "Variant",
     "relationships": [
@@ -25357,7 +25357,7 @@
   {
     "id": 1268,
     "name": "Policy Privileges are not Assigned Consistently Between Control and Data Agents",
-    "description": "The product's hardware-enforced access control for a particular resource improperly accounts for privilege discrepancies between control and write policies.",
+    "description": "The product\\'s hardware-enforced access control for a particular resource improperly accounts for privilege discrepancies between control and write policies.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
@@ -25574,7 +25574,7 @@
   {
     "id": 1280,
     "name": "Access Control Check Implemented After Asset is Accessed",
-    "description": "A product's hardware-based access control check occurs after the asset has been accessed.",
+    "description": "A product\\'s hardware-based access control check occurs after the asset has been accessed.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -25611,7 +25611,7 @@
   {
     "id": 1282,
     "name": "Assumed-Immutable Data is Stored in Writable Memory",
-    "description": "Immutable data, such as a first-stage bootloader, device identifiers, and \"write-once\" configuration settings are stored in writable memory that can be re-programmed or updated in the field.",
+    "description": "Immutable data, such as a first-stage bootloader, device identifiers, and \\\"write-once\\\" configuration settings are stored in writable memory that can be re-programmed or updated in the field.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -25885,7 +25885,7 @@
   {
     "id": 1296,
     "name": "Incorrect Chaining or Granularity of Debug Components",
-    "description": "The product's debug components contain incorrect chaining or granularity of debug components.",
+    "description": "The product\\'s debug components contain incorrect chaining or granularity of debug components.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -25979,7 +25979,7 @@
   {
     "id": 1301,
     "name": "Insufficient or Incomplete Data Removal within Hardware Component",
-    "description": "The product's data removal process does not completely delete all data and potentially sensitive information within hardware components.",
+    "description": "The product\\'s data removal process does not completely delete all data and potentially sensitive information within hardware components.",
     "status": "Incomplete",
     "abstraction": "Base",
     "relationships": [
@@ -26587,7 +26587,7 @@
   {
     "id": 1339,
     "name": "Insufficient Precision or Accuracy of a Real Number",
-    "description": "The product processes a real number with an implementation in which the number's representation does not preserve required accuracy and precision in its fractional part, causing an incorrect result.",
+    "description": "The product processes a real number with an implementation in which the number\\'s representation does not preserve required accuracy and precision in its fractional part, causing an incorrect result.",
     "status": "Draft",
     "abstraction": "Base",
     "relationships": [
