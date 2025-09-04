@@ -43,7 +43,7 @@ jobs:
             etl-raw-
 
       - name: Install dependencies
-        run: npm ci
+        run: NODE_ENV='' npm ci --ignore-scripts
 
       - name: Run ETL (vendors)
         run: npm run etl:all
