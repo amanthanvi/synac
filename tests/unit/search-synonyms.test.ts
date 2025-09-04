@@ -54,6 +54,10 @@ describe('search: normalization and build-time synonyms', () => {
     const r1 = mini.search('jot', payload.options.searchOptions);
     expect(r1.some((r: any) => r.id === 'jwt')).toBe(true);
 
+    // Negative test case: search for a non-synonym term to ensure no false positives
+    const rNegative = mini.search('apple', payload.options.searchOptions);
+    expect(rNegative.length).toBe(0);
+
     const r2 = mini.search('ssl', payload.options.searchOptions);
     expect(r2.some((r: any) => r.id === 'tls')).toBe(true);
 
@@ -115,6 +119,40 @@ describe('search: normalization and build-time synonyms', () => {
 
     const r = mini.search('ssl', payload.options.searchOptions);
     // Expect SSL doc (exact) above TLS (matched via alias)
+
+    // Tie-break determinism: If scores are equal, order by slug deterministically
+    const tieDocs: SearchDoc[] = [
+      {
+        id: 'alpha',
+        term: 'SSL',
+        acronym: ['SSL'],
+        aliases: [],
+        text: '',
+        tags: [],
+        sourceKinds: ['RFC'],
+      },
+      {
+        id: 'beta',
+        term: 'SSL',
+        acronym: ['SSL'],
+        aliases: [],
+        text: '',
+        tags: [],
+        sourceKinds: ['RFC'],
+      },
+    ];
+    const tiePayload = buildIndexPayload(tieDocs);
+    const tieMini = MiniSearch.loadJSON(
+      tiePayload.index as string,
+      tiePayload.options as unknown as Options<any>,
+    );
+    const tieResults = tieMini.search('ssl', tiePayload.options.searchOptions) as Array<{
+      id: string;
+      score: number;
+    }>;
+    // Deterministic order by score then slug (scores may differ slightly)
+    tieResults.sort((a, b) => b.score - a.score || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    expect(tieResults.map((x) => x.id)).toEqual(['alpha', 'beta']);
     expect((r[0] as any).id).toBe('ssl');
     // Deterministic order for remainder by score then slug
     for (let i = 1; i < r.length; i++) {

@@ -266,7 +266,7 @@ declare global {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'btn-chip';
-      b.setAttribute('data-tag', encodeURIComponent(tag));
+      b.setAttribute('data-tag', tag);
       b.setAttribute('aria-pressed', selectedTags.has(tag) ? 'true' : 'false');
       b.textContent = `#${tag}`;
       if (selectedTags.has(tag)) b.classList.add('btn-chip--active');
@@ -406,62 +406,38 @@ declare global {
   });
 
   // Source facet toggles
-  if (sourceFilters) {
-    sourceFilters.addEventListener('click', (e) => {
+  // Generic chip toggle wiring to reduce duplication
+  const wireChipToggle = (
+    container: HTMLDivElement | null,
+    attr: 'data-kind' | 'data-type' | 'data-tag',
+    selected: Set<string>,
+  ) => {
+    if (!container) return;
+    container.addEventListener('click', (e) => {
       const target = (e.target as HTMLElement).closest(
-        'button[data-kind]',
+        `button[${attr}]`,
       ) as HTMLButtonElement | null;
       if (!target) return;
-      const kind = target.getAttribute('data-kind');
-      if (!kind) return;
+      const val = target.getAttribute(attr);
+      if (!val) return;
       const next = target.getAttribute('aria-pressed') !== 'true';
       target.setAttribute('aria-pressed', next ? 'true' : 'false');
       target.classList.toggle('btn-chip--active', next);
-      if (next) selectedSources.add(kind);
-      else selectedSources.delete(kind);
+      if (next) selected.add(val);
+      else selected.delete(val);
       updateUrlFromState();
       queueMicrotask(onInput);
     });
-  }
+  };
+
+  // Wire all chip groups
+  wireChipToggle(sourceFilters, 'data-kind', selectedSources);
+  wireChipToggle(typeFilters, 'data-type', selectedTypes);
+  wireChipToggle(tagFilters, 'data-tag', selectedTags);
 
   // Type facet toggles
-  if (typeFilters) {
-    typeFilters.addEventListener('click', (e) => {
-      const target = (e.target as HTMLElement).closest(
-        'button[data-type]',
-      ) as HTMLButtonElement | null;
-      if (!target) return;
-      const t = target.getAttribute('data-type');
-      if (!t) return;
-      const next = target.getAttribute('aria-pressed') !== 'true';
-      target.setAttribute('aria-pressed', next ? 'true' : 'false');
-      target.classList.toggle('btn-chip--active', next);
-      if (next) selectedTypes.add(t);
-      else selectedTypes.delete(t);
-      updateUrlFromState();
-      queueMicrotask(onInput);
-    });
-  }
 
   // Tag facet toggles
-  if (tagFilters) {
-    tagFilters.addEventListener('click', (e) => {
-      const target = (e.target as HTMLElement).closest(
-        'button[data-tag]',
-      ) as HTMLButtonElement | null;
-      if (!target) return;
-      const raw = target.getAttribute('data-tag');
-      if (!raw) return;
-      const t = decodeURIComponent(raw);
-      const next = target.getAttribute('aria-pressed') !== 'true';
-      target.setAttribute('aria-pressed', next ? 'true' : 'false');
-      target.classList.toggle('btn-chip--active', next);
-      if (next) selectedTags.add(t);
-      else selectedTags.delete(t);
-      updateUrlFromState();
-      queueMicrotask(onInput);
-    });
-  }
 
   // Support back/forward navigation to update UI and rerun queries
   window.addEventListener('popstate', () => {

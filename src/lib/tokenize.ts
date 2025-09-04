@@ -49,7 +49,12 @@ function expandSepVariants(tok: string): string[] {
 
   // Special-case expansions
   const hyphensToSpace = tok.replace(/-/g, ' ');
-  if (hyphensToSpace === 'denial of service') {
+  // Match variants of "denial of service" (case-insensitive, with/without hyphens, abbreviation)
+  if (
+    /^denial[\s-]?of[\s-]?service$/i.test(tok) ||
+    /^denial[\s-]?of[\s-]?service$/i.test(hyphensToSpace) ||
+    /^dos$/i.test(tok)
+  ) {
     out.add('dos');
   }
   if (tok === 'http/2' || hyphensToSpace === 'http 2' || tok === 'http2') {
