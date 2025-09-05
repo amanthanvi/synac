@@ -79,7 +79,7 @@ jobs:
           grep -iq "^content-security-policy:" headers.txt
           ! grep -iq "unsafe-inline" headers.txt
           ! grep -iq "unsafe-eval" headers.txt
-          grep -iq "frame-ancestors 'none'" headers.txt || grep -iq "frame-ancestors[[:space:]]*'none'" headers.txt
+          grep -iq "frame-ancestors[[:space:]]*'none'" headers.txt
 
           # Other headers
           grep -iq "^referrer-policy:.*strict-origin-when-cross-origin" headers.txt
