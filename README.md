@@ -114,7 +114,8 @@ Budgets are intended to fail the command if exceeded. Non‑interactive flags ar
 We enforce offline, deterministic builds by running two production builds back-to-back and comparing SHA-256 checksums of every output file. The verifier [scripts/build-determinism.mjs](scripts/build-determinism.mjs:1):
 - Determines SOURCE_DATE_EPOCH from the environment or falls back to `git log -1 --pretty=%ct`.
 - Pins environment for child builds: `NODE_ENV=production`, `TZ=UTC`, `LANG=C`, `LC_ALL=C`, `ASTRO_TELEMETRY_DISABLED=1`, and `SOURCE_DATE_EPOCH`.
-- Cleans `dist/`, runs `npm run build` twice, and writes sorted `hash␠␠path` lines to `.determinism/checksums1.txt` and `.determinism/checksums2.txt`.
+- Cleans `dist/`, runs `npm run build` twice, and writes sorted `hash␠␠path` lines to `.determinism/checksums1.txt` and `.determinism/checksums2.txt`.  
+  _(Note: The Unicode character ␠ (U+2420) is used as a separator between the hash and path for readability and to prevent ambiguity with file names or hash values.)_
 - Compares the two checksum files; if different, prints a unified diff. On match it prints `Deterministic: OK` and exits 0.
 
 Run locally:
