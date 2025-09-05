@@ -8,7 +8,6 @@ import { promisify } from 'util';
 
 const pExecFile = promisify(execFile);
 
-const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const CWD = process.cwd();
 
 async function getSourceDateEpoch() {
