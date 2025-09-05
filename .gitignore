@@ -31,3 +31,7 @@ data/merged/
 data/vendor/
 data/vendor/**
 data/vendor/**/*.xml
+
+# deterministic build artifacts
+.determinism/
+.determinism/**
