@@ -67,23 +67,7 @@ try {
   PKG_VERSION = String((mod.default && mod.default.version) || 'unknown');
 } catch {}
 
-/** Strict CSP (no inline) aligned to self-hosted static assets */
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self'",
-  "img-src 'self' data:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "worker-src 'self'",
-  "manifest-src 'self'",
-  'upgrade-insecure-requests',
-  'block-all-mixed-content',
-].join('; ');
+/** CSP is imported from shared configuration (see security-headers.mjs) */
 
 /**
  * Detects if the request is HTTPS.
