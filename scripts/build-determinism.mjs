@@ -2,7 +2,6 @@
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
@@ -44,23 +43,26 @@ async function rmrf(p) {
 }
 
 async function walk(dir) {
+  const root = path.resolve(dir);
   const out = [];
-  async function rec(d) {
+  const rec = async (d) => {
     const entries = await fs.readdir(d, { withFileTypes: true });
     for (const ent of entries) {
       // Exclude hidden files (starting with ".") and known system files
       if (ent.name.startsWith('.')) continue;
-      // Add more system file checks here if needed, e.g.:
-      // if (ent.name === 'Thumbs.db') continue;
-      const full = path.join(d, ent.name);
+      // e.g., if (ent.name === 'Thumbs.db') continue;
+      const full = path.resolve(d, ent.name);
+      // Guard against path traversal; ensure we stay within root
+      const relFromRoot = path.relative(root, full);
+      if (relFromRoot.startsWith('..') || path.isAbsolute(relFromRoot)) continue;
       if (ent.isDirectory()) {
         await rec(full);
       } else if (ent.isFile()) {
         out.push(full);
       }
     }
-  }
-  await rec(dir);
+  };
+  await rec(root);
   return out;
 }
 
@@ -71,19 +73,18 @@ function toPosix(p) {
 async function sha256File(p) {
   const buf = await fs.readFile(p);
   return createHash('sha256').update(buf).digest('hex');
-
 }
 
 async function computeChecksums(distDir, outFile) {
   const files = await walk(distDir);
-  const rel = files.map((f) => {
-    return toPosix(path.relative(distDir, f));
-
-  });
+  const rel = files.map((f) => toPosix(path.relative(distDir, f)));
   rel.sort((a, b) => a.localeCompare(b));
   const lines = [];
   for (const rp of rel) {
     const abs = path.join(distDir, rp);
+    // Ensure computed path remains under distDir
+    const relCheck = path.relative(distDir, abs);
+    if (relCheck.startsWith('..') || path.isAbsolute(relCheck)) continue;
     const hash = await sha256File(abs);
     lines.push(`${hash}  ${rp}`);
   }
