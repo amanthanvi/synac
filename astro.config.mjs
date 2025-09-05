@@ -8,7 +8,7 @@ export default defineConfig({
   output: 'static',
   site: 'https://synac.app',
   vite: {
-    define: { __BUILD_TIME__: JSON.stringify(Date.now()) },
+    define: { __BUILD_TIME__: JSON.stringify(Number(process.env.SOURCE_DATE_EPOCH || Date.now())) },
   },
   build: {
     inlineStylesheets: 'never',
