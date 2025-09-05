@@ -11,8 +11,8 @@ function sanitize(val: unknown): string {
   let s = String(val ?? '');
   // Replace newlines and tabs with a space
   s = s.replace(/[\r\n\t]+/g, ' ');
-  // Remove other ASCII control characters except tab/newline already handled
-  s = s.replace(/[\u0000-\u001F\u007F]/g, '');
+  // Replace remaining ASCII control characters with a space (avoid word-joins), then collapse
+  s = s.replace(/[\u0000-\u001F\u007F]+/g, ' ');
   // Collapse multiple spaces
   s = s.replace(/\s{2,}/g, ' ');
   return s.trim();
