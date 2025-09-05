@@ -13,7 +13,6 @@ jobs:
       TZ: UTC
       LANG: C
       LC_ALL: C
-      SOURCE_DATE_EPOCH: ${{ github.event.pull_request.head.sha && '' || '' }} # allow script to fallback to git
     steps:
       - name: Checkout
         uses: actions/checkout@v4
