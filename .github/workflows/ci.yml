@@ -76,10 +76,21 @@ jobs:
           curl -sS -D headers.txt -o /dev/null "http://localhost:${PORT}/"
 
           # Assert CSP present and strict
-          grep -iq "^content-security-policy:" headers.txt
-          ! grep -iq "unsafe-inline" headers.txt
-          ! grep -iq "unsafe-eval" headers.txt
-          grep -iq "frame-ancestors[[:space:]]*'none'" headers.txt
+          grep -iq "^content-security-policy:" headers.txt || { echo "CSP header missing" >&2; exit 1; }
+          if grep -iq "unsafe-inline" headers.txt; then
+            echo "CSP must not allow 'unsafe-inline'" >&2
+            exit 1
+          fi
+          if grep -iq "unsafe-eval" headers.txt; then
+            echo "CSP must not allow 'unsafe-eval'" >&2
+            exit 1
+          fi
+          if grep -iq "frame-ancestors 'none'" headers.txt || grep -iq "frame-ancestors[[:space:]]*'none'" headers.txt; then
+            :
+          else
+            echo "CSP must include frame-ancestors 'none'" >&2
+            exit 1
+          fi
 
           # Other headers
           grep -iq "^referrer-policy:.*strict-origin-when-cross-origin" headers.txt
