@@ -48,6 +48,9 @@ async function copyModern(text: string): Promise<boolean> {
 
 function copyLegacy(text: string): boolean {
   try {
+    // Preserve focus to avoid accessibility issues when selecting the textarea
+    const activeElement = document.activeElement as HTMLElement | null;
+
     const ta = document.createElement('textarea');
     ta.value = text;
     // Avoid inline styles; rely on existing sr-only utility to visually hide
@@ -57,6 +60,15 @@ function copyLegacy(text: string): boolean {
     ta.select();
     const ok = document.execCommand('copy');
     document.body.removeChild(ta);
+
+    // Restore focus to previously focused element if possible
+    if (activeElement && typeof activeElement.focus === 'function') {
+      try {
+        activeElement.focus();
+      } catch {
+        // ignore focus restoration errors
+      }
+    }
     return ok;
   } catch {
     return false;

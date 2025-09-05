@@ -7,9 +7,15 @@ function normalizeType(source: Source): 'Normative' | 'Informative' {
 }
 
 function sanitize(val: unknown): string {
-  return String(val ?? '')
-    .replace(/\r?\n+/g, ' ')
-    .trim();
+  // Normalize to plain text, collapse whitespace, strip control chars
+  let s = String(val ?? '');
+  // Replace newlines and tabs with a space
+  s = s.replace(/[\r\n\t]+/g, ' ');
+  // Remove other ASCII control characters except tab/newline already handled
+  s = s.replace(/[\u0000-\u001F\u007F]/g, '');
+  // Collapse multiple spaces
+  s = s.replace(/\s{2,}/g, ' ');
+  return s.trim();
 }
 
 export function buildCitation(source: Source): string {
