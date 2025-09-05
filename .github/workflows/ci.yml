@@ -77,8 +77,14 @@ jobs:
 
           # Assert CSP present and strict
           grep -iq "^content-security-policy:" headers.txt
-          ! grep -iq "unsafe-inline" headers.txt
-          ! grep -iq "unsafe-eval" headers.txt
+          if grep -iq "unsafe-inline" headers.txt; then
+            echo "CSP must not include unsafe-inline" >&2
+            exit 1
+          fi
+          if grep -iq "unsafe-eval" headers.txt; then
+            echo "CSP must not include unsafe-eval" >&2
+            exit 1
+          fi
           grep -iq "frame-ancestors 'none'" headers.txt || grep -iq "frame-ancestors[[:space:]]*'none'" headers.txt
 
           # Other headers
