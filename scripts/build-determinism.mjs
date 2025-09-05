@@ -44,6 +44,12 @@ async function rmrf(p) {
 
 async function walk(dir) {
   const root = path.resolve(dir);
+  // Refuse to walk outside of repository working directory
+  const cwdNorm = path.resolve(CWD) + path.sep;
+  const rootNorm = root.endsWith(path.sep) ? root : root + path.sep;
+  if (!rootNorm.startsWith(cwdNorm)) {
+    throw new Error(`Refusing to walk outside of CWD: ${root}`);
+  }
   const out = [];
   const rec = async (d) => {
     const entries = await fs.readdir(d, { withFileTypes: true });
@@ -51,8 +57,8 @@ async function walk(dir) {
       // Exclude hidden files (starting with ".") and known system files
       if (ent.name.startsWith('.')) continue;
       // e.g., if (ent.name === 'Thumbs.db') continue;
+      // Resolve entry path and ensure it stays within the root
       const full = path.resolve(d, ent.name);
-      // Guard against path traversal; ensure we stay within root
       const relFromRoot = path.relative(root, full);
       if (relFromRoot.startsWith('..') || path.isAbsolute(relFromRoot)) continue;
       if (ent.isDirectory()) {
@@ -70,6 +76,12 @@ function toPosix(p) {
   return p.split(path.sep).join('/');
 }
 
+function isSubpath(base, target) {
+  const baseR = path.resolve(base) + path.sep;
+  const targetR = path.resolve(target) + path.sep;
+  return targetR.startsWith(baseR);
+}
+
 async function sha256File(p) {
   const buf = await fs.readFile(p);
   return createHash('sha256').update(buf).digest('hex');
@@ -77,14 +89,15 @@ async function sha256File(p) {
 
 async function computeChecksums(distDir, outFile) {
   const files = await walk(distDir);
-  const rel = files.map((f) => toPosix(path.relative(distDir, f)));
+  const rel = files
+    .map((f) => toPosix(path.relative(distDir, f)))
+    .filter((rp) => rp && !rp.startsWith('..') && !path.isAbsolute(rp) && !rp.includes('\0'));
   rel.sort((a, b) => a.localeCompare(b));
   const lines = [];
   for (const rp of rel) {
-    const abs = path.join(distDir, rp);
-    // Ensure computed path remains under distDir
-    const relCheck = path.relative(distDir, abs);
-    if (relCheck.startsWith('..') || path.isAbsolute(relCheck)) continue;
+    // Resolve from distDir and ensure path remains under distDir
+    const abs = path.resolve(distDir, rp);
+    if (!isSubpath(distDir, abs)) continue;
     const hash = await sha256File(abs);
     lines.push(`${hash}  ${rp}`);
   }
@@ -93,8 +106,8 @@ async function computeChecksums(distDir, outFile) {
 }
 
 async function runBuildAndHash(iter, envPinned) {
-  const dist = path.join(CWD, 'dist');
-  const outFile = path.join(CWD, '.determinism', `checksums${iter}.txt`);
+  const dist = path.resolve(CWD, 'dist');
+  const outFile = path.resolve(CWD, '.determinism', `checksums${iter}.txt`);
   await rmrf(dist);
   await run('npm', ['run', 'build'], envPinned);
   await computeChecksums(dist, outFile);
@@ -116,6 +129,12 @@ async function diffFiles(a, b) {
 
 async function main() {
   const sde = await getSourceDateEpoch();
+  if (!sde) {
+    console.error(
+      'Deterministic build requires SOURCE_DATE_EPOCH. Set it or ensure git is available to derive it (git log -1 --pretty=%ct).',
+    );
+    process.exit(2);
+  }
   const envPinned = {
     ...process.env,
     NODE_ENV: 'production',
@@ -123,7 +142,7 @@ async function main() {
     LANG: 'C',
     LC_ALL: 'C',
     ASTRO_TELEMETRY_DISABLED: '1',
-    ...(sde ? { SOURCE_DATE_EPOCH: sde } : {}),
+    SOURCE_DATE_EPOCH: sde,
   };
 
   const c1 = await runBuildAndHash(1, envPinned);
