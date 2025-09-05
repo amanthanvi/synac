@@ -328,3 +328,41 @@ a.link:hover {
   background: rgba(92, 200, 255, 0.12);
   border-color: var(--color-accent);
 }
+
+/* Generic button for actions (e.g., Copy citation) */
+.btn {
+  border: 1px solid #2a2e35;
+  border-radius: var(--radius-2);
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  background: transparent;
+  color: var(--color-fg);
+  cursor: pointer;
+  min-height: 44px; /* 44px tap targets */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Collapsible filters container */
+.filters-collapsible {
+  border: 1px solid #2a2e35;
+  border-radius: var(--radius-2);
+}
+
+/* Summary toggle for collapsible filters */
+.filter-summary {
+  padding: 0.5rem 0.75rem;
+  min-height: 44px; /* 44px tap targets */
+  cursor: pointer;
+}
+
+/* Sticky search bar on small screens */
+@media (max-width: 768px) {
+  .sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-bg);
+  }
+}

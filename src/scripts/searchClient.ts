@@ -435,6 +435,38 @@ declare global {
   wireChipToggle(typeFilters, 'data-type', selectedTypes);
   wireChipToggle(tagFilters, 'data-tag', selectedTags);
 
+  // Also attach direct listeners to static chips (robust inside <details>)
+  document.querySelectorAll('button[data-kind]').forEach((el) => {
+    const btn = el as HTMLButtonElement;
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const val = btn.getAttribute('data-kind');
+      if (!val) return;
+      const next = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+      btn.classList.toggle('btn-chip--active', next);
+      if (next) selectedSources.add(val);
+      else selectedSources.delete(val);
+      updateUrlFromState();
+      queueMicrotask(onInput);
+    });
+  });
+
+  document.querySelectorAll('button[data-type]').forEach((el) => {
+    const btn = el as HTMLButtonElement;
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const val = btn.getAttribute('data-type');
+      if (!val) return;
+      const next = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+      btn.classList.toggle('btn-chip--active', next);
+      if (next) selectedTypes.add(val);
+      else selectedTypes.delete(val);
+      updateUrlFromState();
+      queueMicrotask(onInput);
+    });
+  });
   // Type facet toggles
 
   // Tag facet toggles

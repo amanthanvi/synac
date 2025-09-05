@@ -5,7 +5,7 @@ const title = 'Quick search';
 
 <section role="search" aria-labelledby="search" aria-describedby="search-help" class="section">
   <h2 id="search">{title}</h2>
-  <div id="search-box" class="flex items-center gap-2">
+  <div id="search-box" class="flex items-center gap-2 sticky">
     <label for="q" class="sr-only">Search terms</label>
     <span id="search-help" class="sr-only"
       >Type to search. Press “/” to focus. Press Escape to clear.</span
@@ -25,35 +25,46 @@ const title = 'Quick search';
   </div>
 
   <!-- Sources facet -->
-  <div id="filters" class="chips" aria-label="Filter by source kind">
-    <button type="button" class="btn-chip" data-kind="NIST" aria-pressed="false">NIST</button>
-    <button type="button" class="btn-chip" data-kind="RFC" aria-pressed="false">RFC</button>
-    <button type="button" class="btn-chip" data-kind="ATTACK" aria-pressed="false">ATT&CK</button>
-    <button type="button" class="btn-chip" data-kind="CWE" aria-pressed="false">CWE</button>
-    <button type="button" class="btn-chip" data-kind="CAPEC" aria-pressed="false">CAPEC</button>
-    <button type="button" class="btn-chip" data-kind="OTHER" aria-pressed="false">Other</button>
-  </div>
+  <details class="filters-collapsible" open>
+    <summary class="filter-summary" aria-label="Toggle source filters">Sources</summary>
+    <div id="filters" class="chips" aria-label="Filter by source kind">
+      <button type="button" class="btn-chip" data-kind="NIST" aria-pressed="false">NIST</button>
+      <button type="button" class="btn-chip" data-kind="RFC" aria-pressed="false">RFC</button>
+      <button type="button" class="btn-chip" data-kind="ATTACK" aria-pressed="false">ATT&CK</button>
+      <button type="button" class="btn-chip" data-kind="CWE" aria-pressed="false">CWE</button>
+      <button type="button" class="btn-chip" data-kind="CAPEC" aria-pressed="false">CAPEC</button>
+      <button type="button" class="btn-chip" data-kind="OTHER" aria-pressed="false">Other</button>
+    </div>
+  </details>
 
   <!-- Types facet -->
-  <div id="type-filters" class="chips mt-2" aria-label="Filter by type or category">
-    <button type="button" class="btn-chip" data-type="protocol" aria-pressed="false"
-      >Protocol</button
-    >
-    <button type="button" class="btn-chip" data-type="vulnerability" aria-pressed="false"
-      >Vulnerability</button
-    >
-    <button type="button" class="btn-chip" data-type="attack-pattern" aria-pressed="false"
-      >Attack pattern</button
-    >
-    <button type="button" class="btn-chip" data-type="crypto" aria-pressed="false">Crypto</button>
-    <button type="button" class="btn-chip" data-type="identity" aria-pressed="false"
-      >Identity</button
-    >
-    <button type="button" class="btn-chip" data-type="concept" aria-pressed="false">Concept</button>
-  </div>
+  <details class="filters-collapsible mt-2" open>
+    <summary class="filter-summary" aria-label="Toggle type filters">Types</summary>
+    <div id="type-filters" class="chips mt-2" aria-label="Filter by type or category">
+      <button type="button" class="btn-chip" data-type="protocol" aria-pressed="false"
+        >Protocol</button
+      >
+      <button type="button" class="btn-chip" data-type="vulnerability" aria-pressed="false"
+        >Vulnerability</button
+      >
+      <button type="button" class="btn-chip" data-type="attack-pattern" aria-pressed="false"
+        >Attack pattern</button
+      >
+      <button type="button" class="btn-chip" data-type="crypto" aria-pressed="false">Crypto</button>
+      <button type="button" class="btn-chip" data-type="identity" aria-pressed="false"
+        >Identity</button
+      >
+      <button type="button" class="btn-chip" data-type="concept" aria-pressed="false"
+        >Concept</button
+      >
+    </div>
+  </details>
 
   <!-- Tags facet (chips are injected by client) -->
-  <div id="tag-filters" class="chips mt-2" aria-label="Filter by tags"></div>
+  <details class="filters-collapsible mt-2" open>
+    <summary class="filter-summary" aria-label="Toggle tag filters">Tags</summary>
+    <div id="tag-filters" class="chips mt-2" aria-label="Filter by tags"></div>
+  </details>
 
   <ul id="results" role="list" class="list-unstyled grid gap-2 mt-4"></ul>
 </section>
