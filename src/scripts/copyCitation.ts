@@ -101,3 +101,54 @@ ready(() => {
   const alls = document.querySelectorAll<CiteElement>('[data-cite-all][data-cite-text]');
   alls.forEach(attachCopyHandler);
 });
+
+/**
+ * synac-copy-citation Web Component
+ * Usage:
+ *   <synac-copy-citation text="...">
+ *     <button type="button" class="synac-btn">Copy citation</button>
+ *   </synac-copy-citation>
+ *
+ * - Improves isolation and reusability over global selectors
+ * - Reuses the same clipboard and live-region logic as data-* handlers
+ */
+class SynacCopyCitation extends HTMLElement {
+  private _text = '';
+  private _onClick = (ev: Event) => {
+    ev.preventDefault();
+    const text = this._text || this.getAttribute('text') || '';
+    const live = findLiveRegion(this);
+    void copyText(text).then((ok) => {
+      if (live) {
+        live.textContent = ok ? 'Citation copied.' : 'Copy failed.';
+      }
+    });
+  };
+
+  static get observedAttributes() {
+    return ['text'];
+  }
+
+  attributeChangedCallback(name: string, oldVal: string | null, newVal: string | null) {
+    if (name === 'text' && oldVal !== newVal) {
+      this._text = newVal || '';
+    }
+  }
+
+  connectedCallback() {
+    this._text = this.getAttribute('text') || '';
+    this.addEventListener('click', this._onClick);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('click', this._onClick);
+  }
+}
+
+try {
+  if (!customElements.get('synac-copy-citation')) {
+    customElements.define('synac-copy-citation', SynacCopyCitation);
+  }
+} catch {
+  // Ignore define errors in non-DOM contexts
+}

@@ -24,6 +24,19 @@ declare global {
 
   if (!input || !list || !count) return;
 
+  // Accessibility: keep aria-expanded in sync for collapsible filters
+  const detailsList = Array.from(
+    document.querySelectorAll('details.synac-filters-collapsible'),
+  ) as HTMLDetailsElement[];
+  for (const d of detailsList) {
+    const update = () => {
+      const sum = d.querySelector('summary.synac-filter-summary') as HTMLElement | null;
+      if (sum) sum.setAttribute('aria-expanded', d.open ? 'true' : 'false');
+    };
+    update();
+    d.addEventListener('toggle', update);
+  }
+
   // Supported facet values (stable)
   const SUPPORTED_SOURCES = new Set(['NIST', 'ATTACK', 'CWE', 'CAPEC', 'RFC']);
   const SUPPORTED_TYPES = new Set([

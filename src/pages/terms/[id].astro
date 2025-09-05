@@ -95,14 +95,11 @@ const showDifferences =
       <div class="kv mt-2">
         {
           Array.isArray(data.sources) && data.sources.length > 1 ? (
-            <button
-              type="button"
-              class="btn"
-              data-cite-all
-              data-cite-text={citation.buildCitations(data.sources as any)}
-            >
-              Copy all citations
-            </button>
+            <synac-copy-citation text={citation.buildCitations(data.sources as any)}>
+              <button type="button" class="synac-btn">
+                Copy all citations
+              </button>
+            </synac-copy-citation>
           ) : null
         }
         <div data-cite-live aria-live="polite" class="sr-only"></div>
@@ -145,14 +142,11 @@ const showDifferences =
                   >
                     {host || 'View source'}
                   </a>
-                  <button
-                    type="button"
-                    class="btn"
-                    data-cite
-                    data-cite-text={citation.buildCitation(s as any)}
-                  >
-                    Copy citation
-                  </button>
+                  <synac-copy-citation text={citation.buildCitation(s as any)}>
+                    <button type="button" class="synac-btn">
+                      Copy citation
+                    </button>
+                  </synac-copy-citation>
                 </div>
               </div>
             );

@@ -25,8 +25,12 @@ const title = 'Quick search';
   </div>
 
   <!-- Sources facet -->
-  <details class="filters-collapsible" open>
-    <summary class="filter-summary" aria-label="Toggle source filters">Sources</summary>
+  <details class="synac-filters-collapsible filters-collapsible" open>
+    <summary
+      class="synac-filter-summary filter-summary"
+      aria-label="Toggle source filters"
+      aria-expanded="true">Sources</summary
+    >
     <div id="filters" class="chips" aria-label="Filter by source kind">
       <button type="button" class="btn-chip" data-kind="NIST" aria-pressed="false">NIST</button>
       <button type="button" class="btn-chip" data-kind="RFC" aria-pressed="false">RFC</button>
@@ -38,8 +42,12 @@ const title = 'Quick search';
   </details>
 
   <!-- Types facet -->
-  <details class="filters-collapsible mt-2" open>
-    <summary class="filter-summary" aria-label="Toggle type filters">Types</summary>
+  <details class="synac-filters-collapsible filters-collapsible mt-2" open>
+    <summary
+      class="synac-filter-summary filter-summary"
+      aria-label="Toggle type filters"
+      aria-expanded="true">Types</summary
+    >
     <div id="type-filters" class="chips mt-2" aria-label="Filter by type or category">
       <button type="button" class="btn-chip" data-type="protocol" aria-pressed="false"
         >Protocol</button
@@ -61,8 +69,12 @@ const title = 'Quick search';
   </details>
 
   <!-- Tags facet (chips are injected by client) -->
-  <details class="filters-collapsible mt-2" open>
-    <summary class="filter-summary" aria-label="Toggle tag filters">Tags</summary>
+  <details class="synac-filters-collapsible filters-collapsible mt-2" open>
+    <summary
+      class="synac-filter-summary filter-summary"
+      aria-label="Toggle tag filters"
+      aria-expanded="true">Tags</summary
+    >
     <div id="tag-filters" class="chips mt-2" aria-label="Filter by tags"></div>
   </details>
 

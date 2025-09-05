@@ -39,6 +39,21 @@ describe('citation formatter', () => {
     );
   });
 
+  it('removes control characters from citation and URL fields', () => {
+    const withControlChars: Source = {
+      kind: 'CWE',
+      citation: 'CWE-79:\u0000\u001F\u007F Improper Neutralization\u0000of Input',
+      url: 'https://cwe.mitre.org/data/definitions/79.html\u0000\u001F\u007F',
+      normative: true,
+    };
+    const result = buildCitation(withControlChars);
+    expect(result).toBe(
+      'CWE-79: Improper Neutralization of Input — https://cwe.mitre.org/data/definitions/79.html (Normative)',
+    );
+    // Additionally, ensure no control characters remain
+    expect(/[\u0000-\u001F\u007F]/.test(result)).toBe(false);
+  });
+
   it('joins multiple citations with \\n', () => {
     const s1: Source = {
       kind: 'CWE',

@@ -19,6 +19,8 @@
 
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.2);
   --color-border: #2a2e35;
+  --color-border-hover: #353942;
+  --color-border-focus: #4a90e2;
 }
 
 @media (prefers-color-scheme: light) {
@@ -302,6 +304,12 @@ a.link:hover {
   background: transparent;
   color: var(--color-fg);
 }
+.input-search:hover {
+  border-color: var(--color-border-hover);
+}
+.input-search:focus {
+  border-color: var(--color-border-focus);
+}
 
 /* Filter chips */
 .chips {
@@ -324,6 +332,12 @@ a.link:hover {
   align-items: center;
   gap: 0.35rem;
 }
+.btn-chip:hover {
+  border-color: var(--color-border-hover);
+}
+.btn-chip:focus {
+  border-color: var(--color-border-focus);
+}
 
 .btn-chip--active {
   background: rgba(92, 200, 255, 0.12);
@@ -331,7 +345,7 @@ a.link:hover {
 }
 
 /* Generic button for actions (e.g., Copy citation) */
-.btn {
+.synac-btn {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2);
   padding: 0.5rem 0.75rem;
@@ -344,15 +358,24 @@ a.link:hover {
   align-items: center;
   gap: 0.35rem;
 }
+.synac-btn:hover {
+  border-color: var(--color-border-hover);
+}
+.synac-btn:focus {
+  border-color: var(--color-border-focus);
+}
 
 /* Collapsible filters container */
-.filters-collapsible {
+.synac-filters-collapsible {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-2);
 }
+.synac-filters-collapsible:focus-within {
+  border-color: var(--color-border-focus);
+}
 
 /* Summary toggle for collapsible filters */
-.filter-summary {
+.synac-filter-summary {
   padding: 0.5rem 0.75rem;
   min-height: 44px; /* 44px tap targets */
   cursor: pointer;
