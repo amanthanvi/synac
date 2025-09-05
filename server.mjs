@@ -56,6 +56,8 @@ const HASH_RE = /(?:\.[A-Za-z0-9_-]{8,}\.|[.-][a-f0-9]{8,}\.)/;
 // --- Security and metadata ----------------------------------------------------
 
 const SECURITY_COEP = String(process.env.SECURITY_COEP || 'on').toLowerCase();
+const HEALTHZ_EXPOSE_BUILD =
+  String(process.env.HEALTHZ_EXPOSE_BUILD || 'off').toLowerCase() === 'on';
 
 /** Resolve version from package.json once at startup */
 const PKG_VERSION = (() => {
@@ -69,23 +71,7 @@ const PKG_VERSION = (() => {
   }
 })();
 
-/** Strict CSP (no inline) aligned to self-hosted static assets */
-const CSP = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self'",
-  "img-src 'self' data:",
-  "font-src 'self'",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "worker-src 'self'",
-  "manifest-src 'self'",
-  'upgrade-insecure-requests',
-  'block-all-mixed-content',
-].join('; ');
+/** Strict CSP configured in security-headers.mjs */
 
 function isRequestHttps(req) {
   const xfp = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
