@@ -42,7 +42,7 @@ Recommended Node: 20 or 22 LTS to avoid engine warnings with Astro/Vite ecosyste
 
 - Health endpoint:
   - `GET /healthz` → `200` `application/json` with schema:
-    `{ "status": "ok", "uptime": number, "timestamp": "ISO8601", "version": "string", "commitSha": "string" }`
+    `{ "status": "ok", "uptime": number, "timestamp": "ISO 8601", "version": "string", "commitSha": "string" }`
   - `HEAD /healthz` → `200` with headers only (no body)
   - `Cache-Control: no-store` on `/healthz` responses
   - `COMMIT_SHA` is injected in CI as `${{ github.sha }}` to surface the build commit.

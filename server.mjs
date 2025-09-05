@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import { promises as fsp } from 'node:fs';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
+import { pathToFileURL } from 'node:url';
+import { CSP, PERMISSIONS_POLICY, COOP, CORP, COEP } from './security-headers.mjs';
 
 const HOST = '0.0.0.0';
 const PORT = Number.parseInt(process.env.PORT ?? '8080', 10);
@@ -54,18 +56,16 @@ const HASH_RE = /(?:\.[A-Za-z0-9_-]{8,}\.|[.-][a-f0-9]{8,}\.)/;
 // --- Security and metadata ----------------------------------------------------
 
 const SECURITY_COEP = String(process.env.SECURITY_COEP || 'on').toLowerCase();
+const HEALTHZ_EXPOSE_BUILD =
+  String(process.env.HEALTHZ_EXPOSE_BUILD || 'on').toLowerCase() !== 'off';
 
-/** Resolve version from package.json once at startup */
-const PKG_VERSION = (() => {
-  try {
-    const pkgPath = path.resolve(process.cwd(), 'package.json');
-    const raw = fs.readFileSync(pkgPath, 'utf8');
-    const pkg = JSON.parse(raw);
-    return String(pkg.version || 'unknown');
-  } catch {
-    return 'unknown';
-  }
-})();
+/** Resolve version from package.json once at startup (non-blocking via import) */
+let PKG_VERSION = 'unknown';
+try {
+  const pkgUrl = pathToFileURL(path.resolve(process.cwd(), 'package.json')).href;
+  const mod = await import(pkgUrl, { assert: { type: 'json' } });
+  PKG_VERSION = String((mod.default && mod.default.version) || 'unknown');
+} catch {}
 
 /** Strict CSP (no inline) aligned to self-hosted static assets */
 const CSP = [
@@ -85,6 +85,14 @@ const CSP = [
   'block-all-mixed-content',
 ].join('; ');
 
+/**
+ * Detects if the request is HTTPS.
+ *
+ * SECURITY NOTE:
+ * This relies on the 'x-forwarded-proto' header, which is only trustworthy if the proxy is trusted
+ * and properly configured. Ensure your reverse proxy (e.g., Railway/NGINX/LB) is trusted and strips
+ * client-supplied X-Forwarded-* headers. Otherwise, malicious clients could spoof HTTPS.
+ */
 function isRequestHttps(req) {
   const xfp = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
   if (xfp) {
@@ -101,14 +109,11 @@ function applySecurityHeaders(req, res) {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader(
-    'Permissions-Policy',
-    'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()',
-  );
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
+  res.setHeader('Cross-Origin-Opener-Policy', COOP);
+  res.setHeader('Cross-Origin-Resource-Policy', CORP);
   if (SECURITY_COEP !== 'off') {
-    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    res.setHeader('Cross-Origin-Embedder-Policy', COEP);
   }
   res.setHeader('Origin-Agent-Cluster', '?1');
   res.setHeader('X-DNS-Prefetch-Control', 'off');
@@ -413,8 +418,8 @@ const server = createServer(async (req, res) => {
         status: 'ok',
         uptime: Math.floor(process.uptime()),
         timestamp: new Date().toISOString(),
-        version: PKG_VERSION,
-        commitSha: process.env.COMMIT_SHA || 'unknown',
+        version: HEALTHZ_EXPOSE_BUILD ? PKG_VERSION : 'redacted',
+        commitSha: HEALTHZ_EXPOSE_BUILD ? process.env.COMMIT_SHA || 'unknown' : 'redacted',
       };
       const body = JSON.stringify(bodyObj);
       const baseHeaders = {
@@ -550,6 +555,14 @@ process.on('SIGTERM', initiateShutdown);
 process.on('SIGINT', initiateShutdown);
 
 console.log(`startup host=${HOST} port=${PORT} node=${process.version}`);
+if (SECURITY_COEP === 'off') {
+  console.warn('security.coep=off Cross-Origin-Embedder-Policy disabled via SECURITY_COEP=off');
+}
+if (!HEALTHZ_EXPOSE_BUILD) {
+  console.warn(
+    'healthz.expose_build=off version/commitSha redacted on /healthz (HEALTHZ_EXPOSE_BUILD=off)',
+  );
+}
 server.listen(PORT, HOST, () => {
   console.log(`Static server listening on http://${HOST}:${PORT} serving ${DIST_DIR}`);
 });
