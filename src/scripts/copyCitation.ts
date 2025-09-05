@@ -1,0 +1,91 @@
+/**
+ * Copy citation utilities for term pages.
+ * - Attaches click handlers to elements with [data-cite] or [data-cite-all]
+ * - Reads data-cite-text and writes to clipboard
+ * - Updates nearest [data-cite-live][aria-live="polite"] region with status
+ * - CSP-safe: external module, no globals, no inline styles
+ */
+
+type CiteElement = HTMLElement & {
+  dataset: {
+    cite?: string;
+    citeAll?: string;
+    citeText?: string;
+  };
+};
+
+function ready(fn: () => void) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fn, { once: true });
+  } else {
+    fn();
+  }
+}
+
+function findLiveRegion(from: Element): HTMLElement | null {
+  // Prefer closest section-scoped live region
+  const section = from.closest('section');
+  if (section) {
+    const live = section.querySelector('[data-cite-live][aria-live="polite"]');
+    if (live instanceof HTMLElement) return live;
+  }
+  // Otherwise any global live region
+  const global = document.querySelector('[data-cite-live][aria-live="polite"]');
+  return global instanceof HTMLElement ? global : null;
+}
+
+async function copyModern(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function copyLegacy(text: string): boolean {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    // Avoid inline styles; rely on existing sr-only utility to visually hide
+    ta.className = 'sr-only';
+    ta.setAttribute('readonly', 'true');
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
+async function copyText(text: string): Promise<boolean> {
+  const sanitized = String(text ?? '').replace(/\r?\n/g, '\n');
+  return (await copyModern(sanitized)) || copyLegacy(sanitized);
+}
+
+function attachCopyHandler(el: CiteElement) {
+  el.addEventListener('click', async (ev) => {
+    ev.preventDefault();
+    const text = el.dataset.citeText ?? '';
+    const live = findLiveRegion(el);
+    const ok = await copyText(text);
+    if (live) {
+      live.textContent = ok ? 'Citation copied.' : 'Copy failed.';
+    }
+  });
+}
+
+ready(() => {
+  // Single citation buttons
+  const singles = document.querySelectorAll<CiteElement>('[data-cite][data-cite-text]');
+  singles.forEach(attachCopyHandler);
+
+  // Multiple (copy all) buttons
+  const alls = document.querySelectorAll<CiteElement>('[data-cite-all][data-cite-text]');
+  alls.forEach(attachCopyHandler);
+});
