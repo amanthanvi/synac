@@ -1,0 +1,41 @@
+name: deterministic-build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      TZ: UTC
+      LANG: C
+      LC_ALL: C
+      SOURCE_DATE_EPOCH: ${{ github.event.pull_request.head.sha && '' || '' }} # allow script to fallback to git
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # ensure git history for git log -1
+
+      - name: Setup Node using .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify deterministic build
+        run: npm run build:deterministic
+
+      - name: Upload checksum artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deterministic-checksums
+          path: .determinism/checksums*.txt
+          if-no-files-found: ignore
