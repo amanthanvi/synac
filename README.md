@@ -25,6 +25,32 @@ Recommended Node: 20 or 22 LTS to avoid engine warnings with Astro/Vite ecosyste
 - Astro build configured with `inlineStylesheets: 'never'`
 - Components refactored to use CSS utility classes instead of inline styles
 
+### Security headers and health
+
+- Headers enforced on all responses:
+  - Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests; block-all-mixed-content — strict non-inline posture aligned to self-hosted assets.
+  - Referrer-Policy: strict-origin-when-cross-origin — limit referrer leakage.
+  - X-Content-Type-Options: nosniff — prevent MIME sniffing.
+  - X-Frame-Options: DENY — prevent clickjacking.
+  - Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=() — minimal, deny by default.
+  - Cross-Origin-Opener-Policy: same-origin — isolate browsing context.
+  - Cross-Origin-Resource-Policy: same-origin — restrict cross-origin resource sharing.
+  - Cross-Origin-Embedder-Policy: require-corp — stronger isolation; gate with `SECURITY_COEP=off` if cross-origin embeds are introduced.
+  - Origin-Agent-Cluster: ?1 — origin isolation.
+  - X-DNS-Prefetch-Control: off — deterministic networking.
+  - Strict-Transport-Security: max-age=31536000; includeSubDomains; preload — only sent when `NODE_ENV=production` and the request is HTTPS (detected via `X-Forwarded-Proto=https` on Railway).
+
+- Health endpoint:
+  - `GET /healthz` → `200` `application/json` with schema:
+    `{ "status": "ok", "uptime": number, "timestamp": "ISO 8601", "version": "string", "commitSha": "string" }`
+  - `HEAD /healthz` → `200` with headers only (no body)
+  - `Cache-Control: no-store` on `/healthz` responses
+  - `COMMIT_SHA` is injected in CI as `${{ github.sha }}` to surface the build commit.
+
+- Shared config: [security-headers.mjs](security-headers.mjs:1) is the single source for CSP and related header directives. CI imports this module to validate directives (e.g., frame-ancestors) so tests and server stay in sync.
+- Build info exposure: set `HEALTHZ_EXPOSE_BUILD=off` to redact `version` and `commitSha` fields in `/healthz` responses (defaults to on).
+- Startup logs: when `SECURITY_COEP=off`, the server logs a warning at startup indicating Cross‑Origin‑Embedder‑Policy is disabled.
+- Proxy trust note: HSTS gating relies on a trusted proxy populating `X-Forwarded-Proto`. Ensure the platform trusts and normalizes proxy headers (Railway does); otherwise clients could spoof headers.
 ## SEO & canonical domain
 
 - Canonical base: https://synac.app

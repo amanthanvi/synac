@@ -19,6 +19,7 @@ jobs:
     env:
       NODE_ENV: production
       CI: true
+      COMMIT_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
@@ -46,6 +47,84 @@ jobs:
             lighthouse/*.json
             lighthouse/*.html
             .lighthouse/**
+
+      - name: Verify security headers and /healthz
+        env:
+          PORT: 8787
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          echo "Starting production server on :${PORT} ..."
+          (PORT=${PORT} NODE_ENV=production COMMIT_SHA="${COMMIT_SHA}" node server.mjs >server.log 2>&1 & echo $! > server.pid)
+          PID=$(cat server.pid)
+          echo "PID=${PID}"
+          echo "Waiting for http://localhost:${PORT}/healthz ..."
+          for i in $(seq 1 30); do
+            if curl -fsS "http://localhost:${PORT}/healthz" >/dev/null; then
+              echo "Server is up"
+              break
+            fi
+            sleep 1
+            if [ "$i" -eq 30 ]; then
+              echo "Server did not start in time" >&2
+              kill "${PID}" || true
+              exit 1
+            fi
+          done
+
+          # Capture headers for /
+          curl -sS -D headers.txt -o /dev/null "http://localhost:${PORT}/"
+
+          # Assert CSP present and strict
+          grep -iq "^content-security-policy:" headers.txt || { echo "CSP header missing" >&2; exit 1; }
+          if grep -iq "unsafe-inline" headers.txt; then
+            echo "CSP must not allow 'unsafe-inline'" >&2
+            exit 1
+          fi
+          if grep -iq "unsafe-eval" headers.txt; then
+            echo "CSP must not allow 'unsafe-eval'" >&2
+            exit 1
+          fi
+          FRAME_DIRECTIVE=$(node -e "import('./security-headers.mjs').then(m => { const d = m.CSP.split(';').map(s=>s.trim()).find(s => s.startsWith('frame-ancestors')); if (!d) { console.error('frame-ancestors missing in CSP source'); process.exit(1); } console.log(d); })")
+          echo "Expecting CSP directive from shared config: $FRAME_DIRECTIVE"
+          grep -iq "$FRAME_DIRECTIVE" headers.txt || { echo "CSP must include: $FRAME_DIRECTIVE" >&2; exit 1; }
+
+          # Other headers
+          grep -iq "^referrer-policy:.*strict-origin-when-cross-origin" headers.txt
+          grep -iq "^x-content-type-options:.*nosniff" headers.txt
+          grep -iq "^x-frame-options:.*DENY" headers.txt
+          grep -iq "^permissions-policy:" headers.txt
+          grep -iq "^cross-origin-opener-policy:.*same-origin" headers.txt
+          grep -iq "^cross-origin-resource-policy:.*same-origin" headers.txt
+
+          # HSTS: not required over HTTP locally; warn if present
+          if grep -iq "^strict-transport-security:" headers.txt; then
+            echo "Note: HSTS present over HTTP (acceptable)."
+          fi
+
+          # HEAD /healthz
+          curl -sS -I "http://localhost:${PORT}/healthz" | tee healthz-headers.txt
+          grep -iq "^HTTP/.* 200" healthz-headers.txt
+          grep -iq "^cache-control:.*no-store" healthz-headers.txt
+
+          # GET /healthz
+          curl -sS "http://localhost:${PORT}/healthz" | tee healthz.json
+          grep -q '"status"[[:space:]]*:[[:space:]]*"ok"' healthz.json
+          grep -q '"commitSha"[[:space:]]*:' healthz.json
+
+          # Stop server
+          kill "${PID}" || true
+
+      - name: Upload server header artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-headers
+          path: |
+            headers.txt
+            healthz-headers.txt
+            healthz.json
+            server.log
 
       - run: npx playwright install --with-deps
       - run: npm run test:offline
