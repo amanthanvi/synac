@@ -57,26 +57,22 @@ const HASH_RE = /(?:\.[A-Za-z0-9_-]{8,}\.|[.-][a-f0-9]{8,}\.)/;
 
 const SECURITY_COEP = String(process.env.SECURITY_COEP || 'on').toLowerCase();
 const HEALTHZ_EXPOSE_BUILD =
-  String(process.env.HEALTHZ_EXPOSE_BUILD || 'on').toLowerCase() !== 'off';
+  String(process.env.HEALTHZ_EXPOSE_BUILD || 'off').toLowerCase() === 'on';
 
-/** Resolve version from package.json once at startup (non-blocking via import) */
-let PKG_VERSION = 'unknown';
-try {
-  const pkgUrl = pathToFileURL(path.resolve(process.cwd(), 'package.json')).href;
-  const mod = await import(pkgUrl, { assert: { type: 'json' } });
-  PKG_VERSION = String((mod.default && mod.default.version) || 'unknown');
-} catch {}
+/** Resolve version from package.json once at startup */
+const PKG_VERSION = (() => {
+  try {
+    const pkgPath = path.resolve(process.cwd(), 'package.json');
+    const raw = fs.readFileSync(pkgPath, 'utf8');
+    const pkg = JSON.parse(raw);
+    return String(pkg.version || 'unknown');
+  } catch {
+    return 'unknown';
+  }
+})();
 
-/** CSP is imported from shared configuration (see security-headers.mjs) */
+/** Strict CSP configured in security-headers.mjs */
 
-/**
- * Detects if the request is HTTPS.
- *
- * SECURITY NOTE:
- * This relies on the 'x-forwarded-proto' header, which is only trustworthy if the proxy is trusted
- * and properly configured. Ensure your reverse proxy (e.g., Railway/NGINX/LB) is trusted and strips
- * client-supplied X-Forwarded-* headers. Otherwise, malicious clients could spoof HTTPS.
- */
 function isRequestHttps(req) {
   const xfp = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
   if (xfp) {
@@ -93,11 +89,14 @@ function applySecurityHeaders(req, res) {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
-  res.setHeader('Cross-Origin-Opener-Policy', COOP);
-  res.setHeader('Cross-Origin-Resource-Policy', CORP);
+  res.setHeader(
+    'Permissions-Policy',
+    'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()',
+  );
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   if (SECURITY_COEP !== 'off') {
-    res.setHeader('Cross-Origin-Embedder-Policy', COEP);
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   }
   res.setHeader('Origin-Agent-Cluster', '?1');
   res.setHeader('X-DNS-Prefetch-Control', 'off');
@@ -402,13 +401,14 @@ const server = createServer(async (req, res) => {
         status: 'ok',
         uptime: Math.floor(process.uptime()),
         timestamp: new Date().toISOString(),
-        version: HEALTHZ_EXPOSE_BUILD ? PKG_VERSION : 'redacted',
-        commitSha: HEALTHZ_EXPOSE_BUILD ? process.env.COMMIT_SHA || 'unknown' : 'redacted',
+        version: PKG_VERSION,
+        commitSha: process.env.COMMIT_SHA || 'unknown',
       };
       const body = JSON.stringify(bodyObj);
       const baseHeaders = {
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
         'Accept-Ranges': 'none',
       };
       if (method === 'HEAD') {

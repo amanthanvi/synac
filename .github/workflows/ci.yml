@@ -76,18 +76,16 @@ jobs:
           curl -sS -D headers.txt -o /dev/null "http://localhost:${PORT}/"
 
           # Assert CSP present and strict
-          grep -iq "^content-security-policy:" headers.txt || { echo "CSP header missing" >&2; exit 1; }
+          grep -iq "^content-security-policy:" headers.txt
           if grep -iq "unsafe-inline" headers.txt; then
-            echo "CSP must not allow 'unsafe-inline'" >&2
+            echo "CSP must not include unsafe-inline" >&2
             exit 1
           fi
           if grep -iq "unsafe-eval" headers.txt; then
-            echo "CSP must not allow 'unsafe-eval'" >&2
+            echo "CSP must not include unsafe-eval" >&2
             exit 1
           fi
-          FRAME_DIRECTIVE=$(node -e "import('./security-headers.mjs').then(m => { const d = m.CSP.split(';').map(s=>s.trim()).find(s => s.startsWith('frame-ancestors')); if (!d) { console.error('frame-ancestors missing in CSP source'); process.exit(1); } console.log(d); })")
-          echo "Expecting CSP directive from shared config: $FRAME_DIRECTIVE"
-          grep -iq "$FRAME_DIRECTIVE" headers.txt || { echo "CSP must include: $FRAME_DIRECTIVE" >&2; exit 1; }
+          grep -iq "frame-ancestors 'none'" headers.txt || grep -iq "frame-ancestors[[:space:]]*'none'" headers.txt
 
           # Other headers
           grep -iq "^referrer-policy:.*strict-origin-when-cross-origin" headers.txt
