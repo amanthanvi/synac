@@ -113,3 +113,5 @@ Quality checklist (quick)
 - updatedAt is valid ISO 8601 UTC
 - JSON‑LD fields resolve (name/url/description/dateModified)
 - No inline scripts/styles; keep content deterministic
+
+<!-- noop: retrigger CI for PR #41; no functional change -->
