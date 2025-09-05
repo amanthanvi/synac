@@ -39,3 +39,4 @@ jobs:
           name: deterministic-checksums
           path: .determinism/checksums*.txt
           if-no-files-found: ignore
+          include-hidden-files: true
