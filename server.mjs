@@ -51,6 +51,76 @@ const ALLOWED_EXT = new Set(Object.keys(TYPES));
 const ASSET_EXTS = new Set([...ALLOWED_EXT].filter((e) => e !== '.html'));
 const HASH_RE = /(?:\.[A-Za-z0-9_-]{8,}\.|[.-][a-f0-9]{8,}\.)/;
 
+// --- Security and metadata ----------------------------------------------------
+
+const SECURITY_COEP = String(process.env.SECURITY_COEP || 'on').toLowerCase();
+
+/** Resolve version from package.json once at startup */
+const PKG_VERSION = (() => {
+  try {
+    const pkgPath = path.resolve(process.cwd(), 'package.json');
+    const raw = fs.readFileSync(pkgPath, 'utf8');
+    const pkg = JSON.parse(raw);
+    return String(pkg.version || 'unknown');
+  } catch {
+    return 'unknown';
+  }
+})();
+
+/** Strict CSP (no inline) aligned to self-hosted static assets */
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  'upgrade-insecure-requests',
+  'block-all-mixed-content',
+].join('; ');
+
+function isRequestHttps(req) {
+  const xfp = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+  if (xfp) {
+    // trust proxy: may be comma-separated
+    const parts = xfp.split(',').map((s) => s.trim());
+    if (parts.includes('https')) return true;
+  }
+  return !!(req.socket && req.socket.encrypted);
+}
+
+function applySecurityHeaders(req, res) {
+  // Core security headers
+  res.setHeader('Content-Security-Policy', CSP);
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader(
+    'Permissions-Policy',
+    'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=(), interest-cohort=()',
+  );
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  if (SECURITY_COEP !== 'off') {
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  }
+  res.setHeader('Origin-Agent-Cluster', '?1');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+
+  // HSTS only in production over HTTPS (trust proxy x-forwarded-proto)
+  if (process.env.NODE_ENV === 'production' && isRequestHttps(req)) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+}
+
+// -----------------------------------------------------------------------------
+
 function getContentType(ext) {
   return TYPES[ext] || 'application/octet-stream';
 }
@@ -276,6 +346,9 @@ const server = createServer(async (req, res) => {
   let pathForLog = '-';
   const method = (req.method || 'GET').toUpperCase();
 
+  // Apply global security headers for all responses, before any early return
+  applySecurityHeaders(req, res);
+
   let logged = false;
   const logDone = () => {
     if (logged) return;
@@ -333,6 +406,39 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    // Health endpoint: JSON body for GET; headers only for HEAD
+    if (urlPathRaw === '/healthz') {
+      status = 200;
+      const bodyObj = {
+        status: 'ok',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        version: PKG_VERSION,
+        commitSha: process.env.COMMIT_SHA || 'unknown',
+      };
+      const body = JSON.stringify(bodyObj);
+      const baseHeaders = {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+        'Accept-Ranges': 'none',
+      };
+      if (method === 'HEAD') {
+        res.writeHead(200, baseHeaders);
+        res.end();
+        bytes = 0;
+      } else {
+        res.writeHead(200, {
+          ...baseHeaders,
+          'Content-Length': String(Buffer.byteLength(body)),
+        });
+        res.end(body);
+        bytes = Buffer.byteLength(body);
+      }
+      return;
+    }
+
+    // Legacy plain-text health (kept for back-compat, optional)
     if (urlPathRaw === '/health') {
       status = 200;
       const body = 'ok';
