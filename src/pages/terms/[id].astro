@@ -2,8 +2,9 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry } from 'astro:content';
 import type { TermEntry } from '../../types/term';
-import { MIN_TOKEN_LENGTH, SIMILARITY_THRESHOLD } from '../../lib/constants';
+import { SIMILARITY_THRESHOLD } from '../../lib/constants';
 import { citation } from '../../lib/citation';
+import { computeMinSimilarity } from '../../lib/similarity';
 
 export async function getStaticPaths() {
   const terms = await getCollection('terms');
@@ -34,35 +35,6 @@ function badgeClass(kind: string) {
     default:
       return 'badge badge--other';
   }
-}
-
-function tokenize(s: string) {
-  return new Set(
-    (s || '')
-      .toLowerCase()
-      .split(/[^a-z0-9]+/g)
-      .filter((t) => t && t.length >= MIN_TOKEN_LENGTH),
-  );
-}
-function jaccard(a: Set<string>, b: Set<string>) {
-  // Intentional: treat two empty sets as 0 similarity to avoid suppressing differences callout
-  // (we prefer to highlight uncertainty rather than assume perfect similarity with no evidence)
-  if (!a.size && !b.size) return 0;
-  let inter = 0;
-  for (const t of a) if (b.has(t)) inter++;
-  const union = a.size + b.size - inter;
-  return union ? inter / union : 0;
-}
-function computeMinSimilarity(texts: string[]) {
-  const sets = texts.map(tokenize);
-  let min = 1;
-  for (let i = 0; i < sets.length; i++) {
-    for (let j = i + 1; j < sets.length; j++) {
-      const s = jaccard(sets[i], sets[j]);
-      if (s < min) min = s;
-    }
-  }
-  return min;
 }
 
 const sourceTexts: string[] = (data.sources || [])
