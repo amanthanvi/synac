@@ -29,6 +29,7 @@
     "etl:clean": "node scripts/etl-clean.mjs",
     "lh:budget": "npx -y lighthouse http://localhost:4321 --quiet --chrome-flags='--headless=new' --budgets-path=./lighthouse/budgets.json --only-categories=performance --preset=desktop",
     "lh:preview": "bash scripts/lh_preview.sh",
+    "build:deterministic": "node scripts/build-determinism.mjs",
     "prepare": "husky"
   },
   "dependencies": {
