@@ -145,10 +145,12 @@ test.describe('Search filters and highlighting', () => {
     await expect(anyChip).toBeVisible();
     const chipBox = await anyChip.boundingBox();
     expect(chipBox?.height || 0).toBeGreaterThanOrEqual(44);
+    expect(chipBox?.width || 0).toBeGreaterThanOrEqual(44);
 
     const summary = page.locator('summary.filter-summary').first();
     await expect(summary).toBeVisible();
     const sumBox = await summary.boundingBox();
     expect(sumBox?.height || 0).toBeGreaterThanOrEqual(44);
+    expect(sumBox?.width || 0).toBeGreaterThanOrEqual(44);
   });
 });
