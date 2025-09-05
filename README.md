@@ -42,15 +42,11 @@ Recommended Node: 20 or 22 LTS to avoid engine warnings with Astro/Vite ecosyste
 
 - Health endpoint:
   - `GET /healthz` → `200` `application/json` with schema:
-    `{ "status": "ok", "uptime": number, "timestamp": "ISO 8601", "version": "string", "commitSha": "string" }`
+    `{ "status": "ok", "uptime": number, "timestamp": "ISO8601", "version": "string", "commitSha": "string" }`
   - `HEAD /healthz` → `200` with headers only (no body)
   - `Cache-Control: no-store` on `/healthz` responses
   - `COMMIT_SHA` is injected in CI as `${{ github.sha }}` to surface the build commit.
 
-- Shared config: [security-headers.mjs](security-headers.mjs:1) is the single source for CSP and related header directives. CI imports this module to validate directives (e.g., frame-ancestors) so tests and server stay in sync.
-- Build info exposure: set `HEALTHZ_EXPOSE_BUILD=off` to redact `version` and `commitSha` fields in `/healthz` responses (defaults to on).
-- Startup logs: when `SECURITY_COEP=off`, the server logs a warning at startup indicating Cross‑Origin‑Embedder‑Policy is disabled.
-- Proxy trust note: HSTS gating relies on a trusted proxy populating `X-Forwarded-Proto`. Ensure the platform trusts and normalizes proxy headers (Railway does); otherwise clients could spoof headers.
 ## SEO & canonical domain
 
 - Canonical base: https://synac.app
