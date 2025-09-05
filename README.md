@@ -109,6 +109,21 @@ Run budgets:
 
 Budgets are intended to fail the command if exceeded. Non‑interactive flags are used to avoid prompts.
 
+## Deterministic builds
+
+We enforce offline, deterministic builds by running two production builds back-to-back and comparing SHA-256 checksums of every output file. The verifier [scripts/build-determinism.mjs](scripts/build-determinism.mjs:1):
+- Determines SOURCE_DATE_EPOCH from the environment or falls back to `git log -1 --pretty=%ct`.
+- Pins environment for child builds: `NODE_ENV=production`, `TZ=UTC`, `LANG=C`, `LC_ALL=C`, `ASTRO_TELEMETRY_DISABLED=1`, and `SOURCE_DATE_EPOCH`.
+- Cleans `dist/`, runs `npm run build` twice, and writes sorted `hash␠␠path` lines to `.determinism/checksums1.txt` and `.determinism/checksums2.txt`.
+- Compares the two checksum files; if different, prints a unified diff. On match it prints `Deterministic: OK` and exits 0.
+
+Run locally:
+- `npm ci && npm run build:deterministic` (script defined in [package.json](package.json:1))
+- Use the Node version pinned in [.nvmrc](.nvmrc:1) to match CI
+
+Notes:
+- The production build reads only committed assets; no network access is required at build time.
+- CI workflow [.github/workflows/deterministic-build.yml](.github/workflows/deterministic-build.yml:1) runs on PRs and `main`, and uploads `.determinism/checksums*.txt` artifacts on failure.
 ## Testing
 
 - Unit tests (Vitest):
