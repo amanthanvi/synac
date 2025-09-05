@@ -70,8 +70,8 @@ function toPosix(p) {
 
 async function sha256File(p) {
   const buf = await fs.readFile(p);
-  const h = createHash('sha256').update(buf).digest('hex');
-  return h;
+  return createHash('sha256').update(buf).digest('hex');
+
 }
 
 async function computeChecksums(distDir, outFile) {
