@@ -48,6 +48,10 @@ async function walk(dir) {
   async function rec(d) {
     const entries = await fs.readdir(d, { withFileTypes: true });
     for (const ent of entries) {
+      // Exclude hidden files (starting with ".") and known system files
+      if (ent.name.startsWith('.')) continue;
+      // Add more system file checks here if needed, e.g.:
+      // if (ent.name === 'Thumbs.db') continue;
       const full = path.join(d, ent.name);
       if (ent.isDirectory()) {
         await rec(full);
