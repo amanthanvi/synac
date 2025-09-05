@@ -77,8 +77,8 @@ async function sha256File(p) {
 async function computeChecksums(distDir, outFile) {
   const files = await walk(distDir);
   const rel = files.map((f) => {
-    const rp = toPosix(path.relative(distDir, f));
-    return rp;
+    return toPosix(path.relative(distDir, f));
+
   });
   rel.sort((a, b) => a.localeCompare(b));
   const lines = [];
