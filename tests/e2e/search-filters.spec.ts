@@ -120,4 +120,37 @@ test.describe('Search filters and highlighting', () => {
     const pressed = await anyChip.getAttribute('aria-pressed');
     expect(['true', 'false']).toContain(pressed || 'false');
   });
+
+  test('mobile ergonomics: sticky search and 44px tap targets at 375px', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto('/');
+    await page.waitForFunction(() => (window as any).__synacIndexReady === true, undefined, {
+      timeout: 10000,
+    });
+
+    const searchBox = page.locator('#search-box');
+    await expect(searchBox).toBeVisible();
+
+    // Verify sticky behavior after scroll
+    await page.evaluate(() => window.scrollTo(0, 400));
+    const top = await searchBox.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    expect(top).toBe(0);
+
+    // Verify computed position is sticky
+    const position = await searchBox.evaluate((el) => getComputedStyle(el).position);
+    expect(position).toBe('sticky');
+
+    // Representative tap targets: chip button, filter summary, result link
+    const anyChip = page.locator('#filters .btn-chip').first();
+    await expect(anyChip).toBeVisible();
+    const chipBox = await anyChip.boundingBox();
+    expect(chipBox?.height || 0).toBeGreaterThanOrEqual(44);
+    expect(chipBox?.width || 0).toBeGreaterThanOrEqual(44);
+
+    const summary = page.locator('summary.filter-summary').first();
+    await expect(summary).toBeVisible();
+    const sumBox = await summary.boundingBox();
+    expect(sumBox?.height || 0).toBeGreaterThanOrEqual(44);
+    expect(sumBox?.width || 0).toBeGreaterThanOrEqual(44);
+  });
 });

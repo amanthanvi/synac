@@ -18,6 +18,9 @@
     Helvetica Neue, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
 
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --color-border: #2a2e35;
+  --color-border-hover: #353942;
+  --color-border-focus: #4a90e2;
 }
 
 @media (prefers-color-scheme: light) {
@@ -83,13 +86,13 @@ h3 {
   border-radius: 999px;
   font-size: 0.8em;
   line-height: 1;
-  border: 1px solid #2a2e35;
+  border: 1px solid var(--color-border);
   color: var(--color-fg);
 }
 
 .badge--muted {
   color: var(--color-muted);
-  border-color: #2a2e35;
+  border-color: var(--color-border);
 }
 
 .badge--nist {
@@ -125,7 +128,7 @@ h3 {
 
 .card {
   padding: var(--space-4);
-  border: 1px solid #2a2e35;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-2);
   box-shadow: var(--shadow-1);
   background: transparent;
@@ -264,7 +267,7 @@ a.link:hover {
 /* Search results */
 .result-item {
   padding: 0.6rem 0.75rem;
-  border: 1px solid #2a2e35;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-2);
 }
 .result-link {
@@ -297,9 +300,15 @@ a.link:hover {
 .input-search {
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-2);
-  border: 1px solid #2a2e35;
+  border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-fg);
+}
+.input-search:hover {
+  border-color: var(--color-border-hover);
+}
+.input-search:focus {
+  border-color: var(--color-border-focus);
 }
 
 /* Filter chips */
@@ -311,7 +320,7 @@ a.link:hover {
 }
 
 .btn-chip {
-  border: 1px solid #2a2e35;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 0.35rem 0.6rem;
   font: inherit;
@@ -323,8 +332,61 @@ a.link:hover {
   align-items: center;
   gap: 0.35rem;
 }
+.btn-chip:hover {
+  border-color: var(--color-border-hover);
+}
+.btn-chip:focus {
+  border-color: var(--color-border-focus);
+}
 
 .btn-chip--active {
   background: rgba(92, 200, 255, 0.12);
   border-color: var(--color-accent);
+}
+
+/* Generic button for actions (e.g., Copy citation) */
+.synac-btn {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  background: transparent;
+  color: var(--color-fg);
+  cursor: pointer;
+  min-height: 44px; /* 44px tap targets */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.synac-btn:hover {
+  border-color: var(--color-border-hover);
+}
+.synac-btn:focus {
+  border-color: var(--color-border-focus);
+}
+
+/* Collapsible filters container */
+.synac-filters-collapsible {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2);
+}
+.synac-filters-collapsible:focus-within {
+  border-color: var(--color-border-focus);
+}
+
+/* Summary toggle for collapsible filters */
+.synac-filter-summary {
+  padding: 0.5rem 0.75rem;
+  min-height: 44px; /* 44px tap targets */
+  cursor: pointer;
+}
+
+/* Sticky search bar on small screens */
+@media (max-width: 768px) {
+  .sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--color-bg);
+  }
 }
