@@ -1,0 +1,7 @@
+Contact: https://github.com/amanthanvi/synac/security/advisories
+Encryption: https://github.com/amanthanvi.gpg
+Preferred-Languages: en
+Policy: https://github.com/amanthanvi/synac#security-and-contact
+Scope: https://synac-production.up.railway.app/
+Scope: https://github.com/amanthanvi/synac
+Expires: 2026-12-31T23:59:59Z
