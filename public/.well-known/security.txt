@@ -1,0 +1,4 @@
+Contact: https://github.com/amanthanvi/synac/security/advisories
+Preferred-Languages: en
+Expires: 2026-12-31T23:59:59Z
+Policy: https://github.com/amanthanvi/synac#security-and-contact
