@@ -2,11 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import Search from '../components/Search.astro';
+import { popularSearches } from '../lib/popularSearches';
+import type { PopularItem } from '../lib/popularSearches';
 
 const seeds = await getCollection('terms');
 const seedList = seeds
 	.filter((e) => ['syn', 'ack', 'pki', 'tls', 'xss', 'zero-trust'].includes(e.slug))
 	.sort((a, b) => a.slug.localeCompare(b.slug));
+
+/** PR9 review: popular chips sourced from shared data module (src/lib/popularSearches.ts) */
+
+const hrefFor = (p: PopularItem) => {
+	const parts: string[] = [`q=${encodeURIComponent(p.q)}`];
+	if (p.sources) parts.push(`sources=${encodeURIComponent(p.sources)}`);
+	if (p.types) parts.push(`types=${encodeURIComponent(p.types)}`);
+	// Join with & to keep HTML valid; browsers interpret & as & in URLs.
+	return `/?${parts.join('&')}`;
+};
 ---
 
 <BaseLayout title="SynAc">
@@ -25,18 +37,15 @@ const seedList = seeds
 	</section>
 
 	<section class="popular" aria-labelledby="popular-heading">
-		<h3 id="popular-heading">Popular searches</h3>
+		<h2 id="popular-heading">Popular searches</h2>
 		<nav class="chips" aria-label="Popular searches">
-			<a class="btn-chip" href="/?q=tls&sources=RFC&types=protocol">TLS</a>
-			<a class="btn-chip" href="/?q=jwt&sources=RFC">JWT</a>
-			<a class="btn-chip" href="/?q=oauth2">OAuth 2.0</a>
-			<a class="btn-chip" href="/?q=xss&types=vulnerability">XSS</a>
-			<a class="btn-chip" href="/?q=mtls&types=protocol">mTLS</a>
-			<a class="btn-chip" href="/?q=quic&types=protocol">QUIC</a>
-			<a class="btn-chip" href="/?q=pki">PKI</a>
-			<a class="btn-chip" href="/?q=x509">X.509</a>
-			<a class="btn-chip" href="/?q=dos&types=vulnerability">DoS</a>
-			<a class="btn-chip" href="/?q=csrf&types=vulnerability">CSRF</a>
+			{
+				popularSearches.map((p: PopularItem) => (
+					<a class="btn-chip" href={hrefFor(p)}>
+						{p.label}
+					</a>
+				))
+			}
 		</nav>
 	</section>
 
