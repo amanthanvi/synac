@@ -19,6 +19,11 @@ This repository now contains the v0.1.0 foundations: Astro + TS strict + MDX + C
 
 Recommended Node: 20 or 22 LTS to avoid engine warnings with Astro/Vite ecosystem.
 
+## Security and Contact
+
+- Security.txt: [/.well-known/security.txt](/.well-known/security.txt)
+- Report a vulnerability via GitHub Security Advisories: https://github.com/amanthanvi/synac/security/advisories/new
+- For uptime/debug probes, see [/healthz](/healthz) (source: [public/healthz/index.html](public/healthz/index.html); served as /healthz in production)
 ## Security & CSP
 
 - Strict CSP posture: no inline scripts or inline styles
