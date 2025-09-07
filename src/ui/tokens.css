@@ -31,6 +31,29 @@
     --color-accent: #006dff;
   }
 }
+/* Design tokens (dark default) */
+:root {
+  --bg:#0b1120; --panel:#0f172a; --card:#0b1220; --border:#1f2937;
+  --text:#e5e7eb; --muted:#94a3b8; --accent:#22d3ee; --ok:#22c55e; --err:#ef4444; --warn:#f59e0b;
+
+  --rad:10px;
+
+  /* Optional font scale tokens */
+  --font-s:12px; --font-m:14px; --font-l:16px; --font-xl:20px; --font-2xl:24px;
+
+  /* Focus ring color token (used by robust :focus-visible rule below) */
+  --focus-ring: var(--accent);
+}
+
+/* Higher contrast preference */
+@media (prefers-contrast: more) {
+  :root { --accent:#5eead4; --text:#ffffff; --focus-ring:#ffffff; }
+}
+
+/* Optional explicit high-contrast mode via data attribute */
+html[data-contrast='high'] {
+  --accent:#5eead4; --text:#ffffff; --focus-ring:#ffffff;
+}
 
 * {
   box-sizing: border-box;
@@ -66,7 +89,7 @@ h3 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--focus-ring, var(--color-accent));
   outline-offset: 2px;
 }
 
@@ -328,6 +351,7 @@ a.link:hover {
   color: var(--color-fg);
   cursor: pointer;
   min-height: 44px; /* 44px tap targets */
+  min-width: 44px; /* 44px tap targets */
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -375,9 +399,11 @@ a.link:hover {
 }
 
 /* Summary toggle for collapsible filters */
-.synac-filter-summary {
+.synac-filter-summary,
+.filter-summary {
   padding: 0.5rem 0.75rem;
   min-height: 44px; /* 44px tap targets */
+  min-width: 44px;
   cursor: pointer;
 }
 
@@ -437,4 +463,61 @@ a.link:hover {
   .popular {
     margin-block: 1.25rem 0.75rem;
   }
+}
+
+/* Utilities: minimum tap target size */
+.tap-44 { min-height: 44px; min-width: 44px; }
+
+/* Generic button */
+.btn {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: 0.5rem 0.75rem;
+  font: inherit;
+  background: transparent;
+  color: var(--color-fg);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.btn:hover { border-color: var(--color-border-hover); }
+.btn:focus { border-color: var(--color-border-focus); }
+
+/* Badge size variants for components */
+.badge--sm { font-size: 0.75em; padding: 0.15rem 0.45rem; }
+.badge--md { font-size: 0.85em; padding: 0.2rem 0.6rem; }
+
+/* Badge tone variants */
+.badge--accent { background: rgba(34,211,238,0.15); border-color: var(--accent); color: var(--text); }
+.badge--ok { background: rgba(34,197,94,0.18); border-color: var(--ok); color: var(--text); }
+.badge--warn { background: rgba(245,158,11,0.18); border-color: var(--warn); color: var(--text); }
+.badge--err { background: rgba(239,68,68,0.18); border-color: var(--err); color: var(--text); }
+
+/* Chips (non-interactive pill) */
+.chip {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  font: inherit;
+  font-size: 0.85em;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Toolbar helpers */
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.toolbar--sticky { position: sticky; top: var(--space-2); z-index: 20; background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-2); padding: var(--space-2) var(--space-3); }
+
+/* Hero section */
+.hero { padding-block: var(--space-8); text-align: center; display: flex; flex-direction: column; gap: var(--space-4); }
+.hero h1, .hero h2 { margin: 0; font-size: var(--font-2xl); }
+.hero p { margin: 0; color: var(--color-muted); max-width: 70ch; margin-inline: auto; }
+@media (min-width: 720px) {
+  .hero { padding-block: calc(var(--space-8) + var(--space-6)); }
+  .hero h1, .hero h2 { font-size: calc(var(--font-2xl) + 4px); }
 }

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/Section.astro';
 import { getCollection } from 'astro:content';
 import Search from '../components/Search.astro';
 import { popularSearches } from '../lib/popularSearches';
@@ -22,37 +23,21 @@ const hrefFor = (p: PopularItem) => {
 ---
 
 <BaseLayout title="SynAc">
-	<h1>SynAc</h1>
-	<p>
-		Source-anchored cybersecurity glossary. Fast, offline-capable, with evidence-first
-		definitions.
-	</p>
-	<section class="intro" aria-labelledby="about-heading">
-		<h2 id="about-heading">What is SynAc?</h2>
-		<p>
-			SynAc is a source‑anchored cybersecurity glossary. It provides concise, evidence‑first
-			definitions with provenance (NIST, RFCs, MITRE), offline‑capable deterministic search,
-			and strict security posture.
-		</p>
-	</section>
+	<Section class="hero" title="SynAc" description="Source-anchored, evidence-first security glossary." level={1}>
+		<Search />
+	</Section>
 
-	<section class="popular" aria-labelledby="popular-heading">
-		<h2 id="popular-heading">Popular searches</h2>
+	<Section title="Popular searches">
 		<nav class="chips" aria-label="Popular searches">
 			{
 				popularSearches.map((p: PopularItem) => (
-					<a class="btn-chip" href={hrefFor(p)}>
-						{p.label}
-					</a>
+					<a class="btn-chip tap-44" href={hrefFor(p)}>{p.label}</a>
 				))
 			}
 		</nav>
-	</section>
+	</Section>
 
-	<Search />
-
-	<section class="section">
-		<h2>Seed terms</h2>
+	<Section title="Seed terms">
 		<ul>
 			{
 				seedList.map((e) => (
@@ -62,5 +47,5 @@ const hrefFor = (p: PopularItem) => {
 				))
 			}
 		</ul>
-	</section>
+	</Section>
 </BaseLayout>

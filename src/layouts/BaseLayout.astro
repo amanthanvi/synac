@@ -1,6 +1,8 @@
 ---
 import '../ui/tokens.css';
-const { title = 'SynAc', description = 'Source-anchored cybersecurity glossary' } = Astro.props;
+declare const Astro: { url: URL; props: Record<string, unknown> };
+const { title = 'SynAc', description = 'Source-anchored cybersecurity glossary' } =
+  Astro.props as { title?: string; description?: string };
 const CANONICAL_BASE = 'https://synac.app';
 const canonicalUrl = new URL(Astro.url.pathname || '/', CANONICAL_BASE).toString();
 ---
@@ -27,9 +29,13 @@ const canonicalUrl = new URL(Astro.url.pathname || '/', CANONICAL_BASE).toString
 		<a href="#main" class="skip-link">Skip to main content</a>
 		<header class="container" role="banner">
 			<a class="brand" href="/">SynAc</a>
+			<button type="button" id="contrast-toggle" class="btn tap-44" aria-pressed="false" aria-label="Toggle high contrast">Contrast</button>
 		</header>
 		<main id="main" class="container" role="main" tabindex="-1">
 			<slot />
 		</main>
+		<script>
+			import '../scripts/contrastToggle.ts';
+		</script>
 	</body>
 </html>

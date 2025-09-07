@@ -1,0 +1,16 @@
+---
+export interface Props {
+  label: string;
+  value?: string;
+  tone?: 'muted' | 'accent' | 'ok' | 'warn' | 'err';
+}
+const { label, value, tone = 'muted' } = Astro.props as Props;
+const toneClass = tone ? `badge--${tone}` : undefined;
+const classes = ['chip', toneClass].filter(Boolean).join(' ');
+const aria = value ? `${label}: ${value}` : label;
+---
+
+<span class={classes} aria-label={aria}>
+  <span class="muted">{label}</span>
+  {value && <strong>{value}</strong>}
+</span>
