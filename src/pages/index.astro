@@ -2,11 +2,23 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import Search from '../components/Search.astro';
+import { popularSearches } from '../lib/popularSearches';
+import type { PopularItem } from '../lib/popularSearches';
 
 const seeds = await getCollection('terms');
 const seedList = seeds
 	.filter((e) => ['syn', 'ack', 'pki', 'tls', 'xss', 'zero-trust'].includes(e.slug))
 	.sort((a, b) => a.slug.localeCompare(b.slug));
+
+/** PR9 review: popular chips sourced from shared data module (src/lib/popularSearches.ts) */
+
+const hrefFor = (p: PopularItem) => {
+	const parts: string[] = [`q=${encodeURIComponent(p.q)}`];
+	if (p.sources) parts.push(`sources=${encodeURIComponent(p.sources)}`);
+	if (p.types) parts.push(`types=${encodeURIComponent(p.types)}`);
+	// Join with & to keep HTML valid; browsers interpret & as & in URLs.
+	return `/?${parts.join('&')}`;
+};
 ---
 
 <BaseLayout title="SynAc">
@@ -15,6 +27,27 @@ const seedList = seeds
 		Source-anchored cybersecurity glossary. Fast, offline-capable, with evidence-first
 		definitions.
 	</p>
+	<section class="intro" aria-labelledby="about-heading">
+		<h2 id="about-heading">What is SynAc?</h2>
+		<p>
+			SynAc is a source‑anchored cybersecurity glossary. It provides concise, evidence‑first
+			definitions with provenance (NIST, RFCs, MITRE), offline‑capable deterministic search,
+			and strict security posture.
+		</p>
+	</section>
+
+	<section class="popular" aria-labelledby="popular-heading">
+		<h2 id="popular-heading">Popular searches</h2>
+		<nav class="chips" aria-label="Popular searches">
+			{
+				popularSearches.map((p: PopularItem) => (
+					<a class="btn-chip" href={hrefFor(p)}>
+						{p.label}
+					</a>
+				))
+			}
+		</nav>
+	</section>
 
 	<Search />
 
