@@ -63,8 +63,11 @@
     "vitest": "^3.2.4"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,astro,mdx}": [
-      "eslint --max-warnings=0 --fix",
+    "*.{ts,tsx,js,jsx,astro}": [
+      "eslint --max-warnings=0 --no-warn-ignored --fix",
+      "prettier --write"
+    ],
+    "**/*.mdx": [
       "prettier --write"
     ]
   }
