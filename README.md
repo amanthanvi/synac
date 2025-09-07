@@ -327,7 +327,8 @@ Static deployment served from the built `dist/` directory using `sirv` with comp
   - Railway detects the start command automatically
 
 - Health
-  - `GET /healthz` returns `200` with body `ok`
+  - `GET /healthz` returns `200`. In production, this endpoint returns JSON with fields: `status`, `uptime`, `timestamp`, `version`, and (optionally) `commitSha`. A plain-text `ok` fallback is kept for legacy tooling.
+  - To surface `commitSha` in production `/healthz`, set an environment variable `COMMIT_SHA` in Railway Project → Variables (value: the deployed commit SHA).
   - Configure Railway health probe path to `/healthz`
 
 - Node/runtime
