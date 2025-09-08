@@ -4,7 +4,34 @@ import type {} from 'minisearch';
  * Shared MiniSearch options used on both server (index build) and client (query).
  * This module contains NO server-only imports to keep client bundle lean.
  */
-export const searchOptions = {
+
+// Explicit shapes to avoid over-narrowing while keeping readable types
+type SearchBoostMap = { [k: string]: number };
+
+type SearchOptionsShape = {
+  idField: string;
+  // Fields participating in search scoring
+  fields: string[];
+  // Fields returned on each hit (keep minimal to control payload size)
+  // Include derived token fields to align with buildIndexPayload enrichment
+  storeFields: string[];
+  searchOptions: {
+    prefix: boolean;
+    // Accept number or function to match MiniSearch API and current usage
+    fuzzy: number | ((term: string) => number | false);
+    boost: SearchBoostMap;
+    combineWith?: 'AND' | 'OR';
+  };
+};
+
+// Readable helper replacing nested ternaries
+function fuzzyThreshold(term: string): number | false {
+  if (term.length <= 3) return false;
+  if (term.length <= 6) return 1;
+  return 2;
+}
+
+export const searchOptions: SearchOptionsShape = {
   idField: 'id',
   // Fields participating in search scoring
   fields: [
@@ -30,7 +57,7 @@ export const searchOptions = {
   ],
   searchOptions: {
     prefix: true,
-    fuzzy: 0.2,
+    fuzzy: fuzzyThreshold,
     boost: {
       slugTokens: 3.0,
       titleTokens: 2.5,
@@ -40,4 +67,4 @@ export const searchOptions = {
       tags: 1.0,
     },
   },
-} as const;
+};
