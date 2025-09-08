@@ -17,6 +17,12 @@ This document provides an evidence-first baseline of what currently exists in th
 - Production server (Railway): Static server in [server.mjs](server.mjs) with content type, caching, path traversal protections, health endpoint, SPA fallback limited to HTML-eligible requests; start commands wired via [Procfile](Procfile) and [nixpacks.toml](nixpacks.toml).
 - Content schema and examples: Zod schema requires term, summary, sources, mappings, updatedAt in [src/content/schema.ts](src/content/schema.ts); collection registered in [src/content/config.ts](src/content/config.ts); sample entries include [src/content/terms/xss.mdx](src/content/terms/xss.mdx), [src/content/terms/csrf.mdx](src/content/terms/csrf.mdx), [src/content/terms/tls.mdx](src/content/terms/tls.mdx), [src/content/terms/zero-trust.mdx](src/content/terms/zero-trust.mdx).
 
+## Redactions and placeholders
+
+- Scan summary:
+  - Core search files [src/lib/searchBuild.ts](src/lib/searchBuild.ts), [src/pages/search.json.ts](src/pages/search.json.ts), and [src/scripts/searchClient.ts](src/scripts/searchClient.ts) contain no literal "..." redactions or placeholders. Verified complete.
+  - Vendor datasets under data/raw and derived artifacts contain "..." within quoted examples or truncated excerpts (e.g., CAPEC, CWE). These are non-executable content and not source code.
+  - Coverage HTML and vendor assets may include "..." for formatting; not part of the runtime.
 ## Gaps and risks (mapped to pre-identified items)
 
 - prod-headers: No Content-Security-Policy or other security headers are set by the Railway server; see [server.mjs](server.mjs). Strict CSP is claimed but not enforced via headers; Cloudflare-specific [public/_headers](public/_headers) is not present.
