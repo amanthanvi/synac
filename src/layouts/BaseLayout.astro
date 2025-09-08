@@ -1,6 +1,5 @@
 ---
 import '../ui/tokens.css';
-declare const Astro: { url: URL; props: Record<string, unknown> };
 const { title = 'SynAc', description = 'Source-anchored cybersecurity glossary' } =
   Astro.props as { title?: string; description?: string };
 const CANONICAL_BASE = 'https://synac.app';
