@@ -131,7 +131,8 @@ declare global {
       if (it.matchedViaAlias) {
         const ab = document.createElement('span');
         ab.className = 'badge';
-        ab.textContent = 'Alias match';
+        const alias = typeof it.matchedAlias === 'string' ? it.matchedAlias : '';
+        ab.textContent = alias ? `Matched via alias '${alias}'` : 'Alias match';
         const sr = document.createElement('span');
         sr.className = 'sr-only';
         sr.textContent = ' (matched via alias)';
@@ -326,8 +327,9 @@ declare global {
           mini = domFallback || rebuilt; // rebuilt may be empty but preserves options
         }
       }
-      currentSearchOptions =
-        (payload.options && payload.options.searchOptions) || currentSearchOptions;
+      const incoming = (payload.options && payload.options.searchOptions) || {};
+      const nextBoost = { ...(currentSearchOptions.boost || {}), ...(incoming.boost || {}) };
+      currentSearchOptions = { ...currentSearchOptions, ...incoming, boost: nextBoost };
 
       // tags meta for rendering tag chips
       if (Array.isArray(payload.tags)) {
@@ -356,11 +358,15 @@ declare global {
   const decorateAndFilter = (results: any[], qTokens: string[]): any[] => {
     const decorated = results.map((r: any) => {
       const aliasTokens: string[] = Array.isArray(r.aliasTokens) ? r.aliasTokens : [];
-      const aliasHit = aliasTokens.length ? aliasTokens.some((t) => qTokens.includes(t)) : false;
+      const matchedAliasToken = aliasTokens.find((t) => qTokens.includes(t));
       const idHit = normalizeTokens(String(r.id || '')).some((t) => qTokens.includes(t));
       const titleHit = normalizeTokens(String(r.term || '')).some((t) => qTokens.includes(t));
-      const matchedViaAlias = !!(aliasHit && !(idHit || titleHit));
-      return { ...r, matchedViaAlias };
+      const matchedViaAlias = !!(matchedAliasToken && !(idHit || titleHit));
+      return {
+        ...r,
+        matchedViaAlias,
+        matchedAlias: matchedViaAlias ? matchedAliasToken : undefined,
+      };
     });
     const sel: FacetSelections = {
       sources: Array.from(selectedSources),
