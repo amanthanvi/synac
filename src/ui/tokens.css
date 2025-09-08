@@ -32,19 +32,6 @@
   }
 }
 /* Design tokens (dark default) */
-:root {
-  --bg:#0b1120; --panel:#0f172a; --card:#0b1220; --border:#1f2937;
-  --text:#e5e7eb; --muted:#94a3b8; --accent:#22d3ee; --ok:#22c55e; --err:#ef4444; --warn:#f59e0b;
-
-  --rad:10px;
-
-  /* Optional font scale tokens */
-  --font-s:12px; --font-m:14px; --font-l:16px; --font-xl:20px; --font-2xl:24px;
-
-  /* Focus ring color token (used by robust :focus-visible rule below) */
-  --focus-ring: var(--accent);
-}
-
 /* Higher contrast preference */
 @media (prefers-contrast: more) {
   :root { --accent:#5eead4; --text:#ffffff; --focus-ring:#ffffff; }
