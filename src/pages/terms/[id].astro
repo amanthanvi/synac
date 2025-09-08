@@ -1,15 +1,15 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry } from 'astro:content';
-import type { TermEntry } from '../../types/term';
+import type { CollectionEntry } from 'astro:content';
 import { SIMILARITY_THRESHOLD } from '../../lib/constants';
-import { citation } from '../../lib/citation';
+import EvidenceList from '../../components/EvidenceList.astro';
 import type { Source } from '../../lib/citation';
 import { computeMinSimilarity } from '../../lib/similarity';
 
 export async function getStaticPaths() {
 	const terms = await getCollection('terms');
-	return terms.map((t) => ({ params: { id: t.slug } }));
+	return terms.map((t: CollectionEntry<'terms'>) => ({ params: { id: t.slug } }));
 }
 
 const { id } = Astro.params;
@@ -19,24 +19,7 @@ const entry = await getEntry('terms', id);
 if (!entry) throw new Error(`Term not found: ${id}`);
 
 const { Content } = await entry.render();
-const data = entry.data as TermEntry;
-
-function badgeClass(kind: string) {
-	switch (kind) {
-		case 'NIST':
-			return 'badge badge--nist';
-		case 'RFC':
-			return 'badge badge--rfc';
-		case 'ATTACK':
-			return 'badge badge--attack';
-		case 'CWE':
-			return 'badge badge--cwe';
-		case 'CAPEC':
-			return 'badge badge--capec';
-		default:
-			return 'badge badge--other';
-	}
-}
+const data: CollectionEntry<'terms'>['data'] = entry.data;
 
 const sourceTexts: string[] = (data.sources || [])
 	.map((s: Source) => (s.excerpt || s.citation || '').toString())
@@ -47,46 +30,19 @@ const showDifferences =
 	sourceTexts.length >= 2 &&
 	computeMinSimilarity(sourceTexts) < SIMILARITY_THRESHOLD;
 
-// a11y helper: build a safe, concise aria-label for "Copy citation" buttons
-function stripTags(input: unknown): string {
-	const s = String(input ?? '');
-	// Remove HTML tags
-	const noTags = s.replace(/<[^>]*>/g, '');
-	// Normalize whitespace/control chars
-	return noTags
-		.replace(/[\r\n\t]+/g, ' ')
-		.replace(/\s{2,}/g, ' ')
-		.trim();
-}
-
-function truncate(input: string, max = 120): string {
-	if (input.length <= max) return input;
-	return input.slice(0, Math.max(0, max - 3)).trimEnd() + '...';
-}
-
-/**
- * Prefer s.title OR (s.kind + " " + s.id); else fallback to sanitized s.citation.
- * Always returns a non-empty string: "Copy citation" fallback if all else fails.
- */
-function buildCopyAriaLabel(s: Source): string {
-	const fallback = 'Copy citation';
-	if (!s || typeof s !== 'object') return fallback;
-
-	// Prefer title
-	const anyS = s as any;
-	let base = anyS?.title
-		? String(anyS.title)
-		: anyS?.kind && anyS?.id
-			? `${String(anyS.kind)} ${String(anyS.id)}`
-			: s.citation
-				? stripTags(s.citation)
-				: '';
-
-	base = stripTags(base);
-	if (!base) return fallback;
-
-	return `Copy citation for ${truncate(base, 120)}`;
-}
+// Resolve "Often confused with" slugs to titles, skipping missing
+const confusedSlugs: string[] = Array.isArray(data.oftenConfusedWith) ? data.oftenConfusedWith : [];
+const confusedList = (
+	await Promise.all(
+		confusedSlugs.map(async (sid) => {
+			const e = await getEntry('terms', sid);
+			if (!e) return null;
+			const edata: CollectionEntry<'terms'>['data'] = e.data;
+			const title = edata?.term || '(missing term)';
+			return { slug: sid, title };
+		})
+	)
+).filter((v): v is { slug: string; title: string } => Boolean(v));
 ---
 
 <BaseLayout title={`SynAc — ${data.term}`}>
@@ -115,9 +71,7 @@ function buildCopyAriaLabel(s: Source): string {
 					</p>
 				) : null
 			}
-			<p class="mt-2 muted fs-90">
-				Last updated: {data.updatedAt}
-			</p>
+			<p class="mt-2 muted fs-90">Last updated: {data.updatedAt}</p>
 		</header>
 
 		{
@@ -134,76 +88,7 @@ function buildCopyAriaLabel(s: Source): string {
 
 		<section aria-labelledby="evidence-heading" class="section">
 			<h2 id="evidence-heading">Evidence</h2>
-			<div class="kv mt-2">
-				{
-					Array.isArray(data.sources) && data.sources.length > 1 ? (
-						<synac-copy-citation text={citation.buildCitations(data.sources)}>
-							<button
-								type="button"
-								class="synac-btn"
-								aria-label={`Copy all citations for ${data.term}`}
-							>
-								Copy all citations
-							</button>
-						</synac-copy-citation>
-					) : null
-				}
-				<div data-cite-live aria-live="polite" class="sr-only"></div>
-			</div>
-			<div class="grid grid--2 mt-2">
-				{
-					(data.sources || []).map((s: Source) => {
-						const _type = s && s.normative ? 'Normative' : 'Informative';
-						let host = '';
-						try {
-							host = new URL(String(s.url)).hostname;
-						} catch {}
-						return (
-							<div class="card">
-								<div class="flex items-center gap-2 mb-2">
-									<span
-										class={badgeClass(String(s.kind))}
-										aria-label={`Source kind: ${s.kind}`}
-										title={`Source kind: ${s.kind}`}
-									>
-										{s.kind}
-									</span>
-									<strong>{s.citation}</strong>
-									{s.date ? <span class="muted fs-90">({s.date})</span> : null}
-									<span class="badge badge--muted" title={`${_type} definition`}>
-										<span aria-hidden="true">{_type}</span>
-										<span class="sr-only" role="status">
-											{_type} evidence
-										</span>
-									</span>
-								</div>
-								{s.excerpt ? <p class="mt-1 mb-2">{s.excerpt}</p> : null}
-								<div class="kv">
-									<a
-										class="link"
-										href={s.url}
-										target="_blank"
-										rel="noopener noreferrer"
-										referrerpolicy="no-referrer"
-									>
-										{host || 'View source'}
-									</a>
-									<synac-copy-citation text={citation.buildCitation(s)}>
-										<button
-											type="button"
-											class="synac-btn"
-											aria-label={buildCopyAriaLabel(s)}
-										>
-											Copy citation
-										</button>
-									</synac-copy-citation>
-								</div>
-							</div>
-						);
-					})
-				}
-			</div>
-			<script type="module" src="/src/scripts/copyCitation.ts"></script>
+			<EvidenceList sources={data.sources} term={data.term} />
 		</section>
 
 		{
@@ -226,30 +111,30 @@ function buildCopyAriaLabel(s: Source): string {
 											>
 												{tid}
 											</span>
-									))
+										))
 									: null}
 							</>
 						) : null}
 						{data.mappings.cweIds?.length
 							? data.mappings.cweIds.map((cid: string) => (
-								<span class="badge badge--cwe" title={`CWE ${cid}`}>
-									{cid}
-								</span>
-							))
+									<span class="badge badge--cwe" title={`CWE ${cid}`}>
+										{cid}
+									</span>
+								))
 							: null}
 						{data.mappings.capecIds?.length
 							? data.mappings.capecIds.map((cid: string) => (
-								<span class="badge badge--capec" title={`CAPEC ${cid}`}>
-									{cid}
-								</span>
-							))
+									<span class="badge badge--capec" title={`CAPEC ${cid}`}>
+										{cid}
+									</span>
+								))
 							: null}
 						{data.mappings.examDomains?.length
 							? data.mappings.examDomains.map((ed: string) => (
-								<span class="badge badge--muted" title="Exam domain">
-									{ed}
-								</span>
-							))
+									<span class="badge badge--muted" title="Exam domain">
+										{ed}
+									</span>
+								))
 							: null}
 					</div>
 				</section>
@@ -260,7 +145,7 @@ function buildCopyAriaLabel(s: Source): string {
 			data.examples?.length ? (
 				<section aria-labelledby="examples" class="section">
 					<h2 id="examples">Examples</h2>
-					{data.examples.map((ex: any) => (
+					{data.examples.map((ex: { heading: string; body: string }) => (
 						<div class="card">
 							<h3 class="my-1">{ex.heading}</h3>
 							<p class="m-0">{ex.body}</p>
@@ -276,15 +161,14 @@ function buildCopyAriaLabel(s: Source): string {
 		</section>
 
 		{
-			Array.isArray((data as any).oftenConfusedWith) &&
-			(data as any).oftenConfusedWith.length ? (
+			confusedList.length ? (
 				<section aria-labelledby="confused" class="section">
 					<h2 id="confused">Often confused with</h2>
 					<ul>
-						{(data as any).oftenConfusedWith.map((sid: string) => (
+						{confusedList.map(({ slug, title }) => (
 							<li>
-								<a class="link result-link" href={`/terms/${sid}`}>
-									{sid}
+								<a class="link result-link" href={`/terms/${slug}`}>
+									{title}
 								</a>
 							</li>
 						))}
