@@ -327,8 +327,9 @@ declare global {
           mini = domFallback || rebuilt; // rebuilt may be empty but preserves options
         }
       }
-      currentSearchOptions =
-        (payload.options && payload.options.searchOptions) || currentSearchOptions;
+      const incoming = (payload.options && payload.options.searchOptions) || {};
+      const nextBoost = { ...(currentSearchOptions.boost || {}), ...(incoming.boost || {}) };
+      currentSearchOptions = { ...currentSearchOptions, ...incoming, boost: nextBoost };
 
       // tags meta for rendering tag chips
       if (Array.isArray(payload.tags)) {
