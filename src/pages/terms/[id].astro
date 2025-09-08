@@ -9,7 +9,7 @@ import { computeMinSimilarity } from '../../lib/similarity';
 
 export async function getStaticPaths() {
 	const terms = await getCollection('terms');
-	return terms.map((t: CollectionEntry<'terms'>) => ({ params: { id: t.slug } }));
+	return terms.map((t) => ({ params: { id: t.slug } }));
 }
 
 const { id } = Astro.params;
@@ -30,7 +30,7 @@ const showDifferences =
 	sourceTexts.length >= 2 &&
 	computeMinSimilarity(sourceTexts) < SIMILARITY_THRESHOLD;
 
-// Resolve "Often confused with" slugs to titles, skipping missing
+// Resolve "Often confused with" slugs to titles; skip missing entries safely
 const confusedSlugs: string[] = Array.isArray(data.oftenConfusedWith) ? data.oftenConfusedWith : [];
 const confusedList = (
 	await Promise.all(
