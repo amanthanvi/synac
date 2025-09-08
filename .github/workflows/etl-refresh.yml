@@ -148,7 +148,7 @@ jobs:
       # Note: Some repositories restrict GITHUB_TOKEN from creating PRs; this step is opt-in via ETL_ENABLE_AUTOPR
       - name: Create Pull Request with changes under data/
         if: ${{ env.ETL_ENABLE_AUTOPR == 'true' && steps.changes.outputs.changed == 'true' }}
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6 pinned
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e # v6 pinned
         with:
           commit-message: 'ci(etl): refresh vendor datasets and merged index'
           title: 'ci(etl): weekly vendor refresh'
