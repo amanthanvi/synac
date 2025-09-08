@@ -4,6 +4,7 @@ import { getCollection, getEntry } from 'astro:content';
 import type { TermEntry } from '../../types/term';
 import { SIMILARITY_THRESHOLD } from '../../lib/constants';
 import { citation } from '../../lib/citation';
+import type { Source } from '../../lib/citation';
 import { computeMinSimilarity } from '../../lib/similarity';
 
 export async function getStaticPaths() {
@@ -38,7 +39,7 @@ function badgeClass(kind: string) {
 }
 
 const sourceTexts: string[] = (data.sources || [])
-  .map((s: any) => (s.excerpt || s.citation || '').toString())
+  .map((s: Source) => (s.excerpt || s.citation || '').toString())
   .filter(Boolean);
 
 const showDifferences =
@@ -95,8 +96,12 @@ const showDifferences =
       <div class="kv mt-2">
         {
           Array.isArray(data.sources) && data.sources.length > 1 ? (
-            <synac-copy-citation text={citation.buildCitations(data.sources as any)}>
-              <button type="button" class="synac-btn">
+            <synac-copy-citation text={citation.buildCitations(data.sources)}>
+              <button
+                type="button"
+                class="synac-btn"
+                aria-label={`Copy all citations for ${data.term}`}
+              >
                 Copy all citations
               </button>
             </synac-copy-citation>
@@ -106,7 +111,7 @@ const showDifferences =
       </div>
       <div class="grid grid--2 mt-2">
         {
-          (data.sources || []).map((s: any) => {
+          (data.sources || []).map((s: Source) => {
             const _type = s && s.normative ? 'Normative' : 'Informative';
             let host = '';
             try {
@@ -142,8 +147,12 @@ const showDifferences =
                   >
                     {host || 'View source'}
                   </a>
-                  <synac-copy-citation text={citation.buildCitation(s as any)}>
-                    <button type="button" class="synac-btn">
+                  <synac-copy-citation text={citation.buildCitation(s)}>
+                    <button
+                      type="button"
+                      class="synac-btn"
+                      aria-label={`Copy citation for ${s.citation}`}
+                    >
                       Copy citation
                     </button>
                   </synac-copy-citation>
