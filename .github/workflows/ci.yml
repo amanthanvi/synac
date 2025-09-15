@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  typecheck:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: production
@@ -22,19 +22,43 @@ jobs:
       COMMIT_SHA: ${{ github.sha }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22.x
           cache: npm
-
       - run: NODE_ENV='' npm ci --ignore-scripts
-
       - run: npm run typecheck
+
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      CI: true
+      COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: NODE_ENV='' npm ci --ignore-scripts
       - run: npm run lint -- --max-warnings=0
+
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      CI: true
+      COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: NODE_ENV='' npm ci --ignore-scripts
       - run: npm run build
 
-      # Enforce Lighthouse budgets (source of truth: lighthouse/budgets.json)
       - name: Check Lighthouse budgets
         run: npm run lh:preview
 
@@ -124,5 +148,19 @@ jobs:
             healthz.json
             server.log
 
+  tests:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      CI: true
+      COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: NODE_ENV='' npm ci --ignore-scripts
       - run: npx playwright install --with-deps
       - run: npm run test:offline
