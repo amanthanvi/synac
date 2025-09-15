@@ -1,0 +1,96 @@
+---
+import { citation } from '../lib/citation';
+import type { Source } from '../lib/citation';
+import { buildCopyAriaLabel, hostFromURL } from '../lib/evidenceView';
+
+interface Props {
+	sources?: Source[];
+	term: string;
+}
+const { sources = [], term } = Astro.props as Props;
+
+function badgeClass(kind: string) {
+	switch (kind) {
+		case 'NIST':
+			return 'badge badge--nist';
+		case 'RFC':
+			return 'badge badge--rfc';
+		case 'ATTACK':
+			return 'badge badge--attack';
+		case 'CWE':
+			return 'badge badge--cwe';
+		case 'CAPEC':
+			return 'badge badge--capec';
+		default:
+			return 'badge badge--other';
+	}
+}
+---
+
+<div class="kv mt-2">
+	{
+		Array.isArray(sources) && sources.length > 1 ? (
+			<synac-copy-citation text={citation.buildCitations(sources)}>
+				<button
+					type="button"
+					class="synac-btn"
+					aria-label={`Copy all citations for ${term}`}
+				>
+					Copy all citations
+				</button>
+			</synac-copy-citation>
+		) : null
+	}
+	<div data-cite-live aria-live="polite" class="sr-only"></div>
+</div>
+<div class="grid grid--2 mt-2">
+	{
+		(sources || []).map((s: Source) => {
+			const _type = s && s.normative ? 'Normative' : 'Informative';
+			const host = hostFromURL(s.url);
+			return (
+				<div class="card">
+					<div class="flex items-center gap-2 mb-2">
+						<span
+							class={badgeClass(String(s.kind))}
+							aria-label={`Source kind: ${s.kind}`}
+							title={`Source kind: ${s.kind}`}
+						>
+							{s.kind}
+						</span>
+						<strong>{s.citation}</strong>
+						{s.date ? <span class="muted fs-90">({s.date})</span> : null}
+						<span class="badge badge--muted" title={`${_type} definition`}>
+							<span aria-hidden="true">{_type}</span>
+							<span class="sr-only" role="status">
+								{_type} evidence
+							</span>
+						</span>
+					</div>
+					{s.excerpt ? <p class="mt-1 mb-2">{s.excerpt}</p> : null}
+					<div class="kv">
+						<a
+							class="link"
+							href={s.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							referrerpolicy="no-referrer"
+						>
+							{host || 'View source'}
+						</a>
+						<synac-copy-citation text={citation.buildCitation(s)}>
+							<button
+								type="button"
+								class="synac-btn"
+								aria-label={buildCopyAriaLabel(s)}
+							>
+								Copy citation
+							</button>
+						</synac-copy-citation>
+					</div>
+				</div>
+			);
+		})
+	}
+</div>
+<script type="module" src="/src/scripts/copyCitation.ts"></script>
