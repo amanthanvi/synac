@@ -91,6 +91,15 @@
   "kdf": {
     "aliases": ["key derivation function"]
   },
+  "mfa": {
+    "aliases": [
+      "2fa",
+      "multi factor authentication",
+      "multi-factor authentication",
+      "two factor authentication",
+      "two-factor authentication"
+    ]
+  },
   "missing-authorization": {
     "aliases": ["authorization missing", "missing authz"]
   },
