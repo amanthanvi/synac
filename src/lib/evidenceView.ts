@@ -6,8 +6,13 @@ import type { Source } from './citation';
  */
 export function stripTags(input: unknown): string {
   const s = String(input ?? '');
-  // Remove HTML tags
-  const noTags = s.replace(/<[^>]*>/g, '').replace(/<[^>]*>/g, '');
+  // Remove HTML tags, robust against multi-character exploit
+  let noTags = s;
+  let previous;
+  do {
+    previous = noTags;
+    noTags = noTags.replace(/<[^>]*>/g, '');
+  } while (noTags !== previous);
   // Normalize whitespace/control chars
   return noTags
     .replace(/[\r\n\t]+/g, ' ')
