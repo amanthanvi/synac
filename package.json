@@ -44,7 +44,7 @@
     "@astrojs/check": "^0.9.4",
     "@astrojs/cloudflare": "^12.6.10",
     "@astrojs/mdx": "^4.3.4",
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^24.3.0",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.41.0",
