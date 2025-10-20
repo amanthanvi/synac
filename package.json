@@ -33,7 +33,7 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@vite-pwa/astro": "^1.1.0",
+    "@vite-pwa/astro": "^1.1.1",
     "astro": "^5.13.3",
     "minisearch": "^7.1.2",
     "fflate": "^0.8.1",
