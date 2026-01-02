@@ -8,6 +8,8 @@ export type SearchResult = {
   primarySlug: string;
   summaryText: string | null;
   snippet: string | null;
+  senseCount: number | null;
+  senseSummary: string | null;
   bucket: number;
   score: number;
 };
@@ -165,6 +167,28 @@ export async function searchPublishedEntries(
           websearch_to_tsquery('english', ${query}),
           'StartSel=<<, StopSel=>>, MaxWords=24, MinWords=10'
         ) AS "snippet",
+        CASE WHEN e.entry_type = 'ACRONYM' THEN (
+          SELECT COUNT(*)::int
+          FROM senses s
+          WHERE s.entry_id = e.id
+            AND s.deleted_at IS NULL
+            AND s.status = 'PUBLISHED'
+        ) ELSE NULL END AS "senseCount",
+        CASE WHEN e.entry_type = 'ACRONYM' THEN (
+          SELECT string_agg(x.val, ' · ' ORDER BY x.sense_order)
+          FROM (
+            SELECT
+              s.sense_order,
+              trim(coalesce(s.sense_label, s.expanded_form, '')) AS val
+            FROM senses s
+            WHERE s.entry_id = e.id
+              AND s.deleted_at IS NULL
+              AND s.status = 'PUBLISHED'
+            ORDER BY s.sense_order ASC
+            LIMIT 3
+          ) x
+          WHERE x.val <> ''
+        ) ELSE NULL END AS "senseSummary",
         best.bucket AS "bucket",
         best.score AS "score"
       FROM best

@@ -125,6 +125,12 @@ async function Results({
               </Link>
               <span className={styles.itemSlug}>{r.entryType}</span>
             </div>
+            {r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 ? (
+              <p className={styles.itemSummary} style={{ marginTop: 6 }}>
+                <strong>Meanings ({r.senseCount}):</strong>{' '}
+                {r.senseSummary ?? 'Multiple published senses.'}
+              </p>
+            ) : null}
             {r.snippet ? (
               <p className={styles.itemSummary}>{renderHeadline(r.snippet)}</p>
             ) : r.summaryText ? (

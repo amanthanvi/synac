@@ -44,6 +44,8 @@ export async function GET(request: Request) {
       primarySlug: r.primarySlug,
       summaryText: r.summaryText,
       snippet: r.snippet,
+      senseCount: r.senseCount,
+      senseSummary: r.senseSummary,
       url: r.entryType === 'TERM' ? `/term/${r.primarySlug}` : `/acronym/${r.primarySlug}`,
       score: r.score,
       bucket: r.bucket,
