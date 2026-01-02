@@ -72,6 +72,32 @@ a {
   border: 0;
 }
 
+.srOnly:focus,
+.srOnly:focus-visible {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  width: auto;
+  height: auto;
+  padding: 10px 12px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  border: 1px solid color-mix(in srgb, var(--accent2) 55%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg1) 92%, transparent);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent2) 65%, transparent);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
 mark {
   background: color-mix(in srgb, var(--accent2) 32%, transparent);
   color: var(--fg);

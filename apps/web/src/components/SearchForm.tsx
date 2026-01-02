@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 import styles from './SearchForm.module.css';
 
 type SearchFormProps = {
@@ -13,11 +15,17 @@ export function SearchForm({
   defaultValue,
   placeholder = 'Search terms and acronyms…',
   inputName = 'q',
-  inputId = 'q',
+  inputId,
 }: SearchFormProps) {
+  const autoId = useId();
+  const resolvedInputId = inputId ?? `search-${autoId}`;
+
   return (
     <form className={styles.form} action={action} method="get" role="search">
       <div className={styles.field}>
+        <label className="srOnly" htmlFor={resolvedInputId}>
+          Search
+        </label>
         <svg
           className={styles.icon}
           viewBox="0 0 24 24"
@@ -31,7 +39,7 @@ export function SearchForm({
         </svg>
         <input
           className={styles.input}
-          id={inputId}
+          id={resolvedInputId}
           name={inputName}
           defaultValue={defaultValue}
           placeholder={placeholder}
@@ -45,4 +53,3 @@ export function SearchForm({
     </form>
   );
 }
-

@@ -9,21 +9,29 @@ type PaginationProps = {
 };
 
 export function Pagination({ page, prevHref, nextHref }: PaginationProps) {
-  const hasPrev = Boolean(prevHref);
-  const hasNext = Boolean(nextHref);
-
   return (
     <nav className={styles.pager} aria-label="Pagination">
-      <Link className={`${styles.link} ${!hasPrev ? styles.disabled : ''}`} href={prevHref ?? '#'}>
-        Prev
-      </Link>
+      {prevHref ? (
+        <Link className={styles.link} href={prevHref} rel="prev">
+          Prev
+        </Link>
+      ) : (
+        <span className={`${styles.link} ${styles.disabled}`} aria-disabled="true">
+          Prev
+        </span>
+      )}
 
       <span className={styles.status}>Page {page}</span>
 
-      <Link className={`${styles.link} ${!hasNext ? styles.disabled : ''}`} href={nextHref ?? '#'}>
-        Next
-      </Link>
+      {nextHref ? (
+        <Link className={styles.link} href={nextHref} rel="next">
+          Next
+        </Link>
+      ) : (
+        <span className={`${styles.link} ${styles.disabled}`} aria-disabled="true">
+          Next
+        </span>
+      )}
     </nav>
   );
 }
-
