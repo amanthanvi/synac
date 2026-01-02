@@ -1,0 +1,45 @@
+import Link from 'next/link';
+
+import { getPrismaClient, listTags } from '@synac/db';
+
+import { PageHeader } from '@/components/PageHeader';
+
+import styles from '../_styles/Tags.module.css';
+
+export const dynamic = 'force-dynamic';
+
+export default async function TagsPage() {
+  const prisma = getPrismaClient();
+  const tags = await listTags(prisma);
+
+  return (
+    <>
+      <PageHeader
+        badge="Browse"
+        title="Tags"
+        subtitle="Curated tags for browsing and filtering. Tag pages preserve old slugs via redirects."
+      />
+
+      {tags.length === 0 ? (
+        <div className={styles.empty}>No tags yet.</div>
+      ) : (
+        <ol className={styles.list}>
+          {tags.map((tag) => (
+            <li key={tag.id} className={styles.item}>
+              <div className={styles.itemTitleRow}>
+                <Link className={styles.itemTitle} href={`/tags/${tag.slug}`}>
+                  {tag.name}
+                </Link>
+                <span className={styles.itemSlug}>/tags/{tag.slug}</span>
+              </div>
+              {tag.description ? (
+                <p className={styles.itemDesc}>{tag.description}</p>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      )}
+    </>
+  );
+}
+
