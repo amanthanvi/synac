@@ -1,12 +1,481 @@
-// NOTE: This schema is stubbed during Phase 0/1 scaffolding.
-// It will be replaced with the full §9 authoritative schema from SPEC.md.
-
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
+enum EntryType {
+  TERM
+  ACRONYM
+}
+
+enum EntryStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum VariantType {
+  ALIAS
+  SYNONYM
+  ABBREVIATION
+  MISSPELLING
+}
+
+enum SenseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum RelationshipType {
+  RELATED
+  BROADER_THAN
+  NARROWER_THAN
+  OFTEN_CONFUSED_WITH
+  SEE_ALSO
+}
+
+enum SourceAccessMethod {
+  API
+  RSS
+  HTML
+  PDF
+  OTHER
+}
+
+enum SourceRobotsPolicy {
+  RESPECT
+  EXPLICIT_PERMISSION
+}
+
+enum SourceTrustTier {
+  TIER_1
+  TIER_2
+  TIER_3
+  TIER_4
+}
+
+enum LicenseType {
+  PUBLIC_DOMAIN
+  CC_BY_4_0
+  CC_BY_SA_4_0
+  CC0_1_0
+  PROPRIETARY
+  OTHER
+}
+
+enum IngestRunStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+enum IngestTriggeredBy {
+  CRON
+  MANUAL
+  API
+}
+
+enum IngestStage {
+  EXTRACTED
+  NORMALIZED
+  DEDUPED
+  ENRICHED
+  VALIDATED
+  REVIEWED
+  APPLIED
+  REJECTED
+  FAILED
+}
+
+enum LicenseGate {
+  PASS
+  WARN
+  FAIL
+}
+
+enum FieldProvenanceEntityType {
+  ENTRY
+  SENSE
+  EXAMPLE
+  RELATIONSHIP
+  TAG
+}
+
+enum ExtractionMethod {
+  API
+  RSS
+  HTML
+  PDF
+  MANUAL
+}
+
+enum AuthProvider {
+  OIDC
+  LOCAL
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum RoleName {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+model Entry {
+  id              String      @id @default(uuid()) @db.Uuid
+  entryType       EntryType   @map("entry_type")
+  displayTitle    String      @map("display_title") @db.Text
+  normalizedTitle String      @map("normalized_title") @db.Text
+  primarySlug     String      @map("primary_slug") @db.Text
+  status          EntryStatus
+  summaryMd       String?     @map("summary_md") @db.Text
+  summaryText     String?     @map("summary_text") @db.Text
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  publishedAt     DateTime?   @map("published_at")
+  createdByUserId String?     @map("created_by_user_id") @db.Uuid
+  updatedByUserId String?     @map("updated_by_user_id") @db.Uuid
+  deletedAt       DateTime?   @map("deleted_at")
+
+  createdByUser User? @relation("entries_created_by", fields: [createdByUserId], references: [id])
+  updatedByUser User? @relation("entries_updated_by", fields: [updatedByUserId], references: [id])
+
+  senses          Sense[]
+  slugHistory     EntrySlugHistory[]
+  variants        EntryVariant[]
+  entryTags       EntryTag[]
+  relationshipsFrom EntryRelationship[] @relation("relationships_from")
+  relationshipsTo   EntryRelationship[] @relation("relationships_to")
+
+  @@index([entryType, primarySlug])
+  @@index([entryType, normalizedTitle])
+  @@index([updatedAt])
+  @@map("entries")
+}
+
+model EntrySlugHistory {
+  id        String    @id @default(uuid()) @db.Uuid
+  entryId   String    @map("entry_id") @db.Uuid
+  entryType EntryType @map("entry_type")
+  slug      String    @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@index([entryType, slug])
+  @@unique([entryId, slug])
+  @@unique([entryType, slug])
+  @@map("entry_slug_history")
+}
+
+model EntryVariant {
+  id               String      @id @default(uuid()) @db.Uuid
+  entryId           String      @map("entry_id") @db.Uuid
+  variantText      String      @map("variant_text") @db.Text
+  normalizedVariant String     @map("normalized_variant") @db.Text
+  variantType      VariantType @map("variant_type")
+  createdAt        DateTime    @default(now()) @map("created_at")
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, normalizedVariant, variantType])
+  @@index([normalizedVariant])
+  @@map("entry_variants")
+}
+
+model Sense {
+  id             String      @id @default(uuid()) @db.Uuid
+  entryId        String      @map("entry_id") @db.Uuid
+  senseOrder     Int         @map("sense_order")
+  senseLabel     String?     @map("sense_label") @db.Text
+  definitionMd   String?     @map("definition_md") @db.Text
+  definitionText String?     @map("definition_text") @db.Text
+  expandedForm   String?     @map("expanded_form") @db.Text
+  originLanguage String?     @map("origin_language") @db.Text
+  temporalContext String?    @map("temporal_context") @db.Text
+  isPreferred    Boolean     @default(false) @map("is_preferred")
+  status         SenseStatus
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  publishedAt    DateTime?   @map("published_at")
+  deletedAt      DateTime?   @map("deleted_at")
+
+  entry     Entry          @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  examples  SenseExample[]
+
+  @@index([entryId, senseOrder])
+  @@index([status])
+  @@map("senses")
+}
+
+model SenseExample {
+  id           String   @id @default(uuid()) @db.Uuid
+  senseId      String   @map("sense_id") @db.Uuid
+  exampleMd    String?  @map("example_md") @db.Text
+  exampleText  String?  @map("example_text") @db.Text
+  exampleOrder Int      @map("example_order")
+
+  sense Sense @relation(fields: [senseId], references: [id], onDelete: Cascade)
+
+  @@index([senseId, exampleOrder])
+  @@map("sense_examples")
+}
+
+model Tag {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.Text
+  slug        String   @db.Text
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  entryTags   EntryTag[]
+  slugHistory TagSlugHistory[]
+
+  @@index([slug])
+  @@map("tags")
+}
+
+model TagSlugHistory {
+  id        String   @id @default(uuid()) @db.Uuid
+  tagId     String   @map("tag_id") @db.Uuid
+  slug      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, slug])
+  @@unique([slug])
+  @@index([slug])
+  @@map("tag_slug_history")
+}
+
+model EntryTag {
+  entryId String @map("entry_id") @db.Uuid
+  tagId   String @map("tag_id") @db.Uuid
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([entryId, tagId])
+  @@index([tagId])
+  @@map("entry_tags")
+}
+
+model EntryRelationship {
+  id               String           @id @default(uuid()) @db.Uuid
+  fromEntryId      String           @map("from_entry_id") @db.Uuid
+  toEntryId        String           @map("to_entry_id") @db.Uuid
+  relationshipType RelationshipType @map("relationship_type")
+  weight           Int              @default(0)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  createdByUserId  String?          @map("created_by_user_id") @db.Uuid
+  deletedAt        DateTime?        @map("deleted_at")
+
+  fromEntry     Entry @relation("relationships_from", fields: [fromEntryId], references: [id], onDelete: Cascade)
+  toEntry       Entry @relation("relationships_to", fields: [toEntryId], references: [id], onDelete: Cascade)
+  createdByUser User? @relation("entry_relationships_created_by", fields: [createdByUserId], references: [id])
+
+  @@index([toEntryId])
+  @@index([fromEntryId])
+  @@map("entry_relationships")
+}
+
+model Source {
+  id                     String            @id @default(uuid()) @db.Uuid
+  name                   String            @db.Text
+  sourceSlug             String            @unique @map("source_slug") @db.Text
+  baseUrl                String            @map("base_url") @db.Text
+  licenseType            LicenseType       @map("license_type")
+  licenseNotes           String?           @map("license_notes") @db.Text
+  allowedUse             String            @map("allowed_use") @db.Text
+  attributionRequirements String           @map("attribution_requirements") @db.Text
+  accessMethod           SourceAccessMethod @map("access_method")
+  robotsPolicy           SourceRobotsPolicy @map("robots_policy")
+  rateLimitPolicy        Json?             @map("rate_limit_policy")
+  contact                String?           @db.Text
+  lastVerifiedAt         DateTime?         @map("last_verified_at")
+  trustTier              SourceTrustTier   @map("trust_tier")
+  enabled                Boolean           @default(false)
+  notesInternal          String?           @map("notes_internal") @db.Text
+  createdAt              DateTime          @default(now()) @map("created_at")
+  updatedAt              DateTime          @updatedAt @map("updated_at")
+
+  documents SourceDocument[]
+  citations Citation[]
+  ingestRuns IngestRun[]
+
+  @@map("sources")
+}
+
+model SourceDocument {
+  id                String    @id @default(uuid()) @db.Uuid
+  sourceId           String    @map("source_id") @db.Uuid
+  url               String    @db.Text
+  canonicalUrl       String?   @map("canonical_url") @db.Text
+  title             String?   @db.Text
+  contentType        String    @map("content_type") @db.Text
+  etag              String?   @db.Text
+  lastModified       String?   @map("last_modified") @db.Text
+  fetchedAt          DateTime  @map("fetched_at")
+  contentSha256      String    @map("content_sha256") @db.Text
+  snapshotStorageUri String?   @map("snapshot_storage_uri") @db.Text
+  snapshotAllowed    Boolean   @map("snapshot_allowed")
+  deletedAt          DateTime? @map("deleted_at")
+
+  source    Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  citations Citation[]
+  ingestItems IngestItem[]
+
+  @@index([sourceId])
+  @@index([url])
+  @@unique([sourceId, url, contentSha256])
+  @@map("source_documents")
+}
+
+model Citation {
+  id              String   @id @default(uuid()) @db.Uuid
+  sourceId        String   @map("source_id") @db.Uuid
+  sourceDocumentId String  @map("source_document_id") @db.Uuid
+  url             String   @db.Text
+  citationText    String?  @map("citation_text") @db.Text
+  licenseNote     String?  @map("license_note") @db.Text
+  attributionText String?  @map("attribution_text") @db.Text
+  accessedAt      DateTime @map("accessed_at")
+
+  source        Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceDocument SourceDocument @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
+  fieldProvenance FieldProvenance[]
+
+  @@index([sourceId])
+  @@index([sourceDocumentId])
+  @@map("citations")
+}
+
+model FieldProvenance {
+  id              String                  @id @default(uuid()) @db.Uuid
+  entityType      FieldProvenanceEntityType @map("entity_type")
+  entityId        String                  @map("entity_id") @db.Uuid
+  fieldName       String                  @map("field_name") @db.Text
+  citationId      String                  @map("citation_id") @db.Uuid
+  extractionMethod ExtractionMethod       @map("extraction_method")
+  extractorVersion String                 @map("extractor_version") @db.Text
+  extractedAt     DateTime                @map("extracted_at")
+  sourceLocator   Json?                   @map("source_locator")
+
+  citation Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
+  @@index([citationId])
+  @@map("field_provenance")
+}
+
+model IngestRun {
+  id               String           @id @default(uuid()) @db.Uuid
+  sourceId          String           @map("source_id") @db.Uuid
+  startedAt         DateTime         @map("started_at")
+  finishedAt        DateTime?        @map("finished_at")
+  status            IngestRunStatus
+  triggeredBy       IngestTriggeredBy @map("triggered_by")
+  triggeredByUserId String?          @map("triggered_by_user_id") @db.Uuid
+  configSnapshot    Json?            @map("config_snapshot")
+  stats             Json?            @map("stats")
+
+  source          Source      @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  triggeredByUser User?       @relation("ingest_runs_triggered_by_user", fields: [triggeredByUserId], references: [id])
+  items           IngestItem[]
+
+  @@index([sourceId, startedAt(sort: Desc)])
+  @@map("ingest_runs")
+}
+
+model IngestItem {
+  id              String      @id @default(uuid()) @db.Uuid
+  ingestRunId     String      @map("ingest_run_id") @db.Uuid
+  sourceDocumentId String     @map("source_document_id") @db.Uuid
+  itemKey         String?     @map("item_key") @db.Text
+  stage           IngestStage
+  proposedChange  Json?       @map("proposed_change")
+  diff            Json?       @map("diff")
+  confidenceScore Float?      @map("confidence_score")
+  licenseGate     LicenseGate @map("license_gate")
+  error           String?     @db.Text
+
+  ingestRun      IngestRun      @relation(fields: [ingestRunId], references: [id], onDelete: Cascade)
+  sourceDocument SourceDocument @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
+
+  @@index([ingestRunId, stage])
+  @@index([sourceDocumentId])
+  @@map("ingest_items")
+}
+
+model User {
+  id              String       @id @default(uuid()) @db.Uuid
+  email           String       @unique @db.Citext
+  displayName     String?      @map("display_name") @db.Text
+  authProvider    AuthProvider @default(OIDC) @map("auth_provider")
+  providerSubject String?      @map("provider_subject") @db.Text
+  status          UserStatus   @default(ACTIVE)
+  createdAt       DateTime     @default(now()) @map("created_at")
+  lastLoginAt     DateTime?    @map("last_login_at")
+
+  roles UserRole[]
+
+  entriesCreated Entry[] @relation("entries_created_by")
+  entriesUpdated Entry[] @relation("entries_updated_by")
+  auditEvents    AuditEvent[]
+  ingestRunsTriggered IngestRun[] @relation("ingest_runs_triggered_by_user")
+  entryRelationshipsCreated EntryRelationship[] @relation("entry_relationships_created_by")
+
+  @@map("users")
+}
+
+model Role {
+  id   String   @id @default(uuid()) @db.Uuid
+  name RoleName @unique
+
+  users UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model AuditEvent {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String   @map("actor_user_id") @db.Uuid
+  action      String   @db.Text
+  entityType  String   @map("entity_type") @db.Text
+  entityId    String   @map("entity_id") @db.Uuid
+  before      Json?
+  after       Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  requestId   String?  @map("request_id") @db.Text
+  ipHash      String?  @map("ip_hash") @db.Text
+
+  actorUser User @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@map("audit_events")
+}
