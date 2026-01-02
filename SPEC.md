@@ -408,7 +408,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 **Acceptance Criteria**
 
 -   404 page provides search box + popular tags + browse links; does not leak internal IDs.
--   500 page shows generic message with request ID; errors captured in monitoring.
+-   500 page shows generic message with a support ID (request_id / error digest); errors captured in monitoring.
 -   Empty states (no tags, no results, no trending yet) show helpful guidance without broken UI.
 
 ---

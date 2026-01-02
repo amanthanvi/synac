@@ -22,10 +22,10 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
         <p style={{ color: 'color-mix(in srgb, var(--fg) 78%, transparent)' }}>
           {error.digest ? (
             <>
-              Request ID: <span style={{ fontFamily: 'var(--font-mono)' }}>{error.digest}</span>
+              Error ID: <span style={{ fontFamily: 'var(--font-mono)' }}>{error.digest}</span>
             </>
           ) : (
-            <>Request ID unavailable.</>
+            <>Error ID unavailable.</>
           )}
         </p>
 
@@ -55,4 +55,3 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     </>
   );
 }
-
