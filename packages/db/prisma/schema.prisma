@@ -1,0 +1,12 @@
+// NOTE: This schema is stubbed during Phase 0/1 scaffolding.
+// It will be replaced with the full §9 authoritative schema from SPEC.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
