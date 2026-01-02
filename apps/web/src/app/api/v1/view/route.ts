@@ -5,6 +5,8 @@ import type { NextRequest } from 'next/server';
 
 import { getPrismaClient } from '@synac/db';
 
+import { enforceRateLimit } from '@/lib/rateLimit';
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +25,15 @@ function hashSession(sessionId: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  const rate = await enforceRateLimit({ request, scope: 'api_v1_view', limit: 120, windowSeconds: 60 });
+  if (!rate.allowed) {
+    const requestId = request.headers.get('x-request-id');
+    return NextResponse.json(
+      { ok: false, error: 'rate_limited', requestId, retryAfterSeconds: rate.retryAfterSeconds },
+      { status: 429, headers: { 'retry-after': String(rate.retryAfterSeconds) } },
+    );
+  }
+
   const sessionId = request.cookies.get(SESSION_COOKIE)?.value;
   if (!sessionId) {
     return NextResponse.json({ ok: false }, { status: 400 });
@@ -59,4 +70,3 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
-

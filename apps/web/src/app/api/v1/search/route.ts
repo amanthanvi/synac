@@ -1,6 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 import { getPrismaClient, searchPublishedEntries } from '@synac/db';
+
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,7 +14,16 @@ function parseEntryType(value: string | null): 'TERM' | 'ACRONYM' | undefined {
   return undefined;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const rate = await enforceRateLimit({ request, scope: 'api_v1_search', limit: 60, windowSeconds: 60 });
+  if (!rate.allowed) {
+    const requestId = request.headers.get('x-request-id');
+    return NextResponse.json(
+      { error: 'rate_limited', requestId, retryAfterSeconds: rate.retryAfterSeconds },
+      { status: 429, headers: { 'retry-after': String(rate.retryAfterSeconds) } },
+    );
+  }
+
   const url = new URL(request.url);
 
   const q = url.searchParams.get('q') ?? '';
