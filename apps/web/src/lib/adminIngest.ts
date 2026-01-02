@@ -187,11 +187,17 @@ export async function approveIngestItem(input: {
       ingestRunId: true,
       sourceDocumentId: true,
       ingestRun: { select: { sourceId: true } },
-      sourceDocument: { select: { url: true, canonicalUrl: true, fetchedAt: true } },
+      sourceDocument: {
+        select: { url: true, canonicalUrl: true, fetchedAt: true, doNotUse: true, doNotUseReason: true },
+      },
     },
   });
   if (!item) throw new Error('Ingest item not found');
   if (item.licenseGate === 'FAIL') throw new Error('Cannot approve item with licenseGate=FAIL');
+  if (item.sourceDocument.doNotUse) {
+    const reason = item.sourceDocument.doNotUseReason?.trim() ? `: ${item.sourceDocument.doNotUseReason}` : '';
+    throw new Error(`Cannot approve item from do-not-use SourceDocument${reason}`);
+  }
   if (item.stage !== 'VALIDATED' && item.stage !== 'REVIEWED') {
     throw new Error(`Cannot approve ingest item in stage ${item.stage}`);
   }
