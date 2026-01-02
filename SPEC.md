@@ -871,6 +871,16 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   `deleted_at`
 -   UNIQUE (`slug`) WHERE `deleted_at IS NULL`
 
+#### `tag_slug_history`
+
+-   `id` (PK)
+-   `tag_id` (FK tags)
+-   `slug` (TEXT)
+-   `created_at`
+-   Constraints:
+    -   UNIQUE (`slug`) (enables `/tags/{old-slug}` redirects)
+    -   UNIQUE (`tag_id`, `slug`)
+
 #### `entry_tags`
 
 -   `entry_id` (FK)

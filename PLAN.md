@@ -31,9 +31,9 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## Phase 1 — Data model + migrations (authoritative)
 
-- [ ] Implement Prisma schema for §9 tables + enums
-- [ ] Enable Postgres extensions (CITEXT, pg_trgm)
-- [ ] Add seed: roles + initial admin bootstrap (email allowlist-based)
+- [x] Implement Prisma schema for §9 tables + enums
+- [x] Enable Postgres extensions (CITEXT, pg_trgm)
+- [x] Add seed: roles + initial admin bootstrap (email allowlist-based)
 - [ ] Add query layer + transactions (`packages/db`)
 
 ## Phase 2 — Public web (FR-001..FR-011)
@@ -73,4 +73,4 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## Spec deltas log (keep short)
 
-- (none yet)
+- 2026-01-02: Added `tag_slug_history` to §9 (supports tag slug redirects/renames/merges).
