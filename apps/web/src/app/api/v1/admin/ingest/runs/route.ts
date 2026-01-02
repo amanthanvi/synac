@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getPrismaClient } from '@synac/db';
 
 import { requireAdminActor } from '@/lib/admin';
-import { createIngestRun } from '@/lib/adminIngest';
+import { createIngestRun, createIngestRunsForAllSources } from '@/lib/adminIngest';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -65,12 +65,22 @@ export async function POST(request: Request) {
   const sourceId = getString(data, 'sourceId');
   const maxItems = getNumber(data, 'maxItems') || 100;
 
-  const { ingestRunId } = await createIngestRun({
-    actorUserId: actor.dbUserId,
-    sourceId,
-    maxItems,
-  });
+  if (!sourceId || sourceId.toUpperCase() === 'ALL') {
+    const prisma = getPrismaClient();
+    const enabledSources = await prisma.source.count({ where: { enabled: true } });
+    if (enabledSources === 0) {
+      return NextResponse.json({ error: 'no_enabled_sources' }, { status: 400 });
+    }
+
+    const { ingestRunIds } = await createIngestRunsForAllSources({
+      actorUserId: actor.dbUserId,
+      maxItems,
+    });
+
+    return NextResponse.json({ ingestRunIds });
+  }
+
+  const { ingestRunId } = await createIngestRun({ actorUserId: actor.dbUserId, sourceId, maxItems });
 
   return NextResponse.json({ ingestRunId });
 }
-

@@ -65,6 +65,31 @@ export async function createIngestRun(input: {
   return { ingestRunId: run.id };
 }
 
+export async function createIngestRunsForAllSources(input: {
+  actorUserId: string;
+  maxItems: number;
+}): Promise<{ ingestRunIds: string[] }> {
+  const prisma = getPrismaClient();
+
+  const sources = await prisma.source.findMany({
+    where: { enabled: true },
+    select: { id: true },
+    orderBy: [{ name: 'asc' }],
+  });
+
+  const ingestRunIds: string[] = [];
+  for (const source of sources) {
+    const { ingestRunId } = await createIngestRun({
+      actorUserId: input.actorUserId,
+      sourceId: source.id,
+      maxItems: input.maxItems,
+    });
+    ingestRunIds.push(ingestRunId);
+  }
+
+  return { ingestRunIds };
+}
+
 type ProposedChangeCreateEntry = {
   kind: 'CREATE_ENTRY';
   entryType: 'TERM' | 'ACRONYM';

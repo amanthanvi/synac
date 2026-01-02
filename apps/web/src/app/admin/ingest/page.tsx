@@ -5,7 +5,7 @@ import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { requireAdminActor } from '@/lib/admin';
-import { createIngestRun } from '@/lib/adminIngest';
+import { createIngestRun, createIngestRunsForAllSources } from '@/lib/adminIngest';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +71,12 @@ export default async function AdminIngestPage() {
             <div style={{ alignSelf: 'end' }}>
               <button type="submit">Start ingest</button>
             </div>
+
+            <div style={{ alignSelf: 'end' }}>
+              <button formAction={triggerAll} type="submit">
+                Start all enabled
+              </button>
+            </div>
           </form>
         )}
       </section>
@@ -115,4 +121,25 @@ async function trigger(formData: FormData) {
   });
 
   redirect(`/admin/ingest/runs/${ingestRunId}`);
+}
+
+async function triggerAll(formData: FormData) {
+  'use server';
+
+  const actor = await requireAdminActor();
+  if (!actor.roleNames.includes('ADMIN')) {
+    throw new Error('Only ADMIN can trigger ingest runs');
+  }
+
+  const maxItems = Number(formData.get('maxItems') ?? 100) || 100;
+  const { ingestRunIds } = await createIngestRunsForAllSources({
+    actorUserId: actor.dbUserId,
+    maxItems,
+  });
+
+  if (ingestRunIds.length === 0) {
+    redirect('/admin/ingest');
+  }
+
+  redirect(`/admin/ingest/runs/${ingestRunIds[0]}`);
 }
