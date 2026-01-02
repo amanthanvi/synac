@@ -6,6 +6,21 @@ export function stripHtmlTags(html: string): string {
   return html.replace(/<[^>]*>/g, '');
 }
 
+export function extractFirstInnerHtmlByTag(html: string, tag: string): string | null {
+  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
+  const match = html.match(re);
+  return match?.[1] ?? null;
+}
+
+export function extractFirstInnerHtmlByClass(html: string, tag: string, className: string): string | null {
+  const re = new RegExp(
+    `<${tag}[^>]*\\bclass=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/${tag}>`,
+    'i',
+  );
+  const match = html.match(re);
+  return match?.[1] ?? null;
+}
+
 export function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&nbsp;/g, ' ')

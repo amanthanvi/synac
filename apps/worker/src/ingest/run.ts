@@ -1,6 +1,8 @@
 import { getPrismaClient } from '@synac/db';
 
 import { ingestNistGlossary } from './nistGlossary.js';
+import { ingestMitreAttackCti } from './mitreAttackCti.js';
+import { ingestOwaspVulnerabilities } from './owaspVulnerabilities.js';
 
 function parseMaxItems(configSnapshot: unknown): number {
   if (!configSnapshot || typeof configSnapshot !== 'object') return 100;
@@ -36,10 +38,25 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
 
   try {
     const baseUrl = run.source.baseUrl.toLowerCase();
+    const host = new URL(run.source.baseUrl).hostname.toLowerCase();
 
     let itemsCreated = 0;
     if (baseUrl.includes('csrc.nist.gov')) {
       const res = await ingestNistGlossary(prisma, {
+        ingestRunId: run.id,
+        source: { id: run.source.id, baseUrl: run.source.baseUrl, licenseType: run.source.licenseType },
+        maxItems,
+      });
+      itemsCreated = res.itemsCreated;
+    } else if (host.endsWith('owasp.org')) {
+      const res = await ingestOwaspVulnerabilities(prisma, {
+        ingestRunId: run.id,
+        source: { id: run.source.id, baseUrl: run.source.baseUrl, licenseType: run.source.licenseType },
+        maxItems,
+      });
+      itemsCreated = res.itemsCreated;
+    } else if (host === 'raw.githubusercontent.com') {
+      const res = await ingestMitreAttackCti(prisma, {
         ingestRunId: run.id,
         source: { id: run.source.id, baseUrl: run.source.baseUrl, licenseType: run.source.licenseType },
         maxItems,
@@ -70,4 +87,3 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
     throw err;
   }
 }
-
