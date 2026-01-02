@@ -55,7 +55,8 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Admin audit log page + filters
 - [x] Admin sources UI: create/edit/enable/disable + verify metadata
 - [x] Admin API routes: audit + sources
-- [ ] Admin API routes: entries + ingest
+- [x] Admin API routes: entries
+- [ ] Admin API routes: ingest
 
 ## Phase 4 — Ingest system (FR-100..FR-111)
 
