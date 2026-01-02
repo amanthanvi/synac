@@ -6,6 +6,10 @@ function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
 }
 
+function toJsonSafe<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 async function isSlugTaken(
   entryType: 'TERM' | 'ACRONYM',
   candidate: string,
@@ -88,7 +92,7 @@ export async function createDraftEntry(input: {
         action: 'ENTRY_CREATE',
         entityType: 'ENTRY',
         entityId: created.id,
-        after: created,
+        after: toJsonSafe(created),
       },
     });
 
@@ -179,8 +183,8 @@ export async function updateEntry(input: {
         action: 'ENTRY_UPDATE',
         entityType: 'ENTRY',
         entityId: before.id,
-        before,
-        after,
+        before: toJsonSafe(before),
+        after: toJsonSafe(after),
       },
     });
   });
@@ -223,7 +227,7 @@ export async function createDraftSense(input: {
         action: 'SENSE_CREATE',
         entityType: 'SENSE',
         entityId: created.id,
-        after: created,
+        after: toJsonSafe(created),
       },
     });
 
@@ -299,8 +303,8 @@ export async function updateSense(input: {
         action: 'SENSE_UPDATE',
         entityType: 'SENSE',
         entityId: before.id,
-        before,
-        after,
+        before: toJsonSafe(before),
+        after: toJsonSafe(after),
       },
     });
   });
@@ -345,8 +349,8 @@ export async function moveSense(input: {
         action: 'SENSE_REORDER',
         entityType: 'ENTRY',
         entityId: sense.entryId,
-        before: { senseId: sense.id, from: sense.senseOrder, to: neighbor.senseOrder },
-        after: { senseId: sense.id, from: sense.senseOrder, to: neighbor.senseOrder },
+        before: toJsonSafe({ senseId: sense.id, from: sense.senseOrder, to: neighbor.senseOrder }),
+        after: toJsonSafe({ senseId: sense.id, from: sense.senseOrder, to: neighbor.senseOrder }),
       },
     });
   });
@@ -443,8 +447,8 @@ export async function publishEntry(input: {
         action: 'ENTRY_PUBLISH',
         entityType: 'ENTRY',
         entityId: entry.id,
-        before,
-        after,
+        before: toJsonSafe(before),
+        after: toJsonSafe(after),
       },
     });
 
@@ -477,8 +481,8 @@ export async function archiveEntry(input: {
         action: 'ENTRY_ARCHIVE',
         entityType: 'ENTRY',
         entityId: before.id,
-        before,
-        after,
+        before: toJsonSafe(before),
+        after: toJsonSafe(after),
       },
     });
   });

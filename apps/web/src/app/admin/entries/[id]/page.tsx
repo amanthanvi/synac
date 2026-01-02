@@ -13,12 +13,18 @@ import {
   updateSense,
   archiveEntry,
 } from '@/lib/adminEntries';
+import { normalizeTitle, slugify } from '@/lib/text';
 
 export const dynamic = 'force-dynamic';
 
 type AdminEntryPageProps = {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ published?: string; archived?: string; saved?: string }>;
+  searchParams?: Promise<{
+    published?: string;
+    archived?: string;
+    saved?: string;
+    rolledBack?: string;
+  }>;
 };
 
 function formatDate(value: Date | null): string {
@@ -65,6 +71,13 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
     : [];
   const provenanceBySenseId = new Map(provenanceCounts.map((r) => [r.entityId, r._count._all]));
 
+  const auditEvents = await prisma.auditEvent.findMany({
+    where: { entityType: 'ENTRY', entityId: entry.id },
+    include: { actorUser: { select: { email: true } } },
+    orderBy: [{ createdAt: 'desc' }],
+    take: 25,
+  });
+
   const publicUrl =
     entry.status === 'PUBLISHED'
       ? entry.entryType === 'TERM'
@@ -91,6 +104,8 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
         <div style={{ marginTop: 12, opacity: 0.9 }}>Published.</div>
       ) : qp.archived ? (
         <div style={{ marginTop: 12, opacity: 0.9 }}>Archived.</div>
+      ) : qp.rolledBack ? (
+        <div style={{ marginTop: 12, opacity: 0.9 }}>Rolled back.</div>
       ) : null}
 
       <section style={{ marginTop: 18 }}>
@@ -277,6 +292,33 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
           </div>
         )}
       </section>
+
+      <section style={{ marginTop: 22 }}>
+        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>Audit</h2>
+        {auditEvents.length === 0 ? (
+          <div style={{ marginTop: 12, opacity: 0.8 }}>No audit events yet.</div>
+        ) : (
+          <ul style={{ marginTop: 12, paddingLeft: 18, lineHeight: 1.8 }}>
+            {auditEvents.map((ev) => {
+              const canRollback = Boolean(ev.before) && ev.action !== 'ENTRY_CREATE';
+              return (
+                <li key={ev.id}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.85 }}>
+                    {formatDate(ev.createdAt)} · {ev.action} · {ev.actorUser.email}
+                  </span>
+                  {canRollback ? (
+                    <form action={rollbackEntryAction} style={{ display: 'inline', marginLeft: 10 }}>
+                      <input type="hidden" name="entryId" value={entry.id} />
+                      <input type="hidden" name="auditEventId" value={ev.id} />
+                      <button type="submit">Rollback</button>
+                    </form>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </>
   );
 }
@@ -392,6 +434,147 @@ async function archive(formData: FormData) {
   redirect(`/admin/entries/${entryId}?archived=1`);
 }
 
+async function rollbackEntryAction(formData: FormData) {
+  'use server';
+
+  const actor = await requireAdminActor();
+  if (!actor.roleNames.includes('ADMIN')) {
+    throw new Error('Only ADMIN can roll back entries');
+  }
+
+  const entryId = String(formData.get('entryId') ?? '');
+  const auditEventId = String(formData.get('auditEventId') ?? '');
+
+  const prisma = getPrismaClient();
+
+  await prisma.$transaction(async (tx) => {
+    const entry = await tx.entry.findFirst({
+      where: { id: entryId, deletedAt: null },
+      select: {
+        id: true,
+        entryType: true,
+        displayTitle: true,
+        normalizedTitle: true,
+        primarySlug: true,
+        status: true,
+        summaryMd: true,
+        summaryText: true,
+        editorialNotes: true,
+        publishedAt: true,
+      },
+    });
+    if (!entry) throw new Error('Entry not found');
+
+    const auditEvent = await tx.auditEvent.findFirst({
+      where: { id: auditEventId, entityType: 'ENTRY', entityId: entryId },
+      select: { id: true, action: true, before: true },
+    });
+    if (!auditEvent?.before) throw new Error('No rollback snapshot available');
+
+    const before = auditEvent.before as Record<string, unknown>;
+
+    const data: Record<string, unknown> = { updatedByUserId: actor.dbUserId };
+
+    const nextDisplayTitle = typeof before.displayTitle === 'string' ? before.displayTitle : null;
+    const nextPrimarySlug = typeof before.primarySlug === 'string' ? before.primarySlug : null;
+    const nextSummaryMd = typeof before.summaryMd === 'string' ? before.summaryMd : null;
+    const nextSummaryText = typeof before.summaryText === 'string' ? before.summaryText : null;
+    const nextEditorialNotes =
+      typeof before.editorialNotes === 'string' ? before.editorialNotes : null;
+    const nextStatus = typeof before.status === 'string' ? before.status : null;
+    const nextPublishedAt =
+      typeof before.publishedAt === 'string'
+        ? new Date(before.publishedAt)
+        : before.publishedAt === null
+          ? null
+          : undefined;
+
+    if (nextDisplayTitle !== null) {
+      data.displayTitle = nextDisplayTitle;
+      data.normalizedTitle =
+        typeof before.normalizedTitle === 'string'
+          ? before.normalizedTitle
+          : normalizeTitle(nextDisplayTitle);
+    }
+
+    if (nextPrimarySlug !== null) {
+      const desiredSlug = slugify(nextPrimarySlug);
+      const conflict =
+        desiredSlug !== entry.primarySlug &&
+        (await tx.entry.findFirst({
+          where: {
+            entryType: entry.entryType,
+            primarySlug: desiredSlug,
+            deletedAt: null,
+            NOT: { id: entry.id },
+          },
+          select: { id: true },
+        }));
+      const historyConflict =
+        desiredSlug !== entry.primarySlug &&
+        (await tx.entrySlugHistory.findFirst({
+          where: {
+            entryType: entry.entryType,
+            slug: desiredSlug,
+            NOT: { entryId: entry.id },
+          },
+          select: { id: true },
+        }));
+
+      if (conflict || historyConflict) {
+        throw new Error(`Cannot roll back slug; slug already taken: ${desiredSlug}`);
+      }
+
+      if (desiredSlug !== entry.primarySlug) {
+        await tx.entrySlugHistory.upsert({
+          where: { entryType_slug: { entryType: entry.entryType, slug: entry.primarySlug } },
+          update: {},
+          create: { entryId: entry.id, entryType: entry.entryType, slug: entry.primarySlug },
+        });
+      }
+
+      data.primarySlug = desiredSlug;
+    }
+
+    data.summaryMd = nextSummaryMd ?? null;
+    data.summaryText = nextSummaryText ?? null;
+    data.editorialNotes = nextEditorialNotes ?? null;
+
+    if (nextStatus) data.status = nextStatus;
+    if (nextPublishedAt !== undefined) data.publishedAt = nextPublishedAt;
+
+    const updated = await tx.entry.update({
+      where: { id: entry.id },
+      data,
+      select: {
+        id: true,
+        entryType: true,
+        displayTitle: true,
+        normalizedTitle: true,
+        primarySlug: true,
+        status: true,
+        summaryMd: true,
+        summaryText: true,
+        editorialNotes: true,
+        publishedAt: true,
+      },
+    });
+
+    await tx.auditEvent.create({
+      data: {
+        actorUserId: actor.dbUserId,
+        action: 'ENTRY_ROLLBACK',
+        entityType: 'ENTRY',
+        entityId: entry.id,
+        before: JSON.parse(JSON.stringify(entry)),
+        after: JSON.parse(JSON.stringify(updated)),
+      },
+    });
+  });
+
+  redirect(`/admin/entries/${entryId}?rolledBack=1`);
+}
+
 async function getEntryIdForSense(senseId: string): Promise<string> {
   const prisma = getPrismaClient();
   const sense = await prisma.sense.findFirst({
@@ -401,4 +584,3 @@ async function getEntryIdForSense(senseId: string): Promise<string> {
   if (!sense) throw new Error('Sense not found');
   return sense.entryId;
 }
-
