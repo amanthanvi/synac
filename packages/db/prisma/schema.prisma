@@ -154,6 +154,7 @@ model Entry {
   variants        EntryVariant[]
   entryTags       EntryTag[]
   search          EntrySearch?
+  views           EntryView[]
   relationshipsFrom EntryRelationship[] @relation("relationships_from")
   relationshipsTo   EntryRelationship[] @relation("relationships_to")
 
@@ -176,6 +177,21 @@ model EntrySearch {
   @@index([entryType])
   @@index([normalizedTitle])
   @@map("entry_search")
+}
+
+model EntryView {
+  id          String   @id @default(uuid()) @db.Uuid
+  entryId     String   @map("entry_id") @db.Uuid
+  sessionHash String   @map("session_hash") @db.Text
+  firstSeenAt DateTime @default(now()) @map("first_seen_at")
+  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, sessionHash])
+  @@index([lastSeenAt])
+  @@index([entryId])
+  @@map("entry_views")
 }
 
 model EntrySlugHistory {

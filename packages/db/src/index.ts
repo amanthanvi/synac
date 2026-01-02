@@ -10,4 +10,5 @@ export * from './queries/relationships.js';
 export * from './queries/search.js';
 export * from './queries/sources.js';
 export * from './queries/tags.js';
+export * from './queries/trending.js';
 export * from './queries/users.js';

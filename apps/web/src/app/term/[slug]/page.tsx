@@ -10,6 +10,7 @@ import {
 
 import { PageHeader } from '@/components/PageHeader';
 import { Markdown } from '@/components/Markdown';
+import { ViewTracker } from '@/components/ViewTracker';
 import styles from '@/app/_styles/Entry.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -105,6 +106,7 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
 
   return (
     <>
+      <ViewTracker entryId={entry.id} />
       <PageHeader
         badge="Term"
         title={entry.displayTitle}
