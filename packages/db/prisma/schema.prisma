@@ -565,3 +565,18 @@ model AuditEvent {
   @@index([entityType, entityId, createdAt(sort: Desc)])
   @@map("audit_events")
 }
+
+model RateLimitBucket {
+  id          String   @id @default(uuid()) @db.Uuid
+  scope       String   @db.Text
+  key         String   @db.Text
+  windowStart DateTime @map("window_start")
+  count       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([scope, key, windowStart])
+  @@index([scope])
+  @@index([windowStart])
+  @@map("rate_limit_buckets")
+}

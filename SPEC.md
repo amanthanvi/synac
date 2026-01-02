@@ -1021,6 +1021,16 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   `ip_hash` (TEXT nullable) (privacy-aware; no raw IP by default)
 -   Index (`entity_type`, `entity_id`, `created_at DESC`)
 
+#### `rate_limit_buckets`
+
+-   `id` (PK)
+-   `scope` (TEXT)
+-   `key` (TEXT) (hashed session/user/IP; privacy-aware)
+-   `window_start` (TIMESTAMP)
+-   `count` (INT)
+-   `created_at`, `updated_at`
+-   UNIQUE (`scope`, `key`, `window_start`)
+
 #### `takedown_cases`
 
 -   `id` (PK)
