@@ -1,5 +1,5 @@
 import type { DbClientLike } from '../client.js';
-import type { EntryType, Prisma } from '../generated/prisma/client.js';
+import type { EntryType, Prisma } from '@prisma/client';
 
 export type EntryListItem = Prisma.EntryGetPayload<{
   select: {

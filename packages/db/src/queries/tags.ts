@@ -1,5 +1,5 @@
 import type { DbClientLike } from '../client.js';
-import type { EntryType, Prisma } from '../generated/prisma/client.js';
+import type { EntryType, Prisma } from '@prisma/client';
 
 export type TagListItem = Prisma.TagGetPayload<{
   select: { id: true; name: true; slug: true; description: true; updatedAt: true };

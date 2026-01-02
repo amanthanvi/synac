@@ -1,5 +1,5 @@
 import type { DbClientLike } from '../client.js';
-import type { Prisma, RoleName } from '../generated/prisma/client.js';
+import type { Prisma, RoleName } from '@prisma/client';
 
 export type UserWithRoles = Prisma.UserGetPayload<{
   include: { roles: { include: { role: true } } };

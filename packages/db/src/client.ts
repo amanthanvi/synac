@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { PrismaClient } from './generated/prisma/client.js';
-import type { Prisma } from './generated/prisma/client.js';
+import { PrismaClient } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 type GlobalForPrisma = typeof globalThis & {
   __synacPrisma?: PrismaClient;
