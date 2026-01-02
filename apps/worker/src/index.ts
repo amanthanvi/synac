@@ -1,7 +1,30 @@
-import { workerOk } from './worker.js';
+import { PgBoss } from 'pg-boss';
 
-if (!workerOk) {
-  throw new Error('workerOk should be true');
+import { runIngestRun } from './ingest/run.js';
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error('DATABASE_URL is required');
 }
 
-console.log('synac worker: boot (stub)');
+const boss = new PgBoss(databaseUrl);
+await boss.start();
+
+await boss.work<{ ingestRunId: string }>('ingest:run', async (job) => {
+  const ingestRunId = job.data?.ingestRunId;
+  if (!ingestRunId) throw new Error('ingestRunId is required');
+  await runIngestRun(ingestRunId);
+});
+
+console.log('synac worker: ready');
+
+async function shutdown() {
+  try {
+    await boss.stop();
+  } finally {
+    process.exit(0);
+  }
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
