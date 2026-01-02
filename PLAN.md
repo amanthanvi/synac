@@ -53,8 +53,9 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Publish quality gates: citations per sense (or Editorial + rationale)
 - [x] Audit events for entry/sense mutations + entry rollback (Admin-only)
 - [x] Admin audit log page + filters
-- [ ] Admin sources UI: create/edit/enable/disable + verify metadata
-- [ ] Admin API routes per §11 (entries, audit, sources, ingest)
+- [x] Admin sources UI: create/edit/enable/disable + verify metadata
+- [x] Admin API routes: audit + sources
+- [ ] Admin API routes: entries + ingest
 
 ## Phase 4 — Ingest system (FR-100..FR-111)
 
