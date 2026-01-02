@@ -114,6 +114,12 @@ enum ExtractionMethod {
   MANUAL
 }
 
+enum ContentMode {
+  QUOTED
+  SUMMARIZED
+  PARAPHRASED
+}
+
 enum AuthProvider {
   OIDC
   LOCAL
@@ -404,6 +410,7 @@ model FieldProvenance {
   entityId        String                  @map("entity_id") @db.Uuid
   fieldName       String                  @map("field_name") @db.Text
   citationId      String                  @map("citation_id") @db.Uuid
+  contentMode     ContentMode             @default(SUMMARIZED) @map("content_mode")
   extractionMethod ExtractionMethod       @map("extraction_method")
   extractorVersion String                 @map("extractor_version") @db.Text
   extractedAt     DateTime                @map("extracted_at")
@@ -442,9 +449,11 @@ model IngestItem {
   itemKey         String?     @map("item_key") @db.Text
   stage           IngestStage
   proposedChange  Json?       @map("proposed_change")
+  stageOutputs    Json?       @map("stage_outputs")
   diff            Json?       @map("diff")
   confidenceScore Float?      @map("confidence_score")
   licenseGate     LicenseGate @map("license_gate")
+  licenseGateReason String?   @map("license_gate_reason") @db.Text
   error           String?     @db.Text
 
   ingestRun      IngestRun      @relation(fields: [ingestRunId], references: [id], onDelete: Cascade)

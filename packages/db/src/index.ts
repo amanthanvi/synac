@@ -4,6 +4,7 @@ export {
   withTransaction,
 } from './client.js';
 export type { DbClientLike, DbTransactionClient } from './client.js';
+export type { Prisma } from '@prisma/client';
 
 export * from './queries/entries.js';
 export * from './queries/relationships.js';

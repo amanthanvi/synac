@@ -63,8 +63,8 @@ This is the living implementation tracker for `SPEC.md`.
 
 - [x] Source Registry (license/allowed_use/attribution required before ingest)
 - [x] SSRF-safe acquisition (allowlist, redirect policy, IP blocks, limits, timeouts)
-- [ ] Pipeline stages + persistence: extract → normalize → dedupe → enrich → validate
-- [ ] License gate PASS/WARN/FAIL enforcement
+- [x] Pipeline stages + persistence: extract → normalize → dedupe → enrich → validate
+- [x] License gate PASS/WARN/FAIL enforcement
 - [ ] Human review queue UI: diff, approve/edit/reject
 - [x] Initial source adapters: NIST, MITRE ATT&CK, OWASP
 - [ ] Takedown workflow: disable source, purge derived content, 410/301 behavior
@@ -81,3 +81,4 @@ This is the living implementation tracker for `SPEC.md`.
 
 - 2026-01-02: Added `tag_slug_history` to §9 (supports tag slug redirects/renames/merges).
 - 2026-01-02: Clarified stable sense fragment IDs (`#sense-<sense_id>`) and permanent redirects as 308.
+- 2026-01-02: Added ingest per-item `stage_outputs` and `license_gate_reason`, plus field provenance `content_mode`.
