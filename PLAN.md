@@ -66,7 +66,7 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Scheduling + incremental ingest (per-source cron + content-hash skip + force reprocess)
 - [x] Pipeline stages + persistence: extract → normalize → dedupe → enrich → validate
 - [x] License gate PASS/WARN/FAIL enforcement
-- [ ] Human review queue UI: diff, approve/edit/reject
+- [x] Human review queue UI: diff, approve/edit/reject
 - [x] Initial source adapters: NIST, MITRE ATT&CK, OWASP
 - [ ] Takedown workflow: disable source, purge derived content, 410/301 behavior
 
