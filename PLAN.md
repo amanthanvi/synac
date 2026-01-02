@@ -56,12 +56,12 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Admin sources UI: create/edit/enable/disable + verify metadata
 - [x] Admin API routes: audit + sources
 - [x] Admin API routes: entries
-- [ ] Admin API routes: ingest
+- [x] Admin API routes: ingest
 
 ## Phase 4 — Ingest system (FR-100..FR-111)
 
-- [ ] Source Registry (license/allowed_use/attribution required before ingest)
-- [ ] SSRF-safe acquisition (allowlist, redirect policy, IP blocks, limits, timeouts)
+- [x] Source Registry (license/allowed_use/attribution required before ingest)
+- [x] SSRF-safe acquisition (allowlist, redirect policy, IP blocks, limits, timeouts)
 - [ ] Pipeline stages + persistence: extract → normalize → dedupe → enrich → validate
 - [ ] License gate PASS/WARN/FAIL enforcement
 - [ ] Human review queue UI: diff, approve/edit/reject
