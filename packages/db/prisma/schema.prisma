@@ -338,6 +338,7 @@ model Source {
   name                   String            @db.Text
   sourceSlug             String            @unique @map("source_slug") @db.Text
   baseUrl                String            @map("base_url") @db.Text
+  cronSchedule           String?           @map("cron_schedule") @db.Text
   licenseType            LicenseType       @map("license_type")
   licenseNotes           String?           @map("license_notes") @db.Text
   allowedUse             String            @map("allowed_use") @db.Text

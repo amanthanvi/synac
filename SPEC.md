@@ -477,7 +477,7 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 **Acceptance Criteria**
 
 -   Admin can trigger ingest for a source or all sources from admin UI and API.
--   Cron schedules are configurable per source (default daily off-peak).
+-   Cron schedules are configurable per source (default daily off-peak) and stored on the Source record (e.g., `sources.cron_schedule`, UTC).
 -   Ingest supports incremental updates using ETag/Last-Modified or content hashing; full reprocessing can be triggered.
 
 ---
