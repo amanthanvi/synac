@@ -1,19 +1,13 @@
-import type { PrismaClient } from '@synac/db';
+import type { Prisma, PrismaClient } from '@synac/db';
 
 import { safeFetch } from '../net/safeFetch.js';
+import { evaluateLicenseGate } from './licenseGate.js';
 import {
   decodeHtmlEntities,
   extractFirstInnerHtmlByClass,
   extractHrefPaths,
   stripHtmlTags,
 } from './html.js';
-
-function licenseGateFor(licenseType: string): 'PASS' | 'WARN' | 'FAIL' {
-  const v = licenseType.toUpperCase();
-  if (v === 'PUBLIC_DOMAIN' || v === 'CC0_1_0' || v.startsWith('CC_BY')) return 'PASS';
-  if (v === 'PROPRIETARY') return 'FAIL';
-  return 'WARN';
-}
 
 function normalizeMaxItems(value: number): number {
   if (!Number.isFinite(value)) return 100;
@@ -22,6 +16,10 @@ function normalizeMaxItems(value: number): number {
 
 function normalizeText(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+function normalizeTitle(value: string): string {
+  return normalizeText(value).toLowerCase();
 }
 
 function htmlToText(value: string): string {
@@ -41,7 +39,7 @@ export async function ingestOwaspVulnerabilities(
   prisma: PrismaClient,
   input: {
     ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string };
+    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
     maxItems: number;
   },
 ): Promise<{ itemsCreated: number }> {
@@ -50,7 +48,10 @@ export async function ingestOwaspVulnerabilities(
   const allowedHosts = [base.hostname];
 
   const maxItems = normalizeMaxItems(input.maxItems);
-  const licenseGate = licenseGateFor(input.source.licenseType);
+  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
+    licenseType: input.source.licenseType,
+    lastVerifiedAt: input.source.lastVerifiedAt,
+  });
 
   const indexUrl = new URL('/www-community/vulnerabilities', origin).toString();
   const indexRes = await safeFetch({
@@ -108,6 +109,20 @@ export async function ingestOwaspVulnerabilities(
     const overview = extractOverviewParagraph(html);
     if (!overview) continue;
 
+    const normalizedTitle = normalizeTitle(title);
+    const extracted = {
+      title,
+      overviewMd: overview,
+      fetchedAt: fetchedAt.toISOString(),
+      url: pageUrl,
+      canonicalUrl: res.url,
+      contentType: res.contentType,
+      ...(res.etag ? { etag: res.etag } : {}),
+      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
+      sha256: res.sha256,
+      sourceLocator: { headingId: 'overview' },
+    } satisfies Prisma.InputJsonObject;
+
     let sourceDocumentId: string;
     try {
       const created = await prisma.sourceDocument.create({
@@ -136,7 +151,7 @@ export async function ingestOwaspVulnerabilities(
       sourceDocumentId = existing.id;
     }
 
-    const proposedChange = {
+    const createEntryProposedChange = {
       kind: 'CREATE_ENTRY',
       entryType: 'TERM',
       displayTitle: title,
@@ -144,6 +159,7 @@ export async function ingestOwaspVulnerabilities(
       senses: [
         {
           definitionMd: overview,
+          contentMode: 'QUOTED',
           extractionMethod: 'HTML',
           extractorVersion: 'synac-worker/0.0.0',
           sourceLocator: { headingId: 'overview' },
@@ -151,15 +167,79 @@ export async function ingestOwaspVulnerabilities(
       ],
     };
 
-    await prisma.ingestItem.create({
+    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
+
+    const ingestItem = await prisma.ingestItem.create({
       data: {
         ingestRunId: input.ingestRunId,
         sourceDocumentId,
         itemKey: pageUrl,
-        stage: 'VALIDATED',
-        proposedChange,
+        stage: 'EXTRACTED',
+        stageOutputs,
         confidenceScore: 0.85,
         licenseGate,
+        licenseGateReason,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'NORMALIZED',
+        proposedChange: createEntryProposedChange,
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    const existingEntry = await prisma.entry.findFirst({
+      where: { entryType: 'TERM', normalizedTitle, deletedAt: null },
+      select: { id: true, displayTitle: true },
+    });
+
+    const proposedChange = existingEntry
+      ? {
+          kind: 'ADD_SENSES',
+          entryId: existingEntry.id,
+          entryType: 'TERM',
+          displayTitle: existingEntry.displayTitle,
+          senses: createEntryProposedChange.senses,
+        }
+      : createEntryProposedChange;
+
+    stageOutputs.deduped = existingEntry
+      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
+      : { action: 'CREATE_ENTRY' };
+
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'DEDUPED',
+        proposedChange,
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.enriched = {};
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'ENRICHED',
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.validated = { ok: true };
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'VALIDATED',
+        error: null,
+        stageOutputs,
       },
       select: { id: true },
     });
@@ -169,4 +249,3 @@ export async function ingestOwaspVulnerabilities(
 
   return { itemsCreated };
 }
-

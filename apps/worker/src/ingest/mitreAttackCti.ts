@@ -1,6 +1,7 @@
-import type { PrismaClient } from '@synac/db';
+import type { Prisma, PrismaClient } from '@synac/db';
 
 import { safeFetch } from '../net/safeFetch.js';
+import { evaluateLicenseGate } from './licenseGate.js';
 
 type StixAttackPattern = {
   type?: string;
@@ -16,16 +17,16 @@ type StixBundle = {
   objects?: unknown[];
 };
 
-function licenseGateFor(licenseType: string): 'PASS' | 'WARN' | 'FAIL' {
-  const v = licenseType.toUpperCase();
-  if (v === 'PUBLIC_DOMAIN' || v === 'CC0_1_0' || v.startsWith('CC_BY')) return 'PASS';
-  if (v === 'PROPRIETARY') return 'FAIL';
-  return 'WARN';
-}
-
 function normalizeMaxItems(value: number): number {
   if (!Number.isFinite(value)) return 100;
   return Math.max(1, Math.min(1000, Math.floor(value)));
+}
+
+function normalizeTitle(value: string): string {
+  return value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
 }
 
 function getAttackExternalId(pattern: StixAttackPattern): string | null {
@@ -78,7 +79,7 @@ export async function ingestMitreAttackCti(
   prisma: PrismaClient,
   input: {
     ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string };
+    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
     maxItems: number;
   },
 ): Promise<{ itemsCreated: number }> {
@@ -86,7 +87,10 @@ export async function ingestMitreAttackCti(
   const allowedHosts = [url.hostname];
 
   const maxItems = normalizeMaxItems(input.maxItems);
-  const licenseGate = licenseGateFor(input.source.licenseType);
+  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
+    licenseType: input.source.licenseType,
+    lastVerifiedAt: input.source.lastVerifiedAt,
+  });
   const fetchedAt = new Date();
 
   const res = await safeFetch({
@@ -144,14 +148,33 @@ export async function ingestMitreAttackCti(
 
   let itemsCreated = 0;
   for (const p of patterns.slice(0, maxItems)) {
-    const proposedChange = {
+    const title = p.name;
+    const normalizedTitle = normalizeTitle(title);
+    const extracted = {
+      title,
+      descriptionMd: p.description.trim(),
+      fetchedAt: fetchedAt.toISOString(),
+      url: url.toString(),
+      canonicalUrl: res.url,
+      contentType: res.contentType,
+      ...(res.etag ? { etag: res.etag } : {}),
+      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
+      sha256: res.sha256,
+      sourceLocator: {
+        stixId: p.stixId,
+        externalId: p.externalId,
+      },
+    } satisfies Prisma.InputJsonObject;
+
+    const createEntryProposedChange = {
       kind: 'CREATE_ENTRY',
       entryType: 'TERM',
-      displayTitle: p.name,
+      displayTitle: title,
       summaryMd: summarize(p.description),
       senses: [
         {
           definitionMd: p.description.trim(),
+          contentMode: 'QUOTED',
           extractionMethod: 'API',
           extractorVersion: 'synac-worker/0.0.0',
           sourceLocator: {
@@ -162,15 +185,79 @@ export async function ingestMitreAttackCti(
       ],
     };
 
-    await prisma.ingestItem.create({
+    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
+
+    const ingestItem = await prisma.ingestItem.create({
       data: {
         ingestRunId: input.ingestRunId,
         sourceDocumentId,
         itemKey: p.externalId,
-        stage: 'VALIDATED',
-        proposedChange,
+        stage: 'EXTRACTED',
+        stageOutputs,
         confidenceScore: 0.9,
         licenseGate,
+        licenseGateReason,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'NORMALIZED',
+        proposedChange: createEntryProposedChange,
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    const existingEntry = await prisma.entry.findFirst({
+      where: { entryType: 'TERM', normalizedTitle, deletedAt: null },
+      select: { id: true, displayTitle: true },
+    });
+
+    const proposedChange = existingEntry
+      ? {
+          kind: 'ADD_SENSES',
+          entryId: existingEntry.id,
+          entryType: 'TERM',
+          displayTitle: existingEntry.displayTitle,
+          senses: createEntryProposedChange.senses,
+        }
+      : createEntryProposedChange;
+
+    stageOutputs.deduped = existingEntry
+      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
+      : { action: 'CREATE_ENTRY' };
+
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'DEDUPED',
+        proposedChange,
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.enriched = {};
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'ENRICHED',
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.validated = { ok: true };
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'VALIDATED',
+        error: null,
+        stageOutputs,
       },
       select: { id: true },
     });
@@ -180,4 +267,3 @@ export async function ingestMitreAttackCti(
 
   return { itemsCreated };
 }
-

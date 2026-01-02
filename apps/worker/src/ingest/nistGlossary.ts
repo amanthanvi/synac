@@ -1,25 +1,26 @@
-import type { PrismaClient } from '@synac/db';
+import type { Prisma, PrismaClient } from '@synac/db';
 
 import { safeFetch } from '../net/safeFetch.js';
+import { evaluateLicenseGate } from './licenseGate.js';
 import { extractAllByIdPrefix, extractFirstById, extractHrefPaths } from './html.js';
-
-function licenseGateFor(licenseType: string): 'PASS' | 'WARN' | 'FAIL' {
-  const v = licenseType.toUpperCase();
-  if (v === 'PUBLIC_DOMAIN' || v === 'CC0_1_0' || v.startsWith('CC_BY')) return 'PASS';
-  if (v === 'PROPRIETARY') return 'FAIL';
-  return 'WARN';
-}
 
 function normalizeMaxItems(value: number): number {
   if (!Number.isFinite(value)) return 100;
   return Math.max(1, Math.min(1000, Math.floor(value)));
 }
 
+function normalizeTitle(value: string): string {
+  return value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
 export async function ingestNistGlossary(
   prisma: PrismaClient,
   input: {
     ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string };
+    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
     maxItems: number;
   },
 ): Promise<{ itemsCreated: number }> {
@@ -66,7 +67,10 @@ export async function ingestNistGlossary(
   }
 
   let itemsCreated = 0;
-  const licenseGate = licenseGateFor(input.source.licenseType);
+  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
+    licenseType: input.source.licenseType,
+    lastVerifiedAt: input.source.lastVerifiedAt,
+  });
 
   for (const termUrl of termUrls.slice(0, maxItems)) {
     const fetchedAt = new Date();
@@ -94,7 +98,21 @@ export async function ingestNistGlossary(
 
     if (!title || !definition) continue;
 
-    const proposedChange = {
+    const normalizedTitle = normalizeTitle(title);
+    const extracted = {
+      title,
+      definitionMd: definition,
+      fetchedAt: fetchedAt.toISOString(),
+      url: termUrl,
+      canonicalUrl: res.url,
+      contentType: res.contentType,
+      ...(res.etag ? { etag: res.etag } : {}),
+      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
+      sha256: res.sha256,
+      sourceLocator: { selector: '#term-def-text-0' },
+    } satisfies Prisma.InputJsonObject;
+
+    const createEntryProposedChange = {
       kind: 'CREATE_ENTRY',
       entryType: 'TERM',
       displayTitle: title,
@@ -102,6 +120,7 @@ export async function ingestNistGlossary(
       senses: [
         {
           definitionMd: definition,
+          contentMode: 'QUOTED',
           extractionMethod: 'HTML',
           extractorVersion: 'synac-worker/0.0.0',
           sourceLocator: { selector: '#term-def-text-0' },
@@ -137,15 +156,97 @@ export async function ingestNistGlossary(
       sourceDocumentId = existing.id;
     }
 
-    await prisma.ingestItem.create({
+    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
+
+    const ingestItem = await prisma.ingestItem.create({
       data: {
         ingestRunId: input.ingestRunId,
         sourceDocumentId,
         itemKey: termUrl,
-        stage: 'VALIDATED',
-        proposedChange,
+        stage: 'EXTRACTED',
+        stageOutputs,
         confidenceScore: 0.9,
         licenseGate,
+        licenseGateReason,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'NORMALIZED',
+        proposedChange: createEntryProposedChange,
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    const existingEntry = await prisma.entry.findFirst({
+      where: { entryType: 'TERM', normalizedTitle, deletedAt: null },
+      select: { id: true, displayTitle: true },
+    });
+
+    const proposedChange = existingEntry
+      ? {
+          kind: 'ADD_SENSES',
+          entryId: existingEntry.id,
+          entryType: 'TERM',
+          displayTitle: existingEntry.displayTitle,
+          senses: createEntryProposedChange.senses,
+        }
+      : createEntryProposedChange;
+
+    stageOutputs.deduped = existingEntry
+      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
+      : { action: 'CREATE_ENTRY' };
+
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'DEDUPED',
+        proposedChange,
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    stageOutputs.enriched = {};
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'ENRICHED',
+        stageOutputs,
+      },
+      select: { id: true },
+    });
+
+    const hasDefinition = Array.isArray((proposedChange as Record<string, unknown>).senses)
+      ? (proposedChange as { senses: Array<{ definitionMd: string }> }).senses.some((s) => Boolean(s.definitionMd?.trim()))
+      : false;
+
+    if (!hasDefinition) {
+      stageOutputs.validated = { ok: false, error: 'Missing sense definition' };
+      await prisma.ingestItem.update({
+        where: { id: ingestItem.id },
+        data: {
+          stage: 'FAILED',
+          error: 'Missing sense definition',
+          stageOutputs,
+        },
+        select: { id: true },
+      });
+      continue;
+    }
+
+    stageOutputs.validated = { ok: true };
+    await prisma.ingestItem.update({
+      where: { id: ingestItem.id },
+      data: {
+        stage: 'VALIDATED',
+        error: null,
+        stageOutputs,
       },
       select: { id: true },
     });
@@ -155,4 +256,3 @@ export async function ingestNistGlossary(
 
   return { itemsCreated };
 }
-

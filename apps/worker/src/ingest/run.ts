@@ -22,7 +22,7 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
       status: true,
       startedAt: true,
       configSnapshot: true,
-      source: { select: { id: true, baseUrl: true, licenseType: true } },
+      source: { select: { id: true, baseUrl: true, licenseType: true, lastVerifiedAt: true } },
     },
   });
 
@@ -44,21 +44,36 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
     if (baseUrl.includes('csrc.nist.gov')) {
       const res = await ingestNistGlossary(prisma, {
         ingestRunId: run.id,
-        source: { id: run.source.id, baseUrl: run.source.baseUrl, licenseType: run.source.licenseType },
+        source: {
+          id: run.source.id,
+          baseUrl: run.source.baseUrl,
+          licenseType: run.source.licenseType,
+          lastVerifiedAt: run.source.lastVerifiedAt,
+        },
         maxItems,
       });
       itemsCreated = res.itemsCreated;
     } else if (host.endsWith('owasp.org')) {
       const res = await ingestOwaspVulnerabilities(prisma, {
         ingestRunId: run.id,
-        source: { id: run.source.id, baseUrl: run.source.baseUrl, licenseType: run.source.licenseType },
+        source: {
+          id: run.source.id,
+          baseUrl: run.source.baseUrl,
+          licenseType: run.source.licenseType,
+          lastVerifiedAt: run.source.lastVerifiedAt,
+        },
         maxItems,
       });
       itemsCreated = res.itemsCreated;
     } else if (host === 'raw.githubusercontent.com') {
       const res = await ingestMitreAttackCti(prisma, {
         ingestRunId: run.id,
-        source: { id: run.source.id, baseUrl: run.source.baseUrl, licenseType: run.source.licenseType },
+        source: {
+          id: run.source.id,
+          baseUrl: run.source.baseUrl,
+          licenseType: run.source.licenseType,
+          lastVerifiedAt: run.source.lastVerifiedAt,
+        },
         maxItems,
       });
       itemsCreated = res.itemsCreated;
