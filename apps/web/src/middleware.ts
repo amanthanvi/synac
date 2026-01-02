@@ -6,6 +6,79 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 const SESSION_COOKIE = 'synac_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
+function generateNonce(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
+function buildContentSecurityPolicy(nonce: string): string {
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  const clerk = ['https://*.clerk.com', 'https://*.clerk.dev'];
+
+  const scriptSrc = ["'self'", `'nonce-${nonce}'`, ...(isDev ? ["'unsafe-eval'"] : []), ...clerk].join(' ');
+  const connectSrc = ["'self'", ...(isDev ? ['ws:', 'wss:'] : []), ...clerk].join(' ');
+  const frameSrc = ["'self'", ...clerk].join(' ');
+
+  const directives = [
+    "default-src 'self'",
+    `script-src ${scriptSrc}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self' data: https:",
+    `connect-src ${connectSrc}`,
+    `frame-src ${frameSrc}`,
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'none'",
+    ...(isDev ? [] : ['upgrade-insecure-requests']),
+  ];
+
+  return directives.join('; ');
+}
+
+function setSecurityHeaders(request: NextRequest, response: NextResponse): NextResponse {
+  const existingRequestId = request.headers.get('x-request-id');
+  const requestId = existingRequestId?.trim() ? existingRequestId.trim() : crypto.randomUUID();
+
+  response.headers.set('x-request-id', requestId);
+
+  response.headers.set('x-content-type-options', 'nosniff');
+  response.headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'permissions-policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+  );
+
+  response.headers.set('x-frame-options', 'DENY');
+
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('strict-transport-security', 'max-age=15552000; includeSubDomains');
+  }
+
+  const nonce = generateNonce();
+  const csp = buildContentSecurityPolicy(nonce);
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('content-security-policy', csp);
+  requestHeaders.set('x-request-id', requestId);
+
+  const next = NextResponse.next({ request: { headers: requestHeaders } });
+  next.headers.set('content-security-policy', csp);
+  for (const [key, value] of response.headers) {
+    next.headers.set(key, value);
+  }
+
+  for (const cookie of response.cookies.getAll()) {
+    next.cookies.set(cookie);
+  }
+
+  return next;
+}
+
 const isClerkConfigured = Boolean(
   process.env.CLERK_SECRET_KEY && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
 );
@@ -43,12 +116,14 @@ function maybeSetSessionCookie(request: NextRequest, response: NextResponse): Ne
 }
 
 const middlewareWithoutAuth = (request: NextRequest) => {
-  return maybeSetSessionCookie(request, NextResponse.next());
+  const withCookies = maybeSetSessionCookie(request, NextResponse.next());
+  return setSecurityHeaders(request, withCookies);
 };
 
 const middlewareWithAuth = clerkMiddleware((auth, request) => {
   if (isAdminRoute(request)) auth.protect();
-  return maybeSetSessionCookie(request, NextResponse.next());
+  const withCookies = maybeSetSessionCookie(request, NextResponse.next());
+  return setSecurityHeaders(request, withCookies);
 });
 
 export default isClerkConfigured ? middlewareWithAuth : middlewareWithoutAuth;
