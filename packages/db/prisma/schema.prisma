@@ -153,6 +153,7 @@ model Entry {
   slugHistory     EntrySlugHistory[]
   variants        EntryVariant[]
   entryTags       EntryTag[]
+  search          EntrySearch?
   relationshipsFrom EntryRelationship[] @relation("relationships_from")
   relationshipsTo   EntryRelationship[] @relation("relationships_to")
 
@@ -160,6 +161,21 @@ model Entry {
   @@index([entryType, normalizedTitle])
   @@index([updatedAt])
   @@map("entries")
+}
+
+model EntrySearch {
+  entryId        String    @id @map("entry_id") @db.Uuid
+  entryType      EntryType @map("entry_type")
+  normalizedTitle String   @map("normalized_title") @db.Text
+  primarySlug    String    @map("primary_slug") @db.Text
+  searchDocument String    @map("search_document") @db.Text
+  updatedAt      DateTime  @default(now()) @map("updated_at")
+
+  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@index([entryType])
+  @@index([normalizedTitle])
+  @@map("entry_search")
 }
 
 model EntrySlugHistory {
