@@ -22,6 +22,7 @@ export async function ingestNistGlossary(
     ingestRunId: string;
     source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
     maxItems: number;
+    forceReprocess: boolean;
   },
 ): Promise<{ itemsCreated: number }> {
   const base = new URL(input.source.baseUrl);
@@ -129,6 +130,7 @@ export async function ingestNistGlossary(
     };
 
     let sourceDocumentId: string;
+    let sourceDocumentCreated = false;
     try {
       const created = await prisma.sourceDocument.create({
         data: {
@@ -147,6 +149,7 @@ export async function ingestNistGlossary(
         select: { id: true },
       });
       sourceDocumentId = created.id;
+      sourceDocumentCreated = true;
     } catch (err) {
       const existing = await prisma.sourceDocument.findFirst({
         where: { sourceId: input.source.id, url: termUrl, contentSha256: res.sha256 },
@@ -154,6 +157,14 @@ export async function ingestNistGlossary(
       });
       if (!existing) throw err;
       sourceDocumentId = existing.id;
+    }
+
+    if (!sourceDocumentCreated && !input.forceReprocess) {
+      const prior = await prisma.ingestItem.findFirst({
+        where: { sourceDocumentId, stage: { not: 'FAILED' } },
+        select: { id: true },
+      });
+      if (prior) continue;
     }
 
     const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };

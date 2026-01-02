@@ -12,6 +12,14 @@ function parseMaxItems(configSnapshot: unknown): number {
   return Math.max(1, Math.min(1000, Math.floor(n)));
 }
 
+function parseForceReprocess(configSnapshot: unknown): boolean {
+  if (!configSnapshot || typeof configSnapshot !== 'object') return false;
+  const v = (configSnapshot as Record<string, unknown>).forceReprocess;
+  if (typeof v === 'boolean') return v;
+  const s = typeof v === 'string' ? v : String(v ?? '');
+  return s.trim().toLowerCase() === 'true' || s.trim() === '1';
+}
+
 export async function runIngestRun(ingestRunId: string): Promise<void> {
   const prisma = getPrismaClient();
 
@@ -35,6 +43,7 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
   }
 
   const maxItems = parseMaxItems(run.configSnapshot);
+  const forceReprocess = parseForceReprocess(run.configSnapshot);
 
   try {
     const baseUrl = run.source.baseUrl.toLowerCase();
@@ -51,6 +60,7 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
           lastVerifiedAt: run.source.lastVerifiedAt,
         },
         maxItems,
+        forceReprocess,
       });
       itemsCreated = res.itemsCreated;
     } else if (host.endsWith('owasp.org')) {
@@ -63,6 +73,7 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
           lastVerifiedAt: run.source.lastVerifiedAt,
         },
         maxItems,
+        forceReprocess,
       });
       itemsCreated = res.itemsCreated;
     } else if (host === 'raw.githubusercontent.com') {
@@ -75,6 +86,7 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
           lastVerifiedAt: run.source.lastVerifiedAt,
         },
         maxItems,
+        forceReprocess,
       });
       itemsCreated = res.itemsCreated;
     } else {

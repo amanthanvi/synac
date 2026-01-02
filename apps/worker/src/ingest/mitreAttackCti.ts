@@ -81,6 +81,7 @@ export async function ingestMitreAttackCti(
     ingestRunId: string;
     source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
     maxItems: number;
+    forceReprocess: boolean;
   },
 ): Promise<{ itemsCreated: number }> {
   const url = new URL(input.source.baseUrl);
@@ -119,6 +120,7 @@ export async function ingestMitreAttackCti(
   const patterns = getAttackPatterns(bundle);
 
   let sourceDocumentId: string;
+  let sourceDocumentCreated = false;
   try {
     const created = await prisma.sourceDocument.create({
       data: {
@@ -137,6 +139,7 @@ export async function ingestMitreAttackCti(
       select: { id: true },
     });
     sourceDocumentId = created.id;
+    sourceDocumentCreated = true;
   } catch (err) {
     const existing = await prisma.sourceDocument.findFirst({
       where: { sourceId: input.source.id, url: url.toString(), contentSha256: res.sha256 },
@@ -144,6 +147,10 @@ export async function ingestMitreAttackCti(
     });
     if (!existing) throw err;
     sourceDocumentId = existing.id;
+  }
+
+  if (!sourceDocumentCreated && !input.forceReprocess) {
+    return { itemsCreated: 0 };
   }
 
   let itemsCreated = 0;
