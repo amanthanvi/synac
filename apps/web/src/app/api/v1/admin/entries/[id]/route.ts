@@ -11,11 +11,13 @@ function getString(body: Record<string, unknown>, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-export async function PATCH(request: Request, context: { params: { id: string } }) {
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
+
+  const { id: entryId } = await context.params;
 
   const body = (await request.json()) as unknown;
   if (!body || typeof body !== 'object') {
@@ -23,7 +25,6 @@ export async function PATCH(request: Request, context: { params: { id: string } 
   }
 
   const data = body as Record<string, unknown>;
-  const entryId = context.params.id;
 
   await updateEntry({
     actorUserId: actor.dbUserId,
@@ -36,4 +37,3 @@ export async function PATCH(request: Request, context: { params: { id: string } 
 
   return NextResponse.json({ ok: true });
 }
-

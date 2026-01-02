@@ -6,11 +6,13 @@ import { rejectIngestItem } from '@/lib/adminIngest';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: { id: string } }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
+
+  const { id: ingestItemId } = await context.params;
 
   const body = (await request.json()) as unknown;
   if (!body || typeof body !== 'object') {
@@ -20,10 +22,9 @@ export async function POST(request: Request, context: { params: { id: string } }
   const reason = (body as Record<string, unknown>).reason;
   await rejectIngestItem({
     actorUserId: actor.dbUserId,
-    ingestItemId: context.params.id,
+    ingestItemId,
     reason: typeof reason === 'string' ? reason : '',
   });
 
   return NextResponse.json({ ok: true });
 }
-

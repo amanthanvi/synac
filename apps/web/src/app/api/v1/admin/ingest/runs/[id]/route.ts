@@ -7,15 +7,17 @@ import { requireAdminActor } from '@/lib/admin';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(_request: Request, context: { params: { id: string } }) {
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
+  const { id } = await context.params;
+
   const prisma = getPrismaClient();
   const run = await prisma.ingestRun.findFirst({
-    where: { id: context.params.id },
+    where: { id },
     select: {
       id: true,
       status: true,
@@ -47,4 +49,3 @@ export async function GET(_request: Request, context: { params: { id: string } }
 
   return NextResponse.json({ run });
 }
-

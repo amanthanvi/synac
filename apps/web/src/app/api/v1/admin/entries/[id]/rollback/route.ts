@@ -6,11 +6,13 @@ import { rollbackEntryToAuditEvent } from '@/lib/adminEntryRollback';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: { id: string } }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
+
+  const { id: entryId } = await context.params;
 
   const url = new URL(request.url);
   const revision = url.searchParams.get('revision') ?? url.searchParams.get('auditEventId');
@@ -33,10 +35,9 @@ export async function POST(request: Request, context: { params: { id: string } }
 
   await rollbackEntryToAuditEvent({
     actorUserId: actor.dbUserId,
-    entryId: context.params.id,
+    entryId,
     auditEventId,
   });
 
   return NextResponse.json({ ok: true });
 }
-

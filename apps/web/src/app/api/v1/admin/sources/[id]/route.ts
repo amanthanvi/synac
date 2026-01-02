@@ -11,11 +11,13 @@ function getString(body: Record<string, unknown>, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
-export async function PATCH(request: Request, context: { params: { id: string } }) {
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
+
+  const { id: sourceId } = await context.params;
 
   const body = (await request.json()) as unknown;
   if (!body || typeof body !== 'object') {
@@ -23,7 +25,6 @@ export async function PATCH(request: Request, context: { params: { id: string } 
   }
 
   const data = body as Record<string, unknown>;
-  const sourceId = context.params.id;
 
   await updateSource({
     actorUserId: actor.dbUserId,
@@ -46,4 +47,3 @@ export async function PATCH(request: Request, context: { params: { id: string } 
 
   return NextResponse.json({ ok: true });
 }
-
