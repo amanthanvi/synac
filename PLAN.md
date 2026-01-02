@@ -25,7 +25,7 @@ This is the living implementation tracker for `SPEC.md`.
 
 - [x] Create monorepo structure (`apps/*`, `packages/*`, `docs/*`)
 - [x] Add root tooling: TypeScript, lint/format, tests
-- [ ] Add CI
+- [x] Add CI
 - [x] Add `README.md`, `LICENSE`, `CONTRIBUTING.md`
 - [x] Establish env conventions: `.env.example`, required vars
 
@@ -34,7 +34,7 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Implement Prisma schema for §9 tables + enums
 - [x] Enable Postgres extensions (CITEXT, pg_trgm)
 - [x] Add seed: roles + initial admin bootstrap (email allowlist-based)
-- [ ] Add query layer + transactions (`packages/db`)
+- [x] Add query layer + transactions (`packages/db`)
 
 ## Phase 2 — Public web (FR-001..FR-011)
 
