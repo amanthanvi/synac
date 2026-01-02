@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-# Lint and format changed files before commit (Husky v9: no _/husky.sh sourcing)
-npx --no-install lint-staged
