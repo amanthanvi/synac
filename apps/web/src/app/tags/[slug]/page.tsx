@@ -4,6 +4,7 @@ import { permanentRedirect } from 'next/navigation';
 import { getPrismaClient, listPublishedEntriesForTag, resolveTagBySlug } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { Pagination } from '@/components/Pagination';
 
 import browseStyles from '../../_styles/Browse.module.css';
 import tagStyles from '../../_styles/Tags.module.css';
@@ -28,6 +29,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   const entryType = parseEntryType(sp.type);
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
+  const pageSize = 50;
 
   const prisma = getPrismaClient();
   const resolved = await resolveTagBySlug(prisma, { slug });
@@ -51,8 +53,20 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     tagId: resolved.tag.id,
     entryType,
     page,
-    pageSize: 50,
+    pageSize,
   });
+
+  const baseHref = `/tags/${resolved.tag.slug}${
+    entryType ? `?type=${encodeURIComponent(entryType)}` : ''
+  }`;
+  const prevHref =
+    page > 1
+      ? `${baseHref}${entryType ? '&' : '?'}page=${page - 1}`
+      : undefined;
+  const nextHref =
+    entries.length === pageSize
+      ? `${baseHref}${entryType ? '&' : '?'}page=${page + 1}`
+      : undefined;
 
   return (
     <>
@@ -86,32 +100,34 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       {entries.length === 0 ? (
         <div className={browseStyles.empty}>No published entries yet for this tag.</div>
       ) : (
-        <ol className={browseStyles.list}>
-          {entries.map((entry) => (
-            <li key={entry.id} className={browseStyles.item}>
-              <div className={browseStyles.itemTitleRow}>
-                <Link
-                  className={browseStyles.itemTitle}
-                  href={
-                    entry.entryType === 'TERM'
-                      ? `/term/${entry.primarySlug}`
-                      : `/acronym/${entry.primarySlug}`
-                  }
-                >
-                  {entry.displayTitle}
-                </Link>
-                <span className={browseStyles.itemSlug}>
-                  /{entry.entryType === 'TERM' ? 'term' : 'acronym'}/{entry.primarySlug}
-                </span>
-              </div>
-              {entry.summaryText ? (
-                <p className={browseStyles.itemSummary}>{entry.summaryText}</p>
-              ) : null}
-            </li>
-          ))}
-        </ol>
+        <>
+          <ol className={browseStyles.list}>
+            {entries.map((entry) => (
+              <li key={entry.id} className={browseStyles.item}>
+                <div className={browseStyles.itemTitleRow}>
+                  <Link
+                    className={browseStyles.itemTitle}
+                    href={
+                      entry.entryType === 'TERM'
+                        ? `/term/${entry.primarySlug}`
+                        : `/acronym/${entry.primarySlug}`
+                    }
+                  >
+                    {entry.displayTitle}
+                  </Link>
+                  <span className={browseStyles.itemSlug}>
+                    /{entry.entryType === 'TERM' ? 'term' : 'acronym'}/{entry.primarySlug}
+                  </span>
+                </div>
+                {entry.summaryText ? (
+                  <p className={browseStyles.itemSummary}>{entry.summaryText}</p>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+          <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
+        </>
       )}
     </>
   );
 }
-

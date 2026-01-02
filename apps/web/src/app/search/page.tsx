@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getPrismaClient, searchPublishedEntries } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { Pagination } from '@/components/Pagination';
 import { SearchForm } from '@/components/SearchForm';
 
 import styles from '../_styles/Browse.module.css';
@@ -67,10 +68,11 @@ async function Results({
   entryType?: 'TERM' | 'ACRONYM';
 }) {
   const prisma = getPrismaClient();
+  const pageSize = 20;
   const results = await searchPublishedEntries(prisma, {
     query,
     page,
-    pageSize: 20,
+    pageSize,
     entryType,
   });
 
@@ -82,22 +84,36 @@ async function Results({
     );
   }
 
+  const baseHref = `/search?q=${encodeURIComponent(query)}${
+    entryType ? `&type=${encodeURIComponent(entryType)}` : ''
+  }`;
+  const prevHref = page > 1 ? `${baseHref}&page=${page - 1}` : undefined;
+  const nextHref =
+    results.length === pageSize ? `${baseHref}&page=${page + 1}` : undefined;
+
   return (
-    <ol className={styles.list} style={{ marginTop: 14 }}>
-      {results.map((r) => (
-        <li key={r.id} className={styles.item}>
-          <div className={styles.itemTitleRow}>
-            <Link
-              className={styles.itemTitle}
-              href={r.entryType === 'TERM' ? `/term/${r.primarySlug}` : `/acronym/${r.primarySlug}`}
-            >
-              {r.displayTitle}
-            </Link>
-            <span className={styles.itemSlug}>{r.entryType}</span>
-          </div>
-          {r.summaryText ? <p className={styles.itemSummary}>{r.summaryText}</p> : null}
-        </li>
-      ))}
-    </ol>
+    <>
+      <ol className={styles.list} style={{ marginTop: 14 }}>
+        {results.map((r) => (
+          <li key={r.id} className={styles.item}>
+            <div className={styles.itemTitleRow}>
+              <Link
+                className={styles.itemTitle}
+                href={
+                  r.entryType === 'TERM'
+                    ? `/term/${r.primarySlug}`
+                    : `/acronym/${r.primarySlug}`
+                }
+              >
+                {r.displayTitle}
+              </Link>
+              <span className={styles.itemSlug}>{r.entryType}</span>
+            </div>
+            {r.summaryText ? <p className={styles.itemSummary}>{r.summaryText}</p> : null}
+          </li>
+        ))}
+      </ol>
+      <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
+    </>
   );
 }
