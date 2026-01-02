@@ -36,6 +36,30 @@ function getAppliedEntryId(value: unknown): string | null {
   return typeof v.appliedEntryId === 'string' ? v.appliedEntryId : null;
 }
 
+function getMatchedEntryId(stageOutputs: unknown): string | null {
+  if (!stageOutputs || typeof stageOutputs !== 'object') return null;
+  const v = stageOutputs as Record<string, unknown>;
+  const deduped = v.deduped;
+  if (!deduped || typeof deduped !== 'object') return null;
+  const d = deduped as Record<string, unknown>;
+  return typeof d.matchedEntryId === 'string' ? d.matchedEntryId : null;
+}
+
+function getExtractedText(stageOutputs: unknown): string | null {
+  if (!stageOutputs || typeof stageOutputs !== 'object') return null;
+  const v = stageOutputs as Record<string, unknown>;
+  const extracted = v.extracted;
+  if (!extracted || typeof extracted !== 'object') return null;
+  const e = extracted as Record<string, unknown>;
+  const def = e.definitionMd;
+  if (typeof def === 'string' && def.trim()) return def.trim();
+  const overview = e.overviewMd;
+  if (typeof overview === 'string' && overview.trim()) return overview.trim();
+  const desc = e.descriptionMd;
+  if (typeof desc === 'string' && desc.trim()) return desc.trim();
+  return null;
+}
+
 export default async function AdminIngestRunPage({ params, searchParams }: AdminIngestRunPageProps) {
   const { id } = await params;
   const qp = searchParams ? await searchParams : {};
@@ -58,6 +82,7 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
           confidenceScore: true,
           error: true,
           proposedChange: true,
+          stageOutputs: true,
           diff: true,
           sourceDocument: { select: { url: true, canonicalUrl: true } },
         },
@@ -102,6 +127,8 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
             const title = getProposedTitle(item.proposedChange) ?? 'Untitled';
             const docUrl = item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
             const appliedEntryId = getAppliedEntryId(item.diff);
+            const matchedEntryId = getMatchedEntryId(item.stageOutputs);
+            const extractedText = getExtractedText(item.stageOutputs);
 
             return (
               <li key={item.id} style={{ marginBottom: 14 }}>
@@ -114,6 +141,7 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                   <a href={docUrl} target="_blank" rel="noopener noreferrer">
                     Source doc
                   </a>
+                  {matchedEntryId ? <Link href={`/admin/entries/${matchedEntryId}`}>Matched entry</Link> : null}
                   {appliedEntryId ? <Link href={`/admin/entries/${appliedEntryId}`}>Entry</Link> : null}
                 </div>
 
@@ -151,6 +179,22 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                   <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Proposed change JSON</summary>
                   <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
                     {JSON.stringify(item.proposedChange, null, 2)}
+                  </pre>
+                </details>
+
+                {extractedText ? (
+                  <details style={{ marginTop: 8 }}>
+                    <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Extracted text</summary>
+                    <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                      {extractedText}
+                    </pre>
+                  </details>
+                ) : null}
+
+                <details style={{ marginTop: 8 }}>
+                  <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Stage outputs JSON</summary>
+                  <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                    {JSON.stringify(item.stageOutputs, null, 2)}
                   </pre>
                 </details>
               </li>

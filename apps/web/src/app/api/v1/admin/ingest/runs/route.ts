@@ -18,6 +18,13 @@ function getNumber(body: Record<string, unknown>, key: string): number {
   return typeof value === 'number' ? value : Number(value);
 }
 
+function getBoolean(body: Record<string, unknown>, key: string): boolean {
+  const value = body[key];
+  if (typeof value === 'boolean') return value;
+  const v = typeof value === 'string' ? value : String(value ?? '');
+  return v.trim().toLowerCase() === 'true' || v.trim() === '1';
+}
+
 export async function GET() {
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
@@ -64,6 +71,7 @@ export async function POST(request: Request) {
   const data = body as Record<string, unknown>;
   const sourceId = getString(data, 'sourceId');
   const maxItems = getNumber(data, 'maxItems') || 100;
+  const forceReprocess = getBoolean(data, 'forceReprocess');
 
   if (!sourceId || sourceId.toUpperCase() === 'ALL') {
     const prisma = getPrismaClient();
@@ -75,12 +83,13 @@ export async function POST(request: Request) {
     const { ingestRunIds } = await createIngestRunsForAllSources({
       actorUserId: actor.dbUserId,
       maxItems,
+      forceReprocess,
     });
 
     return NextResponse.json({ ingestRunIds });
   }
 
-  const { ingestRunId } = await createIngestRun({ actorUserId: actor.dbUserId, sourceId, maxItems });
+  const { ingestRunId } = await createIngestRun({ actorUserId: actor.dbUserId, sourceId, maxItems, forceReprocess });
 
   return NextResponse.json({ ingestRunId });
 }

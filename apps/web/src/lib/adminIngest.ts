@@ -16,6 +16,7 @@ export async function createIngestRun(input: {
   actorUserId: string;
   sourceId: string;
   maxItems: number;
+  forceReprocess: boolean;
 }): Promise<{ ingestRunId: string }> {
   const prisma = getPrismaClient();
 
@@ -36,6 +37,7 @@ export async function createIngestRun(input: {
   if (!source.lastVerifiedAt) throw new Error('Source must be verified (lastVerifiedAt) before ingest');
 
   const maxItems = normalizeMaxItems(input.maxItems);
+  const forceReprocess = Boolean(input.forceReprocess);
 
   const run = await prisma.ingestRun.create({
     data: {
@@ -44,7 +46,7 @@ export async function createIngestRun(input: {
       status: 'RUNNING',
       triggeredBy: 'MANUAL',
       triggeredByUserId: input.actorUserId,
-      configSnapshot: { maxItems },
+      configSnapshot: { maxItems, forceReprocess },
     },
     select: { id: true, sourceId: true, startedAt: true, status: true, triggeredBy: true, configSnapshot: true },
   });
@@ -68,6 +70,7 @@ export async function createIngestRun(input: {
 export async function createIngestRunsForAllSources(input: {
   actorUserId: string;
   maxItems: number;
+  forceReprocess: boolean;
 }): Promise<{ ingestRunIds: string[] }> {
   const prisma = getPrismaClient();
 
@@ -83,6 +86,7 @@ export async function createIngestRunsForAllSources(input: {
       actorUserId: input.actorUserId,
       sourceId: source.id,
       maxItems: input.maxItems,
+      forceReprocess: input.forceReprocess,
     });
     ingestRunIds.push(ingestRunId);
   }

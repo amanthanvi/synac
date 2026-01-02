@@ -31,6 +31,7 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
       name: true,
       sourceSlug: true,
       baseUrl: true,
+      cronSchedule: true,
       licenseType: true,
       licenseNotes: true,
       allowedUse: true,
@@ -178,6 +179,11 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
           </label>
 
           <label style={{ display: 'grid', gap: 6 }}>
+            <div style={{ opacity: 0.85 }}>Ingest cron (optional, UTC)</div>
+            <input name="cronSchedule" defaultValue={source.cronSchedule ?? ''} placeholder="e.g., 0 3 * * *" />
+          </label>
+
+          <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>Contact (optional)</div>
             <input name="contact" defaultValue={source.contact ?? ''} />
           </label>
@@ -232,6 +238,7 @@ async function save(formData: FormData) {
     name: String(formData.get('name') ?? ''),
     sourceSlug: String(formData.get('sourceSlug') ?? ''),
     baseUrl: String(formData.get('baseUrl') ?? ''),
+    cronSchedule: String(formData.get('cronSchedule') ?? ''),
     licenseType: String(formData.get('licenseType') ?? ''),
     licenseNotes: String(formData.get('licenseNotes') ?? ''),
     allowedUse: String(formData.get('allowedUse') ?? ''),

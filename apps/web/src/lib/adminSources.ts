@@ -105,6 +105,7 @@ export async function createSource(input: {
   name: string;
   sourceSlug: string;
   baseUrl: string;
+  cronSchedule?: string | null;
   licenseType: string;
   licenseNotes?: string | null;
   allowedUse: string;
@@ -136,6 +137,7 @@ export async function createSource(input: {
       name: requireNonEmpty('Name', input.name),
       sourceSlug,
       baseUrl,
+      cronSchedule: input.cronSchedule?.trim() ? normalizeWhitespace(input.cronSchedule) : null,
       licenseType: parseLicenseType(input.licenseType),
       licenseNotes: input.licenseNotes?.trim() ? normalizeWhitespace(input.licenseNotes) : null,
       allowedUse: requireNonEmpty('Allowed use', input.allowedUse),
@@ -157,6 +159,7 @@ export async function createSource(input: {
       name: true,
       sourceSlug: true,
       baseUrl: true,
+      cronSchedule: true,
       licenseType: true,
       licenseNotes: true,
       allowedUse: true,
@@ -191,6 +194,7 @@ export async function updateSource(input: {
   name: string;
   sourceSlug: string;
   baseUrl: string;
+  cronSchedule?: string | null;
   licenseType: string;
   licenseNotes?: string | null;
   allowedUse: string;
@@ -212,6 +216,7 @@ export async function updateSource(input: {
       name: true,
       sourceSlug: true,
       baseUrl: true,
+      cronSchedule: true,
       licenseType: true,
       licenseNotes: true,
       allowedUse: true,
@@ -250,6 +255,7 @@ export async function updateSource(input: {
       name: requireNonEmpty('Name', input.name),
       sourceSlug,
       baseUrl,
+      cronSchedule: input.cronSchedule?.trim() ? normalizeWhitespace(input.cronSchedule) : null,
       licenseType: parseLicenseType(input.licenseType),
       licenseNotes: input.licenseNotes?.trim() ? normalizeWhitespace(input.licenseNotes) : null,
       allowedUse: requireNonEmpty('Allowed use', input.allowedUse),
@@ -270,6 +276,7 @@ export async function updateSource(input: {
       name: true,
       sourceSlug: true,
       baseUrl: true,
+      cronSchedule: true,
       licenseType: true,
       licenseNotes: true,
       allowedUse: true,

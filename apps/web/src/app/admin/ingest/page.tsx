@@ -68,6 +68,11 @@ export default async function AdminIngestPage() {
               <input name="maxItems" defaultValue="100" inputMode="numeric" />
             </label>
 
+            <label style={{ display: 'flex', gap: 10, alignItems: 'center', alignSelf: 'end' }}>
+              <input name="forceReprocess" type="checkbox" />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Force reprocess</span>
+            </label>
+
             <div style={{ alignSelf: 'end' }}>
               <button type="submit">Start ingest</button>
             </div>
@@ -113,11 +118,13 @@ async function trigger(formData: FormData) {
 
   const sourceId = String(formData.get('sourceId') ?? '');
   const maxItems = Number(formData.get('maxItems') ?? 100) || 100;
+  const forceReprocess = Boolean(formData.get('forceReprocess'));
 
   const { ingestRunId } = await createIngestRun({
     actorUserId: actor.dbUserId,
     sourceId,
     maxItems,
+    forceReprocess,
   });
 
   redirect(`/admin/ingest/runs/${ingestRunId}`);
@@ -132,9 +139,11 @@ async function triggerAll(formData: FormData) {
   }
 
   const maxItems = Number(formData.get('maxItems') ?? 100) || 100;
+  const forceReprocess = Boolean(formData.get('forceReprocess'));
   const { ingestRunIds } = await createIngestRunsForAllSources({
     actorUserId: actor.dbUserId,
     maxItems,
+    forceReprocess,
   });
 
   if (ingestRunIds.length === 0) {
