@@ -7,10 +7,12 @@ import { requireAdminActor } from '@/lib/admin';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+  const requestId = request.headers.get('x-request-id') ?? undefined;
+
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
   }
 
   const { id } = await context.params;
@@ -44,7 +46,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   });
 
   if (!run) {
-    return NextResponse.json({ error: 'not_found' }, { status: 404 });
+    return NextResponse.json({ error: 'not_found', requestId }, { status: 404 });
   }
 
   return NextResponse.json({ run });

@@ -6,10 +6,12 @@ import { archiveEntry } from '@/lib/adminEntries';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+  const requestId = request.headers.get('x-request-id') ?? undefined;
+
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
   }
 
   const { id: entryId } = await context.params;

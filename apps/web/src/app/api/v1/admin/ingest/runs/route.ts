@@ -25,10 +25,12 @@ function getBoolean(body: Record<string, unknown>, key: string): boolean {
   return v.trim().toLowerCase() === 'true' || v.trim() === '1';
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  const requestId = request.headers.get('x-request-id') ?? undefined;
+
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
   }
 
   const prisma = getPrismaClient();
@@ -58,14 +60,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const requestId = request.headers.get('x-request-id') ?? undefined;
+
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
   }
 
   const body = (await request.json()) as unknown;
   if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+    return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
   }
 
   const data = body as Record<string, unknown>;
@@ -77,7 +81,7 @@ export async function POST(request: Request) {
     const prisma = getPrismaClient();
     const enabledSources = await prisma.source.count({ where: { enabled: true } });
     if (enabledSources === 0) {
-      return NextResponse.json({ error: 'no_enabled_sources' }, { status: 400 });
+      return NextResponse.json({ error: 'no_enabled_sources', requestId }, { status: 400 });
     }
 
     const { ingestRunIds } = await createIngestRunsForAllSources({

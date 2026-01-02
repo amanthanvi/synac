@@ -16,14 +16,16 @@ function getBoolean(body: Record<string, unknown>, key: string): boolean {
 }
 
 export async function POST(request: Request) {
+  const requestId = request.headers.get('x-request-id') ?? undefined;
+
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
   }
 
   const body = (await request.json()) as unknown;
   if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
+    return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
   }
 
   const data = body as Record<string, unknown>;
@@ -49,4 +51,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ sourceId });
 }
-

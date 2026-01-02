@@ -7,9 +7,11 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+  const requestId = request.headers.get('x-request-id') ?? undefined;
+
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
   }
 
   const { id: entryId } = await context.params;
@@ -30,7 +32,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const auditEventId = revision?.trim() || bodyAuditEventId?.trim();
   if (!auditEventId) {
-    return NextResponse.json({ error: 'missing_revision' }, { status: 400 });
+    return NextResponse.json({ error: 'missing_revision', requestId }, { status: 400 });
   }
 
   await rollbackEntryToAuditEvent({
