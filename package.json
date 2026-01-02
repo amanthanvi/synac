@@ -1,0 +1,27 @@
+{
+  "name": "synac",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.27.0",
+  "engines": {
+    "node": ">=22.21.1"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev --if-present",
+    "build": "pnpm -r build",
+    "start": "pnpm --filter @synac/web start",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "format": "pnpm -r format",
+    "db:generate": "pnpm --filter @synac/db db:generate",
+    "db:migrate": "pnpm --filter @synac/db db:migrate",
+    "db:seed": "pnpm --filter @synac/db db:seed"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "globals": "^17.0.0",
+    "typescript-eslint": "^8.51.0"
+  }
+}
