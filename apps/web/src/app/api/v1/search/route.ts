@@ -43,6 +43,7 @@ export async function GET(request: Request) {
       displayTitle: r.displayTitle,
       primarySlug: r.primarySlug,
       summaryText: r.summaryText,
+      snippet: r.snippet,
       url: r.entryType === 'TERM' ? `/term/${r.primarySlug}` : `/acronym/${r.primarySlug}`,
       score: r.score,
       bucket: r.bucket,
@@ -50,4 +51,3 @@ export async function GET(request: Request) {
     meta: { page, pageSize: 20 },
   });
 }
-

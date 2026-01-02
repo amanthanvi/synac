@@ -71,3 +71,10 @@ a {
   white-space: nowrap;
   border: 0;
 }
+
+mark {
+  background: color-mix(in srgb, var(--accent2) 32%, transparent);
+  color: var(--fg);
+  padding: 0 0.18em;
+  border-radius: 6px;
+}

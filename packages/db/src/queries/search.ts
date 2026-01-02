@@ -7,6 +7,7 @@ export type SearchResult = {
   displayTitle: string;
   primarySlug: string;
   summaryText: string | null;
+  snippet: string | null;
   bucket: number;
   score: number;
 };
@@ -22,6 +23,8 @@ type SearchInput = {
 function normalizeQuery(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, ' ');
 }
+
+const ignoredQueries = new Set(['a', 'an', 'and', 'or', 'the']);
 
 function slugCandidate(value: string): string {
   return value
@@ -44,6 +47,7 @@ export async function searchPublishedEntries(
   const offset = (page - 1) * pageSize;
 
   const qNorm = normalizeQuery(query);
+  if (qNorm.length <= 1 || ignoredQueries.has(qNorm)) return [];
   const qSlug = slugCandidate(query);
   const qLower = query.toLowerCase();
 
@@ -155,13 +159,19 @@ export async function searchPublishedEntries(
         e.display_title AS "displayTitle",
         e.primary_slug AS "primarySlug",
         e.summary_text AS "summaryText",
+        ts_headline(
+          'english',
+          es.search_document,
+          websearch_to_tsquery('english', ${query}),
+          'StartSel=<<, StopSel=>>, MaxWords=24, MinWords=10'
+        ) AS "snippet",
         best.bucket AS "bucket",
         best.score AS "score"
       FROM best
       JOIN entries e ON e.id = best.entry_id
+      JOIN entry_search es ON es.entry_id = e.id
       ORDER BY best.bucket ASC, best.score DESC, e.display_title ASC
       LIMIT ${pageSize} OFFSET ${offset}
     `,
   );
 }
-

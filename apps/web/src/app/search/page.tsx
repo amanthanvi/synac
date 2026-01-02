@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 import { getPrismaClient, searchPublishedEntries } from '@synac/db';
 
@@ -17,6 +18,14 @@ type SearchPageProps = {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = (await searchParams) ?? {};
   const query = (params.q ?? '').trim();
+  const normalizedQuery = query.toLowerCase().replace(/\s+/g, ' ').trim();
+  const isIgnoredQuery =
+    normalizedQuery.length <= 1 ||
+    normalizedQuery === 'a' ||
+    normalizedQuery === 'an' ||
+    normalizedQuery === 'and' ||
+    normalizedQuery === 'or' ||
+    normalizedQuery === 'the';
   const page = Math.max(1, Number(params.page ?? 1) || 1);
   const entryType =
     params.type?.toUpperCase() === 'TERM'
@@ -37,11 +46,18 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <SearchForm defaultValue={query} placeholder="Search (e.g. SAML, SOC, zero trust)..." />
       </div>
 
-      {!query ? (
-        <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          <Link href="/terms?letter=a">Browse terms</Link>
-          <Link href="/acronyms?letter=a">Browse acronyms</Link>
-          <Link href="/tags">Browse tags</Link>
+      {!query || isIgnoredQuery ? (
+        <div style={{ marginTop: 14 }}>
+          {isIgnoredQuery ? (
+            <p className={styles.itemSummary}>
+              Try a more specific query. Or jump into browsing:
+            </p>
+          ) : null}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            <Link href="/terms?letter=a">Browse terms</Link>
+            <Link href="/acronyms?letter=a">Browse acronyms</Link>
+            <Link href="/tags">Browse tags</Link>
+          </div>
         </div>
       ) : (
         <>
@@ -109,11 +125,38 @@ async function Results({
               </Link>
               <span className={styles.itemSlug}>{r.entryType}</span>
             </div>
-            {r.summaryText ? <p className={styles.itemSummary}>{r.summaryText}</p> : null}
+            {r.snippet ? (
+              <p className={styles.itemSummary}>{renderHeadline(r.snippet)}</p>
+            ) : r.summaryText ? (
+              <p className={styles.itemSummary}>{r.summaryText}</p>
+            ) : null}
           </li>
         ))}
       </ol>
       <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
     </>
   );
+}
+
+function renderHeadline(headline: string): ReactNode {
+  const pieces: React.ReactNode[] = [];
+  const tokens = headline.split(/(<<|>>)/g);
+  let highlight = false;
+  let key = 0;
+
+  for (const token of tokens) {
+    if (!token) continue;
+    if (token === '<<') {
+      highlight = true;
+      continue;
+    }
+    if (token === '>>') {
+      highlight = false;
+      continue;
+    }
+
+    pieces.push(highlight ? <mark key={key++}>{token}</mark> : <span key={key++}>{token}</span>);
+  }
+
+  return <>{pieces}</>;
 }
