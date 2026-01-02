@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 import { IBM_Plex_Mono, Instrument_Sans, Instrument_Serif } from 'next/font/google';
 
 import { SiteFooter } from '@/components/SiteFooter';
@@ -40,19 +41,33 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isClerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
+  const content = (
+    <>
+      <a className="srOnly" href="#content">
+        Skip to content
+      </a>
+      <SiteHeader />
+      <main id="content" className="appMain">
+        {children}
+      </main>
+      <SiteFooter />
+    </>
+  );
+
   return (
     <html lang="en">
       <body
         className={`${instrumentSans.variable} ${instrumentSerif.variable} ${plexMono.variable}`}
       >
-        <a className="srOnly" href="#content">
-          Skip to content
-        </a>
-        <SiteHeader />
-        <main id="content" className="appMain">
-          {children}
-        </main>
-        <SiteFooter />
+        {isClerkConfigured ? (
+          <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
+            {content}
+          </ClerkProvider>
+        ) : (
+          content
+        )}
       </body>
     </html>
   );
