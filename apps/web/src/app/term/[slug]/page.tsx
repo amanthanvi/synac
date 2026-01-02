@@ -142,6 +142,9 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
                               <span className={styles.refSource}>{c.source.name}</span>
                               <span className={styles.refDate}>{formatDate(c.accessedAt)}</span>
                             </div>
+                            {c.sourceDocument.title ? (
+                              <div className={styles.refDocTitle}>{c.sourceDocument.title}</div>
+                            ) : null}
                             <a
                               href={c.url}
                               target="_blank"
@@ -150,6 +153,14 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
                             >
                               {c.url}
                             </a>
+                            {c.licenseNote || c.attributionText ? (
+                              <div className={styles.refNote}>
+                                {c.licenseNote ? <div>{c.licenseNote}</div> : null}
+                                {c.attributionText ? (
+                                  <div>{c.attributionText}</div>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </li>
                         ))}
                       </ul>

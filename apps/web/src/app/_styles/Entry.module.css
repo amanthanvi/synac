@@ -58,6 +58,32 @@
   margin-bottom: 10px;
 }
 
+.meanings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.meaningLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 76%, transparent);
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.meaningLink:hover {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
+}
+
 .senseCard {
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -142,4 +168,18 @@
   word-break: break-word;
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.refDocTitle {
+  margin-top: 6px;
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.refNote {
+  margin-top: 8px;
+  color: color-mix(in srgb, var(--fg) 68%, transparent);
+  font-size: 12px;
+  line-height: 1.6;
 }
