@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { getPrismaClient, searchPublishedEntries } from '@synac/db';
 
+import { logger } from '@/lib/logger';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -15,52 +16,71 @@ function parseEntryType(value: string | null): 'TERM' | 'ACRONYM' | undefined {
 }
 
 export async function GET(request: NextRequest) {
-  const rate = await enforceRateLimit({ request, scope: 'api_v1_search', limit: 60, windowSeconds: 60 });
-  if (!rate.allowed) {
-    const requestId = request.headers.get('x-request-id');
-    return NextResponse.json(
-      { error: 'rate_limited', requestId, retryAfterSeconds: rate.retryAfterSeconds },
-      { status: 429, headers: { 'retry-after': String(rate.retryAfterSeconds) } },
-    );
-  }
+  const startMs = Date.now();
+  const requestId = request.headers.get('x-request-id') ?? undefined;
 
-  const url = new URL(request.url);
+  try {
+    const rate = await enforceRateLimit({ request, scope: 'api_v1_search', limit: 60, windowSeconds: 60 });
+    if (!rate.allowed) {
+      logger.warn('api.search.rate_limited', { requestId, retryAfterSeconds: rate.retryAfterSeconds });
+      return NextResponse.json(
+        { error: 'rate_limited', requestId, retryAfterSeconds: rate.retryAfterSeconds },
+        { status: 429, headers: { 'retry-after': String(rate.retryAfterSeconds) } },
+      );
+    }
 
-  const q = url.searchParams.get('q') ?? '';
-  const entryType = parseEntryType(url.searchParams.get('type'));
-  const tag = url.searchParams.get('tag') ?? undefined;
-  const page = Math.max(1, Number(url.searchParams.get('page') ?? 1) || 1);
+    const url = new URL(request.url);
 
-  if (!q.trim()) {
+    const q = url.searchParams.get('q') ?? '';
+    const entryType = parseEntryType(url.searchParams.get('type'));
+    const tag = url.searchParams.get('tag') ?? undefined;
+    const page = Math.max(1, Number(url.searchParams.get('page') ?? 1) || 1);
+
+    if (!q.trim()) {
+      return NextResponse.json({
+        results: [],
+        meta: { page, pageSize: 20 },
+      });
+    }
+
+    const prisma = getPrismaClient();
+    const results = await searchPublishedEntries(prisma, {
+      query: q,
+      entryType,
+      tagSlug: tag?.trim() ? tag.trim().toLowerCase() : undefined,
+      page,
+      pageSize: 20,
+    });
+
+    logger.info('api.search.ok', {
+      requestId,
+      durationMs: Date.now() - startMs,
+      qLen: q.trim().length,
+      entryType,
+      tag: tag?.trim() ? tag.trim().toLowerCase() : undefined,
+      page,
+      resultsCount: results.length,
+    });
+
     return NextResponse.json({
-      results: [],
+      results: results.map((r) => ({
+        id: r.id,
+        entryType: r.entryType,
+        displayTitle: r.displayTitle,
+        primarySlug: r.primarySlug,
+        summaryText: r.summaryText,
+        snippet: r.snippet,
+        senseCount: r.senseCount,
+        senseSummary: r.senseSummary,
+        url: r.entryType === 'TERM' ? `/term/${r.primarySlug}` : `/acronym/${r.primarySlug}`,
+        score: r.score,
+        bucket: r.bucket,
+      })),
       meta: { page, pageSize: 20 },
     });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error('api.search.error', { requestId, durationMs: Date.now() - startMs, error: message });
+    return NextResponse.json({ error: 'internal_error', requestId }, { status: 500 });
   }
-
-  const prisma = getPrismaClient();
-  const results = await searchPublishedEntries(prisma, {
-    query: q,
-    entryType,
-    tagSlug: tag?.trim() ? tag.trim().toLowerCase() : undefined,
-    page,
-    pageSize: 20,
-  });
-
-  return NextResponse.json({
-    results: results.map((r) => ({
-      id: r.id,
-      entryType: r.entryType,
-      displayTitle: r.displayTitle,
-      primarySlug: r.primarySlug,
-      summaryText: r.summaryText,
-      snippet: r.snippet,
-      senseCount: r.senseCount,
-      senseSummary: r.senseSummary,
-      url: r.entryType === 'TERM' ? `/term/${r.primarySlug}` : `/acronym/${r.primarySlug}`,
-      score: r.score,
-      bucket: r.bucket,
-    })),
-    meta: { page, pageSize: 20 },
-  });
 }

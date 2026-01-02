@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server';
 
 import { getPrismaClient } from '@synac/db';
 
+import { logger } from '@/lib/logger';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -25,48 +26,56 @@ function hashSession(sessionId: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  const rate = await enforceRateLimit({ request, scope: 'api_v1_view', limit: 120, windowSeconds: 60 });
-  if (!rate.allowed) {
-    const requestId = request.headers.get('x-request-id');
-    return NextResponse.json(
-      { ok: false, error: 'rate_limited', requestId, retryAfterSeconds: rate.retryAfterSeconds },
-      { status: 429, headers: { 'retry-after': String(rate.retryAfterSeconds) } },
-    );
-  }
+  const requestId = request.headers.get('x-request-id') ?? undefined;
 
-  const sessionId = request.cookies.get(SESSION_COOKIE)?.value;
-  if (!sessionId) {
-    return NextResponse.json({ ok: false }, { status: 400 });
-  }
-
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false }, { status: 400 });
-  }
+    const rate = await enforceRateLimit({ request, scope: 'api_v1_view', limit: 120, windowSeconds: 60 });
+    if (!rate.allowed) {
+      logger.warn('api.view.rate_limited', { requestId, retryAfterSeconds: rate.retryAfterSeconds });
+      return NextResponse.json(
+        { ok: false, error: 'rate_limited', requestId, retryAfterSeconds: rate.retryAfterSeconds },
+        { status: 429, headers: { 'retry-after': String(rate.retryAfterSeconds) } },
+      );
+    }
 
-  const entryId = (body as { entryId?: unknown }).entryId;
-  if (!isUuid(entryId)) {
-    return NextResponse.json({ ok: false }, { status: 400 });
-  }
+    const sessionId = request.cookies.get(SESSION_COOKIE)?.value;
+    if (!sessionId) {
+      return NextResponse.json({ ok: false, error: 'missing_session', requestId }, { status: 400 });
+    }
 
-  const prisma = getPrismaClient();
-  const entry = await prisma.entry.findFirst({
-    where: { id: entryId, status: 'PUBLISHED', deletedAt: null },
-    select: { id: true },
-  });
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ ok: false, error: 'invalid_json', requestId }, { status: 400 });
+    }
 
-  if (!entry) {
+    const entryId = (body as { entryId?: unknown }).entryId;
+    if (!isUuid(entryId)) {
+      return NextResponse.json({ ok: false, error: 'invalid_entry_id', requestId }, { status: 400 });
+    }
+
+    const prisma = getPrismaClient();
+    const entry = await prisma.entry.findFirst({
+      where: { id: entryId, status: 'PUBLISHED', deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!entry) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const sessionHash = hashSession(sessionId);
+    await prisma.entryView.upsert({
+      where: { entryId_sessionHash: { entryId, sessionHash } },
+      create: { entryId, sessionHash, lastSeenAt: new Date() },
+      update: { lastSeenAt: new Date() },
+    });
+
     return NextResponse.json({ ok: true });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error('api.view.error', { requestId, error: message });
+    return NextResponse.json({ ok: false, error: 'internal_error', requestId }, { status: 500 });
   }
-
-  const sessionHash = hashSession(sessionId);
-  await prisma.entryView.upsert({
-    where: { entryId_sessionHash: { entryId, sessionHash } },
-    create: { entryId, sessionHash, lastSeenAt: new Date() },
-    update: { lastSeenAt: new Date() },
-  });
-
-  return NextResponse.json({ ok: true });
 }
