@@ -3,6 +3,7 @@ import { getPrismaClient } from '@synac/db';
 import { ingestNistGlossary } from './nistGlossary.js';
 import { ingestMitreAttackCti } from './mitreAttackCti.js';
 import { ingestOwaspVulnerabilities } from './owaspVulnerabilities.js';
+import { logger } from '../logger.js';
 
 function parseMaxItems(configSnapshot: unknown): number {
   if (!configSnapshot || typeof configSnapshot !== 'object') return 100;
@@ -22,6 +23,7 @@ function parseForceReprocess(configSnapshot: unknown): boolean {
 
 export async function runIngestRun(ingestRunId: string): Promise<void> {
   const prisma = getPrismaClient();
+  const startMs = Date.now();
 
   const run = await prisma.ingestRun.findFirst({
     where: { id: ingestRunId },
@@ -46,6 +48,14 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
   const forceReprocess = parseForceReprocess(run.configSnapshot);
 
   try {
+    logger.info('ingest.run.start', {
+      ingestRunId: run.id,
+      sourceId: run.source.id,
+      baseUrl: run.source.baseUrl,
+      maxItems,
+      forceReprocess,
+    });
+
     const baseUrl = run.source.baseUrl.toLowerCase();
     const host = new URL(run.source.baseUrl).hostname.toLowerCase();
 
@@ -101,6 +111,13 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
         stats: { itemsCreated },
       },
     });
+
+    logger.info('ingest.run.success', {
+      ingestRunId: run.id,
+      sourceId: run.source.id,
+      itemsCreated,
+      durationMs: Date.now() - startMs,
+    });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await prisma.ingestRun.update({
@@ -110,6 +127,13 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
         finishedAt: new Date(),
         stats: { error: message },
       },
+    });
+
+    logger.error('ingest.run.failed', {
+      ingestRunId: run.id,
+      sourceId: run.source.id,
+      durationMs: Date.now() - startMs,
+      error: message,
     });
     throw err;
   }

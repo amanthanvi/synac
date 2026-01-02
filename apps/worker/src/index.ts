@@ -3,6 +3,7 @@ import { PgBoss } from 'pg-boss';
 import { getPrismaClient } from '@synac/db';
 
 import { runIngestRun } from './ingest/run.js';
+import { logger } from './logger.js';
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
@@ -35,7 +36,11 @@ async function syncCronSchedules(): Promise<void> {
       try {
         await boss.unschedule('ingest:cron', sch.key);
       } catch (err) {
-        console.warn('synac worker: unschedule failed', sch.key, err);
+        logger.warn('worker.schedule.unschedule_failed', {
+          job: 'ingest:cron',
+          key: sch.key,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
   }
@@ -44,7 +49,12 @@ async function syncCronSchedules(): Promise<void> {
     try {
       await boss.schedule('ingest:cron', cron, { sourceId, maxItems: 200 }, { key: sourceId, tz: 'UTC' });
     } catch (err) {
-      console.warn('synac worker: schedule failed', sourceId, cron, err);
+      logger.warn('worker.schedule.schedule_failed', {
+        job: 'ingest:cron',
+        sourceId,
+        cron,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 }
@@ -52,11 +62,11 @@ async function syncCronSchedules(): Promise<void> {
 try {
   await syncCronSchedules();
 } catch (err) {
-  console.warn('synac worker: initial schedule sync failed', err);
+  logger.warn('worker.schedule.initial_sync_failed', { error: err instanceof Error ? err.message : String(err) });
 }
 setInterval(() => {
   void syncCronSchedules().catch((err) => {
-    console.warn('synac worker: schedule sync failed', err);
+    logger.warn('worker.schedule.sync_failed', { error: err instanceof Error ? err.message : String(err) });
   });
 }, 10 * 60 * 1000);
 
@@ -76,7 +86,7 @@ await boss.work<{ sourceId: string; maxItems?: number }>('ingest:cron', async (j
     });
 
     if (!source) {
-      console.warn('synac worker: ingest:cron source not found', sourceId);
+      logger.warn('worker.ingest_cron.source_not_found', { sourceId });
       continue;
     }
     if (!source.enabled) continue;
@@ -114,7 +124,7 @@ await boss.work<{ ingestRunId: string }>('ingest:run', async (jobs) => {
   }
 });
 
-console.log('synac worker: ready');
+logger.info('worker.ready');
 
 async function shutdown() {
   try {
