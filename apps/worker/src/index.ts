@@ -10,10 +10,12 @@ if (!databaseUrl) {
 const boss = new PgBoss(databaseUrl);
 await boss.start();
 
-await boss.work<{ ingestRunId: string }>('ingest:run', async (job) => {
-  const ingestRunId = job.data?.ingestRunId;
-  if (!ingestRunId) throw new Error('ingestRunId is required');
-  await runIngestRun(ingestRunId);
+await boss.work<{ ingestRunId: string }>('ingest:run', async (jobs) => {
+  for (const job of jobs) {
+    const ingestRunId = job.data?.ingestRunId;
+    if (!ingestRunId) throw new Error('ingestRunId is required');
+    await runIngestRun(ingestRunId);
+  }
 });
 
 console.log('synac worker: ready');
