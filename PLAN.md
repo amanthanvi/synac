@@ -47,7 +47,7 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## Phase 3 — Admin (FR-012..FR-016)
 
-- [ ] Clerk auth integration (OIDC/MFA enforced via Clerk policy)
+- [x] Clerk auth integration (OIDC/MFA enforced via Clerk policy)
 - [ ] RBAC backed by DB (`ADMIN`, `EDITOR`, `VIEWER`)
 - [ ] Entry + sense editor: drafts, preview, publish/archive, reorder senses
 - [ ] Quality gates for publish + style-lint warnings
