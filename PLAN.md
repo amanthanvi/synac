@@ -52,7 +52,7 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Entry + sense editor: drafts, publish/archive, reorder senses
 - [x] Publish quality gates: citations per sense (or Editorial + rationale)
 - [x] Audit events for entry/sense mutations + entry rollback (Admin-only)
-- [ ] Admin audit log page + filters
+- [x] Admin audit log page + filters
 - [ ] Admin sources UI: create/edit/enable/disable + verify metadata
 - [ ] Admin API routes per §11 (entries, audit, sources, ingest)
 
