@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getPrismaClient, resolvePublicSourceBySlug } from '@synac/db';
@@ -10,6 +11,22 @@ export const dynamic = 'force-dynamic';
 type SourcePageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: SourcePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const prisma = getPrismaClient();
+  const source = await resolvePublicSourceBySlug(prisma, { slug });
+
+  if (!source) {
+    return { title: 'Source not found' };
+  }
+
+  return {
+    title: source.name,
+    description: `License notes and attribution requirements for ${source.name}.`,
+    alternates: { canonical: `/sources/${source.sourceSlug}` },
+  };
+}
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat('en-US', {
@@ -152,4 +169,3 @@ export default async function SourcePage({ params }: SourcePageProps) {
     </>
   );
 }
-

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
@@ -16,6 +17,24 @@ export const dynamic = 'force-dynamic';
 type TermEntryPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: TermEntryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const prisma = getPrismaClient();
+  const resolved = await resolvePublishedEntryBySlug(prisma, { entryType: 'TERM', slug });
+
+  if (!resolved) {
+    return { title: 'Not found' };
+  }
+
+  return {
+    title: resolved.entry.displayTitle,
+    description:
+      resolved.entry.summaryText ??
+      `SynAc entry for the cybersecurity term “${resolved.entry.displayTitle}”.`,
+    alternates: { canonical: `/term/${resolved.canonicalSlug}` },
+  };
+}
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat('en-US', {

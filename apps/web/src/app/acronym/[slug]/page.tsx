@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
@@ -16,6 +17,26 @@ export const dynamic = 'force-dynamic';
 type AcronymEntryPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: AcronymEntryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const prisma = getPrismaClient();
+  const resolved = await resolvePublishedEntryBySlug(prisma, { entryType: 'ACRONYM', slug });
+
+  if (!resolved) {
+    return { title: 'Not found' };
+  }
+
+  return {
+    title: resolved.entry.displayTitle,
+    description:
+      resolved.entry.summaryText ??
+      `SynAc entry for the cybersecurity acronym “${resolved.entry.displayTitle}”.`,
+    alternates: { canonical: `/acronym/${resolved.canonicalSlug}` },
+  };
+}
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat('en-US', {

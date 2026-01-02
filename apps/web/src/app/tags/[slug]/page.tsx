@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 
 import { getPrismaClient, listPublishedEntriesForTag, resolveTagBySlug } from '@synac/db';
@@ -15,6 +16,22 @@ type TagPageProps = {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{ type?: string; page?: string }>;
 };
+
+export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const prisma = getPrismaClient();
+  const resolved = await resolveTagBySlug(prisma, { slug });
+
+  if (!resolved) {
+    return { title: 'Tag not found' };
+  }
+
+  return {
+    title: resolved.tag.name,
+    description: resolved.tag.description ?? `SynAc entries tagged “${resolved.tag.name}”.`,
+    alternates: { canonical: `/tags/${resolved.canonicalSlug}` },
+  };
+}
 
 function parseEntryType(value: string | undefined): 'TERM' | 'ACRONYM' | undefined {
   const v = value?.toUpperCase();
