@@ -23,10 +23,11 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## Phase 0 — Repo bootstrap (foundation)
 
-- [ ] Create monorepo structure (`apps/*`, `packages/*`, `docs/*`)
-- [ ] Add root tooling: TypeScript, lint/format, tests, CI
-- [ ] Add `README.md`, `LICENSE`, `CONTRIBUTING.md`
-- [ ] Establish env conventions: `.env.example`, required vars, local dev flow
+- [x] Create monorepo structure (`apps/*`, `packages/*`, `docs/*`)
+- [x] Add root tooling: TypeScript, lint/format, tests
+- [ ] Add CI
+- [x] Add `README.md`, `LICENSE`, `CONTRIBUTING.md`
+- [x] Establish env conventions: `.env.example`, required vars
 
 ## Phase 1 — Data model + migrations (authoritative)
 
@@ -73,4 +74,3 @@ This is the living implementation tracker for `SPEC.md`.
 ## Spec deltas log (keep short)
 
 - (none yet)
-
