@@ -43,7 +43,7 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Citations + attribution rendering (per-sense + per-source directory)
 - [x] Search (FR-009/010): ranking + typo policy + pagination
 - [x] SEO: canonical, robots.txt, sitemap index, JSON-LD
-- [ ] A11y: WCAG 2.2 AA pass on key flows
+- [x] A11y: WCAG 2.2 AA pass on key flows
 
 ## Phase 3 — Admin (FR-012..FR-016)
 
