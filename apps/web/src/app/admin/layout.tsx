@@ -28,6 +28,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link href="/admin/sources">Sources</Link>
             <Link href="/admin/tags">Tags</Link>
             <Link href="/admin/ingest">Ingest</Link>
+            <Link href="/admin/takedown">Takedown</Link>
             <Link href="/admin/audit">Audit</Link>
           </div>
         </nav>

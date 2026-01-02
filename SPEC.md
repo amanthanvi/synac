@@ -746,6 +746,7 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
     -   `/admin/ingest/runs/{id}`
     -   `/admin/sources`
     -   `/admin/tags`
+    -   `/admin/takedown`
     -   `/admin/audit`
 
 ### Navigation model
