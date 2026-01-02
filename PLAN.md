@@ -66,7 +66,7 @@ This is the living implementation tracker for `SPEC.md`.
 - [ ] Pipeline stages + persistence: extract → normalize → dedupe → enrich → validate
 - [ ] License gate PASS/WARN/FAIL enforcement
 - [ ] Human review queue UI: diff, approve/edit/reject
-- [ ] Initial source adapters: NIST, MITRE ATT&CK, OWASP
+- [x] Initial source adapters: NIST, MITRE ATT&CK, OWASP
 - [ ] Takedown workflow: disable source, purge derived content, 410/301 behavior
 
 ## Phase 5 — Ops, security, testing, release
