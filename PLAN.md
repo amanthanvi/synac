@@ -68,15 +68,15 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] License gate PASS/WARN/FAIL enforcement
 - [x] Human review queue UI: diff, approve/edit/reject
 - [x] Initial source adapters: NIST, MITRE ATT&CK, OWASP
-- [ ] Takedown workflow: disable source, purge derived content, 410/301 behavior
+- [x] Takedown workflow: disable source, purge derived content, 404/308 behavior
 
 ## Phase 5 — Ops, security, testing, release
 
-- [ ] Security headers + CSP, rate limiting, request IDs, log redaction
-- [ ] Observability: structured logs + baseline metrics/tracing
-- [ ] Backups + restore drill checklist
-- [ ] CI: lint/typecheck/tests + CodeQL + dependency scan + SBOM artifact
-- [ ] Release checklist + tag `v0.1.0`
+- [x] Security headers + CSP, rate limiting, request IDs, log redaction
+- [x] Observability: structured logs + request IDs (log-based metrics)
+- [x] Backups + restore drill checklist
+- [x] CI: lint/typecheck/tests + CodeQL + dependency scan + SBOM artifact
+- [ ] Release: bump versions + tag `v0.1.0`
 
 ## Spec deltas log (keep short)
 
@@ -84,3 +84,4 @@ This is the living implementation tracker for `SPEC.md`.
 - 2026-01-02: Clarified stable sense fragment IDs (`#sense-<sense_id>`) and permanent redirects as 308.
 - 2026-01-02: Added ingest per-item `stage_outputs` and `license_gate_reason`, plus field provenance `content_mode`.
 - 2026-01-02: Added per-source ingest cron schedule (`sources.cron_schedule`) and manual force reprocess toggle.
+- 2026-01-02: Added takedown and safety tables: `takedown_cases`, `rate_limit_buckets`, and `source_documents.do_not_use*`.

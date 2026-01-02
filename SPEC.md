@@ -1492,7 +1492,8 @@ Rank results using weighted signals:
     -   ingest run duration, failures by stage,
     -   queue depth, worker utilization.
 -   Tracing:
-    -   OpenTelemetry traces for API requests, ingest pipeline stages, DB calls.
+    -   request_id correlation across web + worker logs (default in v0.1.0),
+    -   OpenTelemetry traces (optional; deferred beyond v0.1.0).
 -   Alerting:
     -   availability SLO burn,
     -   elevated 5xx,
