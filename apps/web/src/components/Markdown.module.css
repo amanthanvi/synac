@@ -1,0 +1,59 @@
+.md {
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+}
+
+.md p + p {
+  margin-top: 0.9em;
+}
+
+.md ul,
+.md ol {
+  margin: 0.8em 0 0.8em 1.2em;
+}
+
+.md li + li {
+  margin-top: 0.25em;
+}
+
+.md a {
+  color: color-mix(in srgb, var(--accent2) 85%, var(--fg));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.md a:hover {
+  color: color-mix(in srgb, var(--accent2) 95%, var(--fg));
+}
+
+.md code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  padding: 0.12em 0.3em;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+}
+
+.md pre {
+  margin-top: 0.9em;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg0) 82%, transparent);
+  overflow: auto;
+}
+
+.md pre code {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.md blockquote {
+  margin-top: 0.9em;
+  padding: 12px 12px;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--bg1) 78%, transparent);
+  border-radius: 12px;
+}

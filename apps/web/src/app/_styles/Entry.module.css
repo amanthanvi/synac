@@ -1,0 +1,145 @@
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 0 6px;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  font-size: 13px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 76%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagLink {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--bg1) 76%, transparent);
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.tagLink:hover {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
+}
+
+.section {
+  margin-top: 18px;
+}
+
+.sectionTitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  margin-bottom: 10px;
+}
+
+.senseCard {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg1) 80%, transparent);
+}
+
+.senseCard + .senseCard {
+  margin-top: 12px;
+}
+
+.senseHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.senseLabel {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.senseSub {
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.refs {
+  margin-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  padding-top: 12px;
+}
+
+.refsTitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  margin-bottom: 8px;
+}
+
+.refsList {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+}
+
+.refItem {
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+}
+
+.refLine1 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.refSource {
+  font-weight: 650;
+}
+
+.refDate {
+  color: color-mix(in srgb, var(--fg) 58%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.refUrl {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: color-mix(in srgb, var(--accent2) 80%, var(--fg));
+  word-break: break-word;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
