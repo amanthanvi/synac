@@ -147,7 +147,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 **Acceptance Criteria**
 
 -   If an acronym has >1 published sense, the entry page shows a “Meanings” section at top with anchor links.
--   Each sense can be directly linked via fragment (`/acronym/soc#sense-2`) and has a stable ID.
+-   Each sense can be directly linked via fragment (`/acronym/soc#sense-<sense_id>`) and has a stable ID (UUID; not dependent on ordering).
 -   Editors can reorder senses; the first sense is treated as “primary” for snippets.
 
 ---
@@ -181,7 +181,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 
 **Acceptance Criteria**
 
--   Changing an entry slug creates a slug-history record and old URL returns `301` to the new canonical URL.
+-   Changing an entry slug creates a slug-history record and old URL returns a permanent redirect (`308`) to the new canonical URL.
 -   Canonical `<link rel="canonical">` is present on entry pages.
 -   Slugs are unique within entry type; conflicts resolved via suffix (`-2`, `-3`) and editor prompt.
 
@@ -659,7 +659,7 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
     -   purge derived fields/senses/entries (soft delete by default; hard delete when legally required).
 -   Public pages for removed entries return:
     -   410 Gone (default) if permanently removed,
-    -   or 301 to replacement entry when merged/renamed.
+    -   or 308 to replacement entry when merged/renamed.
 -   Takedown requests create an internal case record with timestamps, actions taken, and affected content list.
 
 ---
@@ -821,7 +821,7 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   `created_at`
 -   UNIQUE (`entry_id`, `slug`)
 -   UNIQUE (`entry_type`, `slug`) via denormalized `entry_type` or join-enforced app logic
--   Purpose: 301 redirects + canonicalization
+-   Purpose: permanent redirects (308) + canonicalization
 
 #### `entry_variants` (aliases/synonyms)
 

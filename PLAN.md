@@ -38,11 +38,11 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## Phase 2 — Public web (FR-001..FR-011)
 
-- [ ] Public routes per §8 (home, browse, entry pages, tags, sources, recent, trending, about/legal, changelog+RSS)
-- [ ] Markdown rendering (no raw HTML) + strict sanitization
-- [ ] Citations + attribution rendering (per-sense + per-source directory)
-- [ ] Search (FR-009/010): ranking + typo policy + pagination
-- [ ] SEO: canonical, robots.txt, sitemap index, JSON-LD
+- [x] Public routes per §8 (home, browse, entry pages, tags, sources, recent, trending, about/legal, changelog+RSS)
+- [x] Markdown rendering (no raw HTML) + strict sanitization
+- [x] Citations + attribution rendering (per-sense + per-source directory)
+- [x] Search (FR-009/010): ranking + typo policy + pagination
+- [x] SEO: canonical, robots.txt, sitemap index, JSON-LD
 - [ ] A11y: WCAG 2.2 AA pass on key flows
 
 ## Phase 3 — Admin (FR-012..FR-016)
@@ -74,3 +74,4 @@ This is the living implementation tracker for `SPEC.md`.
 ## Spec deltas log (keep short)
 
 - 2026-01-02: Added `tag_slug_history` to §9 (supports tag slug redirects/renames/merges).
+- 2026-01-02: Clarified stable sense fragment IDs (`#sense-<sense_id>`) and permanent redirects as 308.
