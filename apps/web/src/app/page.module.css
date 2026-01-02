@@ -1,141 +1,97 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+.hero {
+  padding: 34px 0 0;
 }
 
-.main {
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 68%, transparent);
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+.title {
+  margin-top: 14px;
+  font-family: var(--font-serif);
+  font-size: clamp(44px, 5vw, 68px);
+  letter-spacing: -0.03em;
+  line-height: 1.02;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+.titleAccent {
+  color: color-mix(in srgb, var(--accent) 86%, var(--fg));
 }
 
-.intro p {
-  max-width: 440px;
+.lede {
+  margin-top: 14px;
+  max-width: 68ch;
   font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
+.search {
+  margin-top: 18px;
+  max-width: 680px;
 }
 
-.ctas {
+.quickLinks {
+  margin-top: 16px;
   display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+.link {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 78%, transparent);
+  color: color-mix(in srgb, var(--fg) 80%, transparent);
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
+.link:hover {
+  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent2) 18%, transparent);
+  color: var(--fg);
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+.cards {
+  margin-top: 22px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.card {
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg1) 82%, transparent),
+    color-mix(in srgb, var(--bg1) 68%, transparent)
+  );
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--shadow);
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.cardTitle {
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
+.cardBody {
+  margin-top: 8px;
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
+  line-height: 1.7;
+}
+
+@media (max-width: 920px) {
+  .cards {
+    grid-template-columns: 1fr;
   }
 
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+  .card {
+    box-shadow: none;
   }
 }

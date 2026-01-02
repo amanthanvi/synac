@@ -1,13 +1,14 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --bg0: #070a0e;
+  --bg1: #0b111a;
+  --fg: #e8eef6;
+  --muted: #98a4b4;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --accent: #ffb000;
+  --accent2: #2de2e6;
+
+  --border: color-mix(in srgb, var(--fg) 14%, transparent);
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
 }
 
 html,
@@ -16,10 +17,24 @@ body {
   overflow-x: hidden;
 }
 
+html {
+  color-scheme: dark;
+}
+
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--fg);
+  background: radial-gradient(
+      900px 500px at 20% -10%,
+      color-mix(in srgb, var(--accent2) 26%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      900px 520px at 95% 0%,
+      color-mix(in srgb, var(--accent) 18%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,8 +50,24 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.appMain {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 18px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

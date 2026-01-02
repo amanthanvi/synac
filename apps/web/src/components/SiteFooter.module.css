@@ -1,0 +1,39 @@
+.footer {
+  border-top: 1px solid var(--border);
+  margin-top: 56px;
+}
+
+.inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 18px 44px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.links a {
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.links a:hover {
+  color: var(--fg);
+  background: color-mix(in srgb, var(--bg1) 70%, transparent);
+}
+
+.meta {
+  color: color-mix(in srgb, var(--fg) 55%, transparent);
+  font-size: 13px;
+}
+
