@@ -50,6 +50,7 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Clerk auth integration (OIDC/MFA enforced via Clerk policy)
 - [x] RBAC bootstrap: email allowlist → DB roles (`ADMIN`, `EDITOR`, `VIEWER`)
 - [x] Entry + sense editor: drafts, publish/archive, reorder senses
+- [x] Tags: create/rename/merge + assign to entries
 - [x] Publish quality gates: citations per sense (or Editorial + rationale)
 - [x] Audit events for entry/sense mutations + entry rollback (Admin-only)
 - [x] Admin audit log page + filters
