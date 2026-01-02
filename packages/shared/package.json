@@ -6,7 +6,10 @@
   "main": "./dist/index.js",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
   },
   "scripts": {
     "dev": "tsc -p tsconfig.build.json -w --preserveWatchOutput",
