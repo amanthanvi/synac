@@ -5,3 +5,4 @@ build
 .turbo
 pnpm-lock.yaml
 apps/web/next-env.d.ts
+packages/db/src/generated
