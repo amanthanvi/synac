@@ -54,6 +54,7 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
           id: true,
           stage: true,
           licenseGate: true,
+          licenseGateReason: true,
           confidenceScore: true,
           error: true,
           proposedChange: true,
@@ -119,6 +120,12 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                 {item.error ? (
                   <div style={{ marginTop: 6, opacity: 0.85 }}>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>Error:</span> {item.error}
+                  </div>
+                ) : null}
+
+                {item.licenseGateReason ? (
+                  <div style={{ marginTop: 6, opacity: 0.85 }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>License:</span> {item.licenseGateReason}
                   </div>
                 ) : null}
 

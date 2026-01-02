@@ -1,4 +1,4 @@
-import { getPrismaClient } from '@synac/db';
+import { getPrismaClient, type Prisma } from '@synac/db';
 
 import { getBoss } from '@/lib/boss';
 import { createDraftEntry, createDraftSense, updateEntry, updateSense } from '@/lib/adminEntries';
@@ -100,16 +100,28 @@ type ProposedChangeCreateEntry = {
     senseLabel?: string;
     expandedForm?: string;
     definitionMd: string;
+    contentMode?: string;
     extractionMethod?: string;
     extractorVersion?: string;
     sourceLocator?: unknown;
   }>;
 };
 
-function parseProposedChange(value: unknown): ProposedChangeCreateEntry {
+type ProposedChangeAddSenses = {
+  kind: 'ADD_SENSES';
+  entryId: string;
+  entryType: 'TERM' | 'ACRONYM';
+  displayTitle: string;
+  summaryMd?: string;
+  senses: ProposedChangeCreateEntry['senses'];
+};
+
+type ProposedChange = ProposedChangeCreateEntry | ProposedChangeAddSenses;
+
+function parseProposedChange(value: unknown): ProposedChange {
   if (!value || typeof value !== 'object') throw new Error('Invalid proposedChange');
   const v = value as Record<string, unknown>;
-  if (v.kind !== 'CREATE_ENTRY') throw new Error('Unsupported proposedChange.kind');
+  if (v.kind !== 'CREATE_ENTRY' && v.kind !== 'ADD_SENSES') throw new Error('Unsupported proposedChange.kind');
   const entryType = v.entryType === 'ACRONYM' ? 'ACRONYM' : 'TERM';
   const displayTitle = typeof v.displayTitle === 'string' ? v.displayTitle : '';
   const primarySlug = typeof v.primarySlug === 'string' ? v.primarySlug : undefined;
@@ -122,25 +134,37 @@ function parseProposedChange(value: unknown): ProposedChangeCreateEntry {
       senseLabel: typeof s.senseLabel === 'string' ? s.senseLabel : undefined,
       expandedForm: typeof s.expandedForm === 'string' ? s.expandedForm : undefined,
       definitionMd: typeof s.definitionMd === 'string' ? s.definitionMd : '',
+      contentMode: typeof s.contentMode === 'string' ? s.contentMode : undefined,
       extractionMethod: typeof s.extractionMethod === 'string' ? s.extractionMethod : undefined,
       extractorVersion: typeof s.extractorVersion === 'string' ? s.extractorVersion : undefined,
       sourceLocator: s.sourceLocator,
     }));
 
-  return {
-    kind: 'CREATE_ENTRY',
-    entryType,
-    displayTitle,
-    primarySlug,
-    summaryMd,
-    senses,
-  };
+  if (v.kind === 'ADD_SENSES') {
+    const entryId = typeof v.entryId === 'string' ? v.entryId : '';
+    return {
+      kind: 'ADD_SENSES',
+      entryId,
+      entryType,
+      displayTitle,
+      summaryMd: summaryMd || undefined,
+      senses,
+    };
+  }
+
+  return { kind: 'CREATE_ENTRY', entryType, displayTitle, primarySlug, summaryMd, senses };
 }
 
 function parseExtractionMethod(value: string | undefined): 'API' | 'RSS' | 'HTML' | 'PDF' | 'MANUAL' {
   const v = value?.toUpperCase();
   if (v === 'API' || v === 'RSS' || v === 'HTML' || v === 'PDF' || v === 'MANUAL') return v;
   return 'MANUAL';
+}
+
+function parseContentMode(value: string | undefined): 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED' {
+  const v = value?.toUpperCase();
+  if (v === 'QUOTED' || v === 'SUMMARIZED' || v === 'PARAPHRASED') return v;
+  return 'SUMMARIZED';
 }
 
 export async function approveIngestItem(input: {
@@ -183,30 +207,48 @@ export async function approveIngestItem(input: {
   const proposed = parseProposedChange(item.proposedChange);
   if (!proposed.displayTitle.trim()) throw new Error('proposedChange.displayTitle is required');
 
+  if (proposed.kind === 'ADD_SENSES' && !proposed.entryId.trim()) {
+    throw new Error('proposedChange.entryId is required for ADD_SENSES');
+  }
+
   const firstSense = proposed.senses[0];
   if (!firstSense?.definitionMd?.trim()) throw new Error('proposedChange requires at least one sense definition');
 
-  const { entryId } = await createDraftEntry({
-    actorUserId: input.actorUserId,
-    entryType: proposed.entryType,
-    displayTitle: proposed.displayTitle,
-    primarySlug: proposed.primarySlug,
-  });
+  let entryId: string;
+  if (proposed.kind === 'CREATE_ENTRY') {
+    const created = await createDraftEntry({
+      actorUserId: input.actorUserId,
+      entryType: proposed.entryType,
+      displayTitle: proposed.displayTitle,
+      primarySlug: proposed.primarySlug,
+    });
+    entryId = created.entryId;
 
-  await updateEntry({
-    actorUserId: input.actorUserId,
-    entryId,
-    displayTitle: proposed.displayTitle,
-    primarySlug: proposed.primarySlug ?? '',
-    summaryMd: proposed.summaryMd ?? '',
-    editorialNotes: '',
-  });
+    await updateEntry({
+      actorUserId: input.actorUserId,
+      entryId,
+      displayTitle: proposed.displayTitle,
+      primarySlug: proposed.primarySlug ?? '',
+      summaryMd: proposed.summaryMd ?? '',
+      editorialNotes: '',
+    });
+  } else {
+    const existing = await prisma.entry.findFirst({
+      where: { id: proposed.entryId, deletedAt: null },
+      select: { id: true, entryType: true },
+    });
+    if (!existing) throw new Error('Entry not found for ADD_SENSES');
+    if (existing.entryType !== proposed.entryType) {
+      throw new Error('proposedChange.entryType does not match existing entry type');
+    }
+    entryId = existing.id;
+  }
 
-  const senseIds: string[] = [];
+  const appliedSenses: Array<{ senseId: string; sense: ProposedChangeCreateEntry['senses'][number] }> = [];
   for (const sense of proposed.senses) {
     if (!sense.definitionMd.trim()) continue;
     const { senseId } = await createDraftSense({ actorUserId: input.actorUserId, entryId });
-    senseIds.push(senseId);
+    appliedSenses.push({ senseId, sense });
     await updateSense({
       actorUserId: input.actorUserId,
       senseId,
@@ -234,48 +276,56 @@ export async function approveIngestItem(input: {
 
   const extractionMethod = parseExtractionMethod(firstSense.extractionMethod ?? source.accessMethod);
   const extractorVersion = firstSense.extractorVersion?.trim() ? firstSense.extractorVersion.trim() : 'synac-web';
+  const contentMode = parseContentMode(firstSense.contentMode);
 
   const provenance: Array<{
     entityType: 'ENTRY' | 'SENSE';
     entityId: string;
     fieldName: string;
     citationId: string;
+    contentMode: typeof contentMode;
     extractionMethod: typeof extractionMethod;
     extractorVersion: string;
     extractedAt: Date;
+    sourceLocator?: Prisma.InputJsonValue;
   }> = [];
 
-  if (proposed.summaryMd?.trim()) {
+  if (proposed.kind === 'CREATE_ENTRY' && proposed.summaryMd?.trim()) {
     provenance.push({
       entityType: 'ENTRY',
       entityId: entryId,
       fieldName: 'summaryMd',
       citationId: citation.id,
+      contentMode,
       extractionMethod,
       extractorVersion,
       extractedAt: item.sourceDocument.fetchedAt,
+      sourceLocator: firstSense.sourceLocator as Prisma.InputJsonValue,
     });
   }
 
-  for (const senseId of senseIds) {
+  for (const { senseId, sense } of appliedSenses) {
     provenance.push({
       entityType: 'SENSE',
       entityId: senseId,
       fieldName: 'definitionMd',
       citationId: citation.id,
-      extractionMethod,
-      extractorVersion,
+      contentMode: parseContentMode(sense.contentMode),
+      extractionMethod: parseExtractionMethod(sense.extractionMethod ?? extractionMethod),
+      extractorVersion: sense.extractorVersion?.trim() ? sense.extractorVersion.trim() : extractorVersion,
       extractedAt: item.sourceDocument.fetchedAt,
+      sourceLocator: sense.sourceLocator as Prisma.InputJsonValue,
     });
   }
 
   await prisma.fieldProvenance.createMany({ data: provenance });
+  const appliedSenseIds = appliedSenses.map((s) => s.senseId);
 
   await prisma.ingestItem.update({
     where: { id: item.id },
     data: {
       stage: 'APPLIED',
-      diff: { appliedEntryId: entryId },
+      diff: { appliedEntryId: entryId, appliedSenseIds },
       error: null,
     },
   });
@@ -286,7 +336,7 @@ export async function approveIngestItem(input: {
       action: 'INGEST_ITEM_APPROVE',
       entityType: 'INGEST_ITEM',
       entityId: item.id,
-      after: { appliedEntryId: entryId },
+      after: { appliedEntryId: entryId, appliedSenseIds },
     },
   });
 
