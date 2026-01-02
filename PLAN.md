@@ -48,10 +48,13 @@ This is the living implementation tracker for `SPEC.md`.
 ## Phase 3 — Admin (FR-012..FR-016)
 
 - [x] Clerk auth integration (OIDC/MFA enforced via Clerk policy)
-- [ ] RBAC backed by DB (`ADMIN`, `EDITOR`, `VIEWER`)
-- [ ] Entry + sense editor: drafts, preview, publish/archive, reorder senses
-- [ ] Quality gates for publish + style-lint warnings
-- [ ] Audit events for all mutations + rollback UI/API (field-level selective)
+- [x] RBAC bootstrap: email allowlist → DB roles (`ADMIN`, `EDITOR`, `VIEWER`)
+- [x] Entry + sense editor: drafts, publish/archive, reorder senses
+- [x] Publish quality gates: citations per sense (or Editorial + rationale)
+- [x] Audit events for entry/sense mutations + entry rollback (Admin-only)
+- [ ] Admin audit log page + filters
+- [ ] Admin sources UI: create/edit/enable/disable + verify metadata
+- [ ] Admin API routes per §11 (entries, audit, sources, ingest)
 
 ## Phase 4 — Ingest system (FR-100..FR-111)
 
