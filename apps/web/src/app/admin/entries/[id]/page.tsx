@@ -5,6 +5,7 @@ import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { requireAdminActor } from '@/lib/admin';
+import { EntryTagsSection } from './EntryTagsSection';
 import {
   createDraftSense,
   moveSense,
@@ -47,6 +48,11 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
       senses: {
         where: { deletedAt: null },
         orderBy: [{ senseOrder: 'asc' }],
+      },
+      entryTags: {
+        where: { tag: { deletedAt: null } },
+        include: { tag: true },
+        orderBy: [{ tag: { name: 'asc' } }],
       },
     },
   });
@@ -167,6 +173,8 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
           </div>
         </form>
       </section>
+
+      <EntryTagsSection entryId={entry.id} entryTags={entry.entryTags} />
 
       <section style={{ marginTop: 22 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
