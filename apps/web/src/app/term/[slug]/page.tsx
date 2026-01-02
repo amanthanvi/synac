@@ -1,7 +1,11 @@
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
-import { getPrismaClient, resolvePublishedEntryBySlug } from '@synac/db';
+import {
+  getPrismaClient,
+  listPublishedRelationshipsForEntry,
+  resolvePublishedEntryBySlug,
+} from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Markdown } from '@/components/Markdown';
@@ -58,6 +62,18 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
         orderBy: [{ extractedAt: 'desc' }],
       })
     : [];
+
+  const relationships = await listPublishedRelationshipsForEntry(prisma, {
+    entryId: entry.id,
+    limit: 50,
+  });
+
+  const related = relationships
+    .filter((r) => r.relationshipType === 'RELATED')
+    .slice(0, 10);
+  const seeAlso = relationships
+    .filter((r) => r.relationshipType === 'SEE_ALSO')
+    .slice(0, 10);
 
   const citationsBySenseId = new Map<string, Map<string, typeof provenance[number]['citation']>>();
   for (const fp of provenance) {
@@ -172,6 +188,50 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
           </div>
         )}
       </section>
+
+      {related.length ? (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Related</h2>
+          <ul className={styles.relList}>
+            {related.map((r) => (
+              <li key={r.otherEntry.id}>
+                <Link
+                  href={
+                    r.otherEntry.entryType === 'TERM'
+                      ? `/term/${r.otherEntry.primarySlug}`
+                      : `/acronym/${r.otherEntry.primarySlug}`
+                  }
+                  className={styles.relLink}
+                >
+                  {r.otherEntry.displayTitle}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {seeAlso.length ? (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>See also</h2>
+          <ul className={styles.relList}>
+            {seeAlso.map((r) => (
+              <li key={r.otherEntry.id}>
+                <Link
+                  href={
+                    r.otherEntry.entryType === 'TERM'
+                      ? `/term/${r.otherEntry.primarySlug}`
+                      : `/acronym/${r.otherEntry.primarySlug}`
+                  }
+                  className={styles.relLink}
+                >
+                  {r.otherEntry.displayTitle}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </>
   );
 }
