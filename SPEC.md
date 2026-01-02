@@ -658,7 +658,7 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
     -   mark specific SourceDocuments as “do not use”,
     -   purge derived fields/senses/entries (soft delete by default; hard delete when legally required).
 -   Public pages for removed entries return:
-    -   410 Gone (default) if permanently removed,
+    -   404 Not Found (default) if permanently removed (SynAc does not publicly distinguish “gone” vs “missing” in v0.1.0),
     -   or 308 to replacement entry when merged/renamed.
 -   Takedown requests create an internal case record with timestamps, actions taken, and affected content list.
 
@@ -921,6 +921,10 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   `content_sha256` (TEXT)
 -   `snapshot_storage_uri` (TEXT nullable; only if allowed)
 -   `snapshot_allowed` (BOOL)
+-   `do_not_use` (BOOL default false)
+-   `do_not_use_reason` (TEXT nullable)
+-   `do_not_use_at` (TIMESTAMP nullable)
+-   `do_not_use_by_user_id` (FK users nullable)
 -   `deleted_at`
 -   UNIQUE (`source_id`, `url`, `content_sha256`)
 
@@ -1015,6 +1019,21 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   `request_id` (TEXT)
 -   `ip_hash` (TEXT nullable) (privacy-aware; no raw IP by default)
 -   Index (`entity_type`, `entity_id`, `created_at DESC`)
+
+#### `takedown_cases`
+
+-   `id` (PK)
+-   `status` (ENUM: OPEN, IN_PROGRESS, CLOSED)
+-   `source_id` (FK sources nullable)
+-   `source_document_id` (FK source_documents nullable)
+-   `entry_id` (FK entries nullable)
+-   `requester_contact` (TEXT nullable)
+-   `request_text` (TEXT)
+-   `internal_notes` (TEXT nullable)
+-   `actions` (JSONB)
+-   `affected_entity_ids` (JSONB)
+-   `created_at`, `updated_at`, `closed_at`
+-   `created_by_user_id` (FK users)
 
 ### Migration & seed strategy
 

@@ -98,6 +98,12 @@ enum LicenseGate {
   FAIL
 }
 
+enum TakedownCaseStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
 enum FieldProvenanceEntityType {
   ENTRY
   SENSE
@@ -164,6 +170,7 @@ model Entry {
   views           EntryView[]
   relationshipsFrom EntryRelationship[] @relation("relationships_from")
   relationshipsTo   EntryRelationship[] @relation("relationships_to")
+  takedownCases   TakedownCase[]
 
   @@index([entryType, primarySlug])
   @@index([entryType, normalizedTitle])
@@ -357,6 +364,7 @@ model Source {
   documents SourceDocument[]
   citations Citation[]
   ingestRuns IngestRun[]
+  takedownCases TakedownCase[]
 
   @@map("sources")
 }
@@ -374,11 +382,17 @@ model SourceDocument {
   contentSha256      String    @map("content_sha256") @db.Text
   snapshotStorageUri String?   @map("snapshot_storage_uri") @db.Text
   snapshotAllowed    Boolean   @map("snapshot_allowed")
+  doNotUse           Boolean   @default(false) @map("do_not_use")
+  doNotUseReason     String?   @map("do_not_use_reason") @db.Text
+  doNotUseAt         DateTime? @map("do_not_use_at")
+  doNotUseByUserId   String?   @map("do_not_use_by_user_id") @db.Uuid
   deletedAt          DateTime? @map("deleted_at")
 
   source    Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   citations Citation[]
   ingestItems IngestItem[]
+  doNotUseByUser User? @relation("source_documents_do_not_use_by_user", fields: [doNotUseByUserId], references: [id])
+  takedownCases TakedownCase[]
 
   @@index([sourceId])
   @@index([url])
@@ -476,14 +490,42 @@ model User {
   lastLoginAt     DateTime?    @map("last_login_at")
 
   roles UserRole[]
+  sourceDocumentsDoNotUse SourceDocument[] @relation("source_documents_do_not_use_by_user")
 
   entriesCreated Entry[] @relation("entries_created_by")
   entriesUpdated Entry[] @relation("entries_updated_by")
   auditEvents    AuditEvent[]
   ingestRunsTriggered IngestRun[] @relation("ingest_runs_triggered_by_user")
   entryRelationshipsCreated EntryRelationship[] @relation("entry_relationships_created_by")
+  takedownCasesCreated TakedownCase[] @relation("takedown_cases_created_by_user")
 
   @@map("users")
+}
+
+model TakedownCase {
+  id               String             @id @default(uuid()) @db.Uuid
+  status           TakedownCaseStatus @default(OPEN)
+  sourceId         String?            @map("source_id") @db.Uuid
+  sourceDocumentId String?            @map("source_document_id") @db.Uuid
+  entryId          String?            @map("entry_id") @db.Uuid
+  requesterContact String?            @map("requester_contact") @db.Text
+  requestText      String             @map("request_text") @db.Text
+  internalNotes    String?            @map("internal_notes") @db.Text
+  actions          Json?              @map("actions")
+  affectedEntityIds Json?             @map("affected_entity_ids")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  closedAt         DateTime?          @map("closed_at")
+  createdByUserId  String             @map("created_by_user_id") @db.Uuid
+
+  createdByUser    User              @relation("takedown_cases_created_by_user", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  source           Source?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  sourceDocument   SourceDocument?   @relation(fields: [sourceDocumentId], references: [id], onDelete: SetNull)
+  entry            Entry?            @relation(fields: [entryId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("takedown_cases")
 }
 
 model Role {
