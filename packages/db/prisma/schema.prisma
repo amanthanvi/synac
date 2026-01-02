@@ -139,6 +139,7 @@ model Entry {
   status          EntryStatus
   summaryMd       String?     @map("summary_md") @db.Text
   summaryText     String?     @map("summary_text") @db.Text
+  editorialNotes  String?     @map("editorial_notes") @db.Text
   createdAt       DateTime    @default(now()) @map("created_at")
   updatedAt       DateTime    @updatedAt @map("updated_at")
   publishedAt     DateTime?   @map("published_at")
@@ -235,6 +236,8 @@ model Sense {
   expandedForm   String?     @map("expanded_form") @db.Text
   originLanguage String?     @map("origin_language") @db.Text
   temporalContext String?    @map("temporal_context") @db.Text
+  isEditorial    Boolean     @default(false) @map("is_editorial")
+  editorialRationale String? @map("editorial_rationale") @db.Text
   isPreferred    Boolean     @default(false) @map("is_preferred")
   status         SenseStatus
   createdAt      DateTime    @default(now()) @map("created_at")
