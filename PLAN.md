@@ -76,7 +76,7 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Observability: structured logs + request IDs (log-based metrics)
 - [x] Backups + restore drill checklist
 - [x] CI: lint/typecheck/tests + CodeQL + dependency scan + SBOM artifact
-- [ ] Release: bump versions + tag `v0.1.0`
+- [x] Release: bump versions + tag `v0.1.0`
 
 ## Spec deltas log (keep short)
 

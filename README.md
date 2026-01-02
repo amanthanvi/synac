@@ -6,4 +6,4 @@ The product and engineering requirements live in `SPEC.md`. The execution tracke
 
 ## Status
 
-Work in progress (targeting `v0.1.0`).
+Released: `v0.1.0`.
