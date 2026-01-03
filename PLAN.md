@@ -30,15 +30,10 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Railway env vars (dev+prod): `NEXT_PUBLIC_SITE_URL`, `SYNAC_ADMIN_EMAILS` (`SYNAC_EDITOR_EMAILS` optional)
 - [x] Railway secrets (dev+prod): `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
 - [x] Seed roles/users (dev+prod): allowlist bootstrap → DB roles
-- [ ] Fix Clerk prod custom-domain DNS (required for Clerk JS to load on `synac.app`)
-    - Current prod Clerk Frontend API domain decodes to `clerk.synac.io` → DNS is currently missing.
-    - Required CNAME records (from Clerk Domains API):
-        - `clerk.synac.io` → `frontend-api.clerk.services`
-        - `accounts.synac.io` → `accounts.clerk.services`
-        - `clkmail.synac.io` → `mail.ikpttremffyl.clerk.services`
-        - `clk._domainkey.synac.io` → `dkim1.ikpttremffyl.clerk.services`
-        - `clk2._domainkey.synac.io` → `dkim2.ikpttremffyl.clerk.services`
-- [ ] Smoke test (Chrome DevTools MCP): dev ✅ (public browse/search, `/admin` redirects), prod blocked until Clerk DNS fixed
+- [x] Fix Clerk prod custom-domain DNS (Clerk lives under `synac.app`)
+    - Prod Clerk custom domains: `clerk.synac.app` + `accounts.synac.app` (DNS verified in Cloudflare).
+    - Verified Clerk JS loads on `synac.app` and `/admin` redirects to `accounts.synac.app`.
+- [x] Smoke test (Chrome DevTools MCP): dev ✅ (public browse/search, `/admin` redirects), prod ✅ (public pages, `/admin` redirects)
 
 ## Phase 0 — Repo bootstrap (foundation)
 
