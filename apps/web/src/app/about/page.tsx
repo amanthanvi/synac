@@ -1,5 +1,7 @@
 import { PageHeader } from '@/components/PageHeader';
 
+export const dynamic = 'force-dynamic';
+
 export default function AboutPage() {
   return (
     <>
@@ -17,4 +19,3 @@ export default function AboutPage() {
     </>
   );
 }
-

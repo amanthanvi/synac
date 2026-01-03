@@ -1,6 +1,6 @@
 # SynAc v0.1.0 — Execution Plan (PLAN.md)
 
-Last updated: 2026-01-02
+Last updated: 2026-01-03
 
 This is the living implementation tracker for `SPEC.md`.
 
@@ -20,6 +20,17 @@ This is the living implementation tracker for `SPEC.md`.
 - Small/medium diffs.
 - Commit + push frequently (same branch).
 - Keep code aligned with `SPEC.md`; when reality diverges, update `SPEC.md` (don’t ship undocumented behavior).
+
+## Post-release hardening — v0.1.0 functional on Railway
+
+- [x] Canonical prod domain confirmed: `synac.app` (no `synac.io` cutover)
+- [x] Fix Next prerender + CSP nonce mismatch (force-dynamic for static pages so nonce is present)
+- [x] Migrate middleware to App Router `src/proxy.ts` with `clerkMiddleware()`
+- [x] Expand CSP allowlist for Clerk domains (`*.clerk.com`, `*.clerk.dev`, `*.clerk.accounts.dev`, custom domain)
+- [ ] Railway env vars (dev+prod): `NEXT_PUBLIC_SITE_URL`, `SYNAC_ADMIN_EMAILS`, `SYNAC_EDITOR_EMAILS`
+- [ ] Railway secrets (dev+prod): `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
+- [ ] Seed roles/users (dev+prod): allowlist bootstrap → DB roles
+- [ ] Smoke test (Chrome DevTools MCP): public browse/search, sign-in/up, `/admin` authz, worker health
 
 ## Phase 0 — Repo bootstrap (foundation)
 

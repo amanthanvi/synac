@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { PageHeader } from '@/components/PageHeader';
 import { CHANGELOG } from '@/lib/changelog';
 
+export const dynamic = 'force-dynamic';
+
 export default function ChangelogPage() {
   return (
     <>

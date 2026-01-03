@@ -17,7 +17,12 @@ function generateNonce(): string {
 function buildContentSecurityPolicy(nonce: string): string {
   const isDev = process.env.NODE_ENV !== 'production';
 
-  const clerk = ['https://*.clerk.com', 'https://*.clerk.dev'];
+  const clerk = [
+    'https://*.clerk.com',
+    'https://*.clerk.dev',
+    'https://*.clerk.accounts.dev',
+    'https://clerk.synac.io',
+  ];
 
   const scriptSrc = ["'self'", `'nonce-${nonce}'`, ...(isDev ? ["'unsafe-eval'"] : []), ...clerk].join(' ');
   const connectSrc = ["'self'", ...(isDev ? ['ws:', 'wss:'] : []), ...clerk].join(' ');
@@ -41,8 +46,8 @@ function buildContentSecurityPolicy(nonce: string): string {
 }
 
 function setSecurityHeaders(request: NextRequest, response: NextResponse): NextResponse {
-  const shouldContinue = response.headers.get('x-synac-middleware-continue') !== 'false';
-  response.headers.delete('x-synac-middleware-continue');
+  const shouldContinue = response.headers.get('x-synac-proxy-continue') !== 'false';
+  response.headers.delete('x-synac-proxy-continue');
 
   const existingRequestId = request.headers.get('x-request-id');
   const requestId = existingRequestId?.trim() ? existingRequestId.trim() : crypto.randomUUID();
@@ -121,24 +126,29 @@ function maybeSetSessionCookie(request: NextRequest, response: NextResponse): Ne
   return response;
 }
 
-const middlewareWithoutAuth = (request: NextRequest) => {
+const proxyWithoutAuth = (request: NextRequest) => {
   if (isAdminRoute(request)) {
     const response = new NextResponse('Not Found', { status: 404 });
-    response.headers.set('x-synac-middleware-continue', 'false');
+    response.headers.set('x-synac-proxy-continue', 'false');
     return setSecurityHeaders(request, response);
   }
+
   const withCookies = maybeSetSessionCookie(request, NextResponse.next());
   return setSecurityHeaders(request, withCookies);
 };
 
-const middlewareWithAuth = clerkMiddleware((auth, request) => {
+const proxyWithAuth = clerkMiddleware((auth, request) => {
   if (isAdminRoute(request)) auth.protect();
   const withCookies = maybeSetSessionCookie(request, NextResponse.next());
   return setSecurityHeaders(request, withCookies);
 });
 
-export default isClerkConfigured ? middlewareWithAuth : middlewareWithoutAuth;
+export default isClerkConfigured ? proxyWithAuth : proxyWithoutAuth;
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api|trpc)(.*)',
+  ],
 };
+
