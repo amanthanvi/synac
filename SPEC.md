@@ -1337,6 +1337,7 @@ Rank results using weighted signals:
 -   Content Security Policy:
     -   default-src 'self'
     -   script-src 'self' (no inline; use nonces if needed)
+    -   worker-src 'self' blob: (required for modern Next.js runtime behavior)
     -   object-src 'none'
     -   base-uri 'self'
     -   frame-ancestors 'none'
@@ -1463,6 +1464,7 @@ Rank results using weighted signals:
 -   **Object storage:** Railway volumes or external (Cloudflare R2) for allowed snapshots
 -   **CDN:** Cloudflare (or Railway's built-in) for caching and DDoS absorption
 -   **Auth:** Clerk or Auth0 (managed, external to Railway)
+    -   If using a Clerk custom domain for the Frontend API, the required DNS records must exist (or Clerk JS will fail to load).
 -   **Network policies:**
     -   web service can reach DB
     -   ingest workers have restricted egress to allowlisted source domains only (configure via environment)
