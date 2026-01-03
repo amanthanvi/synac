@@ -16,6 +16,9 @@ const INGEST_RUN_QUEUE = 'ingest_run';
 const boss = new PgBoss(databaseUrl);
 await boss.start();
 
+await boss.createQueue(INGEST_CRON_QUEUE);
+await boss.createQueue(INGEST_RUN_QUEUE);
+
 async function syncCronSchedules(): Promise<void> {
   const prisma = getPrismaClient();
 
