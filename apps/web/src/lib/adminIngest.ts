@@ -62,7 +62,7 @@ export async function createIngestRun(input: {
   });
 
   const boss = await getBoss();
-  await boss.send('ingest:run', { ingestRunId: run.id });
+  await boss.send('ingest_run', { ingestRunId: run.id });
 
   return { ingestRunId: run.id };
 }
