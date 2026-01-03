@@ -10,6 +10,9 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL is required');
 }
 
+const INGEST_CRON_QUEUE = 'ingest_cron';
+const INGEST_RUN_QUEUE = 'ingest_run';
+
 const boss = new PgBoss(databaseUrl);
 await boss.start();
 
@@ -27,17 +30,17 @@ async function syncCronSchedules(): Promise<void> {
     if (cron) desired.set(s.id, cron);
   }
 
-  const existing = await boss.getSchedules('ingest:cron');
+  const existing = await boss.getSchedules(INGEST_CRON_QUEUE);
 
   const desiredKeys = new Set(desired.keys());
   for (const sch of existing) {
     if (!sch.key) continue;
     if (!desiredKeys.has(sch.key)) {
       try {
-        await boss.unschedule('ingest:cron', sch.key);
+        await boss.unschedule(INGEST_CRON_QUEUE, sch.key);
       } catch (err) {
         logger.warn('worker.schedule.unschedule_failed', {
-          job: 'ingest:cron',
+          job: INGEST_CRON_QUEUE,
           key: sch.key,
           error: err instanceof Error ? err.message : String(err),
         });
@@ -47,10 +50,10 @@ async function syncCronSchedules(): Promise<void> {
 
   for (const [sourceId, cron] of desired) {
     try {
-      await boss.schedule('ingest:cron', cron, { sourceId, maxItems: 200 }, { key: sourceId, tz: 'UTC' });
+      await boss.schedule(INGEST_CRON_QUEUE, cron, { sourceId, maxItems: 200 }, { key: sourceId, tz: 'UTC' });
     } catch (err) {
       logger.warn('worker.schedule.schedule_failed', {
-        job: 'ingest:cron',
+        job: INGEST_CRON_QUEUE,
         sourceId,
         cron,
         error: err instanceof Error ? err.message : String(err),
@@ -70,7 +73,7 @@ setInterval(() => {
   });
 }, 10 * 60 * 1000);
 
-await boss.work<{ sourceId: string; maxItems?: number }>('ingest:cron', async (jobs) => {
+await boss.work<{ sourceId: string; maxItems?: number }>(INGEST_CRON_QUEUE, async (jobs) => {
   const prisma = getPrismaClient();
 
   for (const job of jobs) {
@@ -112,11 +115,11 @@ await boss.work<{ sourceId: string; maxItems?: number }>('ingest:cron', async (j
       select: { id: true },
     });
 
-    await boss.send('ingest:run', { ingestRunId: run.id });
+    await boss.send(INGEST_RUN_QUEUE, { ingestRunId: run.id });
   }
 });
 
-await boss.work<{ ingestRunId: string }>('ingest:run', async (jobs) => {
+await boss.work<{ ingestRunId: string }>(INGEST_RUN_QUEUE, async (jobs) => {
   for (const job of jobs) {
     const ingestRunId = job.data?.ingestRunId;
     if (!ingestRunId) throw new Error('ingestRunId is required');
