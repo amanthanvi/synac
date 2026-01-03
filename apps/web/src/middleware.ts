@@ -41,6 +41,9 @@ function buildContentSecurityPolicy(nonce: string): string {
 }
 
 function setSecurityHeaders(request: NextRequest, response: NextResponse): NextResponse {
+  const shouldContinue = response.headers.get('x-synac-middleware-continue') !== 'false';
+  response.headers.delete('x-synac-middleware-continue');
+
   const existingRequestId = request.headers.get('x-request-id');
   const requestId = existingRequestId?.trim() ? existingRequestId.trim() : crypto.randomUUID();
 
@@ -62,12 +65,15 @@ function setSecurityHeaders(request: NextRequest, response: NextResponse): NextR
   const nonce = generateNonce();
   const csp = buildContentSecurityPolicy(nonce);
 
+  response.headers.set('content-security-policy', csp);
+
+  if (!shouldContinue) return response;
+
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('content-security-policy', csp);
   requestHeaders.set('x-request-id', requestId);
 
   const next = NextResponse.next({ request: { headers: requestHeaders } });
-  next.headers.set('content-security-policy', csp);
   for (const [key, value] of response.headers) {
     next.headers.set(key, value);
   }
@@ -116,6 +122,11 @@ function maybeSetSessionCookie(request: NextRequest, response: NextResponse): Ne
 }
 
 const middlewareWithoutAuth = (request: NextRequest) => {
+  if (isAdminRoute(request)) {
+    const response = new NextResponse('Not Found', { status: 404 });
+    response.headers.set('x-synac-middleware-continue', 'false');
+    return setSecurityHeaders(request, response);
+  }
   const withCookies = maybeSetSessionCookie(request, NextResponse.next());
   return setSecurityHeaders(request, withCookies);
 };
