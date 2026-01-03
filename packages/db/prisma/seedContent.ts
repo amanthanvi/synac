@@ -485,7 +485,7 @@ async function ensurePublishedEntryWithOneSense(prisma: PrismaClient, input: {
   if (input.provenance?.citationId) {
     await ensureFieldProvenance(prisma, {
       entityType: 'ENTRY',
-      entityId,
+      entityId: entryId,
       fieldName: 'summaryMd',
       citationId: input.provenance.citationId,
     });
@@ -502,7 +502,7 @@ async function ensurePublishedEntryWithOneSense(prisma: PrismaClient, input: {
       actorUserId: input.actorUserId,
       action: 'ENTRY_PUBLISH',
       entityType: 'ENTRY',
-      entityId,
+      entityId: entryId,
       after: toJsonSafe({ entryId, publishedAt: now.toISOString() }),
     },
   });
@@ -657,4 +657,3 @@ main().catch((err) => {
   console.error(err);
   process.exitCode = 1;
 });
-
