@@ -34,6 +34,7 @@ function buildContentSecurityPolicy(nonce: string): string {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self' data: https:",
+    "worker-src 'self' blob:",
     `connect-src ${connectSrc}`,
     `frame-src ${frameSrc}`,
     "object-src 'none'",
@@ -151,4 +152,3 @@ export const config = {
     '/(api|trpc)(.*)',
   ],
 };
-
