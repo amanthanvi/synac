@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@synac/db';
+import type { Prisma, PrismaClient } from '@synac/db';
 
 export async function syncSourcesToStaging(
   prod: PrismaClient,
@@ -51,7 +51,9 @@ export async function syncSourcesToStaging(
         attributionRequirements: src.attributionRequirements,
         accessMethod: src.accessMethod,
         robotsPolicy: src.robotsPolicy,
-        rateLimitPolicy: src.rateLimitPolicy,
+        rateLimitPolicy: src.rateLimitPolicy
+          ? (src.rateLimitPolicy as unknown as Prisma.InputJsonValue)
+          : undefined,
         contact: src.contact,
         lastVerifiedAt: src.lastVerifiedAt,
         trustTier: src.trustTier,
@@ -69,7 +71,9 @@ export async function syncSourcesToStaging(
         attributionRequirements: src.attributionRequirements,
         accessMethod: src.accessMethod,
         robotsPolicy: src.robotsPolicy,
-        rateLimitPolicy: src.rateLimitPolicy,
+        rateLimitPolicy: src.rateLimitPolicy
+          ? (src.rateLimitPolicy as unknown as Prisma.InputJsonValue)
+          : undefined,
         contact: src.contact,
         lastVerifiedAt: src.lastVerifiedAt,
         trustTier: src.trustTier,
@@ -84,4 +88,3 @@ export async function syncSourcesToStaging(
 
   return { upserted, disabledByAllowlist };
 }
-
