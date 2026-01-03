@@ -16,7 +16,8 @@
     "format": "pnpm -r format",
     "db:generate": "pnpm --filter @synac/db db:generate",
     "db:migrate": "pnpm --filter @synac/db db:migrate",
-    "db:seed": "pnpm --filter @synac/db db:seed"
+    "db:seed": "pnpm --filter @synac/db db:seed",
+    "db:seed:content": "pnpm --filter @synac/db db:seed:content"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
