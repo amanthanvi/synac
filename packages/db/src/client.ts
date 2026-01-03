@@ -5,10 +5,31 @@ import type { Prisma } from '@prisma/client';
 
 type GlobalForPrisma = typeof globalThis & {
   __synacPrisma?: PrismaClient;
+  __synacPrismaByUrl?: Map<string, PrismaClient>;
 };
 
 export type DbTransactionClient = Prisma.TransactionClient;
 export type DbClientLike = PrismaClient | Prisma.TransactionClient;
+
+export function createPrismaClient(databaseUrl: string): PrismaClient {
+  const adapter = new PrismaPg({ connectionString: databaseUrl });
+  return new PrismaClient({ adapter });
+}
+
+export function getPrismaClientForUrl(databaseUrl: string): PrismaClient {
+  const globalForPrisma = globalThis as GlobalForPrisma;
+
+  if (!globalForPrisma.__synacPrismaByUrl) {
+    globalForPrisma.__synacPrismaByUrl = new Map<string, PrismaClient>();
+  }
+
+  const existing = globalForPrisma.__synacPrismaByUrl.get(databaseUrl);
+  if (existing) return existing;
+
+  const prisma = createPrismaClient(databaseUrl);
+  globalForPrisma.__synacPrismaByUrl.set(databaseUrl, prisma);
+  return prisma;
+}
 
 export function getPrismaClient(): PrismaClient {
   const globalForPrisma = globalThis as GlobalForPrisma;
@@ -22,8 +43,7 @@ export function getPrismaClient(): PrismaClient {
     throw new Error('DATABASE_URL is required to create PrismaClient');
   }
 
-  const adapter = new PrismaPg({ connectionString: databaseUrl });
-  const prisma = new PrismaClient({ adapter });
+  const prisma = createPrismaClient(databaseUrl);
 
   if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.__synacPrisma = prisma;

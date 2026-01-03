@@ -44,6 +44,18 @@ async function main(): Promise<void> {
     create: { name: 'VIEWER' },
   });
 
+  const systemUser = await prisma.user.upsert({
+    where: { email: 'system@synac.app' },
+    update: { status: 'ACTIVE', authProvider: 'LOCAL', displayName: 'SynAc System' },
+    create: { email: 'system@synac.app', authProvider: 'LOCAL', displayName: 'SynAc System', status: 'ACTIVE' },
+  });
+
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: systemUser.id, roleId: adminRole.id } },
+    update: {},
+    create: { userId: systemUser.id, roleId: adminRole.id },
+  });
+
   const adminEmails = new Set(parseCsv(process.env.SYNAC_ADMIN_EMAILS));
   const editorEmails = parseCsv(process.env.SYNAC_EDITOR_EMAILS).filter(
     (email) => !adminEmails.has(email),

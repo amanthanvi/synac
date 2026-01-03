@@ -1,5 +1,7 @@
 export {
+  createPrismaClient,
   getPrismaClient,
+  getPrismaClientForUrl,
   PrismaClient,
   withTransaction,
 } from './client.js';
