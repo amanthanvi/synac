@@ -22,6 +22,9 @@ function buildContentSecurityPolicy(nonce: string): string {
     'https://*.clerk.dev',
     'https://*.clerk.accounts.dev',
     'https://clerk.synac.io',
+    'https://accounts.synac.io',
+    'https://clerk.synac.app',
+    'https://accounts.synac.app',
   ];
 
   const scriptSrc = ["'self'", `'nonce-${nonce}'`, ...(isDev ? ["'unsafe-eval'"] : []), ...clerk].join(' ');
