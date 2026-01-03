@@ -1051,6 +1051,7 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   Use transactional migrations (e.g., Prisma Migrate / Flyway / Liquibase) with CI checks.
 -   Seed strategy:
     -   bootstrap with initial Sources in `sources` (manual, verified),
+    -   optionally seed a minimal starter corpus (sources/tags + a few published entries) to avoid an empty public launch,
     -   run ingest in staging to generate corpus,
     -   promote to production via repeatable ingest + reviewed approvals (not DB dumps).
 -   Maintain a `schema_version` table if tooling requires.

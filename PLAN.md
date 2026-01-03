@@ -30,10 +30,12 @@ This is the living implementation tracker for `SPEC.md`.
 - [x] Railway env vars (dev+prod): `NEXT_PUBLIC_SITE_URL`, `SYNAC_ADMIN_EMAILS` (`SYNAC_EDITOR_EMAILS` optional)
 - [x] Railway secrets (dev+prod): `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
 - [x] Seed roles/users (dev+prod): allowlist bootstrap → DB roles
+- [x] Fix manual ingest trigger queue name (`ingest_run`) so Admin → Ingest runs actually execute
+- [x] Seed starter public content (dev+prod): sources + tags + initial published entries (`pnpm db:seed:content`)
 - [x] Fix Clerk prod custom-domain DNS (Clerk lives under `synac.app`)
     - Prod Clerk custom domains: `clerk.synac.app` + `accounts.synac.app` (DNS verified in Cloudflare).
     - Verified Clerk JS loads on `synac.app` and `/admin` redirects to `accounts.synac.app`.
-- [x] Smoke test (Chrome DevTools MCP): dev ✅ (public browse/search, `/admin` redirects), prod ✅ (public pages, `/admin` redirects)
+- [x] Smoke test (Chrome DevTools MCP): prod ✅ (public browse, admin, ingest approve→publish→public page), dev ✅ (public browse/search)
 
 ## Phase 0 — Repo bootstrap (foundation)
 
@@ -99,3 +101,4 @@ This is the living implementation tracker for `SPEC.md`.
 - 2026-01-02: Added ingest per-item `stage_outputs` and `license_gate_reason`, plus field provenance `content_mode`.
 - 2026-01-02: Added per-source ingest cron schedule (`sources.cron_schedule`) and manual force reprocess toggle.
 - 2026-01-02: Added takedown and safety tables: `takedown_cases`, `rate_limit_buckets`, and `source_documents.do_not_use*`.
+- 2026-01-03: Added `db:seed:content` for starter sources/tags + a minimal published corpus in dev/prod.
