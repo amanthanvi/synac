@@ -1351,6 +1351,7 @@ Rank results using weighted signals:
 -   Content Security Policy:
     -   default-src 'self'
     -   script-src 'self' (no inline; use nonces if needed)
+    -   If using per-request nonces, propagate nonce via `X-Nonce` so framework/auth layers can apply it to scripts.
     -   worker-src 'self' blob: (required for modern Next.js runtime behavior)
     -   object-src 'none'
     -   base-uri 'self'
