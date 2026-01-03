@@ -72,11 +72,13 @@ function setSecurityHeaders(request: NextRequest, response: NextResponse): NextR
   const nonce = generateNonce();
   const csp = buildContentSecurityPolicy(nonce);
 
+  response.headers.set('X-Nonce', nonce);
   response.headers.set('content-security-policy', csp);
 
   if (!shouldContinue) return response;
 
   const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('X-Nonce', nonce);
   requestHeaders.set('content-security-policy', csp);
   requestHeaders.set('x-request-id', requestId);
 
