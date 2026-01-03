@@ -141,8 +141,8 @@ const proxyWithoutAuth = (request: NextRequest) => {
   return setSecurityHeaders(request, withCookies);
 };
 
-const proxyWithAuth = clerkMiddleware((auth, request) => {
-  if (isAdminRoute(request)) auth.protect();
+const proxyWithAuth = clerkMiddleware(async (auth, request) => {
+  if (isAdminRoute(request)) await auth.protect();
   const withCookies = maybeSetSessionCookie(request, NextResponse.next());
   return setSecurityHeaders(request, withCookies);
 });
