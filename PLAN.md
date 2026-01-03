@@ -14,6 +14,7 @@ This is the living implementation tracker for `SPEC.md`.
 - Search: **Postgres FTS + pg_trgm**
 - Job queue: **pg-boss**
 - Hosting: **Railway**
+- Ingest methodology: **staging-first + automated promotion**
 
 ## Working agreement
 
@@ -36,6 +37,16 @@ This is the living implementation tracker for `SPEC.md`.
     - Prod Clerk custom domains: `clerk.synac.app` + `accounts.synac.app` (DNS verified in Cloudflare).
     - Verified Clerk JS loads on `synac.app` and `/admin` redirects to `accounts.synac.app`.
 - [x] Smoke test (Chrome DevTools MCP): prod ✅ (public browse, admin, ingest approve→publish→public page), dev ✅ (public browse/search)
+
+## v0.1.0-dev2 — Staging-first ingest + auto-promote (Tier-1 auto-publish)
+
+- [ ] Railway: create `staging` environment (services: `synac`, `worker`, `Postgres`)
+- [ ] Worker: add staging→prod promotion job + Tier-1 auto-apply/auto-publish
+- [ ] Worker: add prod→staging source sync (canonical Source Registry in prod)
+- [ ] Web: route manual ingest triggers to staging in staging-first mode
+- [ ] Ops: disable direct upstream ingest in prod (staging-first)
+- [ ] Runbook: ingest promotion troubleshooting
+- [ ] Smoke test: staging ingest → prod auto-publish Tier-1 → public browse reflects changes
 
 ## Phase 0 — Repo bootstrap (foundation)
 
