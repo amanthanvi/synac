@@ -38,7 +38,7 @@ This is the living implementation tracker for `SPEC.md`.
         - `clkmail.synac.io` → `mail.ikpttremffyl.clerk.services`
         - `clk._domainkey.synac.io` → `dkim1.ikpttremffyl.clerk.services`
         - `clk2._domainkey.synac.io` → `dkim2.ikpttremffyl.clerk.services`
-- [ ] Smoke test (Chrome DevTools MCP): public browse/search, sign-in/up, `/admin` authz, worker health
+- [ ] Smoke test (Chrome DevTools MCP): dev ✅ (public browse/search, `/admin` redirects), prod blocked until Clerk DNS fixed
 
 ## Phase 0 — Repo bootstrap (foundation)
 
