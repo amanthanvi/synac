@@ -114,11 +114,8 @@ export async function importEligibleStagingRuns(
       where: { id: run.id },
       update: {
         sourceId: prodSource.id,
-        startedAt: run.startedAt,
         finishedAt: run.finishedAt,
         status: 'SUCCESS',
-        triggeredBy: run.triggeredBy,
-        triggeredByUserId: null,
         configSnapshot: run.configSnapshot as Prisma.InputJsonValue,
         stats: {
           ...(run.stats && typeof run.stats === 'object' ? (run.stats as Record<string, unknown>) : {}),
