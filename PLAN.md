@@ -40,13 +40,13 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## v0.1.0-dev2 — Staging-first ingest + auto-promote (Tier-1 auto-publish)
 
-- [ ] Railway: create `staging` environment (services: `synac`, `worker`, `Postgres`)
-- [ ] Worker: add staging→prod promotion job + Tier-1 auto-apply/auto-publish
-- [ ] Worker: add prod→staging source sync (canonical Source Registry in prod)
-- [ ] Web: route manual ingest triggers to staging in staging-first mode
-- [ ] Ops: disable direct upstream ingest in prod (staging-first)
-- [ ] Runbook: ingest promotion troubleshooting
-- [ ] Smoke test: staging ingest → prod auto-publish Tier-1 → public browse reflects changes
+- [x] Railway: create `staging` environment (services: `synac`, `worker`, `Postgres-cSfn` for staging DB)
+- [x] Worker: add staging→prod promotion job + Tier-1 auto-apply/auto-publish
+- [x] Worker: add prod→staging source sync (canonical Source Registry in prod)
+- [x] Web: route manual ingest triggers to staging in staging-first mode
+- [x] Ops: disable direct upstream ingest in prod (staging-first)
+- [x] Runbook: ingest promotion troubleshooting
+- [x] Smoke test: staging ingest → prod auto-publish Tier-1 → public browse reflects changes
 
 ## Phase 0 — Repo bootstrap (foundation)
 
