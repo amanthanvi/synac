@@ -578,7 +578,14 @@ async function main(): Promise<void> {
     }),
   ]);
 
-  const [{ tagId: identityTagId }, { tagId: cryptoTagId }] = await Promise.all([
+  const [
+    { tagId: identityTagId },
+    { tagId: cryptoTagId },
+    { tagId: accessControlTagId },
+    { tagId: networkSecurityTagId },
+    { tagId: threatsTagId },
+    { tagId: fundamentalsTagId },
+  ] = await Promise.all([
     ensureTag(prisma, {
       name: 'Identity',
       slug: 'identity',
@@ -589,12 +596,128 @@ async function main(): Promise<void> {
       slug: 'cryptography',
       description: 'Encryption, keys, protocols, and cryptographic primitives.',
     }),
+    ensureTag(prisma, {
+      name: 'Access Control',
+      slug: 'access-control',
+      description: 'Authorization, least privilege, and access enforcement.',
+    }),
+    ensureTag(prisma, {
+      name: 'Network Security',
+      slug: 'network-security',
+      description: 'Network resilience, protocols, and denial-of-service defenses.',
+    }),
+    ensureTag(prisma, {
+      name: 'Threats',
+      slug: 'threats',
+      description: 'Malware, phishing, and common attack patterns.',
+    }),
+    ensureTag(prisma, {
+      name: 'Fundamentals',
+      slug: 'fundamentals',
+      description: 'Core security properties and building blocks (CIA, crypto basics).',
+    }),
   ]);
 
   const authCitation = await ensureSourceDocumentAndCitation(prisma, {
     sourceId: nistSourceId,
     url: 'https://csrc.nist.gov/glossary/term/authentication',
     title: 'NIST CSRC Glossary — Authentication',
+  });
+
+  const authorizationCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/authorization',
+    title: 'NIST CSRC Glossary — Authorization',
+  });
+
+  const accessControlCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/access_control',
+    title: 'NIST CSRC Glossary — Access control',
+  });
+
+  const confidentialityCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/confidentiality',
+    title: 'NIST CSRC Glossary — Confidentiality',
+  });
+
+  const integrityCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/integrity',
+    title: 'NIST CSRC Glossary — Integrity',
+  });
+
+  const availabilityCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/availability',
+    title: 'NIST CSRC Glossary — Availability',
+  });
+
+  const leastPrivilegeCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/least_privilege',
+    title: 'NIST CSRC Glossary — Least privilege',
+  });
+
+  const mfaCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/multi_factor_authentication',
+    title: 'NIST CSRC Glossary — Multi-factor authentication',
+  });
+
+  const ssoCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/single_sign_on',
+    title: 'NIST CSRC Glossary — Single sign-on',
+  });
+
+  const phishingCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/phishing',
+    title: 'NIST CSRC Glossary — Phishing',
+  });
+
+  const malwareCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/malware',
+    title: 'NIST CSRC Glossary — Malware',
+  });
+
+  const encryptionCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/encryption',
+    title: 'NIST CSRC Glossary — Encryption',
+  });
+
+  const publicKeyCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/public_key',
+    title: 'NIST CSRC Glossary — Public key',
+  });
+
+  const symmetricKeyCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/symmetric_key',
+    title: 'NIST CSRC Glossary — Symmetric key',
+  });
+
+  const hashFunctionCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/hash_function',
+    title: 'NIST CSRC Glossary — Hash function',
+  });
+
+  const dosCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/denial_of_service',
+    title: 'NIST CSRC Glossary — Denial of service',
+  });
+
+  const ddosCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/distributed_denial_of_service',
+    title: 'NIST CSRC Glossary — Distributed denial of service',
   });
 
   const aesCitation = await ensureSourceDocumentAndCitation(prisma, {
@@ -636,6 +759,311 @@ async function main(): Promise<void> {
     provenance: aesCitation,
   });
 
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Authorization',
+    primarySlug: 'authorization',
+    summaryMd: 'Authorization is the process of determining what an authenticated principal is permitted to do.',
+    sense: {
+      senseLabel: 'Access decision',
+      definitionMd:
+        'Authorization is the decision step that follows authentication. It evaluates policies and context to determine whether a request should be allowed (e.g., which resources, actions, and conditions apply).',
+    },
+    tagIds: [identityTagId, accessControlTagId],
+    provenance: authorizationCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Access Control',
+    primarySlug: 'access-control',
+    summaryMd:
+      'Access control is the set of mechanisms and policies used to restrict access to resources and enforce authorization decisions.',
+    sense: {
+      senseLabel: 'Policy + enforcement',
+      definitionMd:
+        'Access control combines policy (what is allowed) with enforcement mechanisms (how it is enforced). Common models include discretionary, mandatory, and role-based access control; modern systems often implement attribute-based rules.',
+    },
+    tagIds: [identityTagId, accessControlTagId],
+    provenance: accessControlCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Confidentiality',
+    primarySlug: 'confidentiality',
+    summaryMd: 'Confidentiality is the property that information is not disclosed to unauthorized parties.',
+    sense: {
+      senseLabel: 'No unauthorized disclosure',
+      definitionMd:
+        'Confidentiality focuses on preventing unauthorized disclosure of information. It is commonly supported by access control, encryption, and careful handling of sensitive data (including metadata).',
+    },
+    tagIds: [fundamentalsTagId],
+    provenance: confidentialityCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Integrity',
+    primarySlug: 'integrity',
+    summaryMd: 'Integrity is the property that data is accurate and has not been improperly modified or destroyed.',
+    sense: {
+      senseLabel: 'No unauthorized modification',
+      definitionMd:
+        'Integrity ensures that data and systems are not altered in an unauthorized or undetected way. Techniques include cryptographic hashes, digital signatures, authenticated encryption, and strong change controls.',
+    },
+    tagIds: [fundamentalsTagId],
+    provenance: integrityCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Availability',
+    primarySlug: 'availability',
+    summaryMd: 'Availability is the property that systems and data are accessible and usable when needed.',
+    sense: {
+      senseLabel: 'Accessible when required',
+      definitionMd:
+        'Availability focuses on keeping services usable for legitimate users. It is supported by redundancy, capacity planning, incident response, and protections against denial-of-service attacks.',
+    },
+    tagIds: [fundamentalsTagId, networkSecurityTagId],
+    provenance: availabilityCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Least Privilege',
+    primarySlug: 'least-privilege',
+    summaryMd: 'Least privilege means granting only the minimum access necessary to perform an authorized task.',
+    sense: {
+      senseLabel: 'Minimize access',
+      definitionMd:
+        'Least privilege reduces blast radius by limiting accounts, roles, and services to only the permissions they need, only for the time they need them. It is a key control for both humans and service identities.',
+    },
+    tagIds: [identityTagId, accessControlTagId],
+    provenance: leastPrivilegeCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Multi-factor Authentication',
+    primarySlug: 'multi-factor-authentication',
+    summaryMd: 'Multi-factor authentication (MFA) uses two or more independent factors to verify identity.',
+    sense: {
+      senseLabel: 'Identity verification',
+      definitionMd:
+        'MFA strengthens authentication by combining independent factors (e.g., something you know, have, or are). It helps mitigate credential theft but must be implemented carefully (e.g., phishing-resistant methods where feasible).',
+    },
+    tagIds: [identityTagId, accessControlTagId],
+    provenance: mfaCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'ACRONYM',
+    displayTitle: 'MFA',
+    primarySlug: 'mfa',
+    summaryMd: 'MFA stands for Multi-factor Authentication, an authentication method using multiple factors.',
+    sense: {
+      senseLabel: 'Multiple factors',
+      expandedForm: 'Multi-factor Authentication',
+      definitionMd:
+        'MFA requires at least two independent factors to authenticate a user. Prefer phishing-resistant factors (e.g., hardware-backed keys) for high-risk admin access.',
+    },
+    tagIds: [identityTagId, accessControlTagId],
+    provenance: mfaCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Single Sign-on',
+    primarySlug: 'single-sign-on',
+    summaryMd: 'Single sign-on (SSO) allows a user to authenticate once and access multiple services without re-authenticating.',
+    sense: {
+      senseLabel: 'Federated login',
+      definitionMd:
+        'SSO centralizes authentication at an identity provider and reduces password reuse. It can improve security and user experience, but increases reliance on the identity system and requires strong controls and monitoring.',
+    },
+    tagIds: [identityTagId, accessControlTagId],
+    provenance: ssoCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'ACRONYM',
+    displayTitle: 'SSO',
+    primarySlug: 'sso',
+    summaryMd: 'SSO stands for Single Sign-on, enabling access to multiple services with one authentication event.',
+    sense: {
+      senseLabel: 'Single login session',
+      expandedForm: 'Single Sign-on',
+      definitionMd:
+        'SSO is typically implemented using federation protocols or centralized identity. Strong MFA and session controls help reduce the blast radius of compromised accounts.',
+    },
+    tagIds: [identityTagId, accessControlTagId],
+    provenance: ssoCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Phishing',
+    primarySlug: 'phishing',
+    summaryMd: 'Phishing is a form of social engineering that attempts to trick targets into revealing sensitive information or taking harmful actions.',
+    sense: {
+      senseLabel: 'Social engineering',
+      definitionMd:
+        'Phishing often uses spoofed emails, messages, or websites to induce victims to disclose credentials, install malware, or approve fraudulent transactions. Defenses include user education, filtering, and phishing-resistant authentication.',
+    },
+    tagIds: [threatsTagId],
+    provenance: phishingCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Malware',
+    primarySlug: 'malware',
+    summaryMd: 'Malware is malicious software designed to disrupt, damage, or gain unauthorized access to systems and data.',
+    sense: {
+      senseLabel: 'Malicious software',
+      definitionMd:
+        'Malware includes viruses, worms, trojans, spyware, and ransomware. It is commonly delivered through phishing, drive-by downloads, and exploited vulnerabilities.',
+    },
+    tagIds: [threatsTagId],
+    provenance: malwareCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Denial of Service',
+    primarySlug: 'denial-of-service',
+    summaryMd: 'A denial-of-service (DoS) attack attempts to make a system or network unavailable to legitimate users.',
+    sense: {
+      senseLabel: 'Availability attack',
+      definitionMd:
+        'DoS attacks can exhaust resources (bandwidth, CPU, memory, connections) or exploit protocol/application weaknesses. Mitigations include rate limiting, filtering, and resilient architecture.',
+    },
+    tagIds: [networkSecurityTagId, threatsTagId],
+    provenance: dosCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'ACRONYM',
+    displayTitle: 'DoS',
+    primarySlug: 'dos',
+    summaryMd: 'DoS stands for Denial of Service, an attack targeting system availability.',
+    sense: {
+      senseLabel: 'Availability disruption',
+      expandedForm: 'Denial of Service',
+      definitionMd:
+        'DoS attacks aim to disrupt availability by overwhelming or crashing a target. Distributed variants (DDoS) amplify the attack using many sources.',
+    },
+    tagIds: [networkSecurityTagId, threatsTagId],
+    provenance: dosCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Distributed Denial of Service',
+    primarySlug: 'distributed-denial-of-service',
+    summaryMd: 'A distributed denial-of-service (DDoS) attack uses many systems to overwhelm a target and degrade availability.',
+    sense: {
+      senseLabel: 'Distributed availability attack',
+      definitionMd:
+        'DDoS attacks distribute traffic or requests across many sources (botnets, reflected/amplified traffic) to saturate bandwidth or exhaust application resources. Defenses include upstream filtering and traffic engineering.',
+    },
+    tagIds: [networkSecurityTagId, threatsTagId],
+    provenance: ddosCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'ACRONYM',
+    displayTitle: 'DDoS',
+    primarySlug: 'ddos',
+    summaryMd: 'DDoS stands for Distributed Denial of Service, a DoS attack carried out from many sources.',
+    sense: {
+      senseLabel: 'Distributed attack',
+      expandedForm: 'Distributed Denial of Service',
+      definitionMd:
+        'DDoS uses multiple traffic sources to overwhelm a target. Common strategies include volumetric attacks, protocol attacks, and application-layer floods.',
+    },
+    tagIds: [networkSecurityTagId, threatsTagId],
+    provenance: ddosCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Encryption',
+    primarySlug: 'encryption',
+    summaryMd: 'Encryption is the process of transforming information so it is unintelligible without the appropriate key.',
+    sense: {
+      senseLabel: 'Confidentiality control',
+      definitionMd:
+        'Encryption protects confidentiality by converting plaintext into ciphertext using a cryptographic algorithm and key. Correct key management and authenticated encryption modes are critical in practice.',
+    },
+    tagIds: [cryptoTagId, fundamentalsTagId],
+    provenance: encryptionCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Hash Function',
+    primarySlug: 'hash-function',
+    summaryMd: 'A hash function maps input data to a fixed-size output (digest) and is commonly used for integrity checks.',
+    sense: {
+      senseLabel: 'Digest',
+      definitionMd:
+        'Cryptographic hash functions are designed to make it infeasible to find collisions or reverse the digest. Hashes are used for integrity, signatures, and password storage (with appropriate slow hashing).',
+    },
+    tagIds: [cryptoTagId],
+    provenance: hashFunctionCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Public Key',
+    primarySlug: 'public-key',
+    summaryMd: 'A public key is the publicly shared component of an asymmetric key pair used for encryption or signature verification.',
+    sense: {
+      senseLabel: 'Asymmetric cryptography',
+      definitionMd:
+        'In public-key cryptography, the public key can be shared widely while the private key is kept secret. Public keys are used to verify signatures and (in some schemes) encrypt data for the private-key holder.',
+    },
+    tagIds: [cryptoTagId],
+    provenance: publicKeyCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'TERM',
+    displayTitle: 'Symmetric Key',
+    primarySlug: 'symmetric-key',
+    summaryMd: 'A symmetric key is a secret key shared between parties and used for both encryption and decryption.',
+    sense: {
+      senseLabel: 'Shared secret',
+      definitionMd:
+        'Symmetric cryptography uses the same key to encrypt and decrypt. It is efficient for bulk data encryption but requires a secure way to distribute and rotate keys.',
+    },
+    tagIds: [cryptoTagId],
+    provenance: symmetricKeyCitation,
+  });
+
   await prisma.auditEvent.create({
     data: {
       actorUserId,
@@ -644,7 +1072,7 @@ async function main(): Promise<void> {
       entityId: crypto.randomUUID(),
       after: toJsonSafe({
         sources: { nistSourceId, mitreSourceId, owaspSourceId },
-        tags: { identityTagId, cryptoTagId },
+        tags: { identityTagId, cryptoTagId, accessControlTagId, networkSecurityTagId, threatsTagId, fundamentalsTagId },
         ranAt: now.toISOString(),
       }),
     },
