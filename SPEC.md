@@ -161,6 +161,8 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 **Acceptance Criteria**
 
 -   Acronym pages display expansions prominently per sense.
+-   If an Entry has a shortform title (e.g., “AAD”, “IdP”, “S/MIME”) and known expansions (from `senses.expanded_form` and/or `entry_variants`), the entry page displays a **“Stands for”** section near the top.
+-   If an Entry has aliases/synonyms/abbreviations (`entry_variants`), the entry page displays an **“Also known as”** section (secondary to summary/definitions).
 -   Search for an expansion phrase (e.g., “security operations center”) returns the acronym entry (SOC) and the term entry if one exists.
 -   Acronyms can include punctuation variants (e.g., “C2”, “C&C”) and are normalized for search.
 
@@ -502,7 +504,7 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 **Stage details**
 
 -   Extract: fetch document(s), store metadata and (if allowed) snapshots.
--   Normalize: convert to internal schema (Entry/Sense/Tag/Citation).
+-   Normalize: convert to internal schema (Entry/Sense/Tag/Citation), including source-provided aliases/abbreviations/synonyms → `entry_variants` (when available).
 -   Dedupe/entity resolution: match to existing entries via title/acronym/aliases + similarity.
 -   Enrich: add inferred tags, related terms (low confidence; review-gated), acronym expansions, link normalization.
 -   Validate: apply quality rules and compliance gates.
@@ -772,6 +774,7 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
     -   About.
 -   Entry pages:
     -   sticky table of contents for senses (if >1),
+    -   “Stands for” + “Also known as” blocks when available,
     -   “Related / See also” sidebar,
     -   references at end of each sense.
 
@@ -846,6 +849,7 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 -   `variant_type` (ENUM: ALIAS, SYNONYM, ABBREVIATION, MISSPELLING)
 -   `created_at`
 -   UNIQUE (`entry_id`, `normalized_variant`, `variant_type`)
+-   Presentation: entry pages surface variants as “Also known as”. If the Entry is a shortform and multi-word variants exist, those variants are promoted to “Stands for”.
 
 #### `senses`
 

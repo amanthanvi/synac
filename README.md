@@ -69,6 +69,9 @@ Production does not ingest directly. Instead:
 - The production worker runs promotion jobs to import validated runs into prod.
 - Tier‑1 sources auto-apply + auto-publish after validation (Tier‑2+ remain review-gated).
 
+Notes:
+- Ingest adapters can populate `entry_variants` (aliases/synonyms/abbreviations). Entry pages surface these as “Also known as”, and shortform entries with multi-word variants show a “Stands for” block.
+
 Troubleshooting: `docs/runbooks/ingest-promotion.md`.
 
 ## Status
