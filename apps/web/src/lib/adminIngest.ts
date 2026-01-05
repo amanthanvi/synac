@@ -4,6 +4,7 @@ import { getPrismaClient, getPrismaClientForUrl, type Prisma } from '@synac/db';
 
 import { getBoss, getBossForDatabaseUrl } from '@/lib/boss';
 import { createDraftEntry, createDraftSense, updateEntry, updateSense } from '@/lib/adminEntries';
+import { normalizeTitle } from '@/lib/text';
 
 function toJsonSafe<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -165,6 +166,7 @@ type ProposedChangeCreateEntry = {
   displayTitle: string;
   primarySlug?: string;
   summaryMd: string;
+  variants?: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' | 'MISSPELLING' }>;
   senses: Array<{
     senseLabel?: string;
     expandedForm?: string;
@@ -182,10 +184,16 @@ type ProposedChangeAddSenses = {
   entryType: 'TERM' | 'ACRONYM';
   displayTitle: string;
   summaryMd?: string;
+  variants?: ProposedChangeCreateEntry['variants'];
   senses: ProposedChangeCreateEntry['senses'];
 };
 
 type ProposedChange = ProposedChangeCreateEntry | ProposedChangeAddSenses;
+
+function parseVariantType(value: unknown): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' | 'MISSPELLING' {
+  if (value === 'SYNONYM' || value === 'ABBREVIATION' || value === 'MISSPELLING') return value;
+  return 'ALIAS';
+}
 
 function parseProposedChange(value: unknown): ProposedChange {
   if (!value || typeof value !== 'object') throw new Error('Invalid proposedChange');
@@ -209,6 +217,16 @@ function parseProposedChange(value: unknown): ProposedChange {
       sourceLocator: s.sourceLocator,
     }));
 
+  const variantsRaw = Array.isArray(v.variants) ? v.variants : [];
+  const variants = variantsRaw
+    .map((variant) => (variant && typeof variant === 'object' ? (variant as Record<string, unknown>) : null))
+    .filter((variant): variant is Record<string, unknown> => Boolean(variant))
+    .map((variant) => ({
+      variantText: typeof variant.variantText === 'string' ? variant.variantText.trim() : '',
+      variantType: parseVariantType(variant.variantType),
+    }))
+    .filter((variant) => Boolean(variant.variantText));
+
   if (v.kind === 'ADD_SENSES') {
     const entryId = typeof v.entryId === 'string' ? v.entryId : '';
     return {
@@ -217,11 +235,20 @@ function parseProposedChange(value: unknown): ProposedChange {
       entryType,
       displayTitle,
       summaryMd: summaryMd || undefined,
+      ...(variants.length ? { variants } : {}),
       senses,
     };
   }
 
-  return { kind: 'CREATE_ENTRY', entryType, displayTitle, primarySlug, summaryMd, senses };
+  return {
+    kind: 'CREATE_ENTRY',
+    entryType,
+    displayTitle,
+    primarySlug,
+    summaryMd,
+    ...(variants.length ? { variants } : {}),
+    senses,
+  };
 }
 
 function parseExtractionMethod(value: string | undefined): 'API' | 'RSS' | 'HTML' | 'PDF' | 'MANUAL' {
@@ -281,6 +308,7 @@ export async function approveIngestItem(input: {
 
   const proposed = parseProposedChange(item.proposedChange);
   if (!proposed.displayTitle.trim()) throw new Error('proposedChange.displayTitle is required');
+  const normalizedEntryTitle = normalizeTitle(proposed.displayTitle);
 
   if (proposed.kind === 'ADD_SENSES' && !proposed.entryId.trim()) {
     throw new Error('proposedChange.entryId is required for ADD_SENSES');
@@ -395,6 +423,20 @@ export async function approveIngestItem(input: {
 
   await prisma.fieldProvenance.createMany({ data: provenance });
   const appliedSenseIds = appliedSenses.map((s) => s.senseId);
+
+  const variantsToCreate = (proposed.variants ?? [])
+    .map((v) => ({ variantText: v.variantText.trim(), variantType: v.variantType }))
+    .filter((v) => v.variantText.length > 0 && normalizeTitle(v.variantText) !== normalizedEntryTitle)
+    .map((v) => ({
+      entryId,
+      variantText: v.variantText,
+      normalizedVariant: normalizeTitle(v.variantText),
+      variantType: v.variantType,
+    }));
+
+  if (variantsToCreate.length) {
+    await prisma.entryVariant.createMany({ data: variantsToCreate, skipDuplicates: true });
+  }
 
   await prisma.ingestItem.update({
     where: { id: item.id },

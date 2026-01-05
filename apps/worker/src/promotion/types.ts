@@ -8,12 +8,18 @@ export type ProposedSense = {
   sourceLocator?: unknown;
 };
 
+export type ProposedVariant = {
+  variantText: string;
+  variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' | 'MISSPELLING';
+};
+
 export type ProposedChangeCreateEntry = {
   kind: 'CREATE_ENTRY';
   entryType: 'TERM' | 'ACRONYM';
   displayTitle: string;
   primarySlug?: string;
   summaryMd: string;
+  variants?: ProposedVariant[];
   senses: ProposedSense[];
 };
 
@@ -23,6 +29,7 @@ export type ProposedChangeAddSenses = {
   entryType: 'TERM' | 'ACRONYM';
   displayTitle: string;
   summaryMd?: string;
+  variants?: ProposedVariant[];
   senses: ProposedSense[];
 };
 
@@ -30,6 +37,11 @@ export type ProposedChange = ProposedChangeCreateEntry | ProposedChangeAddSenses
 
 function parseEntryType(value: unknown): 'TERM' | 'ACRONYM' {
   return value === 'ACRONYM' ? 'ACRONYM' : 'TERM';
+}
+
+function parseVariantType(value: unknown): ProposedVariant['variantType'] {
+  if (value === 'SYNONYM' || value === 'ABBREVIATION' || value === 'MISSPELLING') return value;
+  return 'ALIAS';
 }
 
 function parseSenses(value: unknown): ProposedSense[] {
@@ -48,6 +60,19 @@ function parseSenses(value: unknown): ProposedSense[] {
     }));
 }
 
+function parseVariants(value: unknown): ProposedVariant[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((v) => (v && typeof v === 'object' ? (v as Record<string, unknown>) : null))
+    .filter((v): v is Record<string, unknown> => Boolean(v))
+    .map((v) => ({
+      variantText: typeof v.variantText === 'string' ? v.variantText : '',
+      variantType: parseVariantType(v.variantType),
+    }))
+    .map((v) => ({ ...v, variantText: v.variantText.trim() }))
+    .filter((v) => Boolean(v.variantText));
+}
+
 export function parseProposedChange(value: unknown): ProposedChange {
   if (!value || typeof value !== 'object') throw new Error('Invalid proposedChange');
   const v = value as Record<string, unknown>;
@@ -58,6 +83,7 @@ export function parseProposedChange(value: unknown): ProposedChange {
   const primarySlug = typeof v.primarySlug === 'string' ? v.primarySlug : undefined;
   const summaryMd = typeof v.summaryMd === 'string' ? v.summaryMd : '';
   const senses = parseSenses(v.senses);
+  const variants = parseVariants(v.variants);
 
   if (v.kind === 'ADD_SENSES') {
     const entryId = typeof v.entryId === 'string' ? v.entryId : '';
@@ -67,11 +93,20 @@ export function parseProposedChange(value: unknown): ProposedChange {
       entryType,
       displayTitle,
       summaryMd: summaryMd || undefined,
+      ...(variants.length ? { variants } : {}),
       senses,
     };
   }
 
-  return { kind: 'CREATE_ENTRY', entryType, displayTitle, primarySlug, summaryMd, senses };
+  return {
+    kind: 'CREATE_ENTRY',
+    entryType,
+    displayTitle,
+    primarySlug,
+    summaryMd,
+    ...(variants.length ? { variants } : {}),
+    senses,
+  };
 }
 
 export function parseExtractionMethod(value: string | undefined): 'API' | 'RSS' | 'HTML' | 'PDF' | 'MANUAL' {
@@ -85,4 +120,3 @@ export function parseContentMode(value: string | undefined): 'QUOTED' | 'SUMMARI
   if (v === 'QUOTED' || v === 'SUMMARIZED' || v === 'PARAPHRASED') return v;
   return 'SUMMARIZED';
 }
-

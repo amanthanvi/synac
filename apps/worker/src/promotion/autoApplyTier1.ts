@@ -302,6 +302,20 @@ async function applyAndPublishItem(
     entryId = entry.id;
   }
 
+  const variantsToCreate = (proposed.variants ?? [])
+    .map((v) => ({ variantText: v.variantText.trim(), variantType: v.variantType }))
+    .filter((v) => v.variantText.length > 0 && normalizeTitle(v.variantText) !== normalizedTitle)
+    .map((v) => ({
+      entryId,
+      variantText: v.variantText,
+      normalizedVariant: normalizeTitle(v.variantText),
+      variantType: v.variantType,
+    }));
+
+  if (variantsToCreate.length) {
+    await tx.entryVariant.createMany({ data: variantsToCreate, skipDuplicates: true });
+  }
+
   const citationUrl = item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
   const citation = await tx.citation.create({
     data: {
