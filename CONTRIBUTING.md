@@ -1,6 +1,6 @@
 # Contributing
 
-This repo is under active development toward `v0.1.0`.
+SynAc is released at `v0.1.0` and under active development for `v0.1.x`.
 
 ## Workflow
 
