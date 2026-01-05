@@ -11,6 +11,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   gitleaks:
     name: Secret scan (gitleaks)
@@ -24,6 +28,8 @@ jobs:
 
       - name: Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   audit:
     name: Dependency audit (pnpm)
@@ -83,4 +89,3 @@ jobs:
         with:
           name: sbom.cdx.json
           path: sbom.cdx.json
-

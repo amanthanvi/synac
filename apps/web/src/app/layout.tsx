@@ -62,7 +62,7 @@ export default function RootLayout({
         className={`${instrumentSans.variable} ${instrumentSerif.variable} ${plexMono.variable}`}
       >
         {isClerkConfigured ? (
-          <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up">
+          <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" dynamic>
             {content}
           </ClerkProvider>
         ) : (

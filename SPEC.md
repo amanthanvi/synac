@@ -419,6 +419,16 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 
 Ingest is a pipeline that acquires documents from registered sources, parses and normalizes content into structured entries/senses, resolves duplicates/conflicts, applies license/compliance gates, and routes changes through human review before publication (default). It must be operationally safe (SSRF-resistant, sandboxed parsing, timeouts, size limits) and legally defensible (source registry, attribution, takedown workflow).
 
+### Staging-first ingest (v0.1.0)
+
+To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first** ingest model:
+
+-   **All acquisition + parsing writes to `staging` first** (staging DB is where ingest runs/items are created).
+-   A promotion worker runs **automated validation** on completed staging runs.
+-   If checks pass, the promotion worker **promotes staged ingest items into `prod`** as reviewable work items.
+-   In `prod`, **Tier-1 sources auto-apply + auto-publish** after validation; lower-trust sources remain review-gated.
+-   Promotion must be **idempotent** and safe to retry (no DB dumps; content promotion is via structured ingest items).
+
 ### FR-100 — Source Registry (authoritative catalog)
 
 **Requirement**
@@ -479,6 +489,7 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   Admin can trigger ingest for a source or all sources from admin UI and API.
 -   Cron schedules are configurable per source (default daily off-peak) and stored on the Source record (e.g., `sources.cron_schedule`, UTC).
 -   Ingest supports incremental updates using ETag/Last-Modified or content hashing; full reprocessing can be triggered.
+-   In staging-first mode, manual triggers in `prod` target the `staging` ingest worker/DB (not `prod`).
 
 ---
 
@@ -530,17 +541,19 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 
 **Default policy**
 
--   **No auto-publish** in v0.1.0 unless explicitly enabled per source and content type.
--   Auto-publish may be enabled only for:
-    -   Tier 1 sources,
-    -   license-compatible content,
-    -   low-risk fields (e.g., tags, aliases) or pre-approved templates,
-    -   with sampling audit (e.g., 1 of every N changes reviewed).
+-   **Staging-first:** ingest always writes to `staging`; promotion moves validated items into `prod`.
+-   **Tier 1:** if `trust_tier = TIER_1` and automated validation passes, items **auto-apply + auto-publish** in `prod` (default on for v0.1.0).
+-   **Tier 2–4:** items remain **human review-gated** in `prod` (approve/reject/edit) before publish.
+-   Auto-publish is blocked when:
+    -   `license_gate = FAIL`,
+    -   source is unverified (`last_verified_at` missing) or disabled,
+    -   validation thresholds fail (e.g., malformed content, outlier deltas).
 
 **Acceptance Criteria**
 
 -   System prevents auto-publish when `license_gate` fails or trust tier < configured minimum.
 -   Editors can configure per-source: which fields can auto-apply, and max changes per run.
+-   Tier-1 auto-apply/publish creates an audit trail (who/what/when) and is safe to retry without duplicate content.
 
 ---
 
@@ -1052,8 +1065,8 @@ Ingest is a pipeline that acquires documents from registered sources, parses and
 -   Seed strategy:
     -   bootstrap with initial Sources in `sources` (manual, verified),
     -   optionally seed a minimal starter corpus (sources/tags + a few published entries) to avoid an empty public launch,
-    -   run ingest in staging to generate corpus,
-    -   promote to production via repeatable ingest + reviewed approvals (not DB dumps).
+    -   run ingest in staging to generate a staged corpus (ingest runs/items),
+    -   promote to production via automated promotion (idempotent) + review/auto-publish policy (no DB dumps).
 -   Maintain a `schema_version` table if tooling requires.
 
 ---
@@ -1338,6 +1351,7 @@ Rank results using weighted signals:
 -   Content Security Policy:
     -   default-src 'self'
     -   script-src 'self' (no inline; use nonces if needed)
+    -   If using per-request nonces, propagate nonce via `X-Nonce` so framework/auth layers can apply it to scripts.
     -   worker-src 'self' blob: (required for modern Next.js runtime behavior)
     -   object-src 'none'
     -   base-uri 'self'
@@ -1455,8 +1469,8 @@ Rank results using weighted signals:
 ### Environments
 
 -   `dev`: local, seeded with fixtures.
--   `staging`: production-like, includes scheduled ingest against a limited set of sources or recorded snapshots.
--   `prod`: public, locked down.
+-   `staging`: production-like; **runs scheduled/manual ingest** against a limited set of sources or recorded snapshots.
+-   `prod`: public, locked down; **does not ingest directly** in staging-first mode (it consumes promoted items).
 
 ### Deployment (Railway)
 
@@ -1482,6 +1496,13 @@ Rank results using weighted signals:
 8. Manual approval gate to production.
 9. Deploy to prod, run migrations, warm caches, run smoke tests.
 10. Post-deploy verification + rollback plan.
+
+### Ingest/content promotion pipeline (staging-first)
+
+1. Staging worker executes ingest (cron/manual) → creates `ingest_runs` and `ingest_items` in `staging`.
+2. Promotion worker validates completed staging runs (quality + compliance thresholds).
+3. If checks pass, promotion imports validated items into `prod` as reviewable work items.
+4. Tier-1 sources auto-apply + auto-publish in `prod`; Tier-2–4 remain human review-gated.
 
 ### Observability
 
@@ -1654,7 +1675,7 @@ Rank results using weighted signals:
 
 | Risk             | Description                              | Likelihood | Impact | Mitigations                                                                                        |
 | ---------------- | ---------------------------------------- | ---------: | -----: | -------------------------------------------------------------------------------------------------- |
-| Legal/licensing  | Publishing incompatible licensed content |        Med |   High | Source registry gates (FR-100/109), counsel review, default no auto-publish, attribution directory |
+| Legal/licensing  | Publishing incompatible licensed content |        Med |   High | Source registry gates (FR-100/109), counsel review, tier-based auto-publish only after validation, attribution directory |
 | Ingest fragility | HTML structure changes break parsers     |       High |    Med | Prefer API/RSS, selector versioning, regression fixtures, alerting on extraction deltas            |
 | SEO issues       | Duplicate content/poor indexing          |        Med |   High | Canonical tags, slug redirects, sitemaps, consistent metadata, avoid thin pages                    |
 | Abuse/DDoS       | Bots overload search and pages           |       High |    Med | CDN/WAF, rate limiting, caching, circuit breakers, bot detection                                   |
@@ -1663,7 +1684,7 @@ Rank results using weighted signals:
 | Reputational     | Incorrect definitions harm credibility   |        Med |   High | Multi-source citations, trust tiers, disputed definitions support, editor guidelines               |
 | Security breach  | Admin takeover or SSRF in ingest         |    Low/Med |   High | OIDC+MFA, RBAC, audit logs, SSRF egress restrictions, sandboxing                                   |
 | Cost overrun     | Search/ingest infra costs grow           |        Med |    Med | Postgres-based search initially, caching, rate limits, budget alerts                               |
-| Operational load | Too much manual review backlog           |        Med |    Med | Trust-tier auto-apply for low-risk fields later, better dedupe, batch review UX                    |
+| Operational load | Too much manual review backlog           |        Med |    Med | Tier-1 auto-apply/publish after validation, better dedupe, batch review UX                         |
 
 ---
 

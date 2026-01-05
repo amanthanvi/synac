@@ -1,6 +1,8 @@
-import { getPrismaClient, type Prisma } from '@synac/db';
+import { randomUUID } from 'node:crypto';
 
-import { getBoss } from '@/lib/boss';
+import { getPrismaClient, getPrismaClientForUrl, type Prisma } from '@synac/db';
+
+import { getBoss, getBossForDatabaseUrl } from '@/lib/boss';
 import { createDraftEntry, createDraftSense, updateEntry, updateSense } from '@/lib/adminEntries';
 
 function toJsonSafe<T>(value: T): T {
@@ -24,6 +26,7 @@ export async function createIngestRun(input: {
     where: { id: input.sourceId },
     select: {
       id: true,
+      sourceSlug: true,
       enabled: true,
       allowedUse: true,
       attributionRequirements: true,
@@ -38,6 +41,68 @@ export async function createIngestRun(input: {
 
   const maxItems = normalizeMaxItems(input.maxItems);
   const forceReprocess = Boolean(input.forceReprocess);
+
+  const stagingDatabaseUrl = process.env.SYNAC_STAGING_DATABASE_URL?.trim();
+  if (stagingDatabaseUrl) {
+    const staging = getPrismaClientForUrl(stagingDatabaseUrl);
+
+    const stagingSource = await staging.source.findFirst({
+      where: { sourceSlug: source.sourceSlug },
+      select: { id: true, enabled: true, allowedUse: true, attributionRequirements: true, lastVerifiedAt: true },
+    });
+    if (!stagingSource) {
+      throw new Error(`Staging source not found (sourceSlug=${source.sourceSlug}). Wait for promotion sync.`);
+    }
+    if (!stagingSource.enabled) throw new Error('Staging source is disabled');
+    if (!stagingSource.allowedUse.trim()) throw new Error('Staging source missing allowedUse');
+    if (!stagingSource.attributionRequirements.trim()) throw new Error('Staging source missing attributionRequirements');
+    if (!stagingSource.lastVerifiedAt) throw new Error('Staging source must be verified (lastVerifiedAt) before ingest');
+
+    const runId = randomUUID();
+    const now = new Date();
+
+    await staging.ingestRun.create({
+      data: {
+        id: runId,
+        sourceId: stagingSource.id,
+        startedAt: now,
+        status: 'RUNNING',
+        triggeredBy: 'MANUAL',
+        triggeredByUserId: null,
+        configSnapshot: { maxItems, forceReprocess },
+      },
+      select: { id: true },
+    });
+
+    const mirrored = await prisma.ingestRun.create({
+      data: {
+        id: runId,
+        sourceId: source.id,
+        startedAt: now,
+        status: 'RUNNING',
+        triggeredBy: 'MANUAL',
+        triggeredByUserId: input.actorUserId,
+        configSnapshot: { maxItems, forceReprocess },
+        stats: { stagingFirst: true, stagingSourceSlug: source.sourceSlug },
+      },
+      select: { id: true, sourceId: true, startedAt: true, status: true, triggeredBy: true, configSnapshot: true },
+    });
+
+    await prisma.auditEvent.create({
+      data: {
+        actorUserId: input.actorUserId,
+        action: 'INGEST_RUN_CREATE',
+        entityType: 'INGEST_RUN',
+        entityId: mirrored.id,
+        after: toJsonSafe(mirrored),
+      },
+    });
+
+    const stagingBoss = await getBossForDatabaseUrl(stagingDatabaseUrl);
+    await stagingBoss.send('ingest_run', { ingestRunId: runId });
+
+    return { ingestRunId: runId };
+  }
 
   const run = await prisma.ingestRun.create({
     data: {

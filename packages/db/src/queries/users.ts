@@ -136,3 +136,27 @@ export async function bootstrapUserFromAllowlist(
 
   return { user: refreshedUser, allowlistedRole };
 }
+
+export const DEFAULT_SYSTEM_ACTOR_EMAIL = 'system@synac.app';
+
+export async function ensureSystemActor(
+  db: DbClientLike,
+  input?: { email?: string },
+): Promise<UserWithRoles> {
+  const roles = await ensureDefaultRoles(db);
+  const email = (input?.email ?? DEFAULT_SYSTEM_ACTOR_EMAIL).trim().toLowerCase();
+
+  const user = await db.user.upsert({
+    where: { email },
+    update: { status: 'ACTIVE', authProvider: 'LOCAL', displayName: 'SynAc System' },
+    create: { email, status: 'ACTIVE', authProvider: 'LOCAL', displayName: 'SynAc System' },
+    include: { roles: { include: { role: true } } },
+  });
+
+  await ensureUserRole(db, { userId: user.id, roleId: roles.ADMIN });
+
+  return db.user.findUniqueOrThrow({
+    where: { id: user.id },
+    include: { roles: { include: { role: true } } },
+  });
+}
