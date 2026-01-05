@@ -5,7 +5,7 @@ This repo is released at `v0.1.0` and targets a `v0.1.x` release cadence.
 ## Pre-flight
 
 - Ensure CI is green on `main`.
-- CodeQL currently uploads a `codeql.sarif` artifact (Code Scanning upload is disabled unless enabled/configured on GitHub).
+- CodeQL uploads results to GitHub Code Scanning.
 - Ensure DB migrations are ready to deploy (`packages/db/prisma/migrations/*`).
 - Confirm required env vars are present in production (see `.env.example`).
 - If using staging-first ingest:
