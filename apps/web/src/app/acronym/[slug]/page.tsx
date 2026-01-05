@@ -62,6 +62,7 @@ export default async function AcronymEntryPage({ params }: AcronymEntryPageProps
   const entry = await prisma.entry.findFirst({
     where: { id: resolved.entry.id, status: 'PUBLISHED', deletedAt: null },
     include: {
+      variants: { orderBy: [{ variantType: 'asc' }, { variantText: 'asc' }] },
       senses: {
         where: { status: 'PUBLISHED', deletedAt: null },
         orderBy: [{ senseOrder: 'asc' }],
@@ -106,6 +107,41 @@ export default async function AcronymEntryPage({ params }: AcronymEntryPageProps
     citationsBySenseId.set(fp.entityId, map);
   }
 
+  const variants = (() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const v of entry.variants) {
+      const text = v.variantText.trim();
+      if (!text) continue;
+      const key = text.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(text);
+    }
+    return out;
+  })();
+
+  const expandedForms = (() => {
+    const raw = [
+      ...entry.senses.map((s) => s.expandedForm).filter((v): v is string => Boolean(v?.trim())),
+      ...variants.filter((v) => v.includes(' ')),
+    ];
+
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const v of raw) {
+      const text = v.trim();
+      if (!text) continue;
+      const key = text.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push(text);
+    }
+    return out;
+  })();
+
+  const alsoKnownAs = variants.filter((v) => !expandedForms.some((e) => e.toLowerCase() === v.toLowerCase()));
+
   return (
     <>
       <ViewTracker entryId={entry.id} />
@@ -127,6 +163,45 @@ export default async function AcronymEntryPage({ params }: AcronymEntryPageProps
           </div>
         ) : null}
       </div>
+
+      {expandedForms.length ? (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Stands for</h2>
+          <div className={styles.variants}>
+            {expandedForms.map((v) => (
+              <span key={v} className={`${styles.variantPill} ${styles.variantPillStrong}`}>
+                {v}
+              </span>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {alsoKnownAs.length ? (
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Also known as</h2>
+          {alsoKnownAs.length <= 8 ? (
+            <div className={styles.variants}>
+              {alsoKnownAs.map((v) => (
+                <span key={v} className={styles.variantPill}>
+                  {v}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <details className={styles.variantDetails}>
+              <summary className={styles.variantSummary}>Show {alsoKnownAs.length} variants</summary>
+              <div className={styles.variants} style={{ marginTop: 10 }}>
+                {alsoKnownAs.map((v) => (
+                  <span key={v} className={styles.variantPill}>
+                    {v}
+                  </span>
+                ))}
+              </div>
+            </details>
+          )}
+        </section>
+      ) : null}
 
       {entry.summaryMd ? <Markdown>{entry.summaryMd}</Markdown> : null}
 

@@ -211,3 +211,43 @@
   font-size: 12px;
   line-height: 1.6;
 }
+
+.variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variantPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 76%, transparent);
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.variantPillStrong {
+  color: var(--fg);
+  font-weight: 650;
+}
+
+.variantDetails {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--bg1) 76%, transparent);
+}
+
+.variantSummary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+}
