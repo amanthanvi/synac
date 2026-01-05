@@ -47,6 +47,10 @@ function formatDate(value: Date): string {
   }).format(value);
 }
 
+function normalizeRefUrl(value: string): string {
+  return value.trim().replace(/\/+$/, '');
+}
+
 export default async function AcronymEntryPage({ params }: AcronymEntryPageProps) {
   const { slug } = await params;
 
@@ -229,7 +233,18 @@ export default async function AcronymEntryPage({ params }: AcronymEntryPageProps
         ) : (
           <div>
             {entry.senses.map((sense) => {
-              const citations = Array.from(citationsBySenseId.get(sense.id)?.values() ?? []);
+              const citations = (() => {
+                const raw = Array.from(citationsBySenseId.get(sense.id)?.values() ?? []);
+                const seen = new Set<string>();
+                const out: typeof raw = [];
+                for (const c of raw) {
+                  const key = `${c.sourceId}:${normalizeRefUrl(c.url)}`;
+                  if (seen.has(key)) continue;
+                  seen.add(key);
+                  out.push(c);
+                }
+                return out;
+              })();
               return (
                 <div key={sense.id} id={`sense-${sense.id}`} className={styles.senseCard}>
                   <div className={styles.senseHeader}>

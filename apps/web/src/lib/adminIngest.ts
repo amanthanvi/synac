@@ -364,18 +364,25 @@ export async function approveIngestItem(input: {
   }
 
   const citationUrl = item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
-  const citation = await prisma.citation.create({
-    data: {
-      sourceId: source.id,
-      sourceDocumentId: item.sourceDocumentId,
-      url: citationUrl,
-      citationText: source.name,
-      licenseNote: source.licenseNotes,
-      attributionText: source.attributionRequirements,
-      accessedAt: item.sourceDocument.fetchedAt,
-    },
+  const existingCitation = await prisma.citation.findFirst({
+    where: { sourceId: source.id, sourceDocumentId: item.sourceDocumentId, url: citationUrl },
     select: { id: true },
   });
+
+  const citation =
+    existingCitation ??
+    (await prisma.citation.create({
+      data: {
+        sourceId: source.id,
+        sourceDocumentId: item.sourceDocumentId,
+        url: citationUrl,
+        citationText: source.name,
+        licenseNote: source.licenseNotes,
+        attributionText: source.attributionRequirements,
+        accessedAt: item.sourceDocument.fetchedAt,
+      },
+      select: { id: true },
+    }));
 
   const extractionMethod = parseExtractionMethod(firstSense.extractionMethod ?? source.accessMethod);
   const extractorVersion = firstSense.extractorVersion?.trim() ? firstSense.extractorVersion.trim() : 'synac-web';

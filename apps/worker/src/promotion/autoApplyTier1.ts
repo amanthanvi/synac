@@ -317,18 +317,25 @@ async function applyAndPublishItem(
   }
 
   const citationUrl = item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
-  const citation = await tx.citation.create({
-    data: {
-      sourceId: item.ingestRun.source.id,
-      sourceDocumentId: item.sourceDocumentId,
-      url: citationUrl,
-      citationText: item.ingestRun.source.name,
-      licenseNote: item.ingestRun.source.licenseNotes,
-      attributionText: item.ingestRun.source.attributionRequirements,
-      accessedAt: item.sourceDocument.fetchedAt,
-    },
+  const existingCitation = await tx.citation.findFirst({
+    where: { sourceId: item.ingestRun.source.id, sourceDocumentId: item.sourceDocumentId, url: citationUrl },
     select: { id: true },
   });
+
+  const citation =
+    existingCitation ??
+    (await tx.citation.create({
+      data: {
+        sourceId: item.ingestRun.source.id,
+        sourceDocumentId: item.sourceDocumentId,
+        url: citationUrl,
+        citationText: item.ingestRun.source.name,
+        licenseNote: item.ingestRun.source.licenseNotes,
+        attributionText: item.ingestRun.source.attributionRequirements,
+        accessedAt: item.sourceDocument.fetchedAt,
+      },
+      select: { id: true },
+    }));
 
   const firstSense = senses[0]!;
   const extractionMethod = parseExtractionMethod(firstSense.extractionMethod ?? item.ingestRun.source.accessMethod);
