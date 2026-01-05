@@ -16,6 +16,22 @@ function normalizeTitle(value: string): string {
     .toLowerCase();
 }
 
+function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
+  const v = value.trim();
+  if (!v) return 'ALIAS';
+  if (v.includes(' ')) return 'SYNONYM';
+
+  const compact = v.replace(/[.\-_/]/g, '');
+  const isAllCaps =
+    compact.length >= 2 &&
+    compact === compact.toUpperCase() &&
+    /[A-Z]/.test(compact) &&
+    /^[A-Z0-9]+$/.test(compact);
+  if (isAllCaps && v.length <= 24) return 'ABBREVIATION';
+
+  return 'ALIAS';
+}
+
 export async function ingestNistGlossary(
   prisma: PrismaClient,
   input: {
@@ -100,9 +116,29 @@ export async function ingestNistGlossary(
     if (!title || !definition) continue;
 
     const normalizedTitle = normalizeTitle(title);
+    const variantsRaw = [
+      ...extractAllByIdPrefix(html, 'a', 'term-abbr-link-'),
+      ...extractAllByIdPrefix(html, 'span', 'term-abbr-text-'),
+    ];
+    const seenVariants = new Set<string>();
+    const variants = variantsRaw
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0 && normalizeTitle(v) !== normalizedTitle)
+      .filter((v) => {
+        const key = normalizeTitle(v);
+        if (seenVariants.has(key)) return false;
+        seenVariants.add(key);
+        return true;
+      })
+      .map((variantText) => ({
+        variantText,
+        variantType: inferVariantType(variantText),
+      }));
+
     const extracted = {
       title,
       definitionMd: definition,
+      variants,
       fetchedAt: fetchedAt.toISOString(),
       url: termUrl,
       canonicalUrl: res.url,
@@ -118,6 +154,7 @@ export async function ingestNistGlossary(
       entryType: 'TERM',
       displayTitle: title,
       summaryMd: definition,
+      variants,
       senses: [
         {
           definitionMd: definition,
