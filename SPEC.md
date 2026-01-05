@@ -419,7 +419,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 
 Ingest is a pipeline that acquires documents from registered sources, parses and normalizes content into structured entries/senses, resolves duplicates/conflicts, applies license/compliance gates, and routes changes through human review before publication (default). It must be operationally safe (SSRF-resistant, sandboxed parsing, timeouts, size limits) and legally defensible (source registry, attribution, takedown workflow).
 
-### Staging-first ingest (v0.1.0-dev2+)
+### Staging-first ingest (v0.1.0)
 
 To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first** ingest model:
 
@@ -542,7 +542,7 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 **Default policy**
 
 -   **Staging-first:** ingest always writes to `staging`; promotion moves validated items into `prod`.
--   **Tier 1:** if `trust_tier = TIER_1` and automated validation passes, items **auto-apply + auto-publish** in `prod` (default on for v0.1.0-dev2+).
+-   **Tier 1:** if `trust_tier = TIER_1` and automated validation passes, items **auto-apply + auto-publish** in `prod` (default on for v0.1.0).
 -   **Tier 2–4:** items remain **human review-gated** in `prod` (approve/reject/edit) before publish.
 -   Auto-publish is blocked when:
     -   `license_gate = FAIL`,
