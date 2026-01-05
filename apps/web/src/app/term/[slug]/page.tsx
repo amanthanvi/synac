@@ -49,6 +49,30 @@ function normalizeRefUrl(value: string): string {
   return value.trim().replace(/\/+$/, '');
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function scoreByDefinition(expansion: string, definition: string): number {
+  const tokens = expansion
+    .toLowerCase()
+    .split(/[^a-z0-9]+/g)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 4);
+
+  if (!tokens.length) return 0;
+
+  const haystack = definition.toLowerCase();
+  let score = 0;
+  for (const token of new Set(tokens)) {
+    if (new RegExp(`\\b${escapeRegExp(token)}\\b`, 'i').test(haystack)) {
+      score += 1;
+    }
+  }
+
+  return score;
+}
+
 export default async function TermEntryPage({ params }: TermEntryPageProps) {
   const { slug } = await params;
 
@@ -136,6 +160,28 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
   const standsFor = variants.filter((v) => v.text.includes(' '));
   const alsoKnownAs = titleIsShortform && standsFor.length ? variants.filter((v) => !v.text.includes(' ')) : variants;
 
+  const standsForPrimary = (() => {
+    if (!titleIsShortform || standsFor.length === 0) {
+      return { primary: null as null | string, alternates: [] as string[] };
+    }
+
+    const definition = (entry.summaryText ?? entry.summaryMd ?? '').trim();
+    if (!definition) {
+      return { primary: standsFor[0]!.text, alternates: standsFor.slice(1).map((v) => v.text) };
+    }
+
+    const scored = standsFor
+      .map((v) => ({ text: v.text, score: scoreByDefinition(v.text, definition) }))
+      .sort((a, b) => b.score - a.score || a.text.localeCompare(b.text));
+
+    const primary = scored[0]!.text;
+    const alternates = standsFor
+      .map((v) => v.text)
+      .filter((v) => v.toLowerCase() !== primary.toLowerCase());
+
+    return { primary, alternates };
+  })();
+
   return (
     <>
       <ViewTracker entryId={entry.id} />
@@ -158,16 +204,32 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
         ) : null}
       </div>
 
-      {titleIsShortform && standsFor.length ? (
+      {standsForPrimary.primary ? (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Stands for</h2>
           <div className={styles.variants}>
-            {standsFor.map((v) => (
-              <span key={v.text} className={`${styles.variantPill} ${styles.variantPillStrong}`}>
-                {v.text}
-              </span>
-            ))}
+            <span
+              key={standsForPrimary.primary}
+              className={`${styles.variantPill} ${styles.variantPillStrong}`}
+            >
+              {standsForPrimary.primary}
+            </span>
           </div>
+          {standsForPrimary.alternates.length ? (
+            <details className={styles.variantDetails}>
+              <summary className={styles.variantSummary}>
+                Show {standsForPrimary.alternates.length}{' '}
+                {standsForPrimary.alternates.length === 1 ? 'alternate expansion' : 'alternate expansions'}
+              </summary>
+              <div className={styles.variants} style={{ marginTop: 10 }}>
+                {standsForPrimary.alternates.map((v) => (
+                  <span key={v} className={styles.variantPill}>
+                    {v}
+                  </span>
+                ))}
+              </div>
+            </details>
+          ) : null}
         </section>
       ) : null}
 
