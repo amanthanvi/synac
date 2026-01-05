@@ -57,6 +57,10 @@ Useful commands:
 - Deploy a service: `railway up -e <env> -s <service> -c`
 - Check status: `railway service status -a -e <env>`
 - Tail logs: `railway logs -e <env> -s <service>`
+- Run DB ops inside Railway (recommended when `DATABASE_URL` uses `postgres.railway.internal`):
+  - Migrate: `railway ssh -e <env> -s synac pnpm --filter @synac/db db:migrate:deploy`
+  - Seed roles/users: `railway ssh -e <env> -s synac pnpm db:seed`
+  - Seed starter content: `railway ssh -e <env> -s synac pnpm db:seed:content`
 
 ## Ingest (staging-first)
 

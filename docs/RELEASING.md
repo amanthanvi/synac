@@ -21,8 +21,12 @@ This repo is released at `v0.1.0` and targets a `v0.1.x` release cadence.
    - `pnpm build`
 2. Bump versions (root + workspaces).
 3. Deploy (Railway):
-   - Apply DB migrations in production using Prisma deploy: `pnpm --filter @synac/db db:migrate:deploy`
+   - Apply DB migrations in production (run inside Railway so `postgres.railway.internal` resolves):
+     - `railway ssh -e production -s synac pnpm --filter @synac/db db:migrate:deploy`
    - Deploy `synac` (web) and `worker`
+   - One-time (new DB): seed roles/users and optional starter content:
+     - `railway ssh -e production -s synac pnpm db:seed`
+     - `railway ssh -e production -s synac pnpm db:seed:content`
 4. Verify:
    - Smoke browse/search/entry pages.
    - Smoke admin auth + `/admin` loads.

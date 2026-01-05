@@ -1,6 +1,6 @@
 # SynAc v0.1.0 — Execution Plan (PLAN.md)
 
-Last updated: 2026-01-03
+Last updated: 2026-01-05
 
 This is the living implementation tracker for `SPEC.md`.
 
