@@ -14,7 +14,6 @@ async function isSlugTaken(
   tx: PrismaClient | Prisma.TransactionClient,
   entryType: 'TERM' | 'ACRONYM',
   candidate: string,
-  entryIdToIgnore?: string,
 ): Promise<boolean> {
   const [entry, history] = await Promise.all([
     tx.entry.findFirst({
@@ -22,7 +21,6 @@ async function isSlugTaken(
         entryType,
         primarySlug: candidate,
         deletedAt: null,
-        ...(entryIdToIgnore ? { NOT: { id: entryIdToIgnore } } : {}),
       },
       select: { id: true },
     }),
@@ -30,7 +28,6 @@ async function isSlugTaken(
       where: {
         entryType,
         slug: candidate,
-        ...(entryIdToIgnore ? { NOT: { entryId: entryIdToIgnore } } : {}),
       },
       select: { id: true },
     }),
@@ -43,13 +40,12 @@ async function ensureUniqueSlug(
   tx: PrismaClient | Prisma.TransactionClient,
   entryType: 'TERM' | 'ACRONYM',
   desiredSlug: string,
-  entryIdToIgnore?: string,
 ): Promise<string> {
   const base = desiredSlug || 'entry';
   let candidate = base;
 
   for (let attempt = 0; attempt < 50; attempt++) {
-    const taken = await isSlugTaken(tx, entryType, candidate, entryIdToIgnore);
+    const taken = await isSlugTaken(tx, entryType, candidate);
     if (!taken) return candidate;
     candidate = `${base}-${attempt + 2}`;
   }
