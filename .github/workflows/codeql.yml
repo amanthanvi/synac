@@ -45,7 +45,7 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript, actions
-          queries: security-and-quality
+          queries: security-and-quality,security-extended
 
       - name: Build
         run: pnpm build
