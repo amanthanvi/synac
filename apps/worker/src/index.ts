@@ -164,28 +164,25 @@ if (isPromotionEnabled(workerMode)) {
   }
 
   await boss.work(PROMOTION_SYNC_SOURCES_QUEUE, async (jobs) => {
-    for (const _job of jobs) {
-      const res = await syncSourcesToStaging(prod, staging, { enabledAllowlistSlugs: stagingAllowlist });
-      logger.info('promotion.sync_sources.ok', res);
-    }
+    if (!jobs.length) return;
+    const res = await syncSourcesToStaging(prod, staging, { enabledAllowlistSlugs: stagingAllowlist });
+    logger.info('promotion.sync_sources.ok', { ...res, jobCount: jobs.length });
   });
 
   await boss.work(PROMOTION_IMPORT_QUEUE, async (jobs) => {
-    for (const _job of jobs) {
-      const res = await importEligibleStagingRuns(prod, staging, { maxRuns: 20, maxItemsPerRun: 1000 });
-      if (res.runsImported || res.itemsImported) {
-        logger.info('promotion.import_runs.ok', res);
-      }
+    if (!jobs.length) return;
+    const res = await importEligibleStagingRuns(prod, staging, { maxRuns: 20, maxItemsPerRun: 1000 });
+    if (res.runsImported || res.itemsImported) {
+      logger.info('promotion.import_runs.ok', { ...res, jobCount: jobs.length });
     }
   });
 
   await boss.work(PROMOTION_AUTO_APPLY_QUEUE, async (jobs) => {
     if (!isTier1AutopublishEnabled()) return;
-    for (const _job of jobs) {
-      const res = await autoApplyTier1IngestItems(prod, { maxItems: 25 });
-      if (res.applied || res.failed) {
-        logger.info('autopublish.tier1.ok', res);
-      }
+    if (!jobs.length) return;
+    const res = await autoApplyTier1IngestItems(prod, { maxItems: 25 });
+    if (res.applied || res.failed) {
+      logger.info('autopublish.tier1.ok', { ...res, jobCount: jobs.length });
     }
   });
 }

@@ -31,9 +31,9 @@ function getNormalizedProposedChange(item: {
 }
 
 function withoutDeduped(stageOutputs: unknown): Prisma.InputJsonValue | undefined {
-  if (!stageOutputs || typeof stageOutputs !== 'object') return undefined;
-  const v = stageOutputs as Record<string, unknown>;
-  const { deduped: _deduped, ...rest } = v;
+  if (!stageOutputs || typeof stageOutputs !== 'object' || Array.isArray(stageOutputs)) return undefined;
+  const rest = { ...(stageOutputs as Record<string, unknown>) };
+  delete rest.deduped;
   return rest as Prisma.InputJsonValue;
 }
 
