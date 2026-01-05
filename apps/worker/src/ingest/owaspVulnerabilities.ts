@@ -23,7 +23,7 @@ function normalizeTitle(value: string): string {
 }
 
 function htmlToText(value: string): string {
-  return normalizeText(decodeHtmlEntities(stripHtmlTags(value)));
+  return normalizeText(stripHtmlTags(decodeHtmlEntities(value)));
 }
 
 function extractOverviewParagraph(html: string): string | null {

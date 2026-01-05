@@ -56,11 +56,11 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
       forceReprocess,
     });
 
-    const baseUrl = run.source.baseUrl.toLowerCase();
     const host = new URL(run.source.baseUrl).hostname.toLowerCase();
+    const isOwaspHost = host === 'owasp.org' || host.endsWith('.owasp.org');
 
     let itemsCreated = 0;
-    if (baseUrl.includes('csrc.nist.gov')) {
+    if (host === 'csrc.nist.gov') {
       const res = await ingestNistGlossary(prisma, {
         ingestRunId: run.id,
         source: {
@@ -73,7 +73,7 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
         forceReprocess,
       });
       itemsCreated = res.itemsCreated;
-    } else if (host.endsWith('owasp.org')) {
+    } else if (isOwaspHost) {
       const res = await ingestOwaspVulnerabilities(prisma, {
         ingestRunId: run.id,
         source: {

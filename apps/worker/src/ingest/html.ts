@@ -3,7 +3,7 @@ function normalizeWhitespace(value: string): string {
 }
 
 export function stripHtmlTags(html: string): string {
-  return html.replace(/<[^>]*>/g, '');
+  return html.replace(/<[^>]*>/g, '').replace(/[<>]/g, '');
 }
 
 export function extractFirstInnerHtmlByTag(html: string, tag: string): string | null {
@@ -24,7 +24,6 @@ export function extractFirstInnerHtmlByClass(html: string, tag: string, classNam
 export function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
@@ -38,14 +37,15 @@ export function decodeHtmlEntities(text: string): string {
       const n = Number.parseInt(hex, 16);
       if (!Number.isFinite(n)) return '';
       return String.fromCodePoint(n);
-    });
+    })
+    .replace(/&amp;/g, '&');
 }
 
 export function extractFirstById(html: string, tag: string, id: string): string | null {
   const re = new RegExp(`<${tag}[^>]*\\bid=["']${id}["'][^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
   const match = html.match(re);
   if (!match) return null;
-  const inner = normalizeWhitespace(decodeHtmlEntities(stripHtmlTags(match[1] ?? '')));
+  const inner = normalizeWhitespace(stripHtmlTags(decodeHtmlEntities(match[1] ?? '')));
   return inner || null;
 }
 
@@ -57,7 +57,7 @@ export function extractAllByIdPrefix(html: string, tag: string, idPrefix: string
 
   const results: string[] = [];
   for (const match of html.matchAll(re)) {
-    const inner = normalizeWhitespace(decodeHtmlEntities(stripHtmlTags(match[1] ?? '')));
+    const inner = normalizeWhitespace(stripHtmlTags(decodeHtmlEntities(match[1] ?? '')));
     if (inner) results.push(inner);
   }
 
