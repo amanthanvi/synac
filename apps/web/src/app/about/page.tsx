@@ -1,4 +1,7 @@
 import { PageHeader } from '@/components/PageHeader';
+import { Panel } from '@/components/ui/Panel';
+
+import proseStyles from '../_styles/Prose.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,12 +13,14 @@ export default function AboutPage() {
         title="SynAc"
         subtitle="A public cybersecurity glossary with disambiguation, provenance, and attribution as first-class features."
       />
-      <div style={{ maxWidth: 78 * 10, lineHeight: 1.8 }}>
-        <p style={{ color: 'color-mix(in srgb, var(--fg) 72%, transparent)' }}>
-          SynAc is built to answer one question reliably: “what does this term mean here?” —
-          without losing nuance, context, or source.
-        </p>
-      </div>
+      <Panel>
+        <div className={proseStyles.prose}>
+          <p>
+            SynAc is built to answer one question reliably: “what does this term mean here?” —
+            without losing nuance, context, or source.
+          </p>
+        </div>
+      </Panel>
     </>
   );
 }

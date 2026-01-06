@@ -1,8 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-
 import { PageHeader } from '@/components/PageHeader';
+import { Button, ButtonLink } from '@/components/ui/Button';
+import { Panel } from '@/components/ui/Panel';
+
+import layoutStyles from './_styles/Layout.module.css';
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
@@ -18,40 +20,31 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
         subtitle="The page failed to load. Try again, or return home."
       />
 
-      <div style={{ maxWidth: 720, lineHeight: 1.8 }}>
-        <p style={{ color: 'color-mix(in srgb, var(--fg) 78%, transparent)' }}>
-          {error.digest ? (
-            <>
-              Error ID: <span style={{ fontFamily: 'var(--font-mono)' }}>{error.digest}</span>
-            </>
-          ) : (
-            <>Error ID unavailable.</>
-          )}
-        </p>
+      <Panel className={layoutStyles.narrow}>
+        <div className={layoutStyles.stack}>
+          <p className={`${layoutStyles.muted} ${layoutStyles.small}`}>
+            {error.digest ? (
+              <>
+                Error ID: <span className={layoutStyles.mono}>{error.digest}</span>
+              </>
+            ) : (
+              <>Error ID unavailable.</>
+            )}
+          </p>
 
-        <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          <button
-            type="button"
-            onClick={() => reset()}
-            style={{
-              border: '1px solid var(--border)',
-              borderRadius: 999,
-              background: 'color-mix(in srgb, var(--bg1) 76%, transparent)',
-              color: 'var(--fg)',
-              fontFamily: 'var(--font-mono)',
-              fontSize: 12,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              padding: '10px 14px',
-              cursor: 'pointer',
-            }}
-          >
-            Try again
-          </button>
-          <Link href="/">Home</Link>
-          <Link href="/search">Search</Link>
+          <div className={layoutStyles.row}>
+            <Button type="button" variant="primary" onClick={() => reset()}>
+              Try again
+            </Button>
+            <ButtonLink href="/" size="sm">
+              Home
+            </ButtonLink>
+            <ButtonLink href="/search" size="sm">
+              Search
+            </ButtonLink>
+          </div>
         </div>
-      </div>
+      </Panel>
     </>
   );
 }

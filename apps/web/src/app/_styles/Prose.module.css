@@ -1,0 +1,29 @@
+.prose {
+  max-width: 78ch;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--fg) 80%, transparent);
+}
+
+.prose p + p {
+  margin-top: 0.9em;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0.9em 0 0.9em 1.2em;
+}
+
+.prose li + li {
+  margin-top: 0.35em;
+}
+
+.prose a {
+  color: color-mix(in srgb, var(--accent2) 85%, var(--fg));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose a:hover {
+  color: color-mix(in srgb, var(--accent2) 95%, var(--fg));
+}
+

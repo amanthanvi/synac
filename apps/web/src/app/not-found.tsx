@@ -1,7 +1,9 @@
-import Link from 'next/link';
-
 import { PageHeader } from '@/components/PageHeader';
 import { SearchForm } from '@/components/SearchForm';
+import { ButtonLink } from '@/components/ui/Button';
+import { Panel } from '@/components/ui/Panel';
+
+import layoutStyles from './_styles/Layout.module.css';
 
 export default function NotFound() {
   return (
@@ -12,17 +14,26 @@ export default function NotFound() {
         subtitle="Try searching, or jump back into browsing."
       />
 
-      <div style={{ maxWidth: 720 }}>
-        <SearchForm placeholder="Search terms and acronyms…" />
-      </div>
+      <Panel className={layoutStyles.narrow}>
+        <div className={layoutStyles.stack}>
+          <SearchForm placeholder="Search terms and acronyms…" />
 
-      <div style={{ marginTop: 14, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        <Link href="/">Home</Link>
-        <Link href="/terms?letter=a">Terms</Link>
-        <Link href="/acronyms?letter=a">Acronyms</Link>
-        <Link href="/tags">Tags</Link>
-      </div>
+          <div className={layoutStyles.row}>
+            <ButtonLink href="/" size="sm">
+              Home
+            </ButtonLink>
+            <ButtonLink href="/terms?letter=a" size="sm">
+              Terms
+            </ButtonLink>
+            <ButtonLink href="/acronyms?letter=a" size="sm">
+              Acronyms
+            </ButtonLink>
+            <ButtonLink href="/tags" size="sm">
+              Tags
+            </ButtonLink>
+          </div>
+        </div>
+      </Panel>
     </>
   );
 }
-

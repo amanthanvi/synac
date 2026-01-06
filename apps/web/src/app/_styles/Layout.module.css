@@ -1,0 +1,27 @@
+.narrow {
+  max-width: 720px;
+}
+
+.stack {
+  display: grid;
+  gap: 14px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.small {
+  font-size: 12px;
+}
+
+.muted {
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+}
