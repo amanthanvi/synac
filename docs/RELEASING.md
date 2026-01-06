@@ -13,6 +13,16 @@ This repo is released at `v0.1.1` and targets a `v0.1.x` release cadence.
   - staging worker runs in `SYNAC_WORKER_MODE=ingest`,
   - prod worker runs in `SYNAC_WORKER_MODE=promotion` with `SYNAC_STAGING_DATABASE_URL` configured.
 
+## Adding sources (staging-first ingest)
+
+- Upsert the new Source Registry entries in **prod** (Admin → Sources or `pnpm db:seed:content`).
+- Ensure prod worker allowlists the new slugs for sync → staging (`SYNAC_STAGING_SOURCE_ALLOWLIST`).
+- If the change includes a new ingest adapter, deploy `worker` in `staging` before triggering runs.
+- Trigger a staging ingest run (Admin → Ingest) and verify:
+  - staging worker logs `ingest.run.success`,
+  - prod worker logs `promotion.import_runs.ok`,
+  - Tier‑1 sources: prod worker logs `autopublish.tier1.ok`.
+
 ## Release steps
 
 1. Run the local gate:

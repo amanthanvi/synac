@@ -1725,7 +1725,7 @@ Rank results using weighted signals:
     - Entry pages (accordion UI for multiple senses), basic search (Postgres FTS)
     - Admin CRUD for entries/senses
 2. **Week 3–4: Ingest MVP**
-    - Source registry with NIST + NICCS (CISA) + MITRE ATT&CK + OWASP
+    - Source registry with NIST + NICCS (CISA) + IETF RFC 4949 + MITRE ATT&CK (Enterprise/Mobile/ICS) + OWASP
     - Ingest pipeline: fetch → normalize → dedupe → review queue
     - Provenance tracking, citations, pg-boss job queue
 3. **Week 5–6: Polish & Launch**
@@ -1760,7 +1760,7 @@ Rank results using weighted signals:
 | # | Question | Resolution | Reference |
 |---|----------|------------|-----------|
 | 1 | Primary audience | Security practitioners (SOC analysts, pentesters) | §22.1 |
-| 2 | Initial sources | NIST + NICCS (CISA) + MITRE ATT&CK + OWASP | §22.1 |
+| 2 | Initial sources | NIST + NICCS (CISA) + IETF RFC 4949 + MITRE ATT&CK (Enterprise/Mobile/ICS) + OWASP | §22.1 |
 | 3 | CC BY-SA appetite | Case-by-case; grandfather existing content on license changes | §22.3 |
 | 4 | Vendor docs policy | Same as other sources (license-gate rules) | §22.6 |
 | 5 | SynAc editorial license | CC BY 4.0 (attribution required) | §22.8 |
@@ -1819,7 +1819,7 @@ Rank results using weighted signals:
 | **Primary Audience** | Security practitioners (SOC analysts, pentesters) | Technical depth, practical focus, assumed baseline knowledge |
 | **Team Size (v0.1.0)** | Solo operator (1 person wears all hats) | Simplify workflows; defer complex approval chains |
 | **Timeline** | 1–2 months (aggressive MVP) | Launch fast, iterate; defer nice-to-haves |
-| **Initial Sources** | NIST + NICCS (CISA) + IETF RFC 4949 + MITRE ATT&CK + OWASP | High-trust, well-structured government/consortium standards |
+| **Initial Sources** | NIST + NICCS (CISA) + IETF RFC 4949 + MITRE ATT&CK (Enterprise/Mobile/ICS) + OWASP | High-trust, well-structured government/consortium standards |
 | **Hosting Platform** | Railway + managed Postgres | Simple container deployment, good DX, built-in Postgres |
 
 ### 22.2) Data Model Decisions

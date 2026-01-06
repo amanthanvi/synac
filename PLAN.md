@@ -24,12 +24,12 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## v0.1.2 — Tier‑1 source expansion
 
-- [ ] Source expansion (Tier‑1): add MITRE ATT&CK Mobile + ICS CTI bundles.
-- [ ] Source expansion (Tier‑1): add IETF RFC 4949 Internet Security Glossary ingestion.
-- [ ] Ops: add new source slugs to `SYNAC_STAGING_SOURCE_ALLOWLIST` (prod worker → staging sync).
-- [ ] Seed: upsert new sources in prod (`pnpm db:seed:content`).
-- [ ] Ingest: trigger staging runs for new sources, verify promotion + Tier‑1 autopublish.
-- [ ] Docs: update `SPEC.md` initial sources; update `README.md` + `docs/RELEASING.md`.
+- [x] Source expansion (Tier‑1): add MITRE ATT&CK Mobile + ICS CTI bundles.
+- [x] Source expansion (Tier‑1): add IETF RFC 4949 Internet Security Glossary ingestion.
+- [x] Ops: add new source slugs to `SYNAC_STAGING_SOURCE_ALLOWLIST` (prod worker → staging sync).
+- [x] Seed: upsert new sources in prod (`pnpm db:seed:content`).
+- [x] Ingest: trigger staging runs for new sources, verify promotion + Tier‑1 autopublish.
+- [x] Docs: update `SPEC.md` initial sources; update `README.md` + `docs/RELEASING.md`.
 
 ## v0.1.1 — Branding polish + source expansion
 
