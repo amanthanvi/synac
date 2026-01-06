@@ -39,7 +39,7 @@ Plan:
 - [x] Public page redesign: Home, Browse (Terms/Acronyms/Tags/Sources), Recent/Trending, Search, Sources detail, About/Legal, Changelog.
 - [x] Entry pages: add at-a-glance rail; add TOC for senses; footnote-style references per sense.
 - [x] Admin facelift: replace inline-styled admin layout + pages with shared primitives + consistent shell.
-- [ ] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
+- [x] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
 - [x] Docs: update `SPEC.md` (nav + entry IA rules), `README.md`, `apps/web/src/lib/changelog.ts`.
 - [x] Release: bump versions to `0.1.3`.
 - [ ] Release: tag `v0.1.3`.
