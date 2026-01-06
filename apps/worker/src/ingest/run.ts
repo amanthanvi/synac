@@ -3,6 +3,7 @@ import { getPrismaClient } from '@synac/db';
 import { ingestNistGlossary } from './nistGlossary.js';
 import { ingestMitreAttackCti } from './mitreAttackCti.js';
 import { ingestOwaspVulnerabilities } from './owaspVulnerabilities.js';
+import { ingestNiccsGlossary } from './niccsGlossary.js';
 import { logger } from '../logger.js';
 
 function parseMaxItems(configSnapshot: unknown): number {
@@ -62,6 +63,19 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
     let itemsCreated = 0;
     if (host === 'csrc.nist.gov') {
       const res = await ingestNistGlossary(prisma, {
+        ingestRunId: run.id,
+        source: {
+          id: run.source.id,
+          baseUrl: run.source.baseUrl,
+          licenseType: run.source.licenseType,
+          lastVerifiedAt: run.source.lastVerifiedAt,
+        },
+        maxItems,
+        forceReprocess,
+      });
+      itemsCreated = res.itemsCreated;
+    } else if (host === 'niccs.cisa.gov') {
+      const res = await ingestNiccsGlossary(prisma, {
         ingestRunId: run.id,
         source: {
           id: run.source.id,
