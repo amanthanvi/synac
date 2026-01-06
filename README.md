@@ -61,6 +61,8 @@ Useful commands:
   - Migrate: `railway ssh -e <env> -s synac pnpm --filter @synac/db db:migrate:deploy`
   - Seed roles/users: `railway ssh -e <env> -s synac pnpm db:seed`
   - Seed starter content: `railway ssh -e <env> -s synac pnpm db:seed:content`
+  - Backfill acronyms (reclassify acronym-like terms): `railway ssh -e <env> -s synac pnpm --filter @synac/db db:reclassify:acronyms`
+  - Auto-tag entries: `railway ssh -e <env> -s synac pnpm --filter @synac/db db:tag:auto`
 
 ## Ingest (staging-first)
 
@@ -71,6 +73,8 @@ Production does not ingest directly. Instead:
 
 Notes:
 - Ingest adapters can populate `entry_variants` (aliases/synonyms/abbreviations). Entry pages surface these as “Also known as”, and shortform entries with multi-word variants show a “Stands for” block.
+- NIST glossary ingest classifies acronym-like titles as `ACRONYM`. If a user lands on `/term/<slug>` for an acronym entry, it permanently redirects to `/acronym/<slug>` (and vice versa).
+- Tags are a curated taxonomy; some are auto-applied from entry text via `db:tag:auto`.
 
 Troubleshooting: `docs/runbooks/ingest-promotion.md`.
 

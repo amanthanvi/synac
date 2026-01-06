@@ -163,6 +163,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 -   Acronym pages display expansions prominently per sense.
 -   If an Entry has a shortform title (e.g., “AAD”, “IdP”, “S/MIME”) and known expansions (from `senses.expanded_form` and/or `entry_variants`), the entry page displays a **“Stands for”** section near the top.
 -   If an Entry has aliases/synonyms/abbreviations (`entry_variants`), the entry page displays an **“Also known as”** section (secondary to summary/definitions).
+-   Ingest may classify shortform, acronym-like titles as `entry_type=ACRONYM` (vs `TERM`) to support `/acronyms` browsing and sitemaps.
 -   Search for an expansion phrase (e.g., “security operations center”) returns the acronym entry (SOC) and the term entry if one exists.
 -   Acronyms can include punctuation variants (e.g., “C2”, “C&C”) and are normalized for search.
 
@@ -184,6 +185,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 **Acceptance Criteria**
 
 -   Changing an entry slug creates a slug-history record and old URL returns a permanent redirect (`308`) to the new canonical URL.
+-   If a user lands on the wrong route (e.g., `/term/{slug}` for an acronym entry), SynAc returns a permanent redirect to the canonical route (and vice versa).
 -   Canonical `<link rel="canonical">` is present on entry pages.
 -   Slugs are unique within entry type; conflicts resolved via suffix (`-2`, `-3`) and editor prompt.
 
@@ -219,6 +221,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 
 -   `/tags/{tag}` lists entries with pagination and filters by entry type.
 -   Admin can create/rename/merge tags with slug history and redirects.
+-   Some tags may be auto-applied via deterministic heuristics from entry text (reviewable/overridable).
 
 ---
 
