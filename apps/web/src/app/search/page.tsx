@@ -6,8 +6,12 @@ import { getPrismaClient, searchPublishedEntries } from '@synac/db';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import { SearchForm } from '@/components/SearchForm';
+import { ButtonLink } from '@/components/ui/Button';
+import { Panel } from '@/components/ui/Panel';
 
 import styles from '../_styles/Browse.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
+import pageStyles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,29 +46,53 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         subtitle="Search published entries by title, aliases, expansions, summaries, and definitions."
       />
 
-      <div style={{ maxWidth: 720 }}>
+      <Panel className={layoutStyles.narrow}>
         <SearchForm defaultValue={query} placeholder="Search (e.g. SAML, SOC, zero trust)..." />
-      </div>
+      </Panel>
 
       {!query || isIgnoredQuery ? (
-        <div style={{ marginTop: 14 }}>
+        <div className={pageStyles.section}>
           {isIgnoredQuery ? (
             <p className={styles.itemSummary}>
               Try a more specific query. Or jump into browsing:
             </p>
           ) : null}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            <Link href="/terms?letter=a">Browse terms</Link>
-            <Link href="/acronyms?letter=a">Browse acronyms</Link>
-            <Link href="/tags">Browse tags</Link>
+          <div className={layoutStyles.row}>
+            <ButtonLink href="/terms?letter=a" size="sm">
+              Browse terms
+            </ButtonLink>
+            <ButtonLink href="/acronyms?letter=a" size="sm">
+              Browse acronyms
+            </ButtonLink>
+            <ButtonLink href="/tags" size="sm">
+              Browse tags
+            </ButtonLink>
           </div>
         </div>
       ) : (
         <>
-          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-            <Link href={`/search?q=${encodeURIComponent(query)}`}>All</Link>
-            <Link href={`/search?q=${encodeURIComponent(query)}&type=TERM`}>Terms</Link>
-            <Link href={`/search?q=${encodeURIComponent(query)}&type=ACRONYM`}>Acronyms</Link>
+          <div className={pageStyles.filters}>
+            <ButtonLink
+              href={`/search?q=${encodeURIComponent(query)}`}
+              size="sm"
+              variant={!entryType ? 'primary' : 'ghost'}
+            >
+              All
+            </ButtonLink>
+            <ButtonLink
+              href={`/search?q=${encodeURIComponent(query)}&type=TERM`}
+              size="sm"
+              variant={entryType === 'TERM' ? 'primary' : 'ghost'}
+            >
+              Terms
+            </ButtonLink>
+            <ButtonLink
+              href={`/search?q=${encodeURIComponent(query)}&type=ACRONYM`}
+              size="sm"
+              variant={entryType === 'ACRONYM' ? 'primary' : 'ghost'}
+            >
+              Acronyms
+            </ButtonLink>
           </div>
 
           <Results query={query} page={page} entryType={entryType} />

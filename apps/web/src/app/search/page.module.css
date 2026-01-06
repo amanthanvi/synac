@@ -1,0 +1,12 @@
+.section {
+  margin-top: 14px;
+}
+
+.filters {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
