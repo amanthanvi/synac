@@ -1,0 +1,39 @@
+.wrap {
+  margin-top: 10px;
+}
+
+.section {
+  margin-top: 18px;
+}
+
+.sectionLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  margin-bottom: 6px;
+}
+
+.sectionText {
+  color: color-mix(in srgb, var(--fg) 82%, transparent);
+  line-height: 1.8;
+}
+
+.link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: color-mix(in srgb, var(--accent2) 80%, var(--fg));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+
+.link:hover {
+  color: color-mix(in srgb, var(--accent2) 92%, var(--fg));
+}
+
+.actions {
+  margin-top: 22px;
+}
+

@@ -1,10 +1,15 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
 import { getPrismaClient, resolvePublicSourceBySlug } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { ButtonLink } from '@/components/ui/Button';
+import { KeyValueList } from '@/components/ui/KeyValue';
+import { Panel } from '@/components/ui/Panel';
+
+import layoutStyles from '../../_styles/Layout.module.css';
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,120 +56,58 @@ export default async function SourcePage({ params }: SourcePageProps) {
         subtitle="License notes and attribution requirements for this source."
       />
 
-      <div style={{ maxWidth: 820, lineHeight: 1.8 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>
-            {source.lastVerifiedAt ? (
-              <>Verified {formatDate(source.lastVerifiedAt)}</>
-            ) : (
-              <>Not yet verified</>
-            )}
-          </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>
-            · {source.licenseType}
-          </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>
-            · {source.trustTier}
-          </span>
-        </div>
+      <div className={styles.wrap}>
+        <Panel className={layoutStyles.narrow}>
+          <KeyValueList
+            items={[
+              {
+                label: 'Verified',
+                value: source.lastVerifiedAt
+                  ? `Verified ${formatDate(source.lastVerifiedAt)}`
+                  : 'Not yet verified',
+              },
+              { label: 'License', value: source.licenseType },
+              { label: 'Trust', value: source.trustTier },
+            ]}
+          />
 
-        <div style={{ marginTop: 14 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 12,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              opacity: 0.75,
-              marginBottom: 6,
-            }}
-          >
-            Base URL
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>Base URL</div>
+            <a className={styles.link} href={source.baseUrl} target="_blank" rel="noopener noreferrer">
+              {source.baseUrl}
+            </a>
           </div>
-          <a href={source.baseUrl} target="_blank" rel="noopener noreferrer">
-            {source.baseUrl}
-          </a>
-        </div>
 
-        <div style={{ marginTop: 18 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 12,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              opacity: 0.75,
-              marginBottom: 6,
-            }}
-          >
-            Attribution
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>Attribution</div>
+            <p className={styles.sectionText}>{source.attributionRequirements}</p>
           </div>
-          <p style={{ color: 'color-mix(in srgb, var(--fg) 78%, transparent)' }}>
-            {source.attributionRequirements}
-          </p>
-        </div>
 
-        <div style={{ marginTop: 18 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 12,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              opacity: 0.75,
-              marginBottom: 6,
-            }}
-          >
-            Allowed use
+          <div className={styles.section}>
+            <div className={styles.sectionLabel}>Allowed use</div>
+            <p className={styles.sectionText}>{source.allowedUse}</p>
           </div>
-          <p style={{ color: 'color-mix(in srgb, var(--fg) 78%, transparent)' }}>
-            {source.allowedUse}
-          </p>
-        </div>
 
-        {source.licenseNotes ? (
-          <div style={{ marginTop: 18 }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 12,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                opacity: 0.75,
-                marginBottom: 6,
-              }}
-            >
-              License notes
+          {source.licenseNotes ? (
+            <div className={styles.section}>
+              <div className={styles.sectionLabel}>License notes</div>
+              <p className={styles.sectionText}>{source.licenseNotes}</p>
             </div>
-            <p style={{ color: 'color-mix(in srgb, var(--fg) 78%, transparent)' }}>
-              {source.licenseNotes}
-            </p>
-          </div>
-        ) : null}
+          ) : null}
 
-        {source.contact ? (
-          <div style={{ marginTop: 18 }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 12,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                opacity: 0.75,
-                marginBottom: 6,
-              }}
-            >
-              Contact
+          {source.contact ? (
+            <div className={styles.section}>
+              <div className={styles.sectionLabel}>Contact</div>
+              <p className={styles.sectionText}>{source.contact}</p>
             </div>
-            <p style={{ color: 'color-mix(in srgb, var(--fg) 78%, transparent)' }}>
-              {source.contact}
-            </p>
-          </div>
-        ) : null}
+          ) : null}
 
-        <div style={{ marginTop: 22 }}>
-          <Link href="/sources">All sources</Link>
-        </div>
+          <div className={styles.actions}>
+            <ButtonLink href="/sources" size="sm">
+              All sources
+            </ButtonLink>
+          </div>
+        </Panel>
       </div>
     </>
   );
