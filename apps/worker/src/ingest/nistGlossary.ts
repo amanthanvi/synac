@@ -32,6 +32,28 @@ function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
   return 'ALIAS';
 }
 
+function inferEntryTypeFromTitle(value: string): 'TERM' | 'ACRONYM' {
+  const v = value.trim();
+  if (!v) return 'TERM';
+  if (v.includes(' ')) return 'TERM';
+  if (v.length < 2 || v.length > 24) return 'TERM';
+
+  const letters = v.replace(/[^A-Za-z]/g, '');
+  if (letters.length < 1) return 'TERM';
+
+  const uppercase = letters.replace(/[^A-Z]/g, '').length;
+  const lowercase = letters.replace(/[^a-z]/g, '').length;
+  const digits = v.replace(/[^0-9]/g, '').length;
+
+  // Classic initialisms (AAD, TLS, AES, S/MIME, etc.)
+  if (uppercase >= 2 && lowercase <= 2) return 'ACRONYM';
+
+  // Short forms like "C2" (Command and Control) have one letter + digits.
+  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return 'ACRONYM';
+
+  return 'TERM';
+}
+
 export async function ingestNistGlossary(
   prisma: PrismaClient,
   input: {
@@ -115,6 +137,7 @@ export async function ingestNistGlossary(
 
     if (!title || !definition) continue;
 
+    const entryType = inferEntryTypeFromTitle(title);
     const normalizedTitle = normalizeTitle(title);
     const variantsRaw = [
       ...extractAllByIdPrefix(html, 'a', 'term-abbr-link-'),
@@ -151,7 +174,7 @@ export async function ingestNistGlossary(
 
     const createEntryProposedChange = {
       kind: 'CREATE_ENTRY',
-      entryType: 'TERM',
+      entryType,
       displayTitle: title,
       summaryMd: definition,
       variants,
@@ -232,7 +255,7 @@ export async function ingestNistGlossary(
     });
 
     const existingEntry = await prisma.entry.findFirst({
-      where: { entryType: 'TERM', normalizedTitle, deletedAt: null },
+      where: { entryType, normalizedTitle, deletedAt: null },
       select: { id: true, displayTitle: true },
     });
 
@@ -240,7 +263,7 @@ export async function ingestNistGlossary(
       ? {
           kind: 'ADD_SENSES',
           entryId: existingEntry.id,
-          entryType: 'TERM',
+          entryType,
           displayTitle: existingEntry.displayTitle,
           senses: createEntryProposedChange.senses,
         }
