@@ -191,13 +191,34 @@
   gap: 8px;
   padding: 0;
   margin: 0;
+  counter-reset: ref;
 }
 
 .refItem {
+  position: relative;
+  counter-increment: ref;
   border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
   border-radius: 14px;
-  padding: 10px 12px;
+  padding: 10px 12px 10px 42px;
+  background: color-mix(in srgb, var(--bg1) 78%, transparent);
+}
+
+.refItem::before {
+  content: counter(ref);
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
   background: color-mix(in srgb, var(--bg0) 70%, transparent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
 }
 
 .refLine1 {
