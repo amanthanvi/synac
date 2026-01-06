@@ -10,7 +10,10 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: 'Unreleased',
     date: '2026-01-06',
     title: 'Work in progress',
-    items: [],
+    items: [
+      'Added IETF RFC 4949 Internet Security Glossary ingestion (Tier‑1 source).',
+      'Seeded additional MITRE ATT&CK CTI sources (Mobile + ICS).',
+    ],
   },
   {
     version: 'v0.1.1',

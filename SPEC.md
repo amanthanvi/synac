@@ -1819,7 +1819,7 @@ Rank results using weighted signals:
 | **Primary Audience** | Security practitioners (SOC analysts, pentesters) | Technical depth, practical focus, assumed baseline knowledge |
 | **Team Size (v0.1.0)** | Solo operator (1 person wears all hats) | Simplify workflows; defer complex approval chains |
 | **Timeline** | 1–2 months (aggressive MVP) | Launch fast, iterate; defer nice-to-haves |
-| **Initial Sources** | NIST + NICCS (CISA) + MITRE ATT&CK + OWASP | High-trust, well-structured government/consortium standards |
+| **Initial Sources** | NIST + NICCS (CISA) + IETF RFC 4949 + MITRE ATT&CK + OWASP | High-trust, well-structured government/consortium standards |
 | **Hosting Platform** | Railway + managed Postgres | Simple container deployment, good DX, built-in Postgres |
 
 ### 22.2) Data Model Decisions

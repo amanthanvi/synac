@@ -1,4 +1,4 @@
-# SynAc v0.1.1 — Execution Plan (PLAN.md)
+# SynAc v0.1.2 — Execution Plan (PLAN.md)
 
 Last updated: 2026-01-06
 
@@ -21,6 +21,15 @@ This is the living implementation tracker for `SPEC.md`.
 - Small/medium diffs.
 - Commit + push frequently (same branch).
 - Keep code aligned with `SPEC.md`; when reality diverges, update `SPEC.md` (don’t ship undocumented behavior).
+
+## v0.1.2 — Tier‑1 source expansion
+
+- [ ] Source expansion (Tier‑1): add MITRE ATT&CK Mobile + ICS CTI bundles.
+- [ ] Source expansion (Tier‑1): add IETF RFC 4949 Internet Security Glossary ingestion.
+- [ ] Ops: add new source slugs to `SYNAC_STAGING_SOURCE_ALLOWLIST` (prod worker → staging sync).
+- [ ] Seed: upsert new sources in prod (`pnpm db:seed:content`).
+- [ ] Ingest: trigger staging runs for new sources, verify promotion + Tier‑1 autopublish.
+- [ ] Docs: update `SPEC.md` initial sources; update `README.md` + `docs/RELEASING.md`.
 
 ## v0.1.1 — Branding polish + source expansion
 
