@@ -42,7 +42,7 @@ Plan:
 - [x] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
 - [x] Docs: update `SPEC.md` (nav + entry IA rules), `README.md`, `apps/web/src/lib/changelog.ts`.
 - [x] Release: bump versions to `0.1.3`.
-- [ ] Release: tag `v0.1.3`.
+- [x] Release: tag `v0.1.3`.
 
 ## v0.1.2 — Tier‑1 source expansion
 
