@@ -4,6 +4,7 @@ import { ingestNistGlossary } from './nistGlossary.js';
 import { ingestMitreAttackCti } from './mitreAttackCti.js';
 import { ingestOwaspVulnerabilities } from './owaspVulnerabilities.js';
 import { ingestNiccsGlossary } from './niccsGlossary.js';
+import { ingestRfc4949Glossary } from './rfc4949Glossary.js';
 import { logger } from '../logger.js';
 
 function parseMaxItems(configSnapshot: unknown): number {
@@ -102,6 +103,19 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
       itemsCreated = res.itemsCreated;
     } else if (host === 'raw.githubusercontent.com') {
       const res = await ingestMitreAttackCti(prisma, {
+        ingestRunId: run.id,
+        source: {
+          id: run.source.id,
+          baseUrl: run.source.baseUrl,
+          licenseType: run.source.licenseType,
+          lastVerifiedAt: run.source.lastVerifiedAt,
+        },
+        maxItems,
+        forceReprocess,
+      });
+      itemsCreated = res.itemsCreated;
+    } else if (host === 'www.rfc-editor.org' || host === 'rfc-editor.org') {
+      const res = await ingestRfc4949Glossary(prisma, {
         ingestRunId: run.id,
         source: {
           id: run.source.id,
