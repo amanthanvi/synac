@@ -522,7 +522,15 @@ async function main(): Promise<void> {
   const { actorUserId } = await ensureSeedActor(prisma);
   const now = new Date();
 
-  const [{ sourceId: nistSourceId }, { sourceId: mitreSourceId }, { sourceId: owaspSourceId }, { sourceId: niccsSourceId }] = await Promise.all([
+  const [
+    { sourceId: nistSourceId },
+    { sourceId: mitreSourceId },
+    { sourceId: mitreMobileSourceId },
+    { sourceId: mitreIcsSourceId },
+    { sourceId: owaspSourceId },
+    { sourceId: niccsSourceId },
+    { sourceId: rfc4949SourceId },
+  ] = await Promise.all([
     ensureSource(prisma, {
       name: 'NIST CSRC Glossary',
       sourceSlug: 'nist-csrc-glossary',
@@ -544,6 +552,42 @@ async function main(): Promise<void> {
       name: 'MITRE ATT&CK (CTI STIX Data)',
       sourceSlug: 'mitre-attack-cti',
       baseUrl: 'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json',
+      cronSchedule: null,
+      licenseType: 'OTHER',
+      licenseNotes:
+        'See repository LICENSE.txt for ATT&CK terms: non-exclusive royalty-free license; reproduce MITRE copyright + license in copies. Verify requirements before publishing quoted text.',
+      allowedUse:
+        'Allowed for research/development/commercial under MITRE ATT&CK license; reproduce license text when required. Prefer summarization and citation links.',
+      attributionRequirements: 'Source: MITRE ATT&CK (attack-stix-data).',
+      accessMethod: 'API',
+      robotsPolicy: 'RESPECT',
+      trustTier: 'TIER_1',
+      enabled: true,
+      lastVerifiedAt: now,
+      contact: 'https://attack.mitre.org/resources/contact/',
+    }),
+    ensureSource(prisma, {
+      name: 'MITRE ATT&CK (Mobile, CTI STIX Data)',
+      sourceSlug: 'mitre-attack-mobile-cti',
+      baseUrl: 'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/mobile-attack/mobile-attack.json',
+      cronSchedule: null,
+      licenseType: 'OTHER',
+      licenseNotes:
+        'See repository LICENSE.txt for ATT&CK terms: non-exclusive royalty-free license; reproduce MITRE copyright + license in copies. Verify requirements before publishing quoted text.',
+      allowedUse:
+        'Allowed for research/development/commercial under MITRE ATT&CK license; reproduce license text when required. Prefer summarization and citation links.',
+      attributionRequirements: 'Source: MITRE ATT&CK (attack-stix-data).',
+      accessMethod: 'API',
+      robotsPolicy: 'RESPECT',
+      trustTier: 'TIER_1',
+      enabled: true,
+      lastVerifiedAt: now,
+      contact: 'https://attack.mitre.org/resources/contact/',
+    }),
+    ensureSource(prisma, {
+      name: 'MITRE ATT&CK (ICS, CTI STIX Data)',
+      sourceSlug: 'mitre-attack-ics-cti',
+      baseUrl: 'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/ics-attack/ics-attack.json',
       cronSchedule: null,
       licenseType: 'OTHER',
       licenseNotes:
@@ -593,6 +637,23 @@ async function main(): Promise<void> {
       enabled: true,
       lastVerifiedAt: now,
       contact: 'https://niccs.cisa.gov/contact',
+    }),
+    ensureSource(prisma, {
+      name: 'IETF RFC 4949 (Internet Security Glossary)',
+      sourceSlug: 'ietf-rfc4949-glossary',
+      baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+      cronSchedule: null,
+      licenseType: 'OTHER',
+      licenseNotes:
+        'RFC 4949 is published by the IETF Trust and marked as "Distribution of this memo is unlimited". Verify IETF Trust copyright/licensing terms for reuse.',
+      allowedUse:
+        'Public RFC text. Prefer summarization/paraphrase when in doubt and include citations/links for attribution.',
+      attributionRequirements: 'Source: IETF RFC 4949 (rfc-editor.org).',
+      accessMethod: 'HTML',
+      robotsPolicy: 'RESPECT',
+      trustTier: 'TIER_1',
+      enabled: true,
+      lastVerifiedAt: now,
     }),
   ]);
 
@@ -1137,7 +1198,15 @@ async function main(): Promise<void> {
       entityType: 'SYSTEM',
       entityId: crypto.randomUUID(),
       after: toJsonSafe({
-        sources: { nistSourceId, mitreSourceId, owaspSourceId, niccsSourceId },
+        sources: {
+          nistSourceId,
+          mitreSourceId,
+          mitreMobileSourceId,
+          mitreIcsSourceId,
+          owaspSourceId,
+          niccsSourceId,
+          rfc4949SourceId,
+        },
         tags: { identityTagId, cryptoTagId, accessControlTagId, networkSecurityTagId, threatsTagId, fundamentalsTagId },
         ranAt: now.toISOString(),
       }),
