@@ -79,7 +79,17 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
   const prisma = getPrismaClient();
   const resolved = await resolvePublishedEntryBySlug(prisma, { entryType: 'TERM', slug });
 
-  if (!resolved) notFound();
+  if (!resolved) {
+    const fallback = await resolvePublishedEntryBySlug(prisma, { entryType: 'ACRONYM', slug });
+    if (fallback) {
+      permanentRedirect(`/acronym/${fallback.canonicalSlug}`);
+    }
+    notFound();
+  }
+
+  if (resolved.entry.entryType === 'ACRONYM') {
+    permanentRedirect(`/acronym/${resolved.canonicalSlug}`);
+  }
 
   if (resolved.needsRedirect) {
     permanentRedirect(`/term/${resolved.canonicalSlug}`);

@@ -17,7 +17,7 @@ export default async function TagsPage() {
       <PageHeader
         badge="Browse"
         title="Tags"
-        subtitle="Curated tags for browsing and filtering. Tag pages preserve old slugs via redirects."
+        subtitle="Curated tags for browsing and filtering. Some tags may be auto-applied based on entry text; tag pages preserve old slugs via redirects."
       />
 
       {tags.length === 0 ? (
@@ -42,4 +42,3 @@ export default async function TagsPage() {
     </>
   );
 }
-
