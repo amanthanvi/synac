@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/PageHeader';
 import { Panel } from '@/components/ui/Panel';
 
-import proseStyles from '../../../_styles/Prose.module.css';
+import proseStyles from '../../_styles/Prose.module.css';
 
 export const dynamic = 'force-dynamic';
 
