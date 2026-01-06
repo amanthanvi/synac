@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 import { SearchForm } from './SearchForm';
 import styles from './SiteHeader.module.css';
@@ -8,6 +9,15 @@ export function SiteHeader() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <Link className={styles.brand} href="/">
+          <Image
+            className={styles.brandIcon}
+            src="/brand/synac-icon.svg"
+            alt=""
+            aria-hidden="true"
+            width={28}
+            height={28}
+            priority
+          />
           <span className={styles.brandMark}>SYNAC</span>
           <span className={styles.brandName}>SynAc</span>
         </Link>
@@ -30,4 +40,3 @@ export function SiteHeader() {
     </header>
   );
 }
-

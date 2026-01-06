@@ -34,6 +34,10 @@ export const metadata: Metadata = {
   },
   description:
     'A public, internet-facing cybersecurity glossary with strong provenance and attribution.',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default function RootLayout({

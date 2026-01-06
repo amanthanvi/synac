@@ -23,6 +23,14 @@
   text-decoration: none;
 }
 
+.brandIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  flex: 0 0 auto;
+  transform: translateY(2px);
+}
+
 .brandMark {
   font-family: var(--font-mono);
   letter-spacing: 0.06em;
