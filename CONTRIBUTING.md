@@ -1,6 +1,6 @@
 # Contributing
 
-SynAc is released at `v0.1.1` and under active development for `v0.1.x`.
+SynAc is released at `v0.1.3` and under active development for `v0.1.x`.
 
 ## Workflow
 

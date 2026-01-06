@@ -81,7 +81,7 @@ Troubleshooting: `docs/runbooks/ingest-promotion.md`.
 
 ## Status
 
-Released: `v0.1.1`.
+Released: `v0.1.3`.
 
 ## License
 

@@ -1,6 +1,8 @@
-# SynAc v0.1.1 — Production Specification (SPEC.md)
+# SynAc v0.1.3 — Production Specification (SPEC.md)
 
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
+
+> **Note (v0.1.3):** Patch release on top of the v0.1.0 baseline. Adds the “field manual” frontend (light-by-default with automatic dark mode via `prefers-color-scheme`), improved navigation, and an at-a-glance entry rail with sense TOC + footnote-style references.
 
 > **Note (v0.1.1):** Patch release on top of the v0.1.0 baseline. Adds additional high-quality sources (e.g., NICCS/CISA glossary ingestion) and incremental UI polish.
 
@@ -774,14 +776,14 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 -   Global header:
     -   logo → home,
     -   search bar,
-    -   browse dropdown (Terms, Acronyms, Tags),
+    -   Explore dropdown (Terms, Acronyms, Tags, Recent, Trending),
     -   Sources,
     -   About.
 -   Entry pages:
+    -   at-a-glance rail (Updated, Tags, “Stands for”, “Also known as”, “On this page”),
     -   sticky table of contents for senses (if >1),
-    -   “Stands for” + “Also known as” blocks when available,
-    -   “Related / See also” sidebar,
-    -   references at end of each sense.
+    -   “Related / See also” in the rail (or adjacent sidebar),
+    -   references rendered in footnote-style blocks at end of each sense.
 
 ### Content design rules
 
