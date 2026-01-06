@@ -117,6 +117,7 @@
   border-radius: 18px;
   padding: 16px;
   background: color-mix(in srgb, var(--bg1) 80%, transparent);
+  scroll-margin-top: 96px;
 }
 
 .senseCard + .senseCard {
@@ -139,6 +140,34 @@
   color: color-mix(in srgb, var(--fg) 62%, transparent);
   font-family: var(--font-mono);
   font-size: 12px;
+}
+
+.senseBody {
+  margin-top: 10px;
+}
+
+.senseText {
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--fg) 84%, transparent);
+}
+
+.senseTextMuted {
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--fg) 74%, transparent);
+}
+
+.examples {
+  margin-top: 12px;
+}
+
+.examplesList {
+  padding-left: 18px;
+  line-height: 1.8;
+  color: color-mix(in srgb, var(--fg) 84%, transparent);
+}
+
+.examplesList li + li {
+  margin-top: 6px;
 }
 
 .refs {
@@ -250,4 +279,94 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--fg) 62%, transparent);
+}
+
+.variantBody {
+  margin-top: 10px;
+}
+
+.emptyText {
+  margin-top: 10px;
+  color: color-mix(in srgb, var(--fg) 74%, transparent);
+}
+
+@media (max-width: 920px) {
+  .entryGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .aside {
+    position: static;
+  }
+}
+.entryGrid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+}
+
+.main {
+  min-width: 0;
+}
+
+.aside {
+  min-width: 0;
+  position: sticky;
+  top: 86px;
+  align-self: start;
+  display: grid;
+  gap: 12px;
+}
+
+.asideBlock {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  background: color-mix(in srgb, var(--bg1) 82%, transparent);
+}
+
+.asideTitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  margin-bottom: 10px;
+}
+
+.asideMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.asideTags {
+  margin-top: 10px;
+}
+
+.toc {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.tocLink {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 78%, transparent);
+  padding: 8px 10px;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--fg) 82%, transparent);
+}
+
+.tocLink:hover {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--accent2) 55%, var(--border));
 }

@@ -201,212 +201,244 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
         subtitle={entry.summaryText ?? 'No summary yet.'}
       />
 
-      <div className={styles.metaRow}>
-        <span className={styles.pill}>Updated {formatDate(entry.updatedAt)}</span>
-        {entry.entryTags.length ? (
-          <div className={styles.tags}>
-            {entry.entryTags.map(({ tag }) => (
-              <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tagLink}>
-                {tag.name}
-              </Link>
-            ))}
-          </div>
-        ) : null}
-      </div>
-
-      {standsForPrimary.primary ? (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Stands for</h2>
-          <div className={styles.variants}>
-            <span
-              key={standsForPrimary.primary}
-              className={`${styles.variantPill} ${styles.variantPillStrong}`}
-            >
-              {standsForPrimary.primary}
-            </span>
-          </div>
-          {standsForPrimary.alternates.length ? (
-            <details className={styles.variantDetails}>
-              <summary className={styles.variantSummary}>
-                Show {standsForPrimary.alternates.length}{' '}
-                {standsForPrimary.alternates.length === 1 ? 'alternate expansion' : 'alternate expansions'}
-              </summary>
-              <div className={styles.variants} style={{ marginTop: 10 }}>
-                {standsForPrimary.alternates.map((v) => (
-                  <span key={v} className={styles.variantPill}>
-                    {v}
-                  </span>
-                ))}
-              </div>
-            </details>
-          ) : null}
-        </section>
-      ) : null}
-
-      {alsoKnownAs.length ? (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Also known as</h2>
-          {alsoKnownAs.length <= 8 ? (
-            <div className={styles.variants}>
-              {alsoKnownAs.map((v) => (
-                <span key={v.text} className={styles.variantPill}>
-                  {v.text}
-                </span>
-              ))}
+      <div className={styles.entryGrid}>
+        <aside className={styles.aside} aria-label="At a glance">
+          <div className={styles.asideBlock}>
+            <div className={styles.asideTitle}>At a glance</div>
+            <div className={styles.asideMetaRow}>
+              <span className={styles.pill}>Updated {formatDate(entry.updatedAt)}</span>
             </div>
-          ) : (
-            <details className={styles.variantDetails}>
-              <summary className={styles.variantSummary}>Show {alsoKnownAs.length} variants</summary>
-              <div className={styles.variants} style={{ marginTop: 10 }}>
-                {alsoKnownAs.map((v) => (
-                  <span key={v.text} className={styles.variantPill}>
-                    {v.text}
-                  </span>
+            {entry.entryTags.length ? (
+              <div className={`${styles.tags} ${styles.asideTags}`}>
+                {entry.entryTags.map(({ tag }) => (
+                  <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tagLink}>
+                    {tag.name}
+                  </Link>
                 ))}
               </div>
-            </details>
-          )}
-        </section>
-      ) : null}
-
-      {entry.summaryMd ? <Markdown>{entry.summaryMd}</Markdown> : null}
-
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Senses</h2>
-        {entry.senses.length === 0 ? (
-          <div style={{ marginTop: 10, opacity: 0.8 }}>No published senses yet.</div>
-        ) : (
-          <div>
-            {entry.senses.map((sense) => {
-              const citations = (() => {
-                const raw = Array.from(citationsBySenseId.get(sense.id)?.values() ?? []);
-                const seen = new Set<string>();
-                const out: typeof raw = [];
-                for (const c of raw) {
-                  const key = `${c.sourceId}:${normalizeRefUrl(c.url)}`;
-                  if (seen.has(key)) continue;
-                  seen.add(key);
-                  out.push(c);
-                }
-                return out;
-              })();
-              return (
-                <div key={sense.id} className={styles.senseCard}>
-                  <div className={styles.senseHeader}>
-                    <div className={styles.senseLabel}>
-                      {sense.senseLabel ?? `Sense ${sense.senseOrder + 1}`}
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: 10 }}>
-                    {sense.definitionMd ? (
-                      <Markdown>{sense.definitionMd}</Markdown>
-                    ) : sense.definitionText ? (
-                      <p style={{ lineHeight: 1.8, opacity: 0.85 }}>{sense.definitionText}</p>
-                    ) : (
-                      <p style={{ lineHeight: 1.8, opacity: 0.75 }}>No definition yet.</p>
-                    )}
-                  </div>
-
-                  {sense.examples.length ? (
-                    <div style={{ marginTop: 12 }}>
-                      <div className={styles.refsTitle}>Examples</div>
-                      <ul style={{ paddingLeft: 18, lineHeight: 1.8, opacity: 0.85 }}>
-                        {sense.examples.map((ex) => (
-                          <li key={ex.id}>
-                            {ex.exampleMd ? <Markdown>{ex.exampleMd}</Markdown> : ex.exampleText}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  <div className={styles.refs}>
-                    <div className={styles.refsTitle}>References</div>
-                    {citations.length === 0 ? (
-                      <div style={{ opacity: 0.75 }}>No references recorded for this sense yet.</div>
-                    ) : (
-                      <ul className={styles.refsList}>
-                        {citations.map((c) => (
-                          <li key={c.id} className={styles.refItem}>
-                            <div className={styles.refLine1}>
-                              <span className={styles.refSource}>{c.source.name}</span>
-                              <span className={styles.refDate}>{formatDate(c.accessedAt)}</span>
-                            </div>
-                            {c.sourceDocument.title ? (
-                              <div className={styles.refDocTitle}>{c.sourceDocument.title}</div>
-                            ) : null}
-                            <a
-                              href={c.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.refUrl}
-                            >
-                              {c.url}
-                            </a>
-                            {c.licenseNote || c.attributionText ? (
-                              <div className={styles.refNote}>
-                                {c.licenseNote ? <div>{c.licenseNote}</div> : null}
-                                {c.attributionText ? (
-                                  <div>{c.attributionText}</div>
-                                ) : null}
-                              </div>
-                            ) : null}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            ) : null}
           </div>
-        )}
-      </section>
 
-      {related.length ? (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Related</h2>
-          <ul className={styles.relList}>
-            {related.map((r) => (
-              <li key={r.otherEntry.id}>
-                <Link
-                  href={
-                    r.otherEntry.entryType === 'TERM'
-                      ? `/term/${r.otherEntry.primarySlug}`
-                      : `/acronym/${r.otherEntry.primarySlug}`
-                  }
-                  className={styles.relLink}
+          {standsForPrimary.primary ? (
+            <div className={styles.asideBlock}>
+              <div className={styles.asideTitle}>Stands for</div>
+              <div className={styles.variants}>
+                <span
+                  key={standsForPrimary.primary}
+                  className={`${styles.variantPill} ${styles.variantPillStrong}`}
                 >
-                  {r.otherEntry.displayTitle}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+                  {standsForPrimary.primary}
+                </span>
+              </div>
+              {standsForPrimary.alternates.length ? (
+                <details className={styles.variantDetails}>
+                  <summary className={styles.variantSummary}>
+                    Show {standsForPrimary.alternates.length}{' '}
+                    {standsForPrimary.alternates.length === 1
+                      ? 'alternate expansion'
+                      : 'alternate expansions'}
+                  </summary>
+                  <div className={styles.variantBody}>
+                    <div className={styles.variants}>
+                      {standsForPrimary.alternates.map((v) => (
+                        <span key={v} className={styles.variantPill}>
+                          {v}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+              ) : null}
+            </div>
+          ) : null}
 
-      {seeAlso.length ? (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>See also</h2>
-          <ul className={styles.relList}>
-            {seeAlso.map((r) => (
-              <li key={r.otherEntry.id}>
-                <Link
-                  href={
-                    r.otherEntry.entryType === 'TERM'
-                      ? `/term/${r.otherEntry.primarySlug}`
-                      : `/acronym/${r.otherEntry.primarySlug}`
-                  }
-                  className={styles.relLink}
-                >
-                  {r.otherEntry.displayTitle}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+          {alsoKnownAs.length ? (
+            <div className={styles.asideBlock}>
+              <div className={styles.asideTitle}>Also known as</div>
+              {alsoKnownAs.length <= 8 ? (
+                <div className={styles.variants}>
+                  {alsoKnownAs.map((v) => (
+                    <span key={v.text} className={styles.variantPill}>
+                      {v.text}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <details className={styles.variantDetails}>
+                  <summary className={styles.variantSummary}>
+                    Show {alsoKnownAs.length} variants
+                  </summary>
+                  <div className={styles.variantBody}>
+                    <div className={styles.variants}>
+                      {alsoKnownAs.map((v) => (
+                        <span key={v.text} className={styles.variantPill}>
+                          {v.text}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+              )}
+            </div>
+          ) : null}
+
+          {entry.senses.length > 1 ? (
+            <div className={styles.asideBlock}>
+              <div className={styles.asideTitle}>On this page</div>
+              <ul className={styles.toc}>
+                {entry.senses.map((sense) => (
+                  <li key={sense.id}>
+                    <a href={`#sense-${sense.id}`} className={styles.tocLink}>
+                      {sense.senseLabel ?? `Sense ${sense.senseOrder + 1}`}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {related.length ? (
+            <div className={styles.asideBlock}>
+              <div className={styles.asideTitle}>Related</div>
+              <ul className={styles.relList}>
+                {related.map((r) => (
+                  <li key={r.otherEntry.id}>
+                    <Link
+                      href={
+                        r.otherEntry.entryType === 'TERM'
+                          ? `/term/${r.otherEntry.primarySlug}`
+                          : `/acronym/${r.otherEntry.primarySlug}`
+                      }
+                      className={styles.relLink}
+                    >
+                      {r.otherEntry.displayTitle}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {seeAlso.length ? (
+            <div className={styles.asideBlock}>
+              <div className={styles.asideTitle}>See also</div>
+              <ul className={styles.relList}>
+                {seeAlso.map((r) => (
+                  <li key={r.otherEntry.id}>
+                    <Link
+                      href={
+                        r.otherEntry.entryType === 'TERM'
+                          ? `/term/${r.otherEntry.primarySlug}`
+                          : `/acronym/${r.otherEntry.primarySlug}`
+                      }
+                      className={styles.relLink}
+                    >
+                      {r.otherEntry.displayTitle}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </aside>
+
+        <div className={styles.main}>
+          {entry.summaryMd ? <Markdown>{entry.summaryMd}</Markdown> : null}
+
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Senses</h2>
+            {entry.senses.length === 0 ? (
+              <div className={styles.emptyText}>No published senses yet.</div>
+            ) : (
+              <div>
+                {entry.senses.map((sense) => {
+                  const citations = (() => {
+                    const raw = Array.from(citationsBySenseId.get(sense.id)?.values() ?? []);
+                    const seen = new Set<string>();
+                    const out: typeof raw = [];
+                    for (const c of raw) {
+                      const key = `${c.sourceId}:${normalizeRefUrl(c.url)}`;
+                      if (seen.has(key)) continue;
+                      seen.add(key);
+                      out.push(c);
+                    }
+                    return out;
+                  })();
+                  return (
+                    <div key={sense.id} id={`sense-${sense.id}`} className={styles.senseCard}>
+                      <div className={styles.senseHeader}>
+                        <div className={styles.senseLabel}>
+                          {sense.senseLabel ?? `Sense ${sense.senseOrder + 1}`}
+                        </div>
+                      </div>
+
+                      <div className={styles.senseBody}>
+                        {sense.definitionMd ? (
+                          <Markdown>{sense.definitionMd}</Markdown>
+                        ) : sense.definitionText ? (
+                          <p className={styles.senseText}>{sense.definitionText}</p>
+                        ) : (
+                          <p className={styles.senseTextMuted}>No definition yet.</p>
+                        )}
+                      </div>
+
+                      {sense.examples.length ? (
+                        <div className={styles.examples}>
+                          <div className={styles.refsTitle}>Examples</div>
+                          <ul className={styles.examplesList}>
+                            {sense.examples.map((ex) => (
+                              <li key={ex.id}>
+                                {ex.exampleMd ? <Markdown>{ex.exampleMd}</Markdown> : ex.exampleText}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
+
+                      <div className={styles.refs}>
+                        <div className={styles.refsTitle}>References</div>
+                        {citations.length === 0 ? (
+                          <div className={styles.senseTextMuted}>
+                            No references recorded for this sense yet.
+                          </div>
+                        ) : (
+                          <ul className={styles.refsList}>
+                            {citations.map((c) => (
+                              <li key={c.id} className={styles.refItem}>
+                                <div className={styles.refLine1}>
+                                  <span className={styles.refSource}>{c.source.name}</span>
+                                  <span className={styles.refDate}>{formatDate(c.accessedAt)}</span>
+                                </div>
+                                {c.sourceDocument.title ? (
+                                  <div className={styles.refDocTitle}>{c.sourceDocument.title}</div>
+                                ) : null}
+                                <a
+                                  href={c.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={styles.refUrl}
+                                >
+                                  {c.url}
+                                </a>
+                                {c.licenseNote || c.attributionText ? (
+                                  <div className={styles.refNote}>
+                                    {c.licenseNote ? <div>{c.licenseNote}</div> : null}
+                                    {c.attributionText ? <div>{c.attributionText}</div> : null}
+                                  </div>
+                                ) : null}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
     </>
   );
 }
