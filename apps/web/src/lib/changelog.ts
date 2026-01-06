@@ -10,6 +10,22 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: 'Unreleased',
     date: '2026-01-06',
     title: 'Work in progress',
+    items: [],
+  },
+  {
+    version: 'v0.1.3',
+    date: '2026-01-06',
+    title: 'Field manual UI overhaul',
+    items: [
+      'Default light “field manual” theme with automatic dark mode.',
+      'Entry pages: at-a-glance rail, sense TOC, footnote-style references.',
+      'Explore dropdown navigation and refreshed home page.',
+    ],
+  },
+  {
+    version: 'v0.1.2',
+    date: '2026-01-06',
+    title: 'Tier‑1 source expansion',
     items: [
       'Added IETF RFC 4949 Internet Security Glossary ingestion (Tier‑1 source).',
       'Seeded additional MITRE ATT&CK CTI sources (Mobile + ICS).',
