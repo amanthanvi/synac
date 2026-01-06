@@ -18,7 +18,6 @@ export function SiteHeader() {
             height={28}
             priority
           />
-          <span className={styles.brandMark}>SYNAC</span>
           <span className={styles.brandName}>SynAc</span>
         </Link>
 
