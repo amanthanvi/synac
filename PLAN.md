@@ -31,17 +31,18 @@ Design direction:
 - Layout motif: **side-rail + footnotes** (references feel like citations, not “cards”).
 
 Plan:
-- [ ] Tokens: redesign `apps/web/src/app/globals.css` into a real token set (color, type scale, spacing, radii, shadows).
-- [ ] Motion + a11y: add `prefers-reduced-motion` guardrails and tighten focus styles.
-- [ ] Primitives: add `apps/web/src/components/ui/*` (Button, Panel/Card, Badge, Chip/Pill, Divider, EmptyState, KeyValue list).
-- [ ] Refactor shared components: `SiteHeader`, `SiteFooter`, `PageHeader`, `SearchForm`, `Pagination`, `Markdown` → use primitives.
-- [ ] Navigation: add mobile nav (accessible; minimal JS) and align global nav to SPEC (include About).
-- [ ] Public page redesign: Home, Browse (Terms/Acronyms/Tags/Sources), Recent/Trending, Search, Sources detail, About/Legal, Changelog.
-- [ ] Entry pages: add at-a-glance rail; add TOC for senses; footnote-style references per sense.
-- [ ] Admin facelift: replace inline-styled admin layout + pages with shared primitives + consistent shell.
+- [x] Tokens: redesign `apps/web/src/app/globals.css` into a real token set (color, type scale, spacing, radii, shadows).
+- [x] Motion + a11y: add `prefers-reduced-motion` guardrails and tighten focus styles.
+- [x] Primitives: add `apps/web/src/components/ui/*` (Button, Panel/Card, Badge, Chip/Pill, Divider, EmptyState, KeyValue list).
+- [x] Refactor shared components: `SiteHeader`, `SiteFooter`, `PageHeader`, `SearchForm`, `Pagination`, `Markdown` → use primitives.
+- [x] Navigation: add mobile nav (accessible; minimal JS) and align global nav to SPEC (include About).
+- [x] Public page redesign: Home, Browse (Terms/Acronyms/Tags/Sources), Recent/Trending, Search, Sources detail, About/Legal, Changelog.
+- [x] Entry pages: add at-a-glance rail; add TOC for senses; footnote-style references per sense.
+- [x] Admin facelift: replace inline-styled admin layout + pages with shared primitives + consistent shell.
 - [ ] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
-- [ ] Docs: update `SPEC.md` (nav + entry IA rules), `README.md`, `apps/web/src/lib/changelog.ts`.
-- [ ] Release: bump versions to `0.1.3`, tag `v0.1.3`.
+- [x] Docs: update `SPEC.md` (nav + entry IA rules), `README.md`, `apps/web/src/lib/changelog.ts`.
+- [x] Release: bump versions to `0.1.3`.
+- [ ] Release: tag `v0.1.3`.
 
 ## v0.1.2 — Tier‑1 source expansion
 
