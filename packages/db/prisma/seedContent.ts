@@ -618,6 +618,54 @@ async function main(): Promise<void> {
     }),
   ]);
 
+  await Promise.all([
+    ensureTag(prisma, {
+      name: 'Application Security',
+      slug: 'application-security',
+      description: 'Web/app vulnerabilities and secure coding concepts.',
+    }),
+    ensureTag(prisma, {
+      name: 'Security Operations',
+      slug: 'security-operations',
+      description: 'Monitoring, detection, and operational security workflows.',
+    }),
+    ensureTag(prisma, {
+      name: 'Incident Response',
+      slug: 'incident-response',
+      description: 'Triage, containment, recovery, and forensics.',
+    }),
+    ensureTag(prisma, {
+      name: 'Vulnerability Management',
+      slug: 'vulnerability-management',
+      description: 'Discovery, scoring, remediation, and exposure tracking.',
+    }),
+    ensureTag(prisma, {
+      name: 'Cloud & Containers',
+      slug: 'cloud-containers',
+      description: 'Cloud, container, and Kubernetes security concepts.',
+    }),
+    ensureTag(prisma, {
+      name: 'Endpoint Security',
+      slug: 'endpoint-security',
+      description: 'Host-based controls and endpoint protection.',
+    }),
+    ensureTag(prisma, {
+      name: 'Governance & Risk',
+      slug: 'governance-risk',
+      description: 'Governance, risk management, and compliance.',
+    }),
+    ensureTag(prisma, {
+      name: 'Software Supply Chain',
+      slug: 'software-supply-chain',
+      description: 'Dependencies, SBOMs, build provenance, and CI/CD security.',
+    }),
+    ensureTag(prisma, {
+      name: 'Privacy',
+      slug: 'privacy',
+      description: 'Privacy concepts and personal data handling.',
+    }),
+  ]);
+
   const authCitation = await ensureSourceDocumentAndCitation(prisma, {
     sourceId: nistSourceId,
     url: 'https://csrc.nist.gov/glossary/term/authentication',
