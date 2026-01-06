@@ -1,0 +1,60 @@
+.wrap {
+  margin-top: 10px;
+}
+
+.empty {
+  margin-top: 14px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  gap: 14px;
+}
+
+.entry {
+  padding: 16px;
+}
+
+.entryHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.entryVersion {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.entryDate {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.entryTitle {
+  margin-top: 10px;
+  color: color-mix(in srgb, var(--fg) 84%, transparent);
+}
+
+.items {
+  margin-top: 10px;
+  padding-left: 18px;
+  color: color-mix(in srgb, var(--fg) 82%, transparent);
+  line-height: 1.7;
+}
+
+.items li + li {
+  margin-top: 6px;
+}
