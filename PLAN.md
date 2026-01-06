@@ -24,12 +24,12 @@ This is the living implementation tracker for `SPEC.md`.
 
 ## v0.1.1 — Branding polish + source expansion
 
-- [ ] Navbar brand lockup: keep `SynAc` wordmark; remove monospace `SYNAC` label.
-- [ ] Source expansion: add NICCS (CISA) cybersecurity glossary (CSV export) as a new ingest adapter.
-- [ ] Ops: add `niccs-cisa-glossary` to `SYNAC_STAGING_SOURCE_ALLOWLIST` (prod worker → staging sync).
-- [ ] Seed: upsert new source in prod (`pnpm db:seed:content`), trigger ingest, verify promotion + Tier‑1 autopublish.
-- [ ] Docs: update `SPEC.md` “Initial sources” + source registry notes; update `README.md` + `docs/RELEASING.md`.
-- [ ] Release hygiene: bump versions to `0.1.1`, update changelog, run full gate.
+- [x] Navbar brand lockup: keep `SynAc` wordmark; remove monospace `SYNAC` label.
+- [x] Source expansion: add NICCS (CISA) cybersecurity glossary (CSV export) as a new ingest adapter.
+- [x] Ops: add `niccs-cisa-glossary` to `SYNAC_STAGING_SOURCE_ALLOWLIST` (prod worker → staging sync).
+- [x] Seed: upsert new source in prod (`pnpm db:seed:content`), trigger ingest, verify promotion + Tier‑1 autopublish.
+- [x] Docs: update `SPEC.md` “Initial sources” + source registry notes; update `README.md` + `docs/RELEASING.md`.
+- [x] Release hygiene: bump versions to `0.1.1`, update changelog, run full gate.
 
 ## Post-release hardening — v0.1.0 functional on Railway
 
