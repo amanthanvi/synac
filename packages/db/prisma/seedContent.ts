@@ -522,7 +522,7 @@ async function main(): Promise<void> {
   const { actorUserId } = await ensureSeedActor(prisma);
   const now = new Date();
 
-  const [{ sourceId: nistSourceId }, { sourceId: mitreSourceId }, { sourceId: owaspSourceId }] = await Promise.all([
+  const [{ sourceId: nistSourceId }, { sourceId: mitreSourceId }, { sourceId: owaspSourceId }, { sourceId: niccsSourceId }] = await Promise.all([
     ensureSource(prisma, {
       name: 'NIST CSRC Glossary',
       sourceSlug: 'nist-csrc-glossary',
@@ -575,6 +575,24 @@ async function main(): Promise<void> {
       enabled: true,
       lastVerifiedAt: now,
       contact: 'https://owasp.org/contact/',
+    }),
+    ensureSource(prisma, {
+      name: 'NICCS (CISA) Cybersecurity Vocabulary',
+      sourceSlug: 'niccs-cisa-glossary',
+      baseUrl: 'https://niccs.cisa.gov/resources/glossary',
+      cronSchedule: null,
+      licenseType: 'OTHER',
+      licenseNotes:
+        'NICCS is a CISA (DHS) program. Individual glossary entries include a "From" attribution (e.g., CNSSI 4009, NIST SPs, NICE Framework). Treat "From" values as upstream provenance and verify before quoting large portions of text.',
+      allowedUse:
+        'Government-hosted glossary data with per-term provenance hints. Prefer summarization/paraphrase when in doubt and include source links for attribution.',
+      attributionRequirements: 'Source: NICCS (CISA) Cybersecurity Vocabulary (niccs.cisa.gov).',
+      accessMethod: 'API',
+      robotsPolicy: 'RESPECT',
+      trustTier: 'TIER_1',
+      enabled: true,
+      lastVerifiedAt: now,
+      contact: 'https://niccs.cisa.gov/contact',
     }),
   ]);
 
@@ -1119,7 +1137,7 @@ async function main(): Promise<void> {
       entityType: 'SYSTEM',
       entityId: crypto.randomUUID(),
       after: toJsonSafe({
-        sources: { nistSourceId, mitreSourceId, owaspSourceId },
+        sources: { nistSourceId, mitreSourceId, owaspSourceId, niccsSourceId },
         tags: { identityTagId, cryptoTagId, accessControlTagId, networkSecurityTagId, threatsTagId, fundamentalsTagId },
         ranAt: now.toISOString(),
       }),
