@@ -3,7 +3,7 @@
   top: 0;
   z-index: 20;
   backdrop-filter: blur(10px);
-  background: color-mix(in srgb, var(--bg0) 72%, transparent);
+  background: color-mix(in srgb, var(--bg0) 78%, transparent);
   border-bottom: 1px solid var(--border);
 }
 
@@ -38,24 +38,142 @@
 }
 
 .nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
   margin-left: 6px;
 }
 
-.nav a {
-  color: color-mix(in srgb, var(--fg) 82%, transparent);
-  text-decoration: none;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid transparent;
+.navDesktop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.nav a:hover {
+.navLink,
+.dropdownSummary,
+.mobileSummary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 82%, transparent);
+  color: color-mix(in srgb, var(--fg) 82%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.navLink:hover,
+.dropdownSummary:hover,
+.mobileSummary:hover {
   color: var(--fg);
-  border-color: color-mix(in srgb, var(--fg) 18%, transparent);
-  background: color-mix(in srgb, var(--bg1) 70%, transparent);
+  border-color: color-mix(in srgb, var(--accent2) 55%, var(--border));
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownSummary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.dropdownSummary::marker {
+  content: '';
+}
+
+.dropdownSummary::-webkit-details-marker {
+  display: none;
+}
+
+.dropdownSummary::after {
+  content: '▾';
+  margin-left: 8px;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.dropdown[open] .dropdownSummary {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--fg);
+}
+
+.dropdownPanel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 10px);
+  min-width: 200px;
+  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg1) 92%, transparent);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.dropdownLink {
+  border-radius: 12px;
+  padding: 10px 10px;
+  border: 1px solid transparent;
+  color: color-mix(in srgb, var(--fg) 84%, transparent);
+}
+
+.dropdownLink:hover {
+  border-color: color-mix(in srgb, var(--fg) 16%, transparent);
+  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+  color: var(--fg);
+}
+
+.navMobile {
+  display: none;
+  position: relative;
+}
+
+.mobileSummary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.mobileSummary::marker {
+  content: '';
+}
+
+.mobileSummary::-webkit-details-marker {
+  display: none;
+}
+
+.mobilePanel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 220px;
+  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg1) 92%, transparent);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.mobileLink {
+  border-radius: 12px;
+  padding: 10px 10px;
+  border: 1px solid transparent;
+  color: color-mix(in srgb, var(--fg) 84%, transparent);
+}
+
+.mobileLink:hover {
+  border-color: color-mix(in srgb, var(--fg) 16%, transparent);
+  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+  color: var(--fg);
 }
 
 .spacer {
@@ -67,7 +185,24 @@
 }
 
 @media (max-width: 920px) {
-  .nav {
+  .inner {
+    flex-wrap: wrap;
+  }
+
+  .navDesktop {
     display: none;
+  }
+
+  .navMobile {
+    display: block;
+    margin-left: auto;
+  }
+
+  .spacer {
+    display: none;
+  }
+
+  .search {
+    width: 100%;
   }
 }

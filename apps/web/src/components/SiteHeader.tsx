@@ -22,12 +22,64 @@ export function SiteHeader() {
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">
-          <Link href="/terms">Terms</Link>
-          <Link href="/acronyms">Acronyms</Link>
-          <Link href="/tags">Tags</Link>
-          <Link href="/sources">Sources</Link>
-          <Link href="/recent">Recent</Link>
-          <Link href="/trending">Trending</Link>
+          <div className={styles.navDesktop}>
+            <details className={styles.dropdown}>
+              <summary className={styles.dropdownSummary}>Explore</summary>
+              <div className={styles.dropdownPanel}>
+                <Link className={styles.dropdownLink} href="/terms">
+                  Terms
+                </Link>
+                <Link className={styles.dropdownLink} href="/acronyms">
+                  Acronyms
+                </Link>
+                <Link className={styles.dropdownLink} href="/tags">
+                  Tags
+                </Link>
+                <Link className={styles.dropdownLink} href="/recent">
+                  Recent
+                </Link>
+                <Link className={styles.dropdownLink} href="/trending">
+                  Trending
+                </Link>
+              </div>
+            </details>
+
+            <Link className={styles.navLink} href="/sources">
+              Sources
+            </Link>
+            <Link className={styles.navLink} href="/about">
+              About
+            </Link>
+          </div>
+
+          <details className={styles.navMobile}>
+            <summary className={styles.mobileSummary} aria-label="Open menu">
+              Menu
+            </summary>
+            <div className={styles.mobilePanel}>
+              <Link className={styles.mobileLink} href="/terms">
+                Terms
+              </Link>
+              <Link className={styles.mobileLink} href="/acronyms">
+                Acronyms
+              </Link>
+              <Link className={styles.mobileLink} href="/tags">
+                Tags
+              </Link>
+              <Link className={styles.mobileLink} href="/sources">
+                Sources
+              </Link>
+              <Link className={styles.mobileLink} href="/recent">
+                Recent
+              </Link>
+              <Link className={styles.mobileLink} href="/trending">
+                Trending
+              </Link>
+              <Link className={styles.mobileLink} href="/about">
+                About
+              </Link>
+            </div>
+          </details>
         </nav>
 
         <div className={styles.spacer} />
