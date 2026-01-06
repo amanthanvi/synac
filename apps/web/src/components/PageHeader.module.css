@@ -4,19 +4,6 @@
   padding: 18px 0 10px;
 }
 
-.badge {
-  width: fit-content;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg1) 76%, transparent);
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
-}
-
 .title {
   font-family: var(--font-serif);
   font-size: 40px;
@@ -29,4 +16,3 @@
   color: color-mix(in srgb, var(--fg) 70%, transparent);
   line-height: 1.7;
 }
-
