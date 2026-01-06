@@ -1,0 +1,26 @@
+.empty {
+  border: 1px dashed color-mix(in srgb, var(--fg) 22%, transparent);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg1) 75%, transparent);
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  line-height: 1.7;
+}
+
+.title {
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.body {
+  margin-top: 6px;
+}
+
+.actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+

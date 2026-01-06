@@ -1,0 +1,13 @@
+.badge {
+  width: fit-content;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 80%, transparent);
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+}
+
