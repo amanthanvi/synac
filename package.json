@@ -2,6 +2,15 @@
   "name": "synac",
   "private": true,
   "version": "0.1.1",
+  "license": "MIT",
+  "homepage": "https://synac.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amanthanvi/synac.git"
+  },
+  "bugs": {
+    "url": "https://github.com/amanthanvi/synac/issues"
+  },
   "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": ">=22.21.1"

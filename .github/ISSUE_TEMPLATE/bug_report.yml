@@ -1,0 +1,53 @@
+name: Bug report
+description: Report a reproducible bug in SynAc.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue.
+
+        Security issues: please report privately via `SECURITY.md` instead of filing a public issue.
+  - type: input
+    id: url
+    attributes:
+      label: URL (if applicable)
+      placeholder: https://synac.app/...
+    validations:
+      required: false
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: Include screenshots/logs if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Be as specific as possible.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See error ...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        - OS:
+        - Browser:
+        - Node (if local):
+        - pnpm (if local):
+    validations:
+      required: false
+

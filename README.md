@@ -85,4 +85,14 @@ Released: `v0.1.1`.
 
 ## License
 
-MIT (see `LICENSE`).
+Code is MIT (see `LICENSE`).
+
+SynAc publishes content sourced from third parties with their own licenses and attribution requirements (see `/sources` and per-entry references). The repository license does not override third-party content licenses.
+
+## Contributing
+
+See `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`.
+
+## Security
+
+For vulnerability reporting, see `SECURITY.md` (please do not open public issues for security reports).
