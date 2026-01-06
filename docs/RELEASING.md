@@ -1,6 +1,6 @@
 # Releasing SynAc
 
-This repo is released at `v0.1.0` and targets a `v0.1.x` release cadence.
+This repo is released at `v0.1.1` and targets a `v0.1.x` release cadence.
 
 ## Pre-flight
 

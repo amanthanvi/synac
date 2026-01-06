@@ -73,6 +73,7 @@ Production does not ingest directly. Instead:
 
 Notes:
 - Ingest adapters can populate `entry_variants` (aliases/synonyms/abbreviations). Entry pages surface these as “Also known as”, and shortform entries with multi-word variants show a “Stands for” block.
+- Current ingest adapters: NIST CSRC glossary, NICCS (CISA) cybersecurity vocabulary (CSV export), MITRE ATT&CK CTI, OWASP vulnerabilities.
 - NIST glossary ingest classifies acronym-like titles as `ACRONYM`. If a user lands on `/term/<slug>` for an acronym entry, it permanently redirects to `/acronym/<slug>` (and vice versa).
 - Tags are a curated taxonomy; some are auto-applied from entry text via `db:tag:auto`.
 
@@ -80,7 +81,7 @@ Troubleshooting: `docs/runbooks/ingest-promotion.md`.
 
 ## Status
 
-Released: `v0.1.0`.
+Released: `v0.1.1`.
 
 ## License
 

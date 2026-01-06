@@ -1,6 +1,8 @@
-# SynAc v0.1.0 — Production Specification (SPEC.md)
+# SynAc v0.1.1 — Production Specification (SPEC.md)
 
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
+
+> **Note (v0.1.1):** Patch release on top of the v0.1.0 baseline. Adds additional high-quality sources (e.g., NICCS/CISA glossary ingestion) and incremental UI polish.
 
 ---
 
@@ -1723,7 +1725,7 @@ Rank results using weighted signals:
     - Entry pages (accordion UI for multiple senses), basic search (Postgres FTS)
     - Admin CRUD for entries/senses
 2. **Week 3–4: Ingest MVP**
-    - Source registry with NIST + MITRE ATT&CK + OWASP
+    - Source registry with NIST + NICCS (CISA) + MITRE ATT&CK + OWASP
     - Ingest pipeline: fetch → normalize → dedupe → review queue
     - Provenance tracking, citations, pg-boss job queue
 3. **Week 5–6: Polish & Launch**
@@ -1758,7 +1760,7 @@ Rank results using weighted signals:
 | # | Question | Resolution | Reference |
 |---|----------|------------|-----------|
 | 1 | Primary audience | Security practitioners (SOC analysts, pentesters) | §22.1 |
-| 2 | Initial sources | NIST + MITRE ATT&CK + OWASP | §22.1 |
+| 2 | Initial sources | NIST + NICCS (CISA) + MITRE ATT&CK + OWASP | §22.1 |
 | 3 | CC BY-SA appetite | Case-by-case; grandfather existing content on license changes | §22.3 |
 | 4 | Vendor docs policy | Same as other sources (license-gate rules) | §22.6 |
 | 5 | SynAc editorial license | CC BY 4.0 (attribution required) | §22.8 |
@@ -1817,7 +1819,7 @@ Rank results using weighted signals:
 | **Primary Audience** | Security practitioners (SOC analysts, pentesters) | Technical depth, practical focus, assumed baseline knowledge |
 | **Team Size (v0.1.0)** | Solo operator (1 person wears all hats) | Simplify workflows; defer complex approval chains |
 | **Timeline** | 1–2 months (aggressive MVP) | Launch fast, iterate; defer nice-to-haves |
-| **Initial Sources** | NIST + MITRE ATT&CK + OWASP | High-trust, well-structured government/consortium standards |
+| **Initial Sources** | NIST + NICCS (CISA) + MITRE ATT&CK + OWASP | High-trust, well-structured government/consortium standards |
 | **Hosting Platform** | Railway + managed Postgres | Simple container deployment, good DX, built-in Postgres |
 
 ### 22.2) Data Model Decisions
