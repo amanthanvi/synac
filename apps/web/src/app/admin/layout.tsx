@@ -1,7 +1,10 @@
 import { UserButton } from '@clerk/nextjs';
-import Link from 'next/link';
 
 import { requireAdminActor } from '@/lib/admin';
+import { ButtonLink } from '@/components/ui/Button';
+
+import layoutStyles from '../_styles/Layout.module.css';
+import styles from './layout.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,32 +12,34 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const actor = await requireAdminActor();
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          paddingBottom: 12,
-          borderBottom: '1px solid var(--border)',
-          flexWrap: 'wrap',
-        }}
-      >
-        <nav aria-label="Admin">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-            <Link href="/admin">Dashboard</Link>
-            <Link href="/admin/entries">Entries</Link>
-            <Link href="/admin/sources">Sources</Link>
-            <Link href="/admin/tags">Tags</Link>
-            <Link href="/admin/ingest">Ingest</Link>
-            <Link href="/admin/takedown">Takedown</Link>
-            <Link href="/admin/audit">Audit</Link>
-          </div>
+    <div className={styles.shell}>
+      <div className={styles.topbar}>
+        <nav className={styles.nav} aria-label="Admin">
+          <ButtonLink href="/admin" size="sm">
+            Dashboard
+          </ButtonLink>
+          <ButtonLink href="/admin/entries" size="sm">
+            Entries
+          </ButtonLink>
+          <ButtonLink href="/admin/sources" size="sm">
+            Sources
+          </ButtonLink>
+          <ButtonLink href="/admin/tags" size="sm">
+            Tags
+          </ButtonLink>
+          <ButtonLink href="/admin/ingest" size="sm">
+            Ingest
+          </ButtonLink>
+          <ButtonLink href="/admin/takedown" size="sm">
+            Takedown
+          </ButtonLink>
+          <ButtonLink href="/admin/audit" size="sm">
+            Audit
+          </ButtonLink>
         </nav>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
+        <div className={styles.actor}>
+          <div className={`${layoutStyles.muted} ${layoutStyles.small} ${layoutStyles.mono}`}>
             {actor.email} · {actor.roleNames.join(', ')}
           </div>
           <UserButton afterSignOutUrl="/" />
