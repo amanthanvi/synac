@@ -162,7 +162,7 @@ function inferExpandedFormFromDefinition(input: {
 
   const text = input.definitionMd.trim();
   const seeMatch = text.match(/^See:\s*([^.\n]+)\./i);
-  const synonymMatch = text.match(/^(?:Synonym|Abbreviation)\s+for\s+\"([^\"]+)\"/i);
+  const synonymMatch = text.match(/^(?:Synonym|Abbreviation)\s+for\s+"([^"]+)"/i);
 
   const candidate = (synonymMatch?.[1] ?? seeMatch?.[1] ?? '').trim();
   if (!candidate) return null;
@@ -472,4 +472,3 @@ export async function ingestRfc4949Glossary(
 
   return { itemsCreated };
 }
-
