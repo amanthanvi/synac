@@ -8,6 +8,37 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--fg) 68%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.kickerLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: color-mix(in srgb, var(--fg) 86%, transparent);
+}
+
+.kickerSep {
+  opacity: 0.55;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.copy {
+  min-width: 0;
 }
 
 .title {
@@ -19,7 +50,22 @@
 }
 
 .titleAccent {
-  color: color-mix(in srgb, var(--accent) 86%, var(--fg));
+  position: relative;
+  display: inline-block;
+  color: var(--fg);
+}
+
+.titleAccent::before {
+  content: '';
+  position: absolute;
+  left: 0.04em;
+  right: 0.04em;
+  bottom: 0.08em;
+  height: 0.38em;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: rotate(-1deg);
+  z-index: -1;
 }
 
 .lede {
@@ -35,25 +81,19 @@
   max-width: 680px;
 }
 
-.quickLinks {
+.actions {
   margin-top: 16px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.link {
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg1) 78%, transparent);
-  color: color-mix(in srgb, var(--fg) 80%, transparent);
+.sidebar {
+  min-width: 0;
 }
 
-.link:hover {
-  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent2) 18%, transparent);
-  color: var(--fg);
+.note {
+  padding: 16px 16px 14px;
 }
 
 .cards {
@@ -64,15 +104,7 @@
 }
 
 .card {
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 82%, transparent),
-    color-mix(in srgb, var(--bg1) 68%, transparent)
-  );
-  border-radius: 16px;
   padding: 16px;
-  box-shadow: var(--shadow);
 }
 
 .cardTitle {
@@ -86,12 +118,57 @@
   line-height: 1.7;
 }
 
+.noteTitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 65%, transparent);
+}
+
+.noteList {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--fg) 78%, transparent);
+}
+
+.noteList li + li {
+  margin-top: 8px;
+}
+
+.noteLinks {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--fg) 72%, transparent);
+}
+
+.noteLinks a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  color: color-mix(in srgb, var(--accent2) 80%, var(--fg));
+}
+
+.noteLinks a:hover {
+  color: color-mix(in srgb, var(--accent2) 92%, var(--fg));
+}
+
+.noteDot {
+  opacity: 0.5;
+}
+
 @media (max-width: 920px) {
-  .cards {
+  .grid {
     grid-template-columns: 1fr;
   }
 
-  .card {
-    box-shadow: none;
+  .cards {
+    grid-template-columns: 1fr;
   }
 }
