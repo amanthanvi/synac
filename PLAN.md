@@ -1,6 +1,6 @@
 # SynAc v0.1.0 — Execution Plan (PLAN.md)
 
-Last updated: 2026-01-05
+Last updated: 2026-01-06
 
 This is the living implementation tracker for `SPEC.md`.
 
@@ -113,3 +113,5 @@ This is the living implementation tracker for `SPEC.md`.
 - 2026-01-02: Added per-source ingest cron schedule (`sources.cron_schedule`) and manual force reprocess toggle.
 - 2026-01-02: Added takedown and safety tables: `takedown_cases`, `rate_limit_buckets`, and `source_documents.do_not_use*`.
 - 2026-01-03: Added `db:seed:content` for starter sources/tags + a minimal published corpus in dev/prod.
+- 2026-01-06: Acronym classification: NIST ingest detects acronym-like titles → `entry_type=ACRONYM`, and `/term/*` ↔ `/acronym/*` permanently redirect to canonical route.
+- 2026-01-06: Expanded tag taxonomy + added `db:tag:auto` for heuristic auto-tagging from entry text (improves `/tags/*` browse density).
