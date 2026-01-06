@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { ButtonLink } from '@/components/ui/Button';
+
+import browseStyles from '@/app/_styles/Browse.module.css';
+import layoutStyles from '@/app/_styles/Layout.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,25 +38,36 @@ export default async function AdminEntriesPage() {
     <>
       <PageHeader badge="Admin" title="Entries" subtitle="Create, edit, and publish entries." />
 
-      <div style={{ marginTop: 12 }}>
-        <Link href="/admin/entries/new">New entry</Link>
-      </div>
+      <div className={layoutStyles.stack}>
+        <div className={layoutStyles.row}>
+          <ButtonLink href="/admin/entries/new" size="sm" variant="primary">
+            New entry
+          </ButtonLink>
+        </div>
 
-      {entries.length === 0 ? (
-        <div style={{ marginTop: 14, opacity: 0.8 }}>No entries yet.</div>
-      ) : (
-        <ul style={{ marginTop: 14, paddingLeft: 18, lineHeight: 1.8 }}>
-          {entries.map((e) => (
-            <li key={e.id}>
-              <Link href={`/admin/entries/${e.id}`}>{e.displayTitle}</Link>{' '}
-              <span style={{ opacity: 0.8 }}>
-                · {e.entryType} · {e.status} · /{e.entryType === 'TERM' ? 'term' : 'acronym'}/
-                {e.primarySlug} · updated {formatDate(e.updatedAt)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+        {entries.length === 0 ? (
+          <div className={browseStyles.empty}>No entries yet.</div>
+        ) : (
+          <ol className={browseStyles.list}>
+            {entries.map((e) => (
+              <li key={e.id} className={browseStyles.item}>
+                <div className={browseStyles.itemTitleRow}>
+                  <Link className={browseStyles.itemTitle} href={`/admin/entries/${e.id}`}>
+                    {e.displayTitle}
+                  </Link>
+                  <span className={browseStyles.itemSlug}>
+                    {e.entryType} · {e.status}
+                  </span>
+                </div>
+                <p className={browseStyles.itemSummary}>
+                  /{e.entryType === 'TERM' ? 'term' : 'acronym'}/{e.primarySlug} · updated{' '}
+                  {formatDate(e.updatedAt)}
+                </p>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </>
   );
 }

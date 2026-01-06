@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { ButtonLink } from '@/components/ui/Button';
+
+import browseStyles from '@/app/_styles/Browse.module.css';
+import layoutStyles from '@/app/_styles/Layout.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,26 +40,36 @@ export default async function AdminSourcesPage() {
     <>
       <PageHeader badge="Admin" title="Sources" subtitle="Manage source registry and policies." />
 
-      <div style={{ marginTop: 12 }}>
-        <Link href="/admin/sources/new">New source</Link>
-      </div>
+      <div className={layoutStyles.stack}>
+        <div className={layoutStyles.row}>
+          <ButtonLink href="/admin/sources/new" size="sm" variant="primary">
+            New source
+          </ButtonLink>
+        </div>
 
-      {sources.length === 0 ? (
-        <div style={{ marginTop: 14, opacity: 0.8 }}>No sources yet.</div>
-      ) : (
-        <ul style={{ marginTop: 14, paddingLeft: 18, lineHeight: 1.8 }}>
-          {sources.map((s) => (
-            <li key={s.id}>
-              <Link href={`/admin/sources/${s.id}`}>{s.name}</Link>{' '}
-              <span style={{ opacity: 0.8 }}>
-                · {s.enabled ? 'ENABLED' : 'DISABLED'} · {s.trustTier} · {s.licenseType} · slug{' '}
-                <code>{s.sourceSlug}</code> · verified {formatDate(s.lastVerifiedAt)} · updated{' '}
-                {formatDate(s.updatedAt)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+        {sources.length === 0 ? (
+          <div className={browseStyles.empty}>No sources yet.</div>
+        ) : (
+          <ol className={browseStyles.list}>
+            {sources.map((s) => (
+              <li key={s.id} className={browseStyles.item}>
+                <div className={browseStyles.itemTitleRow}>
+                  <Link className={browseStyles.itemTitle} href={`/admin/sources/${s.id}`}>
+                    {s.name}
+                  </Link>
+                  <span className={browseStyles.itemSlug}>
+                    {s.enabled ? 'ENABLED' : 'DISABLED'} · {s.trustTier}
+                  </span>
+                </div>
+                <p className={browseStyles.itemSummary}>
+                  {s.licenseType} · slug <code>{s.sourceSlug}</code> · verified{' '}
+                  {formatDate(s.lastVerifiedAt)} · updated {formatDate(s.updatedAt)}
+                </p>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </>
   );
 }
