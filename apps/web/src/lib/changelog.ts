@@ -8,9 +8,19 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: 'Unreleased',
-    date: '2026-01-05',
+    date: '2026-01-06',
     title: 'Work in progress',
     items: [],
+  },
+  {
+    version: 'v0.1.1',
+    date: '2026-01-06',
+    title: 'Branding polish + NICCS glossary ingestion',
+    items: [
+      'Navbar brand lockup simplified (single SynAc wordmark).',
+      'Added NICCS (CISA) cybersecurity vocabulary ingestion (CSV export).',
+      'Added NICCS to the seeded Source Registry for staging-first promotion.',
+    ],
   },
   {
     version: 'v0.1.0',

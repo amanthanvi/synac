@@ -63,7 +63,7 @@ async function fetchForHash(url: string): Promise<{
       redirect: 'follow',
       signal: controller.signal,
       headers: {
-        'user-agent': 'synac-seed/0.1.0 (+https://synac.app)',
+        'user-agent': 'synac-seed/0.1.1 (+https://synac.app)',
         accept: 'text/html,application/json;q=0.9,*/*;q=0.8',
       },
     });
@@ -299,7 +299,7 @@ async function ensureFieldProvenance(prisma: PrismaClient, input: {
       citationId: input.citationId,
       contentMode: 'SUMMARIZED',
       extractionMethod: 'MANUAL',
-      extractorVersion: 'synac-seed/0.1.0',
+      extractorVersion: 'synac-seed/0.1.1',
       extractedAt: new Date(),
       sourceLocator: { seeded: true },
     },
