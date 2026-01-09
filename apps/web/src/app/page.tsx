@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { SearchForm } from '@/components/SearchForm';
+import { FocusSearchButton } from '@/components/FocusSearchButton';
 import { ButtonLink } from '@/components/ui/Button';
 import { Panel } from '@/components/ui/Panel';
 
@@ -27,12 +27,11 @@ export default function Home() {
             attribution — designed to stay trustworthy as it scales.
           </p>
 
-          <div className={styles.search}>
-            <SearchForm placeholder='Try “SAML”, “zero trust”, “SOC”…' />
-          </div>
-
           <div className={styles.actions}>
-            <ButtonLink href="/terms?letter=a" variant="primary">
+            <FocusSearchButton variant="primary">
+              Search <span className={styles.kbdHint}>/</span>
+            </FocusSearchButton>
+            <ButtonLink href="/terms?letter=a" variant="ghost">
               Browse terms
             </ButtonLink>
             <ButtonLink href="/acronyms?letter=a" variant="ghost">
@@ -45,6 +44,11 @@ export default function Home() {
               Recent
             </ButtonLink>
           </div>
+
+          <p className={styles.metaHint}>
+            Tip: press <span className={styles.kbdInline}>/</span> to focus search ·{' '}
+            <span className={styles.kbdInline}>⌘K</span> for commands.
+          </p>
         </section>
 
         <aside className={styles.sidebar} aria-label="How SynAc works">

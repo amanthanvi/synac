@@ -5,7 +5,7 @@ import { getPrismaClient, searchPublishedEntries } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
-import { SearchForm } from '@/components/SearchForm';
+import { FocusSearchButton } from '@/components/FocusSearchButton';
 import { ButtonLink } from '@/components/ui/Button';
 import { Panel } from '@/components/ui/Panel';
 
@@ -47,7 +47,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       />
 
       <Panel className={layoutStyles.narrow}>
-        <SearchForm defaultValue={query} placeholder="Search (e.g. SAML, SOC, zero trust)..." />
+        <div className={pageStyles.queryPanel}>
+          <div className={pageStyles.queryRow}>
+            <div className={pageStyles.queryLabel}>Query</div>
+            <div className={pageStyles.queryValue}>{query || '—'}</div>
+          </div>
+          <div className={pageStyles.queryActions}>
+            <FocusSearchButton size="sm" variant="primary">
+              Change query <span className={pageStyles.kbdInline}>/</span>
+            </FocusSearchButton>
+            <span className={pageStyles.queryHint}>
+              Tip: <span className={pageStyles.kbdInline}>⌘K</span> for commands.
+            </span>
+          </div>
+        </div>
       </Panel>
 
       {!query || isIgnoredQuery ? (

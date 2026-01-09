@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/PageHeader';
-import { SearchForm } from '@/components/SearchForm';
+import { FocusSearchButton } from '@/components/FocusSearchButton';
 import { ButtonLink } from '@/components/ui/Button';
 import { Panel } from '@/components/ui/Panel';
 
@@ -16,7 +16,9 @@ export default function NotFound() {
 
       <Panel className={layoutStyles.narrow}>
         <div className={layoutStyles.stack}>
-          <SearchForm placeholder="Search terms and acronyms…" />
+          <FocusSearchButton variant="primary">
+            Focus search <span className={layoutStyles.mono}>/</span>
+          </FocusSearchButton>
 
           <div className={layoutStyles.row}>
             <ButtonLink href="/" size="sm">

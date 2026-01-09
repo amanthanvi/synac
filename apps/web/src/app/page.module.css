@@ -76,16 +76,46 @@
   color: color-mix(in srgb, var(--fg) 72%, transparent);
 }
 
-.search {
-  margin-top: 18px;
-  max-width: 680px;
-}
-
 .actions {
-  margin-top: 16px;
+  margin-top: 18px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.kbdHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+  background: color-mix(in srgb, var(--bg0) 76%, transparent);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: color-mix(in srgb, var(--fg) 74%, transparent);
+}
+
+.metaHint {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+}
+
+.kbdInline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  background: color-mix(in srgb, var(--bg1) 84%, transparent);
+  color: color-mix(in srgb, var(--fg) 80%, transparent);
 }
 
 .sidebar {

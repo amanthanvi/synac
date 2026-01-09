@@ -2,6 +2,58 @@
   margin-top: 14px;
 }
 
+.queryPanel {
+  display: grid;
+  gap: 12px;
+}
+
+.queryRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.queryLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+}
+
+.queryValue {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--fg) 88%, transparent);
+}
+
+.queryActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.queryHint {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--fg) 60%, transparent);
+}
+
+.kbdInline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  background: color-mix(in srgb, var(--bg1) 84%, transparent);
+  color: color-mix(in srgb, var(--fg) 80%, transparent);
+}
+
 .filters {
   margin-top: 12px;
   display: flex;
@@ -9,4 +61,3 @@
   gap: 10px;
   align-items: center;
 }
-
