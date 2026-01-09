@@ -8,9 +8,21 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: 'Unreleased',
-    date: '2026-01-06',
+    date: '2026-01-09',
     title: 'Work in progress',
     items: [],
+  },
+  {
+    version: 'v0.1.4',
+    date: '2026-01-09',
+    title: 'Reference Atlas UX refinements',
+    items: [
+      'Single global header search with `/` focus shortcut.',
+      'Command palette (`⌘K` / `Ctrl+K`) for navigation + quick search.',
+      'Browse + search listings tightened for faster scanning.',
+      'Entry pages: high-sense accordion + hash-to-sense opening behavior.',
+      'Admin UI consistency pass for key workflows (entries, ingest review, audit, takedown).',
+    ],
   },
   {
     version: 'v0.1.3',

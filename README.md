@@ -81,7 +81,9 @@ Troubleshooting: `docs/runbooks/ingest-promotion.md`.
 
 ## Status
 
-Released: `v0.1.3`.
+Released: `v0.1.4`.
+
+Latest UX note (v0.1.4): single global header search + keyboard command palette (`⌘K` / `Ctrl+K`).
 
 ## License
 
