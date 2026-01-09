@@ -1,15 +1,20 @@
 .list {
   list-style: none;
   display: grid;
-  gap: 10px;
+  gap: 0;
   padding: 0;
-  margin: 12px 0 0;
+  margin: 0;
+  border-top: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
 }
 
 .item {
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 14px 14px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  padding: 14px 8px 12px;
+  border-radius: 14px;
+  background: transparent;
+}
+
+.item:hover {
   background: color-mix(in srgb, var(--bg1) 78%, transparent);
 }
 
@@ -23,11 +28,14 @@
 .itemTitle {
   font-size: 18px;
   letter-spacing: -0.01em;
+  font-weight: 650;
 }
 
 .itemSlug {
   font-family: var(--font-mono);
   font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: color-mix(in srgb, var(--fg) 55%, transparent);
   white-space: nowrap;
 }
@@ -36,6 +44,10 @@
   margin-top: 6px;
   color: color-mix(in srgb, var(--fg) 70%, transparent);
   line-height: 1.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .empty {

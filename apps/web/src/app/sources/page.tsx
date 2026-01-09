@@ -50,9 +50,9 @@ export default async function SourcesPage() {
                 </span>
               </div>
               <p className={styles.itemSummary}>
-                <span style={{ opacity: 0.85 }}>{source.baseUrl}</span>
-                <span style={{ opacity: 0.7 }}> · </span>
-                <span style={{ opacity: 0.75 }}>{source.licenseType}</span>
+                <span className={styles.metaStrong}>{source.baseUrl}</span>
+                <span className={styles.metaSep}>·</span>
+                <span className={styles.metaMuted}>{source.licenseType}</span>
               </p>
             </li>
           ))}

@@ -8,6 +8,14 @@ import styles from '../_styles/Tags.module.css';
 
 export const dynamic = 'force-dynamic';
 
+function formatDate(value: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  }).format(value);
+}
+
 export default async function TagsPage() {
   const prisma = getPrismaClient();
   const tags = await listTags(prisma);
@@ -30,7 +38,7 @@ export default async function TagsPage() {
                 <Link className={styles.itemTitle} href={`/tags/${tag.slug}`}>
                   {tag.name}
                 </Link>
-                <span className={styles.itemSlug}>/tags/{tag.slug}</span>
+                <span className={styles.itemSlug}>Updated {formatDate(tag.updatedAt)}</span>
               </div>
               {tag.description ? (
                 <p className={styles.itemDesc}>{tag.description}</p>

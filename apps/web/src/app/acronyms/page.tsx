@@ -15,6 +15,14 @@ type AcronymsPageProps = {
 
 const letters = [...'abcdefghijklmnopqrstuvwxyz'.split(''), '0-9'];
 
+function formatDate(value: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  }).format(value);
+}
+
 export default async function AcronymsPage({ searchParams }: AcronymsPageProps) {
   const params = (await searchParams) ?? {};
 
@@ -72,7 +80,7 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
                   <Link className={styles.itemTitle} href={`/acronym/${entry.primarySlug}`}>
                     {entry.displayTitle}
                   </Link>
-                  <span className={styles.itemSlug}>/acronym/{entry.primarySlug}</span>
+                  <span className={styles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
                 </div>
                 {entry.summaryText ? (
                   <p className={styles.itemSummary}>{entry.summaryText}</p>

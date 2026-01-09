@@ -15,6 +15,14 @@ type TermsPageProps = {
 
 const letters = [...'abcdefghijklmnopqrstuvwxyz'.split(''), '0-9'];
 
+function formatDate(value: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  }).format(value);
+}
+
 export default async function TermsPage({ searchParams }: TermsPageProps) {
   const params = (await searchParams) ?? {};
 
@@ -70,7 +78,7 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
                   <Link className={styles.itemTitle} href={`/term/${entry.primarySlug}`}>
                     {entry.displayTitle}
                   </Link>
-                  <span className={styles.itemSlug}>/term/{entry.primarySlug}</span>
+                  <span className={styles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
                 </div>
                 {entry.summaryText ? (
                   <p className={styles.itemSummary}>{entry.summaryText}</p>

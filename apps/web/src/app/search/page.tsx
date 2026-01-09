@@ -135,7 +135,7 @@ async function Results({
 
   if (results.length === 0) {
     return (
-      <div className={styles.empty} style={{ marginTop: 14 }}>
+      <div className={`${styles.empty} ${pageStyles.resultsEmpty}`}>
         No results for <strong>{query}</strong>. Try a different spelling or browse by letter.
       </div>
     );
@@ -150,7 +150,7 @@ async function Results({
 
   return (
     <>
-      <ol className={styles.list} style={{ marginTop: 14 }}>
+      <ol className={`${styles.list} ${pageStyles.resultsList}`}>
         {results.map((r) => (
           <li key={r.id} className={styles.item}>
             <div className={styles.itemTitleRow}>
