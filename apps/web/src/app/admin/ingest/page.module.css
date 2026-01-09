@@ -1,0 +1,61 @@
+.section {
+  margin-top: 14px;
+}
+
+.sectionTitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+}
+
+.notice {
+  margin-top: 10px;
+  color: color-mix(in srgb, var(--fg) 70%, transparent);
+}
+
+.form {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fg) 62%, transparent);
+}
+
+.input,
+.select {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg1) 90%, transparent);
+  color: var(--fg);
+  padding: 10px 12px;
+  outline: none;
+}
+
+.input:focus,
+.select:focus {
+  border-color: color-mix(in srgb, var(--accent2) 55%, var(--border));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent2) 14%, transparent);
+}
+
+.checkboxRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  align-self: end;
+}
+

@@ -4,8 +4,13 @@ import { redirect } from 'next/navigation';
 import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { Button } from '@/components/ui/Button';
 import { requireAdminActor } from '@/lib/admin';
 import { createIngestRun, createIngestRunsForAllSources } from '@/lib/adminIngest';
+
+import browseStyles from '@/app/_styles/Browse.module.css';
+import layoutStyles from '@/app/_styles/Layout.module.css';
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,17 +49,18 @@ export default async function AdminIngestPage() {
     <>
       <PageHeader badge="Admin" title="Ingest" subtitle="Runs, items, and review queue." />
 
-      <section style={{ marginTop: 14 }}>
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>Trigger run</h2>
+      <div className={layoutStyles.stack}>
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Trigger run</h2>
         {enabledSources.length === 0 ? (
-          <div style={{ marginTop: 10, opacity: 0.8 }}>
+          <div className={styles.notice}>
             No enabled sources. Enable + verify a source in <Link href="/admin/sources">Sources</Link>.
           </div>
         ) : (
-          <form action={trigger} style={{ marginTop: 10, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <label style={{ display: 'grid', gap: 6 }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Source</span>
-              <select name="sourceId" required defaultValue={enabledSources[0]?.id}>
+          <form action={trigger} className={styles.form}>
+            <label className={styles.field}>
+              <span className={styles.label}>Source</span>
+              <select className={styles.select} name="sourceId" required defaultValue={enabledSources[0]?.id}>
                 {enabledSources.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.name}
@@ -63,47 +69,53 @@ export default async function AdminIngestPage() {
               </select>
             </label>
 
-            <label style={{ display: 'grid', gap: 6 }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Max items</span>
-              <input name="maxItems" defaultValue="100" inputMode="numeric" />
+            <label className={styles.field}>
+              <span className={styles.label}>Max items</span>
+              <input className={styles.input} name="maxItems" defaultValue="100" inputMode="numeric" />
             </label>
 
-            <label style={{ display: 'flex', gap: 10, alignItems: 'center', alignSelf: 'end' }}>
+            <label className={styles.checkboxRow}>
               <input name="forceReprocess" type="checkbox" />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Force reprocess</span>
+              <span className={styles.label}>Force reprocess</span>
             </label>
 
-            <div style={{ alignSelf: 'end' }}>
-              <button type="submit">Start ingest</button>
-            </div>
+            <Button type="submit" variant="primary" size="sm">
+              Start ingest
+            </Button>
 
-            <div style={{ alignSelf: 'end' }}>
-              <button formAction={triggerAll} type="submit">
-                Start all enabled
-              </button>
-            </div>
+            <Button formAction={triggerAll} type="submit" size="sm">
+              Start all enabled
+            </Button>
           </form>
         )}
-      </section>
+        </section>
 
-      <section style={{ marginTop: 22 }}>
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>Recent runs</h2>
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Recent runs</h2>
         {runs.length === 0 ? (
-          <div style={{ marginTop: 10, opacity: 0.8 }}>No ingest runs yet.</div>
+          <div className={browseStyles.empty}>No ingest runs yet.</div>
         ) : (
-          <ul style={{ marginTop: 10, paddingLeft: 18, lineHeight: 1.8 }}>
+          <ol className={browseStyles.list}>
             {runs.map((r) => (
-              <li key={r.id}>
-                <Link href={`/admin/ingest/runs/${r.id}`}>{r.id}</Link>{' '}
-                <span style={{ opacity: 0.8 }}>
-                  · {r.source.name} · {r.status} · {r._count.items} items · started {formatDate(r.startedAt)}
+              <li key={r.id} className={browseStyles.item}>
+                <div className={browseStyles.itemTitleRow}>
+                  <Link className={browseStyles.itemTitle} href={`/admin/ingest/runs/${r.id}`}>
+                    {r.id}
+                  </Link>
+                  <span className={browseStyles.itemSlug}>
+                    {r.status} · {r._count.items} items
+                  </span>
+                </div>
+                <p className={browseStyles.itemSummary}>
+                  {r.source.name} · started {formatDate(r.startedAt)}
                   {r.finishedAt ? ` · finished ${formatDate(r.finishedAt)}` : ''}
-                </span>
+                </p>
               </li>
             ))}
-          </ul>
+          </ol>
         )}
-      </section>
+        </section>
+      </div>
     </>
   );
 }
