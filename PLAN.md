@@ -40,8 +40,8 @@ Plan:
 - [x] Browse/search: redesign `/terms`, `/acronyms`, `/tags`, `/sources`, `/search` results layout + density.
 - [x] Entry pages: redesign `/term/[slug]` and `/acronym/[slug]` for less repetition, better rail, and high-sense accordion behavior.
 - [x] Admin: remove remaining inline styles in key pages (`/admin/entries/[id]`, ingest run, audit, takedown) using shared primitives.
-- [ ] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
-- [ ] Release: bump versions to `0.1.4`, update changelog/docs, tag `v0.1.4`.
+- [x] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
+- [x] Release: bump versions to `0.1.4`, update changelog/docs, tag `v0.1.4`.
 
 ## v0.1.3 — Frontend design overhaul (“field manual”)
 
