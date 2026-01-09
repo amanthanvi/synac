@@ -3,6 +3,11 @@ import Link from 'next/link';
 import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { ButtonLink } from '@/components/ui/Button';
+
+import browseStyles from '@/app/_styles/Browse.module.css';
+import layoutStyles from '@/app/_styles/Layout.module.css';
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,67 +51,82 @@ export default async function AdminTakedownPage() {
     <>
       <PageHeader badge="Admin" title="Takedown" subtitle="Track and execute takedown requests." />
 
-      <div style={{ marginTop: 12 }}>
-        <Link href="/admin/takedown/new">New takedown case</Link>
+      <div className={layoutStyles.stack}>
+        <div className={layoutStyles.row}>
+          <ButtonLink href="/admin/takedown/new" size="sm" variant="primary">
+            New takedown case
+          </ButtonLink>
+        </div>
+
+        {cases.length === 0 ? (
+          <div className={browseStyles.empty}>No takedown cases yet.</div>
+        ) : (
+          <ol className={browseStyles.list}>
+            {cases.map((c) => {
+              const entryUrl =
+                c.entry?.primarySlug && c.entry.entryType === 'TERM'
+                  ? `/term/${c.entry.primarySlug}`
+                  : c.entry?.primarySlug
+                    ? `/acronym/${c.entry.primarySlug}`
+                    : null;
+
+              return (
+                <li key={c.id} className={browseStyles.item}>
+                  <div className={browseStyles.itemTitleRow}>
+                    <Link className={browseStyles.itemTitle} href={`/admin/takedown/${c.id}`}>
+                      Case {c.id}
+                    </Link>
+                    <span className={browseStyles.itemSlug}>
+                      {c.status}
+                      {c.closedAt ? ` · closed ${formatDate(c.closedAt)}` : ''} · updated{' '}
+                      {formatDate(c.updatedAt)}
+                    </span>
+                  </div>
+
+                  <p className={browseStyles.itemSummary}>
+                    {truncate(c.requestText, 160)}
+                    {c.requesterContact?.trim() ? (
+                      <span className={browseStyles.metaMuted}>
+                        {' '}
+                        · {truncate(c.requesterContact, 60)}
+                      </span>
+                    ) : null}
+                  </p>
+
+                  <div className={styles.caseMeta}>
+                    {c.source ? (
+                      <Link className={styles.inlineLink} href={`/admin/sources/${c.source.id}`}>
+                        Source: {c.source.name}
+                      </Link>
+                    ) : null}
+                    {c.sourceDocument ? (
+                      <a
+                        className={styles.inlineLink}
+                        href={c.sourceDocument.canonicalUrl ?? c.sourceDocument.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Source doc
+                      </a>
+                    ) : null}
+                    {c.entry ? (
+                      <Link className={styles.inlineLink} href={`/admin/entries/${c.entry.id}`}>
+                        Entry: {c.entry.displayTitle}
+                      </Link>
+                    ) : null}
+                    {entryUrl ? (
+                      <a className={styles.inlineLink} href={entryUrl} target="_blank" rel="noopener noreferrer">
+                        Public
+                      </a>
+                    ) : null}
+                    <span className={styles.caseBy}>by {c.createdByUser.email}</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
       </div>
-
-      {cases.length === 0 ? (
-        <div style={{ marginTop: 14, opacity: 0.8 }}>No takedown cases yet.</div>
-      ) : (
-        <ul style={{ marginTop: 14, paddingLeft: 18, lineHeight: 1.8 }}>
-          {cases.map((c) => {
-            const entryUrl =
-              c.entry?.primarySlug && c.entry.entryType === 'TERM'
-                ? `/term/${c.entry.primarySlug}`
-                : c.entry?.primarySlug
-                  ? `/acronym/${c.entry.primarySlug}`
-                  : null;
-
-            return (
-              <li key={c.id} style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <Link href={`/admin/takedown/${c.id}`}>Case {c.id}</Link>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
-                    {c.status}
-                    {c.closedAt ? ` · closed ${formatDate(c.closedAt)}` : ''}
-                    · updated {formatDate(c.updatedAt)}
-                  </span>
-                </div>
-
-                <div style={{ marginTop: 6, opacity: 0.9 }}>
-                  {truncate(c.requestText, 160)}
-                  {c.requesterContact?.trim() ? (
-                    <span style={{ opacity: 0.8 }}> · {truncate(c.requesterContact, 60)}</span>
-                  ) : null}
-                </div>
-
-                <div style={{ marginTop: 6, display: 'flex', gap: 12, flexWrap: 'wrap', opacity: 0.85 }}>
-                  {c.source ? <Link href={`/admin/sources/${c.source.id}`}>Source: {c.source.name}</Link> : null}
-                  {c.sourceDocument ? (
-                    <a
-                      href={c.sourceDocument.canonicalUrl ?? c.sourceDocument.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Source doc
-                    </a>
-                  ) : null}
-                  {c.entry ? <Link href={`/admin/entries/${c.entry.id}`}>Entry: {c.entry.displayTitle}</Link> : null}
-                  {entryUrl ? (
-                    <a href={entryUrl} target="_blank" rel="noopener noreferrer">
-                      Public
-                    </a>
-                  ) : null}
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
-                    by {c.createdByUser.email}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
     </>
   );
 }
-
