@@ -1,61 +1,77 @@
 import { redirect } from 'next/navigation';
 
 import { PageHeader } from '@/components/PageHeader';
+import { Button } from '@/components/ui/Button';
 import { requireAdminActor } from '@/lib/admin';
 import { createTakedownCase } from '@/lib/adminTakedown';
+
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
 export default function AdminNewTakedownCasePage() {
   return (
-    <>
+      <>
       <PageHeader badge="Admin" title="New takedown case" subtitle="Create a case record before taking action." />
 
-      <form action={create} style={{ maxWidth: 860, marginTop: 14, display: 'grid', gap: 12 }}>
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Status</div>
-          <select name="status" defaultValue="OPEN" required>
+      <form action={create} className={styles.form}>
+        <label className={styles.field}>
+          <div className={styles.label}>Status</div>
+          <select className={styles.select} name="status" defaultValue="OPEN" required>
             <option value="OPEN">OPEN</option>
             <option value="IN_PROGRESS">IN_PROGRESS</option>
             <option value="CLOSED">CLOSED</option>
           </select>
         </label>
 
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
-          <label style={{ display: 'grid', gap: 6 }}>
-            <div style={{ opacity: 0.85 }}>Source ID (optional)</div>
-            <input name="sourceId" placeholder="UUID" />
+        <div className={styles.grid}>
+          <label className={styles.field}>
+            <div className={styles.label}>Source ID (optional)</div>
+            <input className={styles.input} name="sourceId" placeholder="UUID" />
           </label>
 
-          <label style={{ display: 'grid', gap: 6 }}>
-            <div style={{ opacity: 0.85 }}>SourceDocument ID (optional)</div>
-            <input name="sourceDocumentId" placeholder="UUID" />
+          <label className={styles.field}>
+            <div className={styles.label}>SourceDocument ID (optional)</div>
+            <input className={styles.input} name="sourceDocumentId" placeholder="UUID" />
           </label>
 
-          <label style={{ display: 'grid', gap: 6 }}>
-            <div style={{ opacity: 0.85 }}>Entry ID (optional)</div>
-            <input name="entryId" placeholder="UUID" />
+          <label className={styles.field}>
+            <div className={styles.label}>Entry ID (optional)</div>
+            <input className={styles.input} name="entryId" placeholder="UUID" />
           </label>
         </div>
 
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Requester contact (optional)</div>
-          <input name="requesterContact" placeholder="email, ticket, or URL" />
+        <label className={styles.field}>
+          <div className={styles.label}>Requester contact (optional)</div>
+          <input className={styles.input} name="requesterContact" placeholder="email, ticket, or URL" />
         </label>
 
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Request text</div>
-          <textarea name="requestText" rows={6} required placeholder="What are they requesting, and why?" />
+        <label className={styles.field}>
+          <div className={styles.label}>Request text</div>
+          <textarea
+            className={styles.textarea}
+            name="requestText"
+            rows={6}
+            required
+            placeholder="What are they requesting, and why?"
+          />
         </label>
 
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Internal notes (optional)</div>
-          <textarea name="internalNotes" rows={4} placeholder="Links, context, and planned actions." />
+        <label className={styles.field}>
+          <div className={styles.label}>Internal notes (optional)</div>
+          <textarea
+            className={styles.textarea}
+            name="internalNotes"
+            rows={4}
+            placeholder="Links, context, and planned actions."
+          />
         </label>
 
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <button type="submit">Create case</button>
-          <div style={{ opacity: 0.7, fontSize: 12 }}>Only admins can execute takedown actions.</div>
+        <div className={styles.buttonRow}>
+          <Button type="submit" variant="primary" size="sm">
+            Create case
+          </Button>
+          <div className={styles.note}>Only admins can execute takedown actions.</div>
         </div>
       </form>
     </>
@@ -83,4 +99,3 @@ async function create(formData: FormData) {
 
   redirect(`/admin/takedown/${takedownCaseId}`);
 }
-
