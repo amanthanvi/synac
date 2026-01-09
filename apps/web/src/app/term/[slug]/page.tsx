@@ -10,6 +10,7 @@ import {
 
 import { PageHeader } from '@/components/PageHeader';
 import { Markdown } from '@/components/Markdown';
+import { EntrySenseHashSync } from '@/components/EntrySenseHashSync';
 import { ViewTracker } from '@/components/ViewTracker';
 import styles from '@/app/_styles/Entry.module.css';
 
@@ -198,7 +199,7 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
       <PageHeader
         badge="Term"
         title={entry.displayTitle}
-        subtitle={entry.summaryText ?? 'No summary yet.'}
+        subtitle={entry.summaryMd ? undefined : (entry.summaryText ?? 'No summary yet.')}
       />
 
       <div className={styles.entryGrid}>
@@ -350,8 +351,9 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
             {entry.senses.length === 0 ? (
               <div className={styles.emptyText}>No published senses yet.</div>
             ) : (
-              <div>
-                {entry.senses.map((sense) => {
+              <div data-senses>
+                <EntrySenseHashSync collapseOthers={entry.senses.length >= 10} />
+                {entry.senses.map((sense, idx) => {
                   const citations = (() => {
                     const raw = Array.from(citationsBySenseId.get(sense.id)?.values() ?? []);
                     const seen = new Set<string>();
@@ -364,13 +366,23 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
                     }
                     return out;
                   })();
+                  const openByDefault = entry.senses.length < 10 || idx === 0;
                   return (
-                    <div key={sense.id} id={`sense-${sense.id}`} className={styles.senseCard}>
-                      <div className={styles.senseHeader}>
-                        <div className={styles.senseLabel}>
+                    <details
+                      key={sense.id}
+                      id={`sense-${sense.id}`}
+                      className={styles.senseCard}
+                      open={openByDefault}
+                      data-sense
+                    >
+                      <summary className={`${styles.senseHeader} ${styles.senseSummary}`}>
+                        <span className={styles.senseLabel}>
                           {sense.senseLabel ?? `Sense ${sense.senseOrder + 1}`}
-                        </div>
-                      </div>
+                        </span>
+                        <span className={styles.senseChevron} aria-hidden="true">
+                          ▾
+                        </span>
+                      </summary>
 
                       <div className={styles.senseBody}>
                         {sense.definitionMd ? (
@@ -431,7 +443,7 @@ export default async function TermEntryPage({ params }: TermEntryPageProps) {
                           </ul>
                         )}
                       </div>
-                    </div>
+                    </details>
                   );
                 })}
               </div>

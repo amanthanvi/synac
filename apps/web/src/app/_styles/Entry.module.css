@@ -131,6 +131,20 @@
   gap: 10px;
 }
 
+.senseSummary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.senseSummary::marker {
+  content: '';
+}
+
+.senseSummary::-webkit-details-marker {
+  display: none;
+}
+
 .senseLabel {
   font-weight: 650;
   letter-spacing: -0.01em;
@@ -140,6 +154,19 @@
   color: color-mix(in srgb, var(--fg) 62%, transparent);
   font-family: var(--font-mono);
   font-size: 12px;
+}
+
+.senseChevron {
+  margin-left: auto;
+  color: color-mix(in srgb, var(--fg) 58%, transparent);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  transform: rotate(0deg);
+  transition: transform 140ms ease;
+}
+
+.senseCard[open] .senseChevron {
+  transform: rotate(180deg);
 }
 
 .senseBody {
