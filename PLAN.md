@@ -1,6 +1,6 @@
-# SynAc v0.1.3 — Execution Plan (PLAN.md)
+# SynAc v0.1.4 — Execution Plan (PLAN.md)
 
-Last updated: 2026-01-06
+Last updated: 2026-01-09
 
 This is the living implementation tracker for `SPEC.md`.
 
@@ -21,6 +21,27 @@ This is the living implementation tracker for `SPEC.md`.
 - Small/medium diffs.
 - Commit + push frequently (same branch).
 - Keep code aligned with `SPEC.md`; when reality diverges, update `SPEC.md` (don’t ship undocumented behavior).
+
+## v0.1.4 — Frontend UX overhaul (“Reference Atlas”)
+
+Goal: make the public UI feel fast, obvious, and calm to use — less “componenty”, more “reference work”.
+
+Design direction:
+- Keep typography stack: **Instrument Sans + Instrument Serif + IBM Plex Mono**.
+- Default theme: **light** (paper/ink), auto dark via `prefers-color-scheme: dark`.
+- Enforce a **single visible search box** (global header).
+- Add a **keyboard command palette** (`⌘K` / `Ctrl+K`) for navigation + “Search for …” actions (no heavy deps).
+- Improve scannability: tighter browse rows, clamped summaries, clearer hierarchy, fewer repeated slugs.
+- High‑sense entries (10+): **accordion/collapsible by default** (first sense open; hash opens targeted sense).
+
+Plan:
+- [ ] Docs: update `SPEC.md` to lock the v0.1.4 UX rules and component conventions.
+- [ ] Header: redesign `SiteHeader` + search UX; add `CommandPalette` and global hotkeys.
+- [ ] Browse/search: redesign `/terms`, `/acronyms`, `/tags`, `/sources`, `/search` results layout + density.
+- [ ] Entry pages: redesign `/term/[slug]` and `/acronym/[slug]` for less repetition, better rail, and high-sense accordion behavior.
+- [ ] Admin: remove remaining inline styles in key pages (`/admin/entries/[id]`, ingest run, audit, takedown) using shared primitives.
+- [ ] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
+- [ ] Release: bump versions to `0.1.4`, update changelog/docs, tag `v0.1.4`.
 
 ## v0.1.3 — Frontend design overhaul (“field manual”)
 
