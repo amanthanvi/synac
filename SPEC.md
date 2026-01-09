@@ -1,6 +1,8 @@
-# SynAc v0.1.3 — Production Specification (SPEC.md)
+# SynAc v0.1.4 — Production Specification (SPEC.md)
 
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
+
+> **Note (v0.1.4):** Patch release on top of the v0.1.0 baseline. Redesigns the public UI/UX (“Reference Atlas”) for faster scanning and lower friction: single visible header search, keyboard command palette (`⌘K` / `Ctrl+K`), denser browse/search layouts, and improved entry readability (including high-sense accordion behavior). Also continues the admin styling cleanup for consistency.
 
 > **Note (v0.1.3):** Patch release on top of the v0.1.0 baseline. Adds the “field manual” frontend (light-by-default with automatic dark mode via `prefers-color-scheme`), improved navigation, and an at-a-glance entry rail with sense TOC + footnote-style references.
 
@@ -259,6 +261,8 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 **Search features**
 
 -   Single search box on all pages (header).
+-   Search results pages do not include a second visible search input; the header is authoritative.
+-   A command palette may offer a “Search for …” action that navigates to `/search?q=...` (this is an access method, not a second persistent search bar).
 -   Supports:
     -   exact match (case-insensitive),
     -   prefix match,
@@ -775,10 +779,13 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 
 -   Global header:
     -   logo → home,
-    -   search bar,
+    -   single visible search bar (no duplicate per-page search inputs),
     -   Explore dropdown (Terms, Acronyms, Tags, Recent, Trending),
     -   Sources,
     -   About.
+    -   Keyboard:
+        -   `⌘K` / `Ctrl+K` opens a command palette for navigation + “Search for …” actions,
+        -   `/` focuses the header search input (when not already typing in an input).
 -   Entry pages:
     -   at-a-glance rail (Updated, Tags, “Stands for”, “Also known as”, “On this page”),
     -   sticky table of contents for senses (if >1),
@@ -801,6 +808,7 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 -   Search:
     -   autocomplete suggestions are optional; if included, must be ARIA-compliant.
     -   keyboard: up/down to navigate suggestions, enter to select.
+    -   global hotkeys must not trigger while the user is typing in an input/textarea or using a contentEditable element.
 -   Filters:
     -   tag filters are checkboxes with clear labels,
     -   persistent in URL query params,
@@ -1859,12 +1867,14 @@ Rank results using weighted signals:
 
 | Decision | Choice | Notes |
 |----------|--------|-------|
+| **Global search placement** | Single visible header search | No duplicate per-page search forms; `/search` relies on header input. |
+| **Command palette** | Yes (⌘K / Ctrl+K) | Lightweight custom palette for navigation + “Search for …” action; no heavy deps. |
 | **High-sense entries (10+)** | Accordion/collapsible by default | Show sense labels collapsed; first sense auto-expanded |
 | **Relationship visualization** | Interactive D3 force-directed | Draggable nodes, zoom/pan; loads on-demand |
 | **Relationship limit** | Hard limit 10 with "View all" | Show top 10 by weight; expansion for more |
 | **Copy attribution** | No auto-attribution | Trust users to attribute; no clipboard modification |
 | **Code examples** | Syntax-highlighted blocks only | Standard code blocks with language hints; no execution warnings |
-| **Homepage** | Minimal (search + browse links) | Clean, utility-focused; no featured content |
+| **Homepage** | Minimal (browse + primer) | Header search is the primary search surface; home is oriented around browsing and how to read entries. |
 | **Preview mode** | Content preview only | Skip SEO/metadata preview for simplicity |
 
 ### 22.6) Security & Auth Decisions
