@@ -35,11 +35,11 @@ Design direction:
 - High‑sense entries (10+): **accordion/collapsible by default** (first sense open; hash opens targeted sense).
 
 Plan:
-- [ ] Docs: update `SPEC.md` to lock the v0.1.4 UX rules and component conventions.
-- [ ] Header: redesign `SiteHeader` + search UX; add `CommandPalette` and global hotkeys.
-- [ ] Browse/search: redesign `/terms`, `/acronyms`, `/tags`, `/sources`, `/search` results layout + density.
-- [ ] Entry pages: redesign `/term/[slug]` and `/acronym/[slug]` for less repetition, better rail, and high-sense accordion behavior.
-- [ ] Admin: remove remaining inline styles in key pages (`/admin/entries/[id]`, ingest run, audit, takedown) using shared primitives.
+- [x] Docs: update `SPEC.md` to lock the v0.1.4 UX rules and component conventions.
+- [x] Header: redesign `SiteHeader` + search UX; add `CommandPalette` and global hotkeys.
+- [x] Browse/search: redesign `/terms`, `/acronyms`, `/tags`, `/sources`, `/search` results layout + density.
+- [x] Entry pages: redesign `/term/[slug]` and `/acronym/[slug]` for less repetition, better rail, and high-sense accordion behavior.
+- [x] Admin: remove remaining inline styles in key pages (`/admin/entries/[id]`, ingest run, audit, takedown) using shared primitives.
 - [ ] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
 - [ ] Release: bump versions to `0.1.4`, update changelog/docs, tag `v0.1.4`.
 
