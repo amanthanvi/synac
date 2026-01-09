@@ -1,5 +1,11 @@
+import Link from 'next/link';
+
 import { PageHeader } from '@/components/PageHeader';
 import { getPrismaClient } from '@synac/db';
+
+import { Button } from '@/components/ui/Button';
+
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,50 +75,47 @@ export default async function AdminAuditPage({ searchParams }: AdminAuditPagePro
     <>
       <PageHeader badge="Admin" title="Audit" subtitle="Recent changes and rollback points." />
 
-      <form style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'end' }}>
-        <label style={{ display: 'grid', gap: 6 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Entity type</span>
+      <form className={styles.filterForm}>
+        <label className={styles.field}>
+          <span className={styles.label}>Entity type</span>
           <input
+            className={styles.input}
             name="entityType"
             defaultValue={entityType ?? ''}
             placeholder="ENTRY | SENSE | TAG | SOURCE ..."
           />
         </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Entity ID</span>
-          <input name="entityId" defaultValue={entityId ?? ''} placeholder="UUID" />
+        <label className={styles.field}>
+          <span className={styles.label}>Entity ID</span>
+          <input className={styles.input} name="entityId" defaultValue={entityId ?? ''} placeholder="UUID" />
         </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Action</span>
-          <input name="action" defaultValue={action ?? ''} placeholder="ENTRY_PUBLISH" />
+        <label className={styles.field}>
+          <span className={styles.label}>Action</span>
+          <input className={styles.input} name="action" defaultValue={action ?? ''} placeholder="ENTRY_PUBLISH" />
         </label>
-        <label style={{ display: 'grid', gap: 6 }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Actor email</span>
-          <input name="actorEmail" defaultValue={actorEmail ?? ''} placeholder="you@domain.com" />
+        <label className={styles.field}>
+          <span className={styles.label}>Actor email</span>
+          <input
+            className={styles.input}
+            name="actorEmail"
+            defaultValue={actorEmail ?? ''}
+            placeholder="you@domain.com"
+          />
         </label>
-        <button type="submit">Filter</button>
+        <Button type="submit" size="sm">
+          Filter
+        </Button>
       </form>
 
       {events.length === 0 ? (
-        <div style={{ marginTop: 18, opacity: 0.8, lineHeight: 1.7 }}>No audit events found.</div>
+        <div className={styles.empty}>No audit events found.</div>
       ) : (
-        <div style={{ marginTop: 18, overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
             <thead>
               <tr>
                 {['When', 'Actor', 'Action', 'Entity', 'Rollback'].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: 'left',
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 12,
-                      opacity: 0.75,
-                      borderBottom: '1px solid var(--border)',
-                      padding: '10px 8px',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <th key={h} className={styles.th}>
                     {h}
                   </th>
                 ))}
@@ -125,35 +128,33 @@ export default async function AdminAuditPage({ searchParams }: AdminAuditPagePro
                 const canRollback = Boolean(ev.before) && ev.action !== 'ENTRY_CREATE';
 
                 return (
-                  <tr key={ev.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                    <td style={{ padding: '10px 8px', whiteSpace: 'nowrap' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
-                        {formatDate(ev.createdAt)}
-                      </span>
+                  <tr key={ev.id} className={styles.row}>
+                    <td className={styles.td}>
+                      <span className={styles.monoStrong}>{formatDate(ev.createdAt)}</span>
                     </td>
-                    <td style={{ padding: '10px 8px' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.85 }}>
-                        {ev.actorUser.email}
-                      </span>
+                    <td className={styles.td}>
+                      <span className={styles.monoStrong}>{ev.actorUser.email}</span>
                     </td>
-                    <td style={{ padding: '10px 8px' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>{ev.action}</span>
+                    <td className={styles.td}>
+                      <span className={styles.mono}>{ev.action}</span>
                     </td>
-                    <td style={{ padding: '10px 8px' }}>
+                    <td className={styles.td}>
                       {adminHref ? (
-                        <a href={adminHref}>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                        <Link className={styles.link} href={adminHref}>
+                          <span className={styles.mono}>
                             {ev.entityType}:{ev.entityId}
                           </span>
-                        </a>
+                        </Link>
                       ) : (
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                        <span className={styles.mono}>
                           {ev.entityType}:{ev.entityId}
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: '10px 8px' }}>
-                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: canRollback ? 1 : 0.6 }}>
+                    <td className={styles.td}>
+                      <span
+                        className={`${styles.mono} ${canRollback ? styles.rollbackAvailable : styles.rollbackUnavailable}`}
+                      >
                         {canRollback ? 'Available' : '—'}
                       </span>
                     </td>
