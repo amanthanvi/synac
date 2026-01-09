@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
+import { CommandPalette } from './CommandPalette';
 import { SearchForm } from './SearchForm';
 import styles from './SiteHeader.module.css';
 
@@ -84,8 +85,11 @@ export function SiteHeader() {
 
         <div className={styles.spacer} />
 
-        <div className={styles.search}>
-          <SearchForm />
+        <div className={styles.actions}>
+          <CommandPalette />
+          <div className={styles.search}>
+            <SearchForm inputId="site-search" placeholder="Search terms & acronyms… ( / )" />
+          </div>
         </div>
       </div>
     </header>
