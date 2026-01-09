@@ -4,8 +4,11 @@ import { notFound, redirect } from 'next/navigation';
 import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { requireAdminActor } from '@/lib/admin';
 import { approveIngestItem, rejectIngestItem } from '@/lib/adminIngest';
+
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,27 +105,31 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
         subtitle={`${run.source.name} · ${run.status}`}
       />
 
-      <div style={{ marginTop: 10, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <Link href="/admin/ingest">All runs</Link>
-        <Link href={`/admin/sources/${run.source.id}`}>Source</Link>
+      <div className={styles.links}>
+        <ButtonLink href="/admin/ingest" size="sm">
+          All runs
+        </ButtonLink>
+        <ButtonLink href={`/admin/sources/${run.source.id}`} size="sm">
+          Source
+        </ButtonLink>
       </div>
 
       {qp.approved ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Approved.</div>
+        <div className={styles.notice}>Approved.</div>
       ) : qp.rejected ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Rejected.</div>
+        <div className={styles.notice}>Rejected.</div>
       ) : null}
 
-      <div style={{ marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
+      <div className={styles.meta}>
         Started {formatDate(run.startedAt)}
         {run.finishedAt ? ` · Finished ${formatDate(run.finishedAt)}` : ''}
         · {run.items.length} items (showing up to 200)
       </div>
 
       {run.items.length === 0 ? (
-        <div style={{ marginTop: 14, opacity: 0.8 }}>No items yet.</div>
+        <div className={styles.notice}>No items yet.</div>
       ) : (
-        <ul style={{ marginTop: 14, paddingLeft: 18, lineHeight: 1.8 }}>
+        <ol className={styles.itemList}>
           {run.items.map((item) => {
             const title = getProposedTitle(item.proposedChange) ?? 'Untitled';
             const docUrl = item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
@@ -131,76 +138,98 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
             const extractedText = getExtractedText(item.stageOutputs);
 
             return (
-              <li key={item.id} style={{ marginBottom: 14 }}>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+              <li key={item.id} className={styles.itemCard}>
+                <div className={styles.itemHeader}>
+                  <span className={styles.itemMeta}>
                     {item.stage} · {item.licenseGate}
                     {item.confidenceScore != null ? ` · score ${item.confidenceScore}` : ''}
                   </span>
-                  <span style={{ opacity: 0.9 }}>{title}</span>
-                  <a href={docUrl} target="_blank" rel="noopener noreferrer">
+                  <span className={styles.itemTitle}>{title}</span>
+                  <a
+                    className={styles.inlineLink}
+                    href={docUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Source doc
                   </a>
-                  {matchedEntryId ? <Link href={`/admin/entries/${matchedEntryId}`}>Matched entry</Link> : null}
-                  {appliedEntryId ? <Link href={`/admin/entries/${appliedEntryId}`}>Entry</Link> : null}
+                  {matchedEntryId ? (
+                    <Link className={styles.inlineLink} href={`/admin/entries/${matchedEntryId}`}>
+                      Matched entry
+                    </Link>
+                  ) : null}
+                  {appliedEntryId ? (
+                    <Link className={styles.inlineLink} href={`/admin/entries/${appliedEntryId}`}>
+                      Entry
+                    </Link>
+                  ) : null}
                 </div>
 
                 {item.error ? (
-                  <div style={{ marginTop: 6, opacity: 0.85 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>Error:</span> {item.error}
+                  <div className={styles.itemError}>
+                    <span className={styles.label}>Error:</span> {item.error}
                   </div>
                 ) : null}
 
                 {item.licenseGateReason ? (
-                  <div style={{ marginTop: 6, opacity: 0.85 }}>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>License:</span> {item.licenseGateReason}
+                  <div className={styles.itemError}>
+                    <span className={styles.label}>License:</span> {item.licenseGateReason}
                   </div>
                 ) : null}
 
-                <div style={{ marginTop: 8, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <form action={approve} style={{ display: 'inline' }}>
+                <div className={styles.actions}>
+                  <form action={approve}>
                     <input type="hidden" name="ingestItemId" value={item.id} />
-                    <button type="submit" disabled={item.stage === 'APPLIED' || item.stage === 'REJECTED'}>
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="sm"
+                      disabled={item.stage === 'APPLIED' || item.stage === 'REJECTED'}
+                    >
                       Approve
-                    </button>
+                    </Button>
                   </form>
 
-                  <form action={reject} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <form action={reject} className={styles.rejectForm}>
                     <input type="hidden" name="runId" value={run.id} />
                     <input type="hidden" name="ingestItemId" value={item.id} />
-                    <input name="reason" placeholder="Reject reason" style={{ minWidth: 260 }} />
-                    <button type="submit" disabled={item.stage === 'APPLIED' || item.stage === 'REJECTED'}>
+                    <input className={styles.input} name="reason" placeholder="Reject reason" />
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={item.stage === 'APPLIED' || item.stage === 'REJECTED'}
+                    >
                       Reject
-                    </button>
+                    </Button>
                   </form>
                 </div>
 
-                <details style={{ marginTop: 8 }}>
-                  <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Proposed change JSON</summary>
-                  <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                <details className={styles.details}>
+                  <summary className={styles.summary}>Proposed change JSON</summary>
+                  <pre className={styles.pre}>
                     {JSON.stringify(item.proposedChange, null, 2)}
                   </pre>
                 </details>
 
                 {extractedText ? (
-                  <details style={{ marginTop: 8 }}>
-                    <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Extracted text</summary>
-                    <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                  <details className={styles.details}>
+                    <summary className={styles.summary}>Extracted text</summary>
+                    <pre className={styles.pre}>
                       {extractedText}
                     </pre>
                   </details>
                 ) : null}
 
-                <details style={{ marginTop: 8 }}>
-                  <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Stage outputs JSON</summary>
-                  <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
+                <details className={styles.details}>
+                  <summary className={styles.summary}>Stage outputs JSON</summary>
+                  <pre className={styles.pre}>
                     {JSON.stringify(item.stageOutputs, null, 2)}
                   </pre>
                 </details>
               </li>
             );
           })}
-        </ul>
+        </ol>
       )}
     </>
   );
