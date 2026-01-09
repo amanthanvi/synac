@@ -3,8 +3,11 @@ import { redirect } from 'next/navigation';
 
 import { getPrismaClient } from '@synac/db';
 
+import { Button } from '@/components/ui/Button';
 import { requireAdminActor } from '@/lib/admin';
 import { addTagToEntry, removeTagFromEntry } from '@/lib/adminEntryTags';
+
+import styles from './page.module.css';
 
 export async function EntryTagsSection(props: {
   entryId: string;
@@ -22,40 +25,48 @@ export async function EntryTagsSection(props: {
   const availableTags = allTags.filter((t) => !currentTagIds.has(t.id));
 
   return (
-    <section style={{ marginTop: 22 }}>
-      <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
-        Tags ({props.entryTags.length})
-      </h2>
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>Tags ({props.entryTags.length})</h2>
 
       {props.entryTags.length === 0 ? (
-        <div style={{ marginTop: 12, opacity: 0.8 }}>
-          No tags yet. Tags power public browsing on `/tags/...`.
+        <div className={styles.notice}>
+          No tags yet. Tags power public browsing on <code>/tags/&hellip;</code>.
         </div>
       ) : (
-        <ul style={{ marginTop: 12, paddingLeft: 18, lineHeight: 1.8 }}>
+        <ul className={styles.tagList}>
           {props.entryTags.map(({ tag }) => (
-            <li key={tag.id}>
-              <Link href={`/admin/tags/${tag.id}`}>{tag.name}</Link>{' '}
-              <span style={{ opacity: 0.8 }}>· {tag.slug}</span>{' '}
-              <Link href={`/tags/${tag.slug}`}>Public</Link>
-              <form action={removeTagAction} style={{ display: 'inline', marginLeft: 10 }}>
-                <input type="hidden" name="entryId" value={props.entryId} />
-                <input type="hidden" name="tagId" value={tag.id} />
-                <button type="submit">Remove</button>
-              </form>
+            <li key={tag.id} className={styles.tagItem}>
+              <div className={styles.tagMain}>
+                <Link className={styles.tagName} href={`/admin/tags/${tag.id}`}>
+                  {tag.name}
+                </Link>
+                <span className={styles.tagSlug}>{tag.slug}</span>
+              </div>
+              <div className={styles.tagActions}>
+                <Link className={styles.inlineLink} href={`/tags/${tag.slug}`}>
+                  Public
+                </Link>
+                <form action={removeTagAction}>
+                  <input type="hidden" name="entryId" value={props.entryId} />
+                  <input type="hidden" name="tagId" value={tag.id} />
+                  <button type="submit" className={styles.inlineButton}>
+                    Remove
+                  </button>
+                </form>
+              </div>
             </li>
           ))}
         </ul>
       )}
 
       {availableTags.length === 0 ? (
-        <div style={{ marginTop: 12, opacity: 0.8 }}>No more tags to add.</div>
+        <div className={styles.notice}>No more tags to add.</div>
       ) : (
-        <form action={addTagAction} style={{ marginTop: 12, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <form action={addTagAction} className={styles.addTagForm}>
           <input type="hidden" name="entryId" value={props.entryId} />
-          <label style={{ display: 'grid', gap: 6 }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>Add</span>
-            <select name="tagId" required defaultValue={availableTags[0]?.id}>
+          <label className={styles.field}>
+            <div className={styles.label}>Add tag</div>
+            <select className={styles.input} name="tagId" required defaultValue={availableTags[0]?.id}>
               {availableTags.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.slug})
@@ -63,9 +74,9 @@ export async function EntryTagsSection(props: {
               ))}
             </select>
           </label>
-          <div style={{ alignSelf: 'end' }}>
-            <button type="submit">Add tag</button>
-          </div>
+          <Button type="submit" variant="primary" size="sm">
+            Add tag
+          </Button>
         </form>
       )}
     </section>
@@ -101,4 +112,3 @@ async function removeTagAction(formData: FormData) {
   await removeTagFromEntry({ actorUserId: actor.dbUserId, entryId, tagId });
   redirect(`/admin/entries/${entryId}?saved=1`);
 }
-

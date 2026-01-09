@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { requireAdminActor } from '@/lib/admin';
 import { EntryTagsSection } from './EntryTagsSection';
 import {
@@ -15,6 +15,8 @@ import {
   archiveEntry,
 } from '@/lib/adminEntries';
 import { rollbackEntryToAuditEvent } from '@/lib/adminEntryRollback';
+
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,8 +63,10 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
     return (
       <>
         <PageHeader badge="Admin" title="Entry not found" subtitle="Unknown entry id." />
-        <div style={{ marginTop: 12 }}>
-          <Link href="/admin/entries">Back to entries</Link>
+        <div className={styles.links}>
+          <ButtonLink href="/admin/entries" size="sm">
+            Back to entries
+          </ButtonLink>
         </div>
       </>
     );
@@ -99,41 +103,56 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
         subtitle={`${entry.entryType} · ${entry.status} · updated ${formatDate(entry.updatedAt)}`}
       />
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 10 }}>
-        <Link href="/admin/entries">Back to entries</Link>
-        {publicUrl ? <Link href={publicUrl}>Open public page</Link> : null}
+      <div className={styles.links}>
+        <ButtonLink href="/admin/entries" size="sm">
+          Back to entries
+        </ButtonLink>
+        {publicUrl ? (
+          <ButtonLink href={publicUrl} size="sm" variant="primary">
+            Open public page
+          </ButtonLink>
+        ) : null}
       </div>
 
       {qp.saved ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Saved.</div>
+        <div className={styles.notice}>Saved.</div>
       ) : qp.published ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Published.</div>
+        <div className={styles.notice}>Published.</div>
       ) : qp.archived ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Archived.</div>
+        <div className={styles.notice}>Archived.</div>
       ) : qp.rolledBack ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Rolled back.</div>
+        <div className={styles.notice}>Rolled back.</div>
       ) : null}
 
-      <section style={{ marginTop: 18 }}>
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
-          Entry fields
-        </h2>
-        <form action={saveEntry} style={{ marginTop: 12, display: 'grid', gap: 12 }}>
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Entry fields</h2>
+        <form action={saveEntry} className={styles.form}>
           <input type="hidden" name="entryId" value={entry.id} />
 
-          <label style={{ display: 'grid', gap: 6 }}>
-            <div style={{ opacity: 0.85 }}>Display title</div>
-            <input name="displayTitle" defaultValue={entry.displayTitle} required />
+          <label className={styles.field}>
+            <div className={styles.label}>Display title</div>
+            <input
+              className={styles.input}
+              name="displayTitle"
+              defaultValue={entry.displayTitle}
+              required
+            />
           </label>
 
-          <label style={{ display: 'grid', gap: 6 }}>
-            <div style={{ opacity: 0.85 }}>Slug</div>
-            <input name="primarySlug" defaultValue={entry.primarySlug} required />
+          <label className={styles.field}>
+            <div className={styles.label}>Slug</div>
+            <input
+              className={styles.input}
+              name="primarySlug"
+              defaultValue={entry.primarySlug}
+              required
+            />
           </label>
 
-          <label style={{ display: 'grid', gap: 6 }}>
-            <div style={{ opacity: 0.85 }}>Summary (Markdown)</div>
+          <label className={styles.field}>
+            <div className={styles.label}>Summary (Markdown)</div>
             <textarea
+              className={styles.textarea}
               name="summaryMd"
               defaultValue={entry.summaryMd ?? ''}
               rows={5}
@@ -141,9 +160,10 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
             />
           </label>
 
-          <label style={{ display: 'grid', gap: 6 }}>
-            <div style={{ opacity: 0.85 }}>Editorial notes (internal)</div>
+          <label className={styles.field}>
+            <div className={styles.label}>Editorial notes (internal)</div>
             <textarea
+              className={styles.textarea}
               name="editorialNotes"
               defaultValue={entry.editorialNotes ?? ''}
               rows={3}
@@ -151,46 +171,38 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
             />
           </label>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-            <button type="submit">Save</button>
-            <button
-              formAction={publish}
-              type="submit"
-              style={{ border: '1px solid var(--border)', padding: '6px 10px' }}
-            >
+          <div className={styles.buttonRow}>
+            <Button type="submit" variant="primary" size="sm">
+              Save
+            </Button>
+            <Button formAction={publish} type="submit" size="sm">
               Publish
-            </button>
-            <button
-              formAction={archive}
-              type="submit"
-              style={{ border: '1px solid var(--border)', padding: '6px 10px' }}
-            >
+            </Button>
+            <Button formAction={archive} type="submit" size="sm">
               Archive
-            </button>
-            <div style={{ opacity: 0.7, fontSize: 12 }}>
-              Published at {formatDate(entry.publishedAt)}
-            </div>
+            </Button>
+            <div className={styles.muted}>Published at {formatDate(entry.publishedAt)}</div>
           </div>
         </form>
       </section>
 
       <EntryTagsSection entryId={entry.id} entryTags={entry.entryTags} />
 
-      <section style={{ marginTop: 22 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
-          <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
-            Senses ({entry.senses.length})
-          </h2>
+      <section className={styles.section}>
+        <div className={styles.sectionTitleRow}>
+          <h2 className={styles.sectionTitle}>Senses ({entry.senses.length})</h2>
           <form action={addSense}>
             <input type="hidden" name="entryId" value={entry.id} />
-            <button type="submit">Add sense</button>
+            <Button type="submit" size="sm">
+              Add sense
+            </Button>
           </form>
         </div>
 
         {entry.senses.length === 0 ? (
-          <div style={{ marginTop: 12, opacity: 0.8 }}>No senses yet.</div>
+          <div className={styles.notice}>No senses yet.</div>
         ) : (
-          <div style={{ marginTop: 12, display: 'grid', gap: 14 }}>
+          <div className={styles.senseList}>
             {entry.senses.map((sense) => {
               const citationCount = provenanceBySenseId.get(sense.id) ?? 0;
               const isPublishableDefinition = Boolean(sense.definitionMd?.trim() || sense.definitionText);
@@ -198,65 +210,65 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
               const hasCitations = citationCount > 0;
 
               return (
-                <div
-                  key={sense.id}
-                  id={`sense-${sense.id}`}
-                  style={{
-                    border: '1px solid var(--border)',
-                    borderRadius: 16,
-                    padding: 14,
-                    background: 'color-mix(in srgb, var(--bg1) 78%, transparent)',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                    <div style={{ display: 'grid', gap: 4 }}>
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
+                <div key={sense.id} id={`sense-${sense.id}`} className={styles.senseCard}>
+                  <div className={styles.senseTop}>
+                    <div className={styles.senseMeta}>
+                      <div className={styles.senseMetaTitle}>
                         Sense {sense.senseOrder + 1} · {sense.status}
                       </div>
-                      <div style={{ fontSize: 12, opacity: 0.75 }}>
+                      <div className={styles.senseMetaSub}>
                         citations: {citationCount} · publishable:{' '}
                         {isPublishableDefinition && (hasCitations || hasEditorialRationale) ? 'yes' : 'no'}
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <div className={styles.senseMove}>
                       <form action={moveSenseAction}>
                         <input type="hidden" name="senseId" value={sense.id} />
                         <input type="hidden" name="direction" value="UP" />
-                        <button type="submit" aria-label="Move sense up">
+                        <Button type="submit" size="sm" aria-label="Move sense up">
                           ↑
-                        </button>
+                        </Button>
                       </form>
                       <form action={moveSenseAction}>
                         <input type="hidden" name="senseId" value={sense.id} />
                         <input type="hidden" name="direction" value="DOWN" />
-                        <button type="submit" aria-label="Move sense down">
+                        <Button type="submit" size="sm" aria-label="Move sense down">
                           ↓
-                        </button>
+                        </Button>
                       </form>
                     </div>
                   </div>
 
-                  <form action={saveSense} style={{ marginTop: 12, display: 'grid', gap: 10 }}>
+                  <form action={saveSense} className={styles.form}>
                     <input type="hidden" name="senseId" value={sense.id} />
 
-                    <label style={{ display: 'grid', gap: 6 }}>
-                      <div style={{ opacity: 0.85 }}>Sense label</div>
-                      <input name="senseLabel" defaultValue={sense.senseLabel ?? ''} />
+                    <label className={styles.field}>
+                      <div className={styles.label}>Sense label</div>
+                      <input
+                        className={styles.input}
+                        name="senseLabel"
+                        defaultValue={sense.senseLabel ?? ''}
+                      />
                     </label>
 
                     {entry.entryType === 'ACRONYM' ? (
-                      <label style={{ display: 'grid', gap: 6 }}>
-                        <div style={{ opacity: 0.85 }}>Expanded form</div>
-                        <input name="expandedForm" defaultValue={sense.expandedForm ?? ''} />
+                      <label className={styles.field}>
+                        <div className={styles.label}>Expanded form</div>
+                        <input
+                          className={styles.input}
+                          name="expandedForm"
+                          defaultValue={sense.expandedForm ?? ''}
+                        />
                       </label>
                     ) : (
                       <input type="hidden" name="expandedForm" value="" />
                     )}
 
-                    <label style={{ display: 'grid', gap: 6 }}>
-                      <div style={{ opacity: 0.85 }}>Definition (Markdown)</div>
+                    <label className={styles.field}>
+                      <div className={styles.label}>Definition (Markdown)</div>
                       <textarea
+                        className={styles.textarea}
                         name="definitionMd"
                         defaultValue={sense.definitionMd ?? ''}
                         rows={6}
@@ -264,20 +276,21 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
                       />
                     </label>
 
-                    <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <label className={styles.checkboxRow}>
                       <input
                         type="checkbox"
                         name="isEditorial"
                         defaultChecked={sense.isEditorial}
                       />
-                      <div style={{ opacity: 0.85 }}>
+                      <div className={styles.label}>
                         Editorial (no citations required if rationale provided)
                       </div>
                     </label>
 
-                    <label style={{ display: 'grid', gap: 6 }}>
-                      <div style={{ opacity: 0.85 }}>Editorial rationale (required if Editorial)</div>
+                    <label className={styles.field}>
+                      <div className={styles.label}>Editorial rationale (required if Editorial)</div>
                       <textarea
+                        className={styles.textarea}
                         name="editorialRationale"
                         defaultValue={sense.editorialRationale ?? ''}
                         rows={3}
@@ -285,10 +298,12 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
                       />
                     </label>
 
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <button type="submit">Save sense</button>
+                    <div className={styles.buttonRow}>
+                      <Button type="submit" size="sm" variant="primary">
+                        Save sense
+                      </Button>
                       {!hasCitations && !hasEditorialRationale && isPublishableDefinition ? (
-                        <div style={{ fontSize: 12, opacity: 0.75 }}>
+                        <div className={styles.muted}>
                           Add citations via ingest, or mark Editorial with rationale.
                         </div>
                       ) : null}
@@ -301,24 +316,26 @@ export default async function AdminEntryPage({ params, searchParams }: AdminEntr
         )}
       </section>
 
-      <section style={{ marginTop: 22 }}>
-        <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>Audit</h2>
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Audit</h2>
         {auditEvents.length === 0 ? (
-          <div style={{ marginTop: 12, opacity: 0.8 }}>No audit events yet.</div>
+          <div className={styles.notice}>No audit events yet.</div>
         ) : (
-          <ul style={{ marginTop: 12, paddingLeft: 18, lineHeight: 1.8 }}>
+          <ul className={styles.auditList}>
             {auditEvents.map((ev) => {
               const canRollback = Boolean(ev.before) && ev.action !== 'ENTRY_CREATE';
               return (
                 <li key={ev.id}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.85 }}>
+                  <span className={styles.auditMeta}>
                     {formatDate(ev.createdAt)} · {ev.action} · {ev.actorUser.email}
                   </span>
                   {canRollback ? (
-                    <form action={rollbackEntryAction} style={{ display: 'inline', marginLeft: 10 }}>
+                    <form action={rollbackEntryAction} className={styles.auditRollback}>
                       <input type="hidden" name="entryId" value={entry.id} />
                       <input type="hidden" name="auditEventId" value={ev.id} />
-                      <button type="submit">Rollback</button>
+                      <button type="submit" className={styles.inlineButton}>
+                        Rollback
+                      </button>
                     </form>
                   ) : null}
                 </li>
