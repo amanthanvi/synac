@@ -1,11 +1,13 @@
-import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 import { getPrismaClient, type Prisma } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
+import { Button, ButtonLink } from '@/components/ui/Button';
 import { requireAdminActor } from '@/lib/admin';
 import { markSourceDocumentDoNotUse, purgeDerivedContentForSourceDocument, updateTakedownCase } from '@/lib/adminTakedown';
+
+import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,67 +124,91 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
 
   return (
     <>
-      <PageHeader badge="Admin" title={`Takedown case ${c.id}`} subtitle={`${c.status} · created by ${c.createdByUser.email}`} />
+      <PageHeader
+        badge="Admin"
+        title={`Takedown case ${c.id}`}
+        subtitle={`${c.status} · created by ${c.createdByUser.email}`}
+      />
 
-      <div style={{ marginTop: 10, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <Link href="/admin/takedown">All cases</Link>
-        {c.sourceId ? <Link href={`/admin/sources/${c.sourceId}`}>Source</Link> : null}
-        {c.entryId ? <Link href={`/admin/entries/${c.entryId}`}>Entry</Link> : null}
+      <div className={styles.links}>
+        <ButtonLink href="/admin/takedown" size="sm">
+          All cases
+        </ButtonLink>
+        {c.sourceId ? (
+          <ButtonLink href={`/admin/sources/${c.sourceId}`} size="sm">
+            Source
+          </ButtonLink>
+        ) : null}
+        {c.entryId ? (
+          <ButtonLink href={`/admin/entries/${c.entryId}`} size="sm">
+            Entry
+          </ButtonLink>
+        ) : null}
         {entryUrl ? (
-          <a href={entryUrl} target="_blank" rel="noopener noreferrer">
+          <a className={styles.inlineLink} href={entryUrl} target="_blank" rel="noopener noreferrer">
             Public
           </a>
         ) : null}
       </div>
 
       {qp.saved ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Saved.</div>
+        <div className={styles.notice}>Saved.</div>
       ) : qp.dnu ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Marked do-not-use.</div>
+        <div className={styles.notice}>Marked do-not-use.</div>
       ) : qp.purged ? (
-        <div style={{ marginTop: 12, opacity: 0.9 }}>Purged derived content.</div>
+        <div className={styles.notice}>Purged derived content.</div>
       ) : null}
 
-      <div style={{ marginTop: 12, fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
+      <div className={styles.meta}>
         Created {formatDate(c.createdAt)} · Updated {formatDate(c.updatedAt)}
         {c.closedAt ? ` · Closed ${formatDate(c.closedAt)}` : ''}
       </div>
 
-      <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>Requester contact</div>
-        <div style={{ opacity: 0.9 }}>{c.requesterContact?.trim() ? c.requesterContact : '—'}</div>
+      <div className={styles.infoBlock}>
+        <div className={styles.infoLabel}>Requester contact</div>
+        <div className={styles.infoValue}>{c.requesterContact?.trim() ? c.requesterContact : '—'}</div>
       </div>
 
-      <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>Request</div>
-        <pre style={{ whiteSpace: 'pre-wrap', lineHeight: 1.5, margin: 0, opacity: 0.95 }}>{c.requestText}</pre>
+      <div className={styles.infoBlock}>
+        <div className={styles.infoLabel}>Request</div>
+        <pre className={styles.pre}>{c.requestText}</pre>
       </div>
 
-      <form action={saveCase} style={{ maxWidth: 920, marginTop: 18, display: 'grid', gap: 12 }}>
+      <form action={saveCase} className={styles.form}>
         <input type="hidden" name="takedownCaseId" value={c.id} />
 
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Status</div>
-          <select name="status" defaultValue={c.status} required>
+        <label className={styles.field}>
+          <div className={styles.label}>Status</div>
+          <select className={styles.select} name="status" defaultValue={c.status} required>
             <option value="OPEN">OPEN</option>
             <option value="IN_PROGRESS">IN_PROGRESS</option>
             <option value="CLOSED">CLOSED</option>
           </select>
         </label>
 
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Internal notes</div>
-          <textarea name="internalNotes" rows={6} defaultValue={c.internalNotes ?? ''} />
-        </label>
-
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Append action note (optional)</div>
-          <input name="appendAction" placeholder="e.g., Emailed requester; disabled source; purged item(s)." />
-        </label>
-
-        <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Affected entity IDs JSON (optional)</div>
+        <label className={styles.field}>
+          <div className={styles.label}>Internal notes</div>
           <textarea
+            className={styles.textarea}
+            name="internalNotes"
+            rows={6}
+            defaultValue={c.internalNotes ?? ''}
+          />
+        </label>
+
+        <label className={styles.field}>
+          <div className={styles.label}>Append action note (optional)</div>
+          <input
+            className={styles.input}
+            name="appendAction"
+            placeholder="e.g., Emailed requester; disabled source; purged item(s)."
+          />
+        </label>
+
+        <label className={styles.field}>
+          <div className={styles.label}>Affected entity IDs JSON (optional)</div>
+          <textarea
+            className={styles.textarea}
             name="affectedEntityIds"
             rows={5}
             defaultValue={c.affectedEntityIds ? JSON.stringify(c.affectedEntityIds, null, 2) : ''}
@@ -190,57 +216,72 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
           />
         </label>
 
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <button type="submit">Save</button>
-          <div style={{ opacity: 0.7, fontSize: 12 }}>
+        <div className={styles.buttonRow}>
+          <Button type="submit" variant="primary" size="sm">
+            Save
+          </Button>
+          <div className={styles.note}>
             Writes audit event <code>TAKEDOWN_CASE_UPDATE</code>.
           </div>
         </div>
       </form>
 
-      <details style={{ marginTop: 16 }}>
-        <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Actions log JSON</summary>
-        <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{JSON.stringify(c.actions, null, 2)}</pre>
+      <details className={styles.details}>
+        <summary className={styles.summary}>Actions log JSON</summary>
+        <div className={styles.detailsBody}>
+          <pre className={styles.pre}>{JSON.stringify(c.actions, null, 2)}</pre>
+        </div>
       </details>
 
-      <details style={{ marginTop: 12 }}>
-        <summary style={{ cursor: 'pointer', opacity: 0.85 }}>Affected entity IDs JSON</summary>
-        <pre style={{ marginTop: 8, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>
-          {JSON.stringify(c.affectedEntityIds, null, 2)}
-        </pre>
+      <details className={styles.details}>
+        <summary className={styles.summary}>Affected entity IDs JSON</summary>
+        <div className={styles.detailsBody}>
+          <pre className={styles.pre}>{JSON.stringify(c.affectedEntityIds, null, 2)}</pre>
+        </div>
       </details>
 
       {c.sourceDocument ? (
         <>
-          <div style={{ marginTop: 22, fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
-            SourceDocument actions
-          </div>
+          <div className={styles.sectionTitle}>SourceDocument actions</div>
 
-          <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-            <a href={c.sourceDocument.canonicalUrl ?? c.sourceDocument.url} target="_blank" rel="noopener noreferrer">
+          <div className={styles.actionRow}>
+            <a
+              className={styles.inlineLink}
+              href={c.sourceDocument.canonicalUrl ?? c.sourceDocument.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Open source doc
             </a>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.8 }}>
+            <span className={styles.meta}>
               {c.sourceDocument.doNotUse ? 'DO_NOT_USE' : 'ALLOW_USE'}
               {c.sourceDocument.doNotUseAt ? ` · set ${formatDate(c.sourceDocument.doNotUseAt)}` : ''}
             </span>
             {c.sourceDocument.doNotUseReason?.trim() ? (
-              <span style={{ opacity: 0.85 }}>· {c.sourceDocument.doNotUseReason}</span>
+              <span className={styles.note}>· {c.sourceDocument.doNotUseReason}</span>
             ) : null}
           </div>
 
-          <form action={markDnu} style={{ marginTop: 12, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <form action={markDnu} className={styles.actionForm}>
             <input type="hidden" name="takedownCaseId" value={c.id} />
             <input type="hidden" name="sourceDocumentId" value={c.sourceDocument.id} />
-            <input name="reason" placeholder="Do-not-use reason" style={{ minWidth: 320 }} />
-            <button type="submit">Mark do-not-use</button>
+            <input
+              className={`${styles.input} ${styles.reasonInput}`}
+              name="reason"
+              placeholder="Do-not-use reason"
+            />
+            <Button type="submit" size="sm">
+              Mark do-not-use
+            </Button>
           </form>
 
-          <form action={purge} style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+          <form action={purge} className={styles.actionForm}>
             <input type="hidden" name="takedownCaseId" value={c.id} />
             <input type="hidden" name="sourceDocumentId" value={c.sourceDocument.id} />
-            <button type="submit">Purge derived content</button>
-            <span style={{ opacity: 0.7, fontSize: 12 }}>
+            <Button type="submit" size="sm">
+              Purge derived content
+            </Button>
+            <span className={styles.note}>
               Archives senses + clears derived summaries + archives empty published entries.
             </span>
           </form>
