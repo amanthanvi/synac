@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
-import { IBM_Plex_Mono, Instrument_Sans, Instrument_Serif } from 'next/font/google';
+import { Fraunces, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google';
 
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -12,10 +12,9 @@ const instrumentSans = Instrument_Sans({
   display: 'swap',
 });
 
-const instrumentSerif = Instrument_Serif({
+const fraunces = Fraunces({
   variable: '--font-serif',
   subsets: ['latin'],
-  weight: '400',
   display: 'swap',
 });
 
@@ -63,7 +62,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${instrumentSans.variable} ${instrumentSerif.variable} ${plexMono.variable}`}
+        className={`${instrumentSans.variable} ${fraunces.variable} ${plexMono.variable}`}
       >
         {isClerkConfigured ? (
           <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" dynamic>

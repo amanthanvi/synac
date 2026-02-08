@@ -5,6 +5,7 @@ build/
 .turbo/
 .cache/
 .DS_Store
+.vscode/
 
 # Env
 .env*

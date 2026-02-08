@@ -1,40 +1,87 @@
 .header {
   position: sticky;
   top: 0;
-  z-index: 20;
-  backdrop-filter: blur(10px);
-  background: color-mix(in srgb, var(--bg0) 78%, transparent);
+  z-index: 40;
+  backdrop-filter: blur(14px) saturate(140%);
+  background:
+    radial-gradient(
+      780px 120px at 18% 0%,
+      color-mix(in srgb, var(--accent2) 16%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      780px 120px at 86% 0%,
+      color-mix(in srgb, var(--accent) 15%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg1) 84%, transparent),
+      color-mix(in srgb, var(--bg0) 68%, transparent)
+    );
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 12px 28px color-mix(in srgb, #000000 12%, transparent);
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--accent2) 62%, transparent),
+    color-mix(in srgb, var(--accent) 55%, transparent),
+    transparent
+  );
+  opacity: 0.75;
 }
 
 .inner {
-  max-width: 1120px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 14px 18px;
+  padding: 12px var(--page-pad-x);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .brand {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   text-decoration: none;
+  padding: 6px 10px 6px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  background: color-mix(in srgb, var(--bg1) 72%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 36%, transparent);
+  transition:
+    border-color 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+
+.brand:hover {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--bg1) 80%, transparent);
+  transform: translateY(-1px);
 }
 
 .brandIcon {
   width: 28px;
   height: 28px;
-  border-radius: 9px;
+  border-radius: 10px;
   flex: 0 0 auto;
-  transform: translateY(2px);
+  box-shadow: 0 10px 22px color-mix(in srgb, #000000 14%, transparent);
 }
 
 .brandName {
   font-family: var(--font-serif);
-  font-size: 20px;
-  letter-spacing: -0.02em;
+  font-size: 19px;
+  letter-spacing: -0.03em;
+  font-weight: 600;
 }
 
 .nav {
@@ -53,9 +100,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 34px;
-  padding: 0 6px;
-  border-radius: 12px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 999px;
   border: 1px solid transparent;
   background: transparent;
   color: color-mix(in srgb, var(--fg) 82%, transparent);
@@ -65,14 +112,20 @@
   text-transform: uppercase;
   white-space: nowrap;
   user-select: none;
+  transition:
+    border-color 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
 }
 
 .navLink:hover,
 .dropdownSummary:hover,
 .mobileSummary:hover {
   color: var(--fg);
-  border-color: color-mix(in srgb, var(--fg) 16%, transparent);
-  background: color-mix(in srgb, var(--bg1) 82%, transparent);
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--bg1) 74%, transparent);
+  transform: translateY(-1px);
 }
 
 .dropdown {
@@ -110,8 +163,8 @@
   left: 0;
   top: calc(100% + 10px);
   min-width: 200px;
-  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
   background: color-mix(in srgb, var(--bg1) 92%, transparent);
   box-shadow: var(--shadow);
   padding: 10px;
@@ -127,8 +180,8 @@
 }
 
 .dropdownLink:hover {
-  border-color: color-mix(in srgb, var(--fg) 16%, transparent);
-  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--bg0) 68%, transparent);
   color: var(--fg);
 }
 
@@ -155,8 +208,8 @@
   right: 0;
   top: calc(100% + 10px);
   min-width: 220px;
-  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
   background: color-mix(in srgb, var(--bg1) 92%, transparent);
   box-shadow: var(--shadow);
   padding: 10px;
@@ -172,8 +225,8 @@
 }
 
 .mobileLink:hover {
-  border-color: color-mix(in srgb, var(--fg) 16%, transparent);
-  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--bg0) 68%, transparent);
   color: var(--fg);
 }
 
@@ -188,7 +241,7 @@
 }
 
 .search {
-  width: min(460px, 100%);
+  width: min(520px, 100%);
 }
 
 @media (max-width: 920px) {

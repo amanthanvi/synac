@@ -6,18 +6,28 @@
   padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg1) 78%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg1) 90%, transparent),
+    color-mix(in srgb, var(--bg1) 72%, transparent)
+  );
   color: color-mix(in srgb, var(--fg) 78%, transparent);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
+  transition:
+    border-color 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
 }
 
 .pill:hover {
   color: var(--fg);
   border-color: color-mix(in srgb, var(--accent2) 55%, var(--border));
+  transform: translateY(-1px);
 }
 
 .active {
@@ -25,4 +35,3 @@
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--fg);
 }
-

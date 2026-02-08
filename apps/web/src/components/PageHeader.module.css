@@ -1,14 +1,31 @@
 .wrap {
   display: grid;
   gap: 10px;
-  padding: 18px 0 10px;
+  padding: 22px 0 12px;
+  position: relative;
+}
+
+.wrap::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--fg) 16%, transparent),
+    transparent 70%
+  );
+  opacity: 0.9;
 }
 
 .title {
   font-family: var(--font-serif);
-  font-size: 40px;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  font-size: clamp(38px, 4.6vw, 54px);
+  letter-spacing: -0.04em;
+  line-height: 1.03;
+  font-weight: 650;
 }
 
 .subtitle {

@@ -48,7 +48,7 @@ export function SearchForm({
           spellCheck="false"
         />
       </div>
-      <Button type="submit" variant="primary">
+      <Button type="submit" variant="primary" className={styles.submit}>
         Search
       </Button>
     </form>

@@ -1,6 +1,6 @@
-# SynAc v0.1.4 — Execution Plan (PLAN.md)
+# SynAc v0.1.5 — Execution Plan (PLAN.md)
 
-Last updated: 2026-01-09
+Last updated: 2026-02-08
 
 This is the living implementation tracker for `SPEC.md`.
 
@@ -21,6 +21,27 @@ This is the living implementation tracker for `SPEC.md`.
 - Small/medium diffs.
 - Commit + push frequently (same branch).
 - Keep code aligned with `SPEC.md`; when reality diverges, update `SPEC.md` (don’t ship undocumented behavior).
+
+## v0.1.5 — UI/UX overhaul (“Signal Ledger”)
+
+Goal: push the public UI into a memorable, reference-first “signal + paper” aesthetic — instrument-panel header over archival paper, tuned for fast scanning and high trust.
+
+Design direction:
+- Typography stack: **Instrument Sans** (body) + **Fraunces** (display) + **IBM Plex Mono** (metadata).
+- Default theme: **light** (archival paper + dot grid + grain); auto dark via `prefers-color-scheme: dark`.
+- Keep UX rules from v0.1.4: **single visible header search** + **keyboard command palette** (`⌘K` / `Ctrl+K`).
+- Browse pages: “ledger sheet” lists (bordered + clipped + subtle markers), more tactile rails/filters.
+- Entry pages: **left rail** at-a-glance + references; senses as “evidence cards” with accent spine; citations remain per-sense.
+
+Plan:
+- [x] Tokens: refresh `globals.css` (dot-grid paper + grain overlay; tighter tokens for borders/shadows/easing).
+- [x] Typography: introduce Fraunces as display font; keep Instrument Sans + IBM Plex Mono.
+- [x] Header/Footer: instrument-panel styling; unify search and command palette affordances.
+- [x] Browse: ledger-style lists + updated letter rail.
+- [x] Entries: fix entry grid column sizing (rail + main), restyle sense cards + references.
+- [x] QA: run gate (`pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`) + smoke test key flows.
+- [x] Release hygiene: bump versions to `0.1.5`, update changelog/docs.
+- [ ] Release: tag `v0.1.5`.
 
 ## v0.1.4 — Frontend UX overhaul (“Reference Atlas”)
 

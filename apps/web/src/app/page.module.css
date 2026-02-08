@@ -1,5 +1,20 @@
 .hero {
-  padding: 34px 0 0;
+  padding: 40px 0 0;
+  position: relative;
+}
+
+.hero::before {
+  content: 'SYNAC';
+  position: absolute;
+  right: -0.2em;
+  top: -0.35em;
+  font-family: var(--font-mono);
+  font-size: clamp(84px, 10vw, 168px);
+  letter-spacing: 0.28em;
+  color: color-mix(in srgb, var(--fg) 3.6%, transparent);
+  transform: rotate(-8deg);
+  pointer-events: none;
+  user-select: none;
 }
 
 .kicker {
@@ -12,6 +27,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 10px;
+  animation: rise 520ms var(--ease-out) both;
 }
 
 .kickerLabel {
@@ -21,9 +37,16 @@
   height: 26px;
   padding: 0 10px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: color-mix(in srgb, var(--fg) 86%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 18%, transparent),
+    color-mix(in srgb, var(--accent) 12%, transparent)
+  );
+  color: color-mix(in srgb, var(--fg) 88%, transparent);
+  box-shadow:
+    0 10px 20px color-mix(in srgb, #000000 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 28%, transparent);
 }
 
 .kickerSep {
@@ -45,8 +68,11 @@
   margin-top: 14px;
   font-family: var(--font-serif);
   font-size: clamp(44px, 5vw, 68px);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.045em;
   line-height: 1.02;
+  font-weight: 650;
+  animation: rise 520ms var(--ease-out) both;
+  animation-delay: 30ms;
 }
 
 .titleAccent {
@@ -63,7 +89,12 @@
   bottom: 0.08em;
   height: 0.38em;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent2) 18%, transparent),
+    color-mix(in srgb, var(--accent) 26%, transparent),
+    color-mix(in srgb, var(--accent2) 16%, transparent)
+  );
   transform: rotate(-1deg);
   z-index: -1;
 }
@@ -74,6 +105,8 @@
   font-size: 18px;
   line-height: 1.7;
   color: color-mix(in srgb, var(--fg) 72%, transparent);
+  animation: rise 520ms var(--ease-out) both;
+  animation-delay: 60ms;
 }
 
 .actions {
@@ -81,6 +114,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  animation: rise 520ms var(--ease-out) both;
+  animation-delay: 90ms;
 }
 
 .kbdHint {
@@ -105,6 +140,8 @@
   font-size: 12px;
   letter-spacing: 0.02em;
   color: color-mix(in srgb, var(--fg) 62%, transparent);
+  animation: rise 520ms var(--ease-out) both;
+  animation-delay: 120ms;
 }
 
 .kbdInline {
@@ -120,6 +157,8 @@
 
 .sidebar {
   min-width: 0;
+  animation: rise 560ms var(--ease-out) both;
+  animation-delay: 140ms;
 }
 
 .note {
@@ -131,10 +170,17 @@
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(3, 1fr);
+  animation: rise 620ms var(--ease-out) both;
+  animation-delay: 170ms;
 }
 
 .card {
   padding: 16px;
+  transition: transform 180ms var(--ease-out);
+}
+
+.card:hover {
+  transform: translateY(-2px);
 }
 
 .cardTitle {
@@ -200,5 +246,40 @@
 
   .cards {
     grid-template-columns: 1fr;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kicker,
+  .title,
+  .lede,
+  .actions,
+  .metaHint,
+  .sidebar,
+  .cards {
+    animation: none;
+  }
+
+  .card {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .hero::before {
+    transform: none;
   }
 }

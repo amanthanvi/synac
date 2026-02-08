@@ -1,14 +1,26 @@
 .panel {
+  position: relative;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: 16px;
-  background: color-mix(in srgb, var(--bg1) 86%, transparent);
-  box-shadow: 0 10px 30px color-mix(in srgb, #000000 12%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg1) 92%, transparent),
+      color-mix(in srgb, var(--bg1) 78%, transparent)
+    ),
+    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--fg) 3%, transparent) 1px, transparent 1.5px);
+  background-size: auto, 18px 18px;
+  box-shadow: var(--shadow-tight);
+  overflow: clip;
 }
 
-@media (prefers-color-scheme: dark) {
-  .panel {
-    box-shadow: var(--shadow);
-  }
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 44%, transparent);
+  opacity: 0.75;
 }
-

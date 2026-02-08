@@ -20,10 +20,13 @@
   color: color-mix(in srgb, var(--accent2) 85%, var(--fg));
   text-decoration: underline;
   text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--accent2) 55%, transparent);
+  transition: color 160ms var(--ease-out);
 }
 
 .md a:hover {
   color: color-mix(in srgb, var(--accent2) 95%, var(--fg));
+  text-decoration-color: color-mix(in srgb, var(--accent2) 70%, transparent);
 }
 
 .md code {
@@ -31,16 +34,16 @@
   font-size: 0.92em;
   padding: 0.12em 0.3em;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  background: color-mix(in srgb, var(--bg0) 74%, transparent);
 }
 
 .md pre {
   margin-top: 0.9em;
   padding: 12px;
   border-radius: 16px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg0) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
+  background: color-mix(in srgb, var(--bg0) 80%, transparent);
   overflow: auto;
 }
 

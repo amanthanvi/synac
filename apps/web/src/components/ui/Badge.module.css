@@ -1,13 +1,20 @@
 .badge {
+  position: relative;
   width: fit-content;
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg1) 80%, transparent);
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg1) 92%, transparent),
+    color-mix(in srgb, var(--bg1) 72%, transparent)
+  );
+  color: color-mix(in srgb, var(--fg) 82%, transparent);
+  box-shadow:
+    0 10px 22px color-mix(in srgb, #000000 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent);
 }
-

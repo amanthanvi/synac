@@ -43,6 +43,9 @@ Notes:
 - Clerk is optional locally. If keys are not present, `/admin/*` will 404 and the site runs without auth.
 - Staging-first ingest is enabled when `SYNAC_STAGING_DATABASE_URL` is configured (see `.env.example`).
 
+Verification:
+- Run the gate before release/ship: `pnpm gate` (or `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`).
+
 ## Deployment (Railway)
 
 Project name: `synac`.
@@ -81,9 +84,9 @@ Troubleshooting: `docs/runbooks/ingest-promotion.md`.
 
 ## Status
 
-Released: `v0.1.4`.
+Released: `v0.1.5`.
 
-Latest UX note (v0.1.4): single global header search + keyboard command palette (`⌘K` / `Ctrl+K`).
+Latest UX note (v0.1.5): “Signal Ledger” redesign (instrument-panel header + archival paper/grain), ledger-style browse lists, and a left-rail entry layout for faster scanning.
 
 ## License
 

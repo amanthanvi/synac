@@ -15,17 +15,29 @@
   padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg1) 76%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg1) 92%, transparent),
+    color-mix(in srgb, var(--bg1) 74%, transparent)
+  );
   color: color-mix(in srgb, var(--fg) 82%, transparent);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  box-shadow:
+    0 10px 20px color-mix(in srgb, #000000 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent);
+  transition:
+    border-color 180ms var(--ease-out),
+    transform 180ms var(--ease-out),
+    color 180ms var(--ease-out);
 }
 
 .link:hover {
   color: var(--fg);
   border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
+  transform: translateY(-1px);
 }
 
 .disabled {
@@ -38,4 +50,3 @@
   font-size: 12px;
   color: color-mix(in srgb, var(--fg) 62%, transparent);
 }
-

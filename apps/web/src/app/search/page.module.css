@@ -50,7 +50,11 @@
   padding: 2px 8px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  background: color-mix(in srgb, var(--bg1) 84%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg1) 92%, transparent),
+    color-mix(in srgb, var(--bg1) 74%, transparent)
+  );
   color: color-mix(in srgb, var(--fg) 80%, transparent);
 }
 

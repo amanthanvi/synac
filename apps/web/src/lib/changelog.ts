@@ -8,9 +8,20 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: 'Unreleased',
-    date: '2026-01-09',
+    date: '2026-02-08',
     title: 'Work in progress',
     items: [],
+  },
+  {
+    version: 'v0.1.5',
+    date: '2026-02-08',
+    title: 'Signal Ledger UI overhaul',
+    items: [
+      'New visual system: instrument-panel header over archival paper (dot-grid + grain).',
+      'Browse listings redesigned as ledger sheets for faster scanning.',
+      'Entry pages: left-rail layout and restyled sense “evidence cards”.',
+      'Typography refresh: Fraunces display with Instrument Sans + IBM Plex Mono.',
+    ],
   },
   {
     version: 'v0.1.4',

@@ -3,24 +3,37 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  height: 34px;
+  height: 36px;
   padding: 0 12px;
   width: fit-content;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg1) 86%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg1) 92%, transparent),
+    color-mix(in srgb, var(--bg1) 74%, transparent)
+  );
   color: color-mix(in srgb, var(--fg) 82%, transparent);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   user-select: none;
   white-space: nowrap;
+  box-shadow:
+    0 12px 22px color-mix(in srgb, #000000 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent);
+  transition:
+    border-color 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    transform 180ms var(--ease-out),
+    color 180ms var(--ease-out);
 }
 
 .trigger:hover {
   border-color: color-mix(in srgb, var(--accent2) 55%, var(--border));
   color: var(--fg);
+  transform: translateY(-1px);
 }
 
 .triggerKbd {
@@ -30,7 +43,7 @@
   padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  background: color-mix(in srgb, var(--bg0) 84%, transparent);
+  background: color-mix(in srgb, var(--bg0) 82%, transparent);
   color: color-mix(in srgb, var(--fg) 78%, transparent);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -42,20 +55,22 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: color-mix(in srgb, #05070b 38%, transparent);
-  backdrop-filter: blur(14px);
+  background: color-mix(in srgb, #05070b 42%, transparent);
+  backdrop-filter: blur(16px) saturate(120%);
   display: grid;
   place-items: start center;
   padding: 90px 18px 40px;
+  animation: overlayIn 140ms var(--ease-out) both;
 }
 
 .dialog {
   width: min(680px, 100%);
-  border-radius: 22px;
-  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+  border-radius: 26px;
+  border: 1px solid var(--border-strong);
   background: color-mix(in srgb, var(--bg1) 92%, transparent);
   box-shadow: var(--shadow);
   overflow: hidden;
+  animation: dialogIn 160ms var(--ease-out) both;
 }
 
 .top {
@@ -69,9 +84,9 @@
 .input {
   flex: 1;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 16px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg0) 75%, transparent);
+  background: color-mix(in srgb, var(--bg0) 72%, transparent);
   color: var(--fg);
   padding: 0 12px;
   outline: none;
@@ -111,14 +126,19 @@
   justify-content: space-between;
   gap: 14px;
   padding: 12px 12px;
-  border-radius: 16px;
+  border-radius: 18px;
   border: 1px solid transparent;
   cursor: pointer;
+  transition:
+    border-color 160ms var(--ease-out),
+    background 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
 }
 
 .item:hover {
   border-color: color-mix(in srgb, var(--fg) 16%, transparent);
-  background: color-mix(in srgb, var(--bg0) 72%, transparent);
+  background: color-mix(in srgb, var(--bg0) 70%, transparent);
+  transform: translateY(-1px);
 }
 
 .itemActive {
@@ -141,4 +161,31 @@
   padding: 14px 12px 18px;
   color: color-mix(in srgb, var(--fg) 70%, transparent);
   line-height: 1.6;
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialog {
+    animation: none;
+  }
 }

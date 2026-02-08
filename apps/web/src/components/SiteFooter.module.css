@@ -1,12 +1,17 @@
 .footer {
   border-top: 1px solid var(--border);
   margin-top: 56px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--bg1) 60%, transparent)
+  );
 }
 
 .inner {
-  max-width: 1120px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 28px 18px 44px;
+  padding: 26px var(--page-pad-x) 44px;
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
@@ -25,15 +30,22 @@
   text-decoration: none;
   padding: 6px 10px;
   border-radius: 10px;
+  border: 1px solid transparent;
+  transition:
+    border-color 180ms var(--ease-out),
+    background 180ms var(--ease-out),
+    color 180ms var(--ease-out);
 }
 
 .links a:hover {
   color: var(--fg);
   background: color-mix(in srgb, var(--bg1) 70%, transparent);
+  border-color: color-mix(in srgb, var(--fg) 12%, transparent);
 }
 
 .meta {
   color: color-mix(in srgb, var(--fg) 55%, transparent);
   font-size: 13px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
 }
-

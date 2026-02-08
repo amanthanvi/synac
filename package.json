@@ -1,7 +1,7 @@
 {
   "name": "synac",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "homepage": "https://synac.app",
   "repository": {
@@ -16,7 +16,8 @@
     "node": ">=22.21.1"
   },
   "scripts": {
-    "dev": "pnpm -r --parallel dev --if-present",
+    "dev": "pnpm -r --parallel --if-present dev",
+    "gate": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "build": "pnpm -r build",
     "start": "pnpm --filter @synac/web start",
     "lint": "pnpm -r lint",

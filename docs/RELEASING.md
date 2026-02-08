@@ -1,6 +1,6 @@
 # Releasing SynAc
 
-This repo is released at `v0.1.3` and targets a `v0.1.x` release cadence.
+This repo is released at `v0.1.5` and targets a `v0.1.x` release cadence.
 
 ## Pre-flight
 
@@ -26,10 +26,7 @@ This repo is released at `v0.1.3` and targets a `v0.1.x` release cadence.
 ## Release steps
 
 1. Run the local gate:
-   - `pnpm lint`
-   - `pnpm typecheck`
-   - `pnpm test`
-   - `pnpm build`
+   - `pnpm gate` (or run `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`)
 2. Bump versions (root + workspaces).
 3. Deploy (Railway):
    - Apply DB migrations in production (run inside Railway so `postgres.railway.internal` resolves):

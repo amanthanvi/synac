@@ -1,6 +1,8 @@
-# SynAc v0.1.4 — Production Specification (SPEC.md)
+# SynAc v0.1.5 — Production Specification (SPEC.md)
 
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
+
+> **Note (v0.1.5):** Patch release on top of the v0.1.0 baseline. Refreshes the visual system (“Signal Ledger”) with an instrument-panel header over archival paper (dot-grid + grain), ledger-style browse lists, and a left-rail entry layout for faster scanning — while keeping the v0.1.4 UX rules (single header search + `⌘K` command palette, high-sense accordion behavior).
 
 > **Note (v0.1.4):** Patch release on top of the v0.1.0 baseline. Redesigns the public UI/UX (“Reference Atlas”) for faster scanning and lower friction: single visible header search, keyboard command palette (`⌘K` / `Ctrl+K`), denser browse/search layouts, and improved entry readability (including high-sense accordion behavior). Also continues the admin styling cleanup for consistency.
 
@@ -1869,6 +1871,8 @@ Rank results using weighted signals:
 |----------|--------|-------|
 | **Global search placement** | Single visible header search | No duplicate per-page search forms; `/search` relies on header input. |
 | **Command palette** | Yes (⌘K / Ctrl+K) | Lightweight custom palette for navigation + “Search for …” action; no heavy deps. |
+| **Visual system** | “Signal Ledger” | Instrument-panel header over archival paper (dot-grid + grain); tactile rails and ledger lists. |
+| **Typography** | Instrument Sans + Fraunces + IBM Plex Mono | Body + display + metadata; mono reserved for labels and UI metadata. |
 | **High-sense entries (10+)** | Accordion/collapsible by default | Show sense labels collapsed; first sense auto-expanded |
 | **Relationship visualization** | Interactive D3 force-directed | Draggable nodes, zoom/pan; loads on-demand |
 | **Relationship limit** | Hard limit 10 with "View all" | Show top 10 by weight; expansion for more |

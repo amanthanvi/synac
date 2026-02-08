@@ -4,18 +4,37 @@
   gap: 0;
   padding: 0;
   margin: 0;
-  border-top: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--bg1) 55%, transparent);
+  overflow: clip;
 }
 
 .item {
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
-  padding: 14px 8px 12px;
-  border-radius: 14px;
+  position: relative;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
+  padding: 14px 16px 12px 28px;
   background: transparent;
 }
 
+.item:last-child {
+  border-bottom: none;
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 22px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent2) 34%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent2) 10%, transparent);
+}
+
 .item:hover {
-  background: color-mix(in srgb, var(--bg1) 78%, transparent);
+  background: color-mix(in srgb, var(--bg1) 70%, transparent);
 }
 
 .itemTitleRow {
@@ -26,15 +45,16 @@
 }
 
 .itemTitle {
-  font-size: 18px;
-  letter-spacing: -0.01em;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  letter-spacing: -0.03em;
   font-weight: 650;
 }
 
 .itemSlug {
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--fg) 55%, transparent);
   white-space: nowrap;
@@ -73,21 +93,37 @@
   padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg1) 76%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bg1) 90%, transparent),
+    color-mix(in srgb, var(--bg1) 72%, transparent)
+  );
   color: color-mix(in srgb, var(--fg) 78%, transparent);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  box-shadow:
+    0 10px 18px color-mix(in srgb, #000000 10%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 28%, transparent);
+  transition:
+    border-color 180ms var(--ease-out),
+    transform 180ms var(--ease-out),
+    color 180ms var(--ease-out);
 }
 
 .chip:hover {
   color: var(--fg);
   border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
+  transform: translateY(-1px);
 }
 
 .chipActive {
   border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 22%, transparent),
+    color-mix(in srgb, var(--accent) 14%, transparent)
+  );
   color: var(--fg);
 }

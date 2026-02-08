@@ -21,9 +21,11 @@
   color: color-mix(in srgb, var(--accent2) 85%, var(--fg));
   text-decoration: underline;
   text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--accent2) 55%, transparent);
+  transition: color 160ms var(--ease-out);
 }
 
 .prose a:hover {
   color: color-mix(in srgb, var(--accent2) 95%, var(--fg));
+  text-decoration-color: color-mix(in srgb, var(--accent2) 70%, transparent);
 }
-
