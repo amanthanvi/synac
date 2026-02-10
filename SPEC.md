@@ -1,6 +1,8 @@
-# SynAc v0.1.5 — Production Specification (SPEC.md)
+# SynAc v0.2.0 — Production Specification (SPEC.md)
 
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
+
+> **Note (v0.2.0):** Full public-facing UI/UX overhaul. Replaces the “Signal Ledger” aesthetic with “Clinical Reference” — a monospace-forward, dark-leaning, developer-documentation aesthetic. Typography: Geist Sans + Geist Mono. Colors: cool/clinical blue-gray with electric accents. Entry pages: full-width stacked layout with sticky floating TOC and hover preview cards. Home page: search-forward portal. Theme: system-first detection with manual toggle + persistence. `/trending` removed. Admin UI unchanged (future scope).
 
 > **Note (v0.1.5):** Patch release on top of the v0.1.0 baseline. Refreshes the visual system (“Signal Ledger”) with an instrument-panel header over archival paper (dot-grid + grain), ledger-style browse lists, and a left-rail entry layout for faster scanning — while keeping the v0.1.4 UX rules (single header search + `⌘K` command palette, high-sense accordion behavior).
 
@@ -760,7 +762,6 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
     -   `/tags`
     -   `/tags/{tag-slug}`
     -   `/recent`
-    -   `/trending`
     -   `/sources`
     -   `/sources/{source-slug}`
     -   `/about` (mission + attribution philosophy + takedown contact)
@@ -782,9 +783,8 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 -   Global header:
     -   logo → home,
     -   single visible search bar (no duplicate per-page search inputs),
-    -   Explore dropdown (Terms, Acronyms, Tags, Recent, Trending),
-    -   Sources,
-    -   About.
+    -   flat nav links: Terms, Acronyms, Tags, Sources, About.
+
     -   Keyboard:
         -   `⌘K` / `Ctrl+K` opens a command palette for navigation + “Search for …” actions,
         -   `/` focuses the header search input (when not already typing in an input).
@@ -1253,6 +1253,90 @@ Rank results using weighted signals:
 
 ---
 
+## 11a) Visual Design Language — "Clinical Reference"
+
+> Added in v0.2.0. Replaces the v0.1.5 "Signal Ledger" visual system.
+
+### Identity
+
+"Clinical Reference" — SOC-room precision meets premium developer documentation. The site should feel like Stripe Docs, Vercel Docs, or Tailwind CSS Docs: authoritative, clean, and polished. Not retro-analog, not generic template, not "cybersecurity dark mode cliché."
+
+### Typography
+
+| Role | Typeface | Usage |
+|------|----------|-------|
+| Body | Geist Sans | Paragraphs, UI labels, navigation, buttons |
+| Display / Hero | Geist Mono | Headlines, entry titles, metadata labels, code, brand wordmark |
+| Code | Geist Mono | Inline code, code blocks, technical references |
+
+Monospace-forward: Geist Mono is the *hero* typeface. It appears in headlines, metadata, tags, and the brand wordmark — not just code blocks. This creates a terminal/hacker energy that fits cybersecurity without being heavy-handed.
+
+Load via `geist` npm package or `next/font/google`.
+
+### Color System
+
+**Theme**: System-first detection, lean dark. Dark mode is the hero experience. Light mode is a polished alternative (not an afterthought).
+
+**Toggle**: Manual toggle button in header. Three states: dark, light, system. Persisted via `localStorage`. Renders on server via cookie to prevent flash.
+
+| Token | Dark (Hero) | Light |
+|-------|-------------|-------|
+| `--bg-0` | `#0a0a0b` (near-black) | `#fafafa` (near-white) |
+| `--bg-1` | `#111113` (elevated surface) | `#ffffff` (card surface) |
+| `--bg-2` | `#1a1a1e` (hover/active) | `#f4f4f5` (hover/active) |
+| `--fg` | `#ededed` (primary text) | `#0a0a0b` (primary text) |
+| `--fg-muted` | `#888888` (secondary text) | `#666666` (secondary text) |
+| `--accent` | `#3b82f6` (electric blue) | `#2563eb` (electric blue) |
+| `--accent-2` | `#10b981` (clinical green) | `#059669` (clinical green) |
+| `--border` | `#222225` (subtle dividers) | `#e4e4e7` (subtle dividers) |
+| `--border-strong` | `#333338` (prominent borders) | `#d1d1d6` (prominent borders) |
+
+No warm tones (no amber, no teal-green). Cool/clinical palette only. Accents are electric blue and clinical green — SOC-monitor energy.
+
+### Spacing & Layout
+
+- **Container**: Unified max-width (~1200px) with consistent horizontal padding across all pages.
+- **Content density**: Balanced (Vercel-level). Purposeful whitespace, not cavernous, not packed.
+- **Border radius**: Tight (4px–8px). Clinical, not bubbly.
+- **Shadows**: Minimal. Subtle elevation via border + slight box-shadow in light mode. No shadows in dark mode — use border contrast instead.
+
+### Backgrounds & Textures
+
+- **No dot-grid, grain overlay, or archival paper textures.**
+- Dark mode: flat `--bg-0` with subtle gradient (near-invisible radial from center, 2% lighter).
+- Light mode: flat `--bg-0`. Clean.
+- No noise, no patterns. Let typography and spacing do the work.
+
+### Motion
+
+Deliberate & polished. Budget:
+
+| Interaction | Animation | Duration |
+|-------------|-----------|----------|
+| Page load | Content stagger (fade-up, 30ms delay per element) | 200–400ms |
+| Accordion expand/collapse | Smooth height + opacity | 200ms ease-out |
+| Hover states | Background/border color shift | 150ms |
+| Focus ring | Outline appear | Instant (no transition) |
+| Skeleton shimmer | Left-to-right gradient sweep | 1.5s infinite |
+| Cross-reference preview card | Fade-in + slight upward shift | 150ms |
+
+All animations respect `prefers-reduced-motion: reduce` — disable non-essential motion, keep functional transitions.
+
+### Brand
+
+- **Wordmark**: "SynAc" set in Geist Mono, medium weight. No icon, no shield.
+- **Favicon**: Typographic "S" in Geist Mono on dark background.
+
+### Component Visual Rules
+
+- **Tags**: Monochrome border badges (`border: 1px solid --border-strong`, no fill or very subtle fill).
+- **Entry type badges**: Prominent differentiation — TERM and ACRONYM get distinct background colors at scan speed.
+- **Buttons**: Primary = `--accent` fill. Secondary = ghost (border only). Geist Sans labels.
+- **Cards/Panels**: `--bg-1` background + `--border` border. No shadows in dark, subtle shadow in light.
+- **Dividers**: `--border` color, 1px, full-width.
+
+---
+
 ## 12) Frontend Architecture
 
 ### Option A: Next.js (React) with App Router + SSG/ISR (Recommended default)
@@ -1288,9 +1372,13 @@ Rank results using weighted signals:
 
 ### Component strategy
 
--   Design system primitives: Button, Input, Badge, Card, Table, Modal, Toast, Pagination.
+-   Design system primitives: Button, Input, Badge, Pill, Card, Panel, Table, Modal, Toast, Pagination, Divider, EmptyState, KeyValue, Skeleton.
 -   Content components:
-    -   EntryHeader, SenseList, CitationList, RelatedTerms, TagChips.
+    -   EntryHeader, SenseCard (expandable preview card), CitationPill (inline source reference with hover popup), CitationList (bibliography section), RelatedTerms, TagBadge (monochrome border badge), HoverPreviewCard (floating summary for cross-references), StickyTOC (floating sidebar table of contents).
+-   Layout components:
+    -   PageShell (unified max-width container + rhythm), ThemeToggle (dark/light/system with localStorage persistence).
+-   Navigation components:
+    -   CommandPalette (search + navigation hub), InlineSearch (contextual autocomplete below header input), MobileNav (slide-out drawer).
 -   Markdown rendering:
     -   render Markdown to HTML with a strict sanitizer and no raw HTML support.
 
@@ -1863,23 +1951,40 @@ Rank results using weighted signals:
 |----------|--------|-------|
 | **Sort control** | Relevance default + sort dropdown | Allow A-Z, Z-A, Recently Updated toggles |
 | **Did-you-mean** | Fuzzy ranking sufficient | Trigram similarity handles this; no explicit "Did you mean" UI |
-| **Anti-gaming trending** | Session-based deduplication | Count unique sessions (cookie-based) rather than raw page views; rate-limit per IP |
+| **Anti-gaming trending** | **Removed** | Trending page axed in v0.2.0; does not align with product vision. |
 
 ### 22.5) UI/UX Decisions
 
 | Decision | Choice | Notes |
 |----------|--------|-------|
-| **Global search placement** | Single visible header search | No duplicate per-page search forms; `/search` relies on header input. |
-| **Command palette** | Yes (⌘K / Ctrl+K) | Lightweight custom palette for navigation + “Search for …” action; no heavy deps. |
-| **Visual system** | “Signal Ledger” | Instrument-panel header over archival paper (dot-grid + grain); tactile rails and ledger lists. |
-| **Typography** | Instrument Sans + Fraunces + IBM Plex Mono | Body + display + metadata; mono reserved for labels and UI metadata. |
-| **High-sense entries (10+)** | Accordion/collapsible by default | Show sense labels collapsed; first sense auto-expanded |
-| **Relationship visualization** | Interactive D3 force-directed | Draggable nodes, zoom/pan; loads on-demand |
-| **Relationship limit** | Hard limit 10 with "View all" | Show top 10 by weight; expansion for more |
-| **Copy attribution** | No auto-attribution | Trust users to attribute; no clipboard modification |
-| **Code examples** | Syntax-highlighted blocks only | Standard code blocks with language hints; no execution warnings |
-| **Homepage** | Minimal (browse + primer) | Header search is the primary search surface; home is oriented around browsing and how to read entries. |
-| **Preview mode** | Content preview only | Skip SEO/metadata preview for simplicity |
+| **Visual system** | "Clinical Reference" | Monospace-forward, dark-leaning, developer-documentation aesthetic. Inspired by Stripe/Vercel/Tailwind Docs. |
+| **Typography** | Geist Sans + Geist Mono | Body (Sans) + display/labels/metadata/code (Mono). Monospace-forward; Mono is the hero typeface. |
+| **Color palette** | Cool/clinical blue-gray | Electric blue/green accents. No warm tones. Dark is the hero experience. |
+| **Theme** | System-first, lean dark | Manual toggle with `localStorage` persistence. Three states: dark, light, system. |
+| **Brand** | Typographic wordmark only | Geist Mono treatment. No shield icon. |
+| **Global search** | Contextual inline | Autocomplete results below header input. No modal overlay. Single visible header search. |
+| **Command palette** | Search + navigation hub (⌘K) | Page links, recent entries, keyboard-first. Lightweight custom palette. |
+| **Entry page layout** | Full-width stacked | Sticky floating sidebar TOC. Card-stack multi-sense. Hover preview cards for cross-refs. |
+| **Browse paradigm** | Hybrid grid + filter | Alpha A-Z index + tag filter chips + sort controls + live search overlay. |
+| **Tags** | Monochrome border badges | No color-coded categories. Consistent clinical aesthetic. |
+| **Entry type badges** | Prominent differentiation | TERM vs ACRONYM clearly distinct at scan speed in lists and pages. |
+| **Citations** | Inline pills + bibliography | Source pills at point-of-use (hover metadata) + academic bibliography at bottom per sense. |
+| **High-sense entries (10+)** | Card-stack, expandable preview | First 2–3 lines visible per sense. First sense expanded, rest collapsed. Smooth accordion. |
+| **Cross-references** | Hover preview cards | Floating summary card on hover for Related/See Also links. |
+| **Relationship limit** | Hard limit 10 with "View all" | Show top 10 by weight; expansion for more. |
+| **Relationship visualization** | Deferred | D3 force-directed graph deferred to future version. Hover cards serve for now. |
+| **Homepage** | Search-forward portal | Hero search bar (prominent, centered). Recent/featured below. Minimal, clean. |
+| **Sources page** | Rich directory cards | Source name, citation count, trust tier indicator, latest citation date. |
+| **Changelog** | Designed timeline | Version cards, date badges, categorized changes (Linear/Raycast style). |
+| **Trending page** | **Removed** | Does not align with product vision. Route, nav links, and sitemap entries removed. |
+| **Content density** | Balanced (Vercel-level) | Purposeful whitespace. Not cavernous, not packed. |
+| **Motion** | Deliberate & polished | Page load stagger, smooth accordions, hover micro-interactions. No gratuitous animation. |
+| **Mobile** | Equal priority | Mobile-first responsive. Not an afterthought. |
+| **Footer** | Minimal utility | Compact links + copyright. Low-profile. |
+| **Loading states** | SSG-first + shimmer | Instant loads via SSG/ISR. Skeleton shimmer for dynamic content fallback. |
+| **Copy attribution** | No auto-attribution | Trust users to attribute; no clipboard modification. |
+| **Code examples** | Syntax-highlighted blocks only | Standard code blocks with language hints; no execution warnings. |
+| **Preview mode** | Content preview only | Skip SEO/metadata preview for simplicity. |
 
 ### 22.6) Security & Auth Decisions
 
