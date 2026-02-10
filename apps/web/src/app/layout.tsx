@@ -3,6 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 
+import { PageShell } from '@/components/PageShell';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
@@ -46,8 +47,8 @@ export default function RootLayout({
         Skip to content
       </a>
       <SiteHeader />
-      <main id="content" className="appMain">
-        {children}
+      <main id="content">
+        <PageShell>{children}</PageShell>
       </main>
       <SiteFooter />
     </>

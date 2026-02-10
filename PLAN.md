@@ -54,7 +54,7 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 ### Phase 1 — Page Shell + Navigation
 
-- [ ] Unified page shell: consistent max-width container, header spacing, content rhythm across all pages
+- [x] Unified page shell: consistent max-width container, header spacing, content rhythm across all pages
 - [ ] Redesign SiteHeader: typographic wordmark (Geist Mono), monospace nav items, integrated search, theme toggle button
 - [ ] Flatten nav: Terms, Acronyms, Tags, Sources, About (remove Explore dropdown)
 - [ ] Remove Trending from nav (page axed)

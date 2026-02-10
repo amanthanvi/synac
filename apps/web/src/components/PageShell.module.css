@@ -1,0 +1,7 @@
+.shell {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  width: 100%;
+  padding: 28px var(--page-pad-x);
+}
+
