@@ -1,0 +1,110 @@
+.wrap {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    border-color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease);
+}
+
+.link:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-2);
+}
+
+.preview {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 10px);
+  width: min(360px, 80vw);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  box-shadow: var(--shadow-md);
+  padding: 12px;
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  z-index: 30;
+  transition:
+    opacity 150ms var(--ease),
+    transform 150ms var(--ease-out);
+}
+
+.wrap:hover .preview,
+.wrap:focus-within .preview {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-weight: 650;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+
+.badgeTerm {
+  background: var(--accent);
+}
+
+.badgeAcronym {
+  background: var(--accent-2);
+}
+
+.summary {
+  margin-top: 8px;
+  color: var(--fg-muted);
+  line-height: 1.5;
+  font-size: 12px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview {
+    transition: none;
+  }
+}
+
