@@ -27,7 +27,13 @@ export async function GET() {
       const id = `v-${slugifyVersion(entry.version)}`;
       const link = `${siteUrl}/changelog#${id}`;
       const pubDate = new Date(`${entry.date}T00:00:00.000Z`).toUTCString();
-      const description = [entry.title, '', ...entry.items.map((i) => `- ${i}`)].join('\n');
+      const description = [
+        entry.title,
+        ...entry.sections.flatMap((section) => {
+          if (section.items.length === 0) return [];
+          return ['', `${section.title}:`, ...section.items.map((item) => `- ${item}`)];
+        }),
+      ].join('\n');
 
       return [
         '<item>',
@@ -62,4 +68,3 @@ export async function GET() {
     },
   });
 }
-
