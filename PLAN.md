@@ -91,11 +91,11 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 ### Phase 4 — Home Page
 
-- [ ] Search-forward portal: hero search bar (prominent, centered)
-- [ ] Recent/featured entries section below search
-- [ ] Quick-access shortcuts (Browse Terms, Browse Acronyms, Tags)
-- [ ] No principle cards or primers — let the content speak
-- [ ] Clean, minimal — Vercel Docs landing energy
+- [x] Search-forward portal: hero search bar (prominent, centered)
+- [x] Recent/featured entries section below search
+- [x] Quick-access shortcuts (Browse Terms, Browse Acronyms, Tags)
+- [x] No principle cards or primers — let the content speak
+- [x] Clean, minimal — Vercel Docs landing energy
 
 ### Phase 5 — Supporting Pages
 

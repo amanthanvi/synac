@@ -11,6 +11,7 @@ type SearchFormProps = {
   placeholder?: string;
   inputName?: string;
   inputId?: string;
+  size?: 'md' | 'lg';
 };
 
 type SearchResult = {
@@ -33,6 +34,7 @@ export function SearchForm({
   placeholder = 'Search terms and acronyms…',
   inputName = 'q',
   inputId,
+  size = 'md',
 }: SearchFormProps) {
   const router = useRouter();
   const autoId = useId();
@@ -156,12 +158,12 @@ export function SearchForm({
       }}
     >
       <div className={styles.wrap} ref={wrapRef}>
-        <div className={styles.field}>
+        <div className={`${styles.field} ${size === 'lg' ? styles.fieldLg : ''}`}>
         <label className="srOnly" htmlFor={resolvedInputId}>
           Search
         </label>
         <svg
-          className={styles.icon}
+          className={`${styles.icon} ${size === 'lg' ? styles.iconLg : ''}`}
           viewBox="0 0 24 24"
           aria-hidden="true"
           focusable="false"
@@ -173,7 +175,7 @@ export function SearchForm({
         </svg>
         <input
           ref={inputRef}
-          className={styles.input}
+          className={`${styles.input} ${size === 'lg' ? styles.inputLg : ''}`}
           id={resolvedInputId}
           name={inputName}
           value={value}

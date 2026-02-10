@@ -21,6 +21,11 @@
     background var(--dur-hover) var(--ease);
 }
 
+.fieldLg {
+  height: 52px;
+  padding: 0 14px;
+}
+
 .field:focus-within {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 }
@@ -30,6 +35,11 @@
   height: 16px;
   flex: 0 0 auto;
   color: var(--fg-muted);
+}
+
+.iconLg {
+  width: 18px;
+  height: 18px;
 }
 
 .input {
@@ -42,6 +52,10 @@
   color: var(--fg);
   font-family: var(--font-mono);
   font-size: 13px;
+}
+
+.inputLg {
+  font-size: 15px;
 }
 
 .input::placeholder {
@@ -147,4 +161,3 @@
   -webkit-line-clamp: 1;
   overflow: hidden;
 }
-
