@@ -99,10 +99,10 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 ### Phase 5 — Supporting Pages
 
-- [ ] /search: Clean results list with entry type badges, summary excerpts, highlighted matches
-- [ ] /about: Mission statement + how-to-read-entries guide (replace heavy primer)
-- [ ] /changelog: Designed timeline with version cards, date badges, categorized changes (Linear/Raycast style)
-- [ ] /legal: Minimal, clean typography
+- [x] /search: Clean results list with entry type badges, summary excerpts, highlighted matches
+- [x] /about: Mission statement + how-to-read-entries guide (replace heavy primer)
+- [x] /changelog: Designed timeline with version cards, date badges, categorized changes (Linear/Raycast style)
+- [x] /legal: Minimal, clean typography
 
 ### Phase 6 — Remove Deprecated Pages
 
