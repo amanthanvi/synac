@@ -21,6 +21,26 @@ function formatDate(value: Date): string {
   }).format(value);
 }
 
+function formatRelativeDate(value: Date, now: Date): string {
+  const diffMs = now.getTime() - value.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 0) return 'Today';
+  if (diffDays === 1) return '1 day ago';
+  if (diffDays < 7) return `${diffDays} days ago`;
+
+  const diffWeeks = Math.floor(diffDays / 7);
+  if (diffWeeks === 1) return '1 week ago';
+  if (diffWeeks < 5) return `${diffWeeks} weeks ago`;
+
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths === 1) return '1 month ago';
+  if (diffMonths < 12) return `${diffMonths} months ago`;
+
+  const diffYears = Math.floor(diffDays / 365);
+  return diffYears <= 1 ? '1 year ago' : `${diffYears} years ago`;
+}
+
 export default async function RecentPage({ searchParams }: RecentPageProps) {
   const sp = (await searchParams) ?? {};
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
@@ -28,6 +48,23 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
 
   const prisma = getPrismaClient();
   const entries = await listRecentPublishedEntries(prisma, { page, pageSize });
+  const now = new Date();
+
+  const entryIds = entries.map((e) => e.id);
+  const entryTags = entryIds.length
+    ? await prisma.entryTag.findMany({
+        where: { entryId: { in: entryIds }, tag: { deletedAt: null } },
+        select: { entryId: true, tag: { select: { id: true, name: true, slug: true } } },
+        orderBy: [{ tag: { name: 'asc' } }],
+      })
+    : [];
+
+  const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();
+  for (const row of entryTags) {
+    const list = tagsByEntryId.get(row.entryId) ?? [];
+    list.push(row.tag);
+    tagsByEntryId.set(row.entryId, list);
+  }
 
   const prevHref = page > 1 ? `/recent?page=${page - 1}` : undefined;
   const nextHref = entries.length === pageSize ? `/recent?page=${page + 1}` : undefined;
@@ -48,20 +85,44 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
             {entries.map((entry) => (
               <li key={entry.id} className={styles.item}>
                 <div className={styles.itemTitleRow}>
-                  <Link
-                    className={styles.itemTitle}
-                    href={
-                      entry.entryType === 'TERM'
-                        ? `/term/${entry.primarySlug}`
-                        : `/acronym/${entry.primarySlug}`
-                    }
-                  >
-                    {entry.displayTitle}
-                  </Link>
-                  <span className={styles.itemSlug}>{formatDate(entry.updatedAt)}</span>
+                  <div className={styles.itemTitleLeft}>
+                    <span
+                      className={`${styles.typeBadge} ${
+                        entry.entryType === 'TERM'
+                          ? styles.typeBadgeTerm
+                          : styles.typeBadgeAcronym
+                      }`}
+                    >
+                      {entry.entryType}
+                    </span>
+                    <Link
+                      className={styles.itemTitle}
+                      href={
+                        entry.entryType === 'TERM'
+                          ? `/term/${entry.primarySlug}`
+                          : `/acronym/${entry.primarySlug}`
+                      }
+                    >
+                      {entry.displayTitle}
+                    </Link>
+                  </div>
+                  <span className={styles.itemSlug}>
+                    <time dateTime={entry.updatedAt.toISOString()} title={formatDate(entry.updatedAt)}>
+                      {formatRelativeDate(entry.updatedAt, now)}
+                    </time>
+                  </span>
                 </div>
                 {entry.summaryText ? (
                   <p className={styles.itemSummary}>{entry.summaryText}</p>
+                ) : null}
+                {(tagsByEntryId.get(entry.id) ?? []).length ? (
+                  <div className={styles.itemTags}>
+                    {(tagsByEntryId.get(entry.id) ?? []).map((tag) => (
+                      <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
+                        {tag.name}
+                      </Link>
+                    ))}
+                  </div>
                 ) : null}
               </li>
             ))}

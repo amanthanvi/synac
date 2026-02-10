@@ -15,38 +15,31 @@
   padding: 0 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 92%, transparent),
-    color-mix(in srgb, var(--bg1) 74%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 82%, transparent);
+  background: var(--bg-1);
+  color: var(--fg);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow:
-    0 10px 20px color-mix(in srgb, #000000 10%, transparent),
-    inset 0 1px 0 color-mix(in srgb, #ffffff 34%, transparent);
+  text-decoration: none;
   transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    color 180ms var(--ease-out);
+    border-color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease);
 }
 
 .link:hover {
-  color: var(--fg);
-  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
-  transform: translateY(-1px);
+  border-color: var(--border-hover);
+  background: var(--bg-2);
 }
 
 .disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   pointer-events: none;
 }
 
 .status {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  color: var(--fg-muted);
 }

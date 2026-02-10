@@ -80,14 +80,14 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 ### Phase 3 — Browse Pages
 
-- [ ] /terms, /acronyms: Hybrid grid + filter (keep alpha A-Z index, add tag filter chips + sort controls + live search overlay)
-- [ ] Entry type badges prominent in browse list items (scan-speed differentiation)
-- [ ] Monochrome tag badges throughout
-- [ ] Pagination (not infinite scroll — SEO-friendly)
-- [ ] /tags: Tag directory with entry counts, filterable
-- [ ] /sources: Rich directory cards (source name, citation count, trust tier indicator, latest citation date)
-- [ ] /sources/{source}: Source detail page with cited entries list
-- [ ] /recent: Recently updated entries list with relative date indicators
+- [x] /terms, /acronyms: Hybrid grid + filter (keep alpha A-Z index, add tag filter chips + sort controls + live search overlay)
+- [x] Entry type badges prominent in browse list items (scan-speed differentiation)
+- [x] Monochrome tag badges throughout
+- [x] Pagination (not infinite scroll — SEO-friendly)
+- [x] /tags: Tag directory with entry counts, filterable
+- [x] /sources: Rich directory cards (source name, citation count, trust tier indicator, latest citation date)
+- [x] /sources/{source}: Source detail page with cited entries list
+- [x] /recent: Recently updated entries list with relative date indicators
 
 ### Phase 4 — Home Page
 

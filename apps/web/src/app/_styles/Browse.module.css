@@ -12,80 +12,55 @@
   height: 34px;
   min-width: 34px;
   padding: 0 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 72%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  background: var(--bg-1);
+  color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow:
-    0 10px 18px color-mix(in srgb, #000000 10%, transparent),
-    inset 0 1px 0 color-mix(in srgb, #ffffff 28%, transparent);
   transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    color 180ms var(--ease-out);
+    border-color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease);
 }
 
 .letter:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-2);
   color: var(--fg);
-  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
-  transform: translateY(-1px);
 }
 
 .letterActive {
-  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 22%, transparent),
-    color-mix(in srgb, var(--accent) 14%, transparent)
-  );
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--fg);
 }
 
 .list {
   list-style: none;
   display: grid;
-  gap: 0;
+  gap: 10px;
   padding: 0;
   margin: 0;
-  border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--bg1) 55%, transparent);
-  overflow: clip;
 }
 
 .item {
-  position: relative;
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
-  padding: 14px 16px 12px 28px;
-  background: transparent;
-}
-
-.item:last-child {
-  border-bottom: none;
-}
-
-.item::before {
-  content: '';
-  position: absolute;
-  left: 12px;
-  top: 22px;
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent2) 34%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent2) 10%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  transition:
+    border-color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease);
 }
 
 .item:hover {
-  background: color-mix(in srgb, var(--bg1) 70%, transparent);
+  border-color: var(--border-hover);
+  background: var(--bg-2);
 }
 
 .itemTitleRow {
@@ -95,37 +70,106 @@
   justify-content: space-between;
 }
 
+.itemTitleLeft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
 .itemTitle {
-  font-family: var(--font-serif);
-  font-size: 20px;
-  letter-spacing: -0.03em;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: -0.01em;
   font-weight: 650;
+  line-height: 1.25;
+  color: var(--fg);
+  text-decoration: none;
 }
 
 .itemSlug {
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 55%, transparent);
+  letter-spacing: 0.02em;
+  color: var(--fg-muted);
 }
 
 .itemSummary {
-  margin-top: 6px;
-  color: color-mix(in srgb, var(--fg) 70%, transparent);
-  line-height: 1.7;
+  margin: 0;
+  color: var(--fg-muted);
+  line-height: 1.65;
+  font-size: 13px;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
+.itemTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition:
+    border-color var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease);
+}
+
+.tag:hover {
+  border-color: var(--border-hover);
+  color: var(--fg);
+  background: var(--bg-1);
+}
+
+.typeBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.typeBadgeTerm {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  color: color-mix(in srgb, var(--accent) 84%, var(--fg));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.typeBadgeAcronym {
+  border-color: color-mix(in srgb, var(--accent-2) 55%, var(--border));
+  color: color-mix(in srgb, var(--accent-2) 84%, var(--fg));
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+}
+
 .metaStrong {
-  color: color-mix(in srgb, var(--fg) 82%, transparent);
+  color: var(--fg);
 }
 
 .metaMuted {
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  color: var(--fg-muted);
 }
 
 .metaSep {
@@ -135,8 +179,8 @@
 
 .empty {
   margin-top: 10px;
-  border: 1px dashed color-mix(in srgb, var(--fg) 20%, transparent);
-  border-radius: 16px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
   padding: 16px;
-  color: color-mix(in srgb, var(--fg) 70%, transparent);
+  color: var(--fg-muted);
 }

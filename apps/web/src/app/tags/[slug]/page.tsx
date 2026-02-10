@@ -40,6 +40,14 @@ function parseEntryType(value: string | undefined): 'TERM' | 'ACRONYM' | undefin
   return undefined;
 }
 
+function formatDate(value: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  }).format(value);
+}
+
 export default async function TagPage({ params, searchParams }: TagPageProps) {
   const { slug } = await params;
   const sp = (await searchParams) ?? {};
@@ -122,18 +130,29 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
             {entries.map((entry) => (
               <li key={entry.id} className={browseStyles.item}>
                 <div className={browseStyles.itemTitleRow}>
-                  <Link
-                    className={browseStyles.itemTitle}
-                    href={
-                      entry.entryType === 'TERM'
-                        ? `/term/${entry.primarySlug}`
-                        : `/acronym/${entry.primarySlug}`
-                    }
-                  >
-                    {entry.displayTitle}
-                  </Link>
+                  <div className={browseStyles.itemTitleLeft}>
+                    <span
+                      className={`${browseStyles.typeBadge} ${
+                        entry.entryType === 'TERM'
+                          ? browseStyles.typeBadgeTerm
+                          : browseStyles.typeBadgeAcronym
+                      }`}
+                    >
+                      {entry.entryType}
+                    </span>
+                    <Link
+                      className={browseStyles.itemTitle}
+                      href={
+                        entry.entryType === 'TERM'
+                          ? `/term/${entry.primarySlug}`
+                          : `/acronym/${entry.primarySlug}`
+                      }
+                    >
+                      {entry.displayTitle}
+                    </Link>
+                  </div>
                   <span className={browseStyles.itemSlug}>
-                    /{entry.entryType === 'TERM' ? 'term' : 'acronym'}/{entry.primarySlug}
+                    Updated {formatDate(entry.updatedAt)}
                   </span>
                 </div>
                 {entry.summaryText ? (
