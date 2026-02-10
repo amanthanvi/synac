@@ -65,7 +65,7 @@ function ThemeIcon({ preference }: { preference: ThemePreference }) {
 }
 
 export function ThemeToggle() {
-  const preference = useSyncExternalStore(
+  const preference = useSyncExternalStore<ThemePreference>(
     (onStoreChange) => {
       function onStorage(e: StorageEvent) {
         if (e.key !== THEME_STORAGE_KEY) return;
