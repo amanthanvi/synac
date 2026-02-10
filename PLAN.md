@@ -59,7 +59,7 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 - [x] Flatten nav: Terms, Acronyms, Tags, Sources, About (remove Explore dropdown)
 - [x] Remove Trending from nav (page axed)
 - [x] Redesign command palette (⌘K): search + navigation hub (page links, recent entries, keyboard-first)
-- [ ] Inline header search with contextual autocomplete results below input
+- [x] Inline header search with contextual autocomplete results below input
 - [ ] Minimal utility footer (compact links + copyright, low-profile)
 - [x] Mobile nav: slide-out drawer or bottom sheet (replace `<details>` toggle)
 - [x] Preserve skip-to-content + keyboard a11y
