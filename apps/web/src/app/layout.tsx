@@ -7,6 +7,18 @@ import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
 
+const themeInitScript = `(() => {
+  try {
+    const stored = window.localStorage.getItem('synac-theme');
+    const root = document.documentElement;
+    if (stored === 'dark' || stored === 'light') {
+      root.setAttribute('data-theme', stored);
+    } else {
+      root.removeAttribute('data-theme');
+    }
+  } catch {}
+})();`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: {
@@ -42,7 +54,10 @@ export default function RootLayout({
   );
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
         {isClerkConfigured ? (
           <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" dynamic>

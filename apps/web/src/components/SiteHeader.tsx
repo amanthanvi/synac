@@ -3,6 +3,7 @@ import Image from 'next/image';
 
 import { CommandPalette } from './CommandPalette';
 import { SearchForm } from './SearchForm';
+import { ThemeToggle } from './ThemeToggle';
 import styles from './SiteHeader.module.css';
 
 export function SiteHeader() {
@@ -86,6 +87,7 @@ export function SiteHeader() {
         <div className={styles.spacer} />
 
         <div className={styles.actions}>
+          <ThemeToggle />
           <CommandPalette />
           <div className={styles.search}>
             <SearchForm inputId="site-search" placeholder="Search terms & acronyms… ( / )" />
