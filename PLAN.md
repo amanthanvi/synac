@@ -66,17 +66,17 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 ### Phase 2 — Entry Pages (Core Product)
 
-- [ ] Full-width stacked layout (replace left-rail + main content grid)
-- [ ] Entry header: prominent type badge (TERM vs ACRONYM — clear visual differentiation at scan speed), title, summary
-- [ ] Metadata section: tags (monochrome border badges), updated date, stands-for, also-known-as
-- [ ] Multi-sense presentation: card-stack with expandable preview (each sense as card, first 2-3 lines visible, expand on click/tap)
-- [ ] High-sense (10+): all collapsed except first, smooth accordion animation
-- [ ] Citations: inline source pills at point-of-use (hover for metadata popup) + academic bibliography section at bottom
-- [ ] Sticky floating sidebar TOC (appears on scroll, tracks active sense — Stripe/Tailwind pattern)
-- [ ] Hover preview cards for cross-references (Related, See Also links show floating summary card on hover)
-- [ ] Per-sense examples styled as code blocks or callout boxes
-- [ ] Skeleton shimmer loading states for dynamic content
-- [ ] ViewTracker + EntrySenseHashSync preserved (behavioral, not visual)
+- [x] Full-width stacked layout (replace left-rail + main content grid)
+- [x] Entry header: prominent type badge (TERM vs ACRONYM — clear visual differentiation at scan speed), title, summary
+- [x] Metadata section: tags (monochrome border badges), updated date, stands-for, also-known-as
+- [x] Multi-sense presentation: card-stack with expandable preview (each sense as card, first 2-3 lines visible, expand on click/tap)
+- [x] High-sense (10+): all collapsed except first, smooth accordion animation
+- [x] Citations: inline source pills at point-of-use (hover for metadata popup) + academic bibliography section at bottom
+- [x] Sticky floating sidebar TOC (appears on scroll, tracks active sense — Stripe/Tailwind pattern)
+- [x] Hover preview cards for cross-references (Related, See Also links show floating summary card on hover)
+- [x] Per-sense examples styled as code blocks or callout boxes
+- [x] Skeleton shimmer loading states for dynamic content
+- [x] ViewTracker + EntrySenseHashSync preserved (behavioral, not visual)
 
 ### Phase 3 — Browse Pages
 

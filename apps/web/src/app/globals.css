@@ -246,9 +246,36 @@ mark {
   border-radius: 4px;
 }
 
+@keyframes synac-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--bg-2) 92%, transparent) 0%,
+    color-mix(in srgb, var(--bg-1) 78%, transparent) 50%,
+    color-mix(in srgb, var(--bg-2) 92%, transparent) 100%
+  );
+  background-size: 240% 100%;
+  animation: synac-skeleton-shimmer 1.5s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+
+  .skeleton {
+    animation: none;
+    background: var(--bg-2);
   }
 }
 
