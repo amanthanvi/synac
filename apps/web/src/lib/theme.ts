@@ -1,5 +1,6 @@
 export type ThemePreference = 'system' | 'dark' | 'light';
 
+export const THEME_CHANGE_EVENT = 'synac-theme-change' as const;
 export const THEME_STORAGE_KEY = 'synac-theme' as const;
 
 export function parseThemePreference(value: unknown): ThemePreference | null {
@@ -40,6 +41,12 @@ export function setThemePreference(preference: ThemePreference): void {
   }
 
   applyThemePreference(preference);
+
+  try {
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
+  } catch {
+    // Ignore dispatch failures (very old browsers).
+  }
 }
 
 export function cycleThemePreference(current: ThemePreference): ThemePreference {

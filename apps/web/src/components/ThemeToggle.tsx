@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 
 import {
   ThemePreference,
+  THEME_CHANGE_EVENT,
   THEME_STORAGE_KEY,
   applyThemePreference,
   cycleThemePreference,
   getStoredThemePreference,
-  parseThemePreference,
   setThemePreference,
 } from '@/lib/theme';
 
@@ -65,7 +65,27 @@ function ThemeIcon({ preference }: { preference: ThemePreference }) {
 }
 
 export function ThemeToggle() {
-  const [preference, setPreference] = useState<ThemePreference>('system');
+  const preference = useSyncExternalStore(
+    (onStoreChange) => {
+      function onStorage(e: StorageEvent) {
+        if (e.key !== THEME_STORAGE_KEY) return;
+        onStoreChange();
+      }
+
+      function onThemeChange() {
+        onStoreChange();
+      }
+
+      window.addEventListener('storage', onStorage);
+      window.addEventListener(THEME_CHANGE_EVENT, onThemeChange);
+      return () => {
+        window.removeEventListener('storage', onStorage);
+        window.removeEventListener(THEME_CHANGE_EVENT, onThemeChange);
+      };
+    },
+    () => getStoredThemePreference(),
+    () => 'system'
+  );
 
   const label = useMemo(() => {
     if (preference === 'dark') return 'Theme: Dark';
@@ -74,20 +94,8 @@ export function ThemeToggle() {
   }, [preference]);
 
   useEffect(() => {
-    const stored = getStoredThemePreference();
-    setPreference(stored);
-    applyThemePreference(stored);
-
-    function onStorage(e: StorageEvent) {
-      if (e.key !== THEME_STORAGE_KEY) return;
-      const next = parseThemePreference(e.newValue) ?? 'system';
-      setPreference(next);
-      applyThemePreference(next);
-    }
-
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
+    applyThemePreference(preference);
+  }, [preference]);
 
   return (
     <button
@@ -97,7 +105,6 @@ export function ThemeToggle() {
       aria-label={label}
       onClick={() => {
         const next = cycleThemePreference(preference);
-        setPreference(next);
         setThemePreference(next);
       }}
     >
@@ -105,4 +112,3 @@ export function ThemeToggle() {
     </button>
   );
 }
-
