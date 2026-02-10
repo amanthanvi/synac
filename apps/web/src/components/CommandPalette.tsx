@@ -14,12 +14,11 @@ type CommandItem = {
 };
 
 const BASE_COMMANDS: CommandItem[] = [
-  { id: 'nav-terms', label: 'Browse terms', href: '/terms?letter=a', hint: '/terms' },
-  { id: 'nav-acronyms', label: 'Browse acronyms', href: '/acronyms?letter=a', hint: '/acronyms' },
+  { id: 'nav-terms', label: 'Browse terms', href: '/terms', hint: '/terms' },
+  { id: 'nav-acronyms', label: 'Browse acronyms', href: '/acronyms', hint: '/acronyms' },
   { id: 'nav-tags', label: 'Browse tags', href: '/tags', hint: '/tags' },
   { id: 'nav-sources', label: 'Browse sources', href: '/sources', hint: '/sources' },
   { id: 'nav-recent', label: 'Recent updates', href: '/recent', hint: '/recent' },
-  { id: 'nav-trending', label: 'Trending', href: '/trending', hint: '/trending' },
   { id: 'nav-about', label: 'About', href: '/about', hint: '/about' },
   { id: 'nav-changelog', label: 'Changelog', href: '/changelog', hint: '/changelog' },
 ];
