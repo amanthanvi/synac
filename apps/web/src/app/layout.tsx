@@ -1,29 +1,11 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
-import { Fraunces, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google';
+import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from 'geist/font/sans';
 
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
-
-const instrumentSans = Instrument_Sans({
-  variable: '--font-sans',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const fraunces = Fraunces({
-  variable: '--font-serif',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const plexMono = IBM_Plex_Mono({
-  variable: '--font-mono',
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
@@ -61,9 +43,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body
-        className={`${instrumentSans.variable} ${fraunces.variable} ${plexMono.variable}`}
-      >
+      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
         {isClerkConfigured ? (
           <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" dynamic>
             {content}

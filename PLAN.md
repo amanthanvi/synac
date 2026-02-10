@@ -45,7 +45,7 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 - [x] Replace all CSS custom properties with new clinical palette (dark + light tokens)
 - [ ] Implement theme toggle with `localStorage` persistence + system detection fallback
-- [ ] Swap fonts: Instrument Sans/Fraunces/IBM Plex Mono → Geist Sans + Geist Mono (via `next/font/google` or `geist` npm package)
+- [x] Swap fonts: Instrument Sans/Fraunces/IBM Plex Mono → Geist Sans + Geist Mono (via `next/font/google` or `geist` npm package)
 - [x] Establish new spacing/radius/shadow scale (tighter radii, clinical shadows)
 - [x] Remove dot-grid, grain overlay, archival paper textures
 - [x] Define new background system (clean flat or subtle gradient, no noise)
