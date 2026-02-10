@@ -19,14 +19,14 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  color: var(--fg-muted);
 }
 
 .queryValue {
   font-family: var(--font-mono);
   font-size: 13px;
   letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--fg) 88%, transparent);
+  color: var(--fg);
 }
 
 .queryActions {
@@ -40,7 +40,7 @@
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  color: var(--fg-muted);
 }
 
 .kbdInline {
@@ -48,14 +48,12 @@
   align-items: center;
   justify-content: center;
   padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 92%, transparent),
-    color-mix(in srgb, var(--bg1) 74%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 80%, transparent);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 
 .filters {
@@ -72,4 +70,11 @@
 
 .resultsEmpty {
   margin-top: 14px;
+}
+
+.senseSummary {
+  margin: 0;
+  color: var(--fg-muted);
+  line-height: 1.65;
+  font-size: 13px;
 }

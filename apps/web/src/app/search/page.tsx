@@ -154,20 +154,31 @@ async function Results({
         {results.map((r) => (
           <li key={r.id} className={styles.item}>
             <div className={styles.itemTitleRow}>
-              <Link
-                className={styles.itemTitle}
-                href={
-                  r.entryType === 'TERM'
-                    ? `/term/${r.primarySlug}`
-                    : `/acronym/${r.primarySlug}`
-                }
-              >
-                {r.displayTitle}
-              </Link>
-              <span className={styles.itemSlug}>{r.entryType}</span>
+              <div className={styles.itemTitleLeft}>
+                <span
+                  className={`${styles.typeBadge} ${
+                    r.entryType === 'TERM' ? styles.typeBadgeTerm : styles.typeBadgeAcronym
+                  }`}
+                >
+                  {r.entryType}
+                </span>
+                <Link
+                  className={styles.itemTitle}
+                  href={
+                    r.entryType === 'TERM'
+                      ? `/term/${r.primarySlug}`
+                      : `/acronym/${r.primarySlug}`
+                  }
+                >
+                  {r.displayTitle}
+                </Link>
+              </div>
+              <span className={styles.itemSlug}>
+                /{r.entryType === 'TERM' ? 'term' : 'acronym'}/{r.primarySlug}
+              </span>
             </div>
             {r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 ? (
-              <p className={styles.itemSummary} style={{ marginTop: 6 }}>
+              <p className={pageStyles.senseSummary}>
                 <strong>Meanings ({r.senseCount}):</strong>{' '}
                 {r.senseSummary ?? 'Multiple published senses.'}
               </p>
