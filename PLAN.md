@@ -55,14 +55,14 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 ### Phase 1 — Page Shell + Navigation
 
 - [x] Unified page shell: consistent max-width container, header spacing, content rhythm across all pages
-- [ ] Redesign SiteHeader: typographic wordmark (Geist Mono), monospace nav items, integrated search, theme toggle button
-- [ ] Flatten nav: Terms, Acronyms, Tags, Sources, About (remove Explore dropdown)
-- [ ] Remove Trending from nav (page axed)
+- [x] Redesign SiteHeader: typographic wordmark (Geist Mono), monospace nav items, integrated search, theme toggle button
+- [x] Flatten nav: Terms, Acronyms, Tags, Sources, About (remove Explore dropdown)
+- [x] Remove Trending from nav (page axed)
 - [ ] Redesign command palette (⌘K): search + navigation hub (page links, recent entries, keyboard-first)
 - [ ] Inline header search with contextual autocomplete results below input
 - [ ] Minimal utility footer (compact links + copyright, low-profile)
-- [ ] Mobile nav: slide-out drawer or bottom sheet (replace `<details>` toggle)
-- [ ] Preserve skip-to-content + keyboard a11y
+- [x] Mobile nav: slide-out drawer or bottom sheet (replace `<details>` toggle)
+- [x] Preserve skip-to-content + keyboard a11y
 
 ### Phase 2 — Entry Pages (Core Product)
 

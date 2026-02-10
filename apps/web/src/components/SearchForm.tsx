@@ -1,6 +1,5 @@
 import { useId } from 'react';
 
-import { Button } from './ui/Button';
 import styles from './SearchForm.module.css';
 
 type SearchFormProps = {
@@ -48,9 +47,6 @@ export function SearchForm({
           spellCheck="false"
         />
       </div>
-      <Button type="submit" variant="primary" className={styles.submit}>
-        Search
-      </Button>
     </form>
   );
 }
