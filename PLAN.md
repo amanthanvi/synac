@@ -113,27 +113,27 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 ### Phase 7 — Polish + Verification
 
-- [ ] Cross-browser testing (Chrome, Firefox, Safari, Edge)
-- [ ] Mobile testing (iOS Safari, Android Chrome) — equal priority
-- [ ] Lighthouse audit: LCP ≤ 2.5s, CLS ≤ 0.1, INP ≤ 200ms
-- [ ] axe-core a11y audit: WCAG 2.2 AA compliance
-- [ ] Reduced-motion testing
-- [ ] Dark/light theme full visual QA
-- [ ] SEO: structured data preserved, sitemaps updated, canonical URLs intact
-- [ ] Update SPEC.md §8, §12, §22 with new design decisions
+- [x] Cross-browser testing (Chrome, Firefox, Safari, Edge)
+- [x] Mobile testing (iOS Safari, Android Chrome) — equal priority
+- [x] Lighthouse audit: LCP ≤ 2.5s, CLS ≤ 0.1, INP ≤ 200ms
+- [x] axe-core a11y audit: WCAG 2.2 AA compliance
+- [x] Reduced-motion testing
+- [x] Dark/light theme full visual QA
+- [x] SEO: structured data preserved, sitemaps updated, canonical URLs intact
+- [x] Update SPEC.md §8, §12, §22 with new design decisions
 
 ### Acceptance Criteria
 
-- [ ] All public pages render in new “Clinical Reference” aesthetic
-- [ ] Theme toggle works with persistence (dark/light/system)
-- [ ] Entry pages load with stacked layout + sticky TOC + hover previews
-- [ ] Geist Sans + Geist Mono everywhere (no remnants of old fonts)
-- [ ] No archival textures (dot-grid, grain, warm amber tones removed)
-- [ ] Mobile experience is first-class (not an afterthought)
-- [ ] Core Web Vitals within NFR targets
-- [ ] WCAG 2.2 AA pass
+- [x] All public pages render in new “Clinical Reference” aesthetic
+- [x] Theme toggle works with persistence (dark/light/system)
+- [x] Entry pages load with stacked layout + sticky TOC + hover previews
+- [x] Geist Sans + Geist Mono everywhere (no remnants of old fonts)
+- [x] No archival textures (dot-grid, grain, warm amber tones removed)
+- [x] Mobile experience is first-class (not an afterthought)
+- [x] Core Web Vitals within NFR targets
+- [x] WCAG 2.2 AA pass
 - [x] /trending removed
-- [ ] SPEC.md fully updated to reflect all design changes
+- [x] SPEC.md fully updated to reflect all design changes
 
 ---
 
