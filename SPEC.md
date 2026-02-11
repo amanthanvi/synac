@@ -762,8 +762,9 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
     -   `/recent`
     -   `/sources`
     -   `/sources/{source-slug}`
-    -   `/about` (mission + attribution philosophy + takedown contact)
-    -   `/legal` (policies: privacy/cookies/takedown)
+    -   `/about` (mission + how-to-read-entries guide)
+    -   `/legal/privacy` (privacy policy)
+    -   `/legal/terms` (site terms)
     -   `/changelog` (recent additions/updates with RSS feed)
 -   Admin:
     -   `/admin` (dashboard)
@@ -787,10 +788,11 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
         -   `⌘K` / `Ctrl+K` opens a command palette for navigation + “Search for …” actions,
         -   `/` focuses the header search input (when not already typing in an input).
 -   Entry pages:
-    -   at-a-glance rail (Updated, Tags, “Stands for”, “Also known as”, “On this page”),
-    -   sticky table of contents for senses (if >1),
-    -   “Related / See also” in the rail (or adjacent sidebar),
-    -   references rendered in footnote-style blocks at end of each sense.
+    -   stacked layout with entry header (type badge, title, summary),
+    -   metadata block (Updated, Tags, Stands for, Also known as),
+    -   senses as expandable cards with per-sense bibliography,
+    -   sticky floating table of contents (desktop-only when >1 sense),
+    -   Related / See also section with hover preview cards.
 
 ### Content design rules
 
@@ -810,9 +812,9 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
     -   keyboard: up/down to navigate suggestions, enter to select.
     -   global hotkeys must not trigger while the user is typing in an input/textarea or using a contentEditable element.
 -   Filters:
-    -   tag filters are checkboxes with clear labels,
+    -   tag filters are single-select chips with clear labels,
     -   persistent in URL query params,
-    -   “clear all” control.
+    -   “All tags” clears the active tag.
 -   Content:
     -   headings are hierarchical,
     -   citations are accessible links with descriptive text.
@@ -1263,9 +1265,9 @@ Rank results using weighted signals:
 
 | Role | Typeface | Usage |
 |------|----------|-------|
-| Body | Geist Sans | Paragraphs, UI labels, navigation, buttons |
-| Display / Hero | Geist Mono | Headlines, entry titles, metadata labels, code, brand wordmark |
-| Code | Geist Mono | Inline code, code blocks, technical references |
+| Body | Geist Sans | Paragraphs, descriptions, long-form prose |
+| Display / Hero | Geist Mono | Headlines, entry titles, labels, metadata, navigation, tags, dates |
+| Code | Geist Mono | Inline code and code blocks |
 
 Monospace-forward: Geist Mono is the *hero* typeface. It appears in headlines, metadata, tags, and the brand wordmark — not just code blocks. This creates a terminal/hacker energy that fits cybersecurity without being heavy-handed.
 
@@ -1275,19 +1277,20 @@ Load via `geist` npm package or `next/font/google`.
 
 **Theme**: System-first detection, lean dark. Dark mode is the hero experience. Light mode is a polished alternative (not an afterthought).
 
-**Toggle**: Manual toggle button in header. Three states: dark, light, system. Persisted via `localStorage`. Renders on server via cookie to prevent flash.
+**Toggle**: Manual toggle button in header. Three states: dark, light, system. Persisted via `localStorage` key `synac-theme` and applied via `<html data-theme="dark|light">` (system = no attribute). FOUC is prevented via an inline `<script>` in `<head>` that sets `data-theme` before paint.
 
 | Token | Dark (Hero) | Light |
 |-------|-------------|-------|
 | `--bg-0` | `#0a0a0b` (near-black) | `#fafafa` (near-white) |
-| `--bg-1` | `#111113` (elevated surface) | `#ffffff` (card surface) |
-| `--bg-2` | `#1a1a1e` (hover/active) | `#f4f4f5` (hover/active) |
-| `--fg` | `#ededed` (primary text) | `#0a0a0b` (primary text) |
-| `--fg-muted` | `#888888` (secondary text) | `#666666` (secondary text) |
+| `--bg-1` | `#111114` (elevated surface) | `#ffffff` (card surface) |
+| `--bg-2` | `#1a1a1f` (hover/active) | `#f4f4f5` (hover/active) |
+| `--fg` | `#ededef` (primary text) | `#09090b` (primary text) |
+| `--fg-muted` | `#8a8a9a` (secondary text) | `#71717a` (secondary text) |
 | `--accent` | `#3b82f6` (electric blue) | `#2563eb` (electric blue) |
 | `--accent-2` | `#10b981` (clinical green) | `#059669` (clinical green) |
-| `--border` | `#222225` (subtle dividers) | `#e4e4e7` (subtle dividers) |
-| `--border-strong` | `#333338` (prominent borders) | `#d1d1d6` (prominent borders) |
+| `--border` | `#222230` (subtle dividers) | `#e4e4e7` (subtle dividers) |
+| `--border-hover` | `#333345` (hover/active borders) | `#d4d4d8` (hover/active borders) |
+| `--border-strong` | `#333345` (prominent borders) | `#d1d1d6` (prominent borders) |
 
 No warm tones (no amber, no teal-green). Cool/clinical palette only. Accents are electric blue and clinical green — SOC-monitor energy.
 
@@ -1323,7 +1326,7 @@ All animations respect `prefers-reduced-motion: reduce` — disable non-essentia
 ### Brand
 
 - **Wordmark**: "SynAc" set in Geist Mono, medium weight. No icon, no shield.
-- **Favicon**: Typographic "S" in Geist Mono on dark background.
+- **Favicon**: Typographic "S" in Geist Mono on accent background.
 
 ### Component Visual Rules
 
@@ -1365,18 +1368,18 @@ All animations respect `prefers-reduced-motion: reduce` — disable non-essentia
 
 **Choose Next.js + TypeScript** with a server-first approach:
 
--   Entry pages pre-rendered with ISR for SEO + speed.
+-   Public pages server-rendered on demand (dynamic) to avoid build-time DB requirements.
 -   Admin UI server-rendered with strict auth.
 
 ### Component strategy
 
 -   Design system primitives: Button, Input, Badge, Pill, Card, Panel, Table, Modal, Toast, Pagination, Divider, EmptyState, KeyValue, Skeleton.
 -   Content components:
-    -   EntryHeader, SenseCard (expandable preview card), CitationPill (inline source reference with hover popup), CitationList (bibliography section), RelatedTerms, TagBadge (monochrome border badge), HoverPreviewCard (floating summary for cross-references), StickyTOC (floating sidebar table of contents).
+    -   Sense cards (expandable preview cards), CitationPill (inline source reference with hover popup), per-sense bibliography, EntryPreviewLink (hover summary for cross-references), StickySenseToc (floating sidebar table of contents).
 -   Layout components:
     -   PageShell (unified max-width container + rhythm), ThemeToggle (dark/light/system with localStorage persistence).
 -   Navigation components:
-    -   CommandPalette (search + navigation hub), InlineSearch (contextual autocomplete below header input), MobileNav (slide-out drawer).
+    -   CommandPalette (search + navigation hub), SearchForm (header search with autocomplete), MobileNav (slide-out drawer).
 -   Markdown rendering:
     -   render Markdown to HTML with a strict sanitizer and no raw HTML support.
 
@@ -1401,10 +1404,7 @@ All animations respect `prefers-reduced-motion: reduce` — disable non-essentia
 
 ### SSR/SSG/ISR strategy
 
--   Public pages:
-    -   Home, tag lists, sources: SSG with periodic ISR (e.g., 10–60 minutes).
-    -   Entry pages: ISR with on-demand revalidation when an entry is published/updated.
-    -   Search: SSR or client fetch; ensure SEO not required for search results (but page should be indexable optionally).
+-   Public pages: server-rendered on demand (`dynamic = 'force-dynamic'`) to keep builds DB-free; caching is handled at the platform/CDN layer.
 -   Admin pages: SSR only, no caching.
 
 ---
