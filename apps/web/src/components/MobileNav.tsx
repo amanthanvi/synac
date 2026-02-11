@@ -13,15 +13,10 @@ type MobileNavLink = {
 };
 
 export function MobileNav({ links }: { links: MobileNavLink[] }) {
-  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const dialogId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -90,7 +85,7 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
         </svg>
       </button>
 
-      {open && mounted
+      {open
         ? createPortal(
             <div
               className={styles.overlay}

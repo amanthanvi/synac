@@ -63,7 +63,6 @@ function scoreCommand(query: string, command: CommandItem): number {
 
 export function CommandPalette() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -161,10 +160,6 @@ export function CommandPalette() {
   }, [activeIndex, items, open, router]);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     if (!open) return;
     const handle = window.setTimeout(() => inputRef.current?.focus(), 0);
     return () => window.clearTimeout(handle);
@@ -198,7 +193,7 @@ export function CommandPalette() {
         </span>
       </button>
 
-      {open && mounted
+      {open
         ? createPortal(
             <div
               className={styles.overlay}
