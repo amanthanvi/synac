@@ -14,9 +14,15 @@ export function SiteFooter() {
           <Link href="/legal/privacy">Privacy</Link>
           <Link href="/legal/terms">Terms</Link>
           <Link href="/changelog">Changelog</Link>
+          <a
+            href="https://github.com/amanthanvi/synac"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
         </div>
       </div>
     </footer>
   );
 }
-

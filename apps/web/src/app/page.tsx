@@ -43,7 +43,7 @@ export default async function Home() {
       <section className={styles.hero} aria-label="Glossary search">
         <h1 className={styles.title}>Search SynAc</h1>
         <p className={styles.subtitle}>
-          Clinical cybersecurity reference for terms and acronyms — with provenance and attribution.
+          Cybersecurity reference for terms and acronyms — with provenance and attribution.
         </p>
 
         <div className={styles.search}>
