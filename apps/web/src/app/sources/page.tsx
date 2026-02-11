@@ -19,6 +19,26 @@ function formatDate(value: Date): string {
 export default async function SourcesPage() {
   const prisma = getPrismaClient();
   const sources = await listPublicSources(prisma);
+  const sourceIds = sources.map((s) => s.id);
+  const citationAgg = sourceIds.length
+    ? await prisma.citation.groupBy({
+        by: ['sourceId'],
+        where: { sourceId: { in: sourceIds } },
+        _count: { sourceId: true },
+        _max: { accessedAt: true },
+      })
+    : [];
+
+  const citationBySourceId = new Map<
+    string,
+    { count: number; maxAccessedAt: Date | null }
+  >();
+  for (const row of citationAgg) {
+    citationBySourceId.set(row.sourceId, {
+      count: row._count.sourceId,
+      maxAccessedAt: row._max.accessedAt ?? null,
+    });
+  }
 
   return (
     <>
@@ -35,27 +55,43 @@ export default async function SourcesPage() {
         </div>
       ) : (
         <ol className={styles.list}>
-          {sources.map((source) => (
-            <li key={source.id} className={styles.item}>
-              <div className={styles.itemTitleRow}>
-                <Link className={styles.itemTitle} href={`/sources/${source.sourceSlug}`}>
-                  {source.name}
-                </Link>
-                <span className={styles.itemSlug}>
-                  {source.lastVerifiedAt ? (
-                    <>Verified {formatDate(source.lastVerifiedAt)}</>
-                  ) : (
-                    <>Unverified</>
-                  )}
-                </span>
-              </div>
-              <p className={styles.itemSummary}>
-                <span className={styles.metaStrong}>{source.baseUrl}</span>
-                <span className={styles.metaSep}>·</span>
-                <span className={styles.metaMuted}>{source.licenseType}</span>
-              </p>
-            </li>
-          ))}
+          {sources.map((source) => {
+            const stats = citationBySourceId.get(source.id) ?? {
+              count: 0,
+              maxAccessedAt: null as Date | null,
+            };
+
+            return (
+              <li key={source.id} className={styles.item}>
+                <div className={styles.itemTitleRow}>
+                  <Link className={styles.itemTitle} href={`/sources/${source.sourceSlug}`}>
+                    {source.name}
+                  </Link>
+                  <span className={styles.itemSlug}>
+                    {stats.maxAccessedAt ? (
+                      <>Latest {formatDate(stats.maxAccessedAt)}</>
+                    ) : (
+                      <>No citations yet</>
+                    )}
+                  </span>
+                </div>
+                <p className={styles.itemSummary}>
+                  <span className={styles.metaStrong}>{source.baseUrl}</span>
+                  <span className={styles.metaSep}>·</span>
+                  <span className={styles.metaMuted}>{source.licenseType}</span>
+                </p>
+                <div className={styles.itemTags}>
+                  <span className={styles.tag}>{source.trustTier.replace('_', ' ')}</span>
+                  <span className={styles.tag}>{stats.count.toLocaleString()} citations</span>
+                  <span className={styles.tag}>
+                    {source.lastVerifiedAt
+                      ? `Verified ${formatDate(source.lastVerifiedAt)}`
+                      : 'Unverified'}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       )}
     </>

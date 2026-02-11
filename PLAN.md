@@ -1,6 +1,6 @@
-# SynAc v0.1.5 — Execution Plan (PLAN.md)
+# SynAc — Execution Plan (PLAN.md)
 
-Last updated: 2026-02-08
+Last updated: 2026-02-10
 
 This is the living implementation tracker for `SPEC.md`.
 
@@ -22,7 +22,122 @@ This is the living implementation tracker for `SPEC.md`.
 - Commit + push frequently (same branch).
 - Keep code aligned with `SPEC.md`; when reality diverges, update `SPEC.md` (don’t ship undocumented behavior).
 
-## v0.1.5 — UI/UX overhaul (“Signal Ledger”)
+## v0.2.0 — Full UI/UX Overhaul (“Clinical Reference”)
+
+Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic with a polished, monospace-forward, dark-leaning developer-documentation aesthetic inspired by Stripe Docs, Vercel Docs, and Tailwind CSS Docs. Authoritative, clean, clinical.
+
+### Design Direction
+
+- **Identity**: “Clinical Reference” — SOC-room precision meets premium developer documentation.
+- **Typography**: Geist Sans (body) + Geist Mono (display, labels, metadata, code). Monospace-forward; mono is the hero typeface.
+- **Color**: Cool/clinical. Blue-gray palette with electric blue/green accents. No warm tones.
+- **Theme**: System-first detection, lean dark (dark is the hero experience). Manual toggle with persistence via `localStorage`.
+- **Content density**: Balanced (Vercel-level) — purposeful whitespace, not cavernous, not packed.
+- **Brand**: Typographic wordmark only (Geist Mono treatment). Remove shield SVG.
+- **Motion**: Deliberate & polished. Page load stagger, smooth accordions, hover micro-interactions. No gratuitous animation.
+
+### Scope
+
+- Public-facing pages only. Admin UI stays functional (future scope).
+- Mobile is equal priority — mobile-first responsive.
+
+### Phase 0 — Foundation (Design Tokens + Theme System)
+
+- [x] Replace all CSS custom properties with new clinical palette (dark + light tokens)
+- [x] Implement theme toggle with `localStorage` persistence + system detection fallback
+- [x] Swap fonts: Instrument Sans/Fraunces/IBM Plex Mono → Geist Sans + Geist Mono (via `next/font/google` or `geist` npm package)
+- [x] Establish new spacing/radius/shadow scale (tighter radii, clinical shadows)
+- [x] Remove dot-grid, grain overlay, archival paper textures
+- [x] Define new background system (clean flat or subtle gradient, no noise)
+- [x] Set up reduced-motion support for new motion tokens
+- [x] Update selection highlight, focus-visible, and scrollbar styles
+
+### Phase 1 — Page Shell + Navigation
+
+- [x] Unified page shell: consistent max-width container, header spacing, content rhythm across all pages
+- [x] Redesign SiteHeader: typographic wordmark (Geist Mono), monospace nav items, integrated search, theme toggle button
+- [x] Flatten nav: Terms, Acronyms, Tags, Sources, About (remove Explore dropdown)
+- [x] Remove Trending from nav (page axed)
+- [x] Redesign command palette (⌘K): search + navigation hub (page links, recent entries, keyboard-first)
+- [x] Inline header search with contextual autocomplete results below input
+- [x] Minimal utility footer (compact links + copyright, low-profile)
+- [x] Mobile nav: slide-out drawer or bottom sheet (replace `<details>` toggle)
+- [x] Preserve skip-to-content + keyboard a11y
+
+### Phase 2 — Entry Pages (Core Product)
+
+- [x] Full-width stacked layout (replace left-rail + main content grid)
+- [x] Entry header: prominent type badge (TERM vs ACRONYM — clear visual differentiation at scan speed), title, summary
+- [x] Metadata section: tags (monochrome border badges), updated date, stands-for, also-known-as
+- [x] Multi-sense presentation: card-stack with expandable preview (each sense as card, first 2-3 lines visible, expand on click/tap)
+- [x] High-sense (10+): all collapsed except first, smooth accordion animation
+- [x] Citations: inline source pills at point-of-use (hover for metadata popup) + academic bibliography section at bottom
+- [x] Sticky floating sidebar TOC (appears on scroll, tracks active sense — Stripe/Tailwind pattern)
+- [x] Hover preview cards for cross-references (Related, See Also links show floating summary card on hover)
+- [x] Per-sense examples styled as code blocks or callout boxes
+- [x] Skeleton shimmer loading states for dynamic content
+- [x] ViewTracker + EntrySenseHashSync preserved (behavioral, not visual)
+
+### Phase 3 — Browse Pages
+
+- [x] /terms, /acronyms: Hybrid grid + filter (keep alpha A-Z index, add tag filter chips + sort controls + live search overlay)
+- [x] Entry type badges prominent in browse list items (scan-speed differentiation)
+- [x] Monochrome tag badges throughout
+- [x] Pagination (not infinite scroll — SEO-friendly)
+- [x] /tags: Tag directory with entry counts, filterable
+- [x] /sources: Rich directory cards (source name, citation count, trust tier indicator, latest citation date)
+- [x] /sources/{source}: Source detail page with cited entries list
+- [x] /recent: Recently updated entries list with relative date indicators
+
+### Phase 4 — Home Page
+
+- [x] Search-forward portal: hero search bar (prominent, centered)
+- [x] Recent/featured entries section below search
+- [x] Quick-access shortcuts (Browse Terms, Browse Acronyms, Tags)
+- [x] No principle cards or primers — let the content speak
+- [x] Clean, minimal — Vercel Docs landing energy
+
+### Phase 5 — Supporting Pages
+
+- [x] /search: Clean results list with entry type badges, summary excerpts, highlighted matches
+- [x] /about: Mission statement + how-to-read-entries guide (replace heavy primer)
+- [x] /changelog: Designed timeline with version cards, date badges, categorized changes (Linear/Raycast style)
+- [x] /legal: Minimal, clean typography
+
+### Phase 6 — Remove Deprecated Pages
+
+- [x] Delete /trending page and route
+- [x] Remove trending from nav, sitemap, internal links
+- [x] Remove trending analytics aggregation (deferred; pipeline retained)
+- [x] Update SPEC.md to reflect removal
+
+### Phase 7 — Polish + Verification
+
+- [ ] Cross-browser testing (Chrome, Firefox, Safari, Edge)
+- [ ] Mobile testing (iOS Safari, Android Chrome) — equal priority
+- [ ] Lighthouse audit: LCP ≤ 2.5s, CLS ≤ 0.1, INP ≤ 200ms
+- [ ] axe-core a11y audit: WCAG 2.2 AA compliance
+- [ ] Reduced-motion testing
+- [ ] Dark/light theme full visual QA
+- [ ] SEO: structured data preserved, sitemaps updated, canonical URLs intact
+- [ ] Update SPEC.md §8, §12, §22 with new design decisions
+
+### Acceptance Criteria
+
+- [ ] All public pages render in new “Clinical Reference” aesthetic
+- [ ] Theme toggle works with persistence (dark/light/system)
+- [ ] Entry pages load with stacked layout + sticky TOC + hover previews
+- [ ] Geist Sans + Geist Mono everywhere (no remnants of old fonts)
+- [ ] No archival textures (dot-grid, grain, warm amber tones removed)
+- [ ] Mobile experience is first-class (not an afterthought)
+- [ ] Core Web Vitals within NFR targets
+- [ ] WCAG 2.2 AA pass
+- [x] /trending removed
+- [ ] SPEC.md fully updated to reflect all design changes
+
+---
+
+## v0.1.5 — UI/UX overhaul (“Signal Ledger”) ✅ COMPLETE
 
 Goal: push the public UI into a memorable, reference-first “signal + paper” aesthetic — instrument-panel header over archival paper, tuned for fast scanning and high trust.
 

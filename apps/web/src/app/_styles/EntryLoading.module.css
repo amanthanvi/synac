@@ -1,0 +1,132 @@
+.headerLines {
+  display: grid;
+  gap: 10px;
+}
+
+.badge {
+  width: 96px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.title {
+  width: min(520px, 92%);
+  height: 46px;
+  border-radius: 12px;
+}
+
+.summaryLine {
+  width: min(620px, 96%);
+  height: 14px;
+  border-radius: 999px;
+}
+
+.summaryLineShort {
+  width: min(440px, 78%);
+  height: 14px;
+  border-radius: 999px;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.metaPill {
+  width: 160px;
+  height: 26px;
+  border-radius: var(--radius-md);
+}
+
+.metaPillWide {
+  width: 240px;
+  height: 26px;
+  border-radius: var(--radius-md);
+}
+
+.metaTag {
+  width: 92px;
+  height: 26px;
+  border-radius: var(--radius-md);
+}
+
+.senseHeader {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.senseLabel {
+  width: 220px;
+  height: 14px;
+  border-radius: 999px;
+}
+
+.senseExpansion {
+  width: 180px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.senseChevron {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.excerpt {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.excerptLine {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.excerptLineShort {
+  width: 72%;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.toc {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.tocTitle {
+  width: 110px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.tocLine {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.tocLineShort {
+  width: 78%;
+  height: 12px;
+  border-radius: 999px;
+}
+
+@media (max-width: 920px) {
+  .toc {
+    display: none;
+  }
+}
+

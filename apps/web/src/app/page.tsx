@@ -1,103 +1,126 @@
 import Link from 'next/link';
 
-import { FocusSearchButton } from '@/components/FocusSearchButton';
-import { ButtonLink } from '@/components/ui/Button';
-import { Panel } from '@/components/ui/Panel';
+import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
 
+import { SearchForm } from '@/components/SearchForm';
+import { ButtonLink } from '@/components/ui/Button';
+
+import browseStyles from './_styles/Browse.module.css';
 import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default function Home() {
+function formatDate(value: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  }).format(value);
+}
+
+export default async function Home() {
+  const prisma = getPrismaClient();
+  const recent = await listRecentPublishedEntries(prisma, { page: 1, pageSize: 8 });
+
+  const entryIds = recent.map((e) => e.id);
+  const entryTags = entryIds.length
+    ? await prisma.entryTag.findMany({
+        where: { entryId: { in: entryIds }, tag: { deletedAt: null } },
+        select: { entryId: true, tag: { select: { id: true, name: true, slug: true } } },
+        orderBy: [{ tag: { name: 'asc' } }],
+      })
+    : [];
+
+  const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();
+  for (const row of entryTags) {
+    const list = tagsByEntryId.get(row.entryId) ?? [];
+    list.push(row.tag);
+    tagsByEntryId.set(row.entryId, list);
+  }
+
   return (
-    <div className={styles.hero}>
-      <div className={styles.grid}>
-        <section className={styles.copy} aria-label="Introduction">
-          <p className={styles.kicker}>
-            <span className={styles.kickerLabel}>Field manual</span>
-            <span className={styles.kickerSep}>·</span>
-            Cybersecurity glossary
-          </p>
-          <h1 className={styles.title}>
-            Security language,
-            <span className={styles.titleAccent}> with receipts</span>.
-          </h1>
-          <p className={styles.lede}>
-            SynAc centralizes terms and acronyms with disambiguation, references, and clear
-            attribution — designed to stay trustworthy as it scales.
-          </p>
+    <div className={styles.wrap}>
+      <section className={styles.hero} aria-label="Glossary search">
+        <h1 className={styles.title}>Search SynAc</h1>
+        <p className={styles.subtitle}>
+          Clinical cybersecurity reference for terms and acronyms — with provenance and attribution.
+        </p>
 
-          <div className={styles.actions}>
-            <FocusSearchButton variant="primary">
-              Search <span className={styles.kbdHint}>/</span>
-            </FocusSearchButton>
-            <ButtonLink href="/terms?letter=a" variant="ghost">
-              Browse terms
-            </ButtonLink>
-            <ButtonLink href="/acronyms?letter=a" variant="ghost">
-              Browse acronyms
-            </ButtonLink>
-            <ButtonLink href="/tags" variant="ghost">
-              Tags
-            </ButtonLink>
-            <ButtonLink href="/recent" variant="ghost">
-              Recent
-            </ButtonLink>
-          </div>
+        <div className={styles.search}>
+          <SearchForm size="lg" placeholder="Search terms and acronyms…" />
+        </div>
 
-          <p className={styles.metaHint}>
-            Tip: press <span className={styles.kbdInline}>/</span> to focus search ·{' '}
-            <span className={styles.kbdInline}>⌘K</span> for commands.
-          </p>
-        </section>
+        <div className={styles.quick} aria-label="Quick access">
+          <ButtonLink href="/terms" variant="ghost">
+            Browse terms
+          </ButtonLink>
+          <ButtonLink href="/acronyms" variant="ghost">
+            Browse acronyms
+          </ButtonLink>
+          <ButtonLink href="/tags" variant="ghost">
+            Tags
+          </ButtonLink>
+        </div>
+      </section>
 
-        <aside className={styles.sidebar} aria-label="How SynAc works">
-          <Panel className={styles.note}>
-            <div className={styles.noteTitle}>What you’ll see on every entry</div>
-            <ul className={styles.noteList}>
-              <li>
-                <strong>Meaning(s)</strong>, with stable anchors per sense.
-              </li>
-              <li>
-                <strong>Stands for</strong> and <strong>Also known as</strong> when available.
-              </li>
-              <li>
-                <strong>References</strong> per sense: source, URL, timestamp, license notes.
-              </li>
-            </ul>
+      <section className={styles.recent} aria-label="Recently updated">
+        <div className={styles.sectionHead}>
+          <h2 className={styles.sectionTitle}>Recently updated</h2>
+          <Link className={styles.sectionLink} href="/recent">
+            View all
+          </Link>
+        </div>
 
-            <div className={styles.noteLinks}>
-              <Link href="/sources">See all sources</Link>
-              <span className={styles.noteDot}>·</span>
-              <Link href="/about">Attribution philosophy</Link>
-            </div>
-          </Panel>
-        </aside>
-      </div>
+        {recent.length === 0 ? (
+          <div className={browseStyles.empty}>No published entries yet.</div>
+        ) : (
+          <ol className={browseStyles.list}>
+            {recent.map((entry) => {
+              const href =
+                entry.entryType === 'TERM'
+                  ? `/term/${entry.primarySlug}`
+                  : `/acronym/${entry.primarySlug}`;
+              const entryTags = tagsByEntryId.get(entry.id) ?? [];
 
-      <div className={styles.cards} role="list" aria-label="Core principles">
-        <Panel className={styles.card} as="section">
-          <div className={styles.cardTitle}>Disambiguation first</div>
-          <div className={styles.cardBody}>
-            One page per concept — multiple senses per entry, with clear labels and “often confused
-            with” links.
-          </div>
-        </Panel>
-        <Panel className={styles.card} as="section">
-          <div className={styles.cardTitle}>Provenance & attribution</div>
-          <div className={styles.cardBody}>
-            Definitions are anchored to sources. Citations and license notes are displayed alongside
-            the content.
-          </div>
-        </Panel>
-        <Panel className={styles.card} as="section">
-          <div className={styles.cardTitle}>Ingest built-in</div>
-          <div className={styles.cardBody}>
-            Ingest is a core system (not a one-off script): safe acquisition, normalization, dedupe,
-            and human review gates.
-          </div>
-        </Panel>
-      </div>
+              return (
+                <li key={entry.id} className={browseStyles.item}>
+                  <div className={browseStyles.itemTitleRow}>
+                    <div className={browseStyles.itemTitleLeft}>
+                      <span
+                        className={`${browseStyles.typeBadge} ${
+                          entry.entryType === 'TERM'
+                            ? browseStyles.typeBadgeTerm
+                            : browseStyles.typeBadgeAcronym
+                        }`}
+                      >
+                        {entry.entryType}
+                      </span>
+                      <Link className={browseStyles.itemTitle} href={href}>
+                        {entry.displayTitle}
+                      </Link>
+                    </div>
+                    <span className={browseStyles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
+                  </div>
+
+                  {entry.summaryText ? (
+                    <p className={browseStyles.itemSummary}>{entry.summaryText}</p>
+                  ) : null}
+
+                  {entryTags.length ? (
+                    <div className={browseStyles.itemTags}>
+                      {entryTags.map((tag) => (
+                        <Link key={tag.id} href={`/tags/${tag.slug}`} className={browseStyles.tag}>
+                          {tag.name}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </section>
     </div>
   );
 }

@@ -2,40 +2,9 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  backdrop-filter: blur(14px) saturate(140%);
-  background:
-    radial-gradient(
-      780px 120px at 18% 0%,
-      color-mix(in srgb, var(--accent2) 16%, transparent),
-      transparent 62%
-    ),
-    radial-gradient(
-      780px 120px at 86% 0%,
-      color-mix(in srgb, var(--accent) 15%, transparent),
-      transparent 62%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bg1) 84%, transparent),
-      color-mix(in srgb, var(--bg0) 68%, transparent)
-    );
+  backdrop-filter: blur(14px) saturate(160%);
+  background: color-mix(in srgb, var(--bg-0) 80%, transparent);
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 12px 28px color-mix(in srgb, #000000 12%, transparent);
-}
-
-.header::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--accent2) 62%, transparent),
-    color-mix(in srgb, var(--accent) 55%, transparent),
-    transparent
-  );
-  opacity: 0.75;
 }
 
 .inner {
@@ -48,190 +17,67 @@
 }
 
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
   text-decoration: none;
-  padding: 6px 10px 6px 8px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  background: color-mix(in srgb, var(--bg1) 72%, transparent);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 36%, transparent);
+  color: var(--fg);
+  padding: 7px 9px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
   transition:
-    border-color 180ms var(--ease-out),
-    background 180ms var(--ease-out),
-    transform 180ms var(--ease-out);
+    background var(--dur-hover) var(--ease),
+    border-color var(--dur-hover) var(--ease);
 }
 
 .brand:hover {
-  border-color: var(--border-strong);
-  background: color-mix(in srgb, var(--bg1) 80%, transparent);
-  transform: translateY(-1px);
+  border-color: var(--border);
+  background: var(--bg-1);
 }
 
-.brandIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-  flex: 0 0 auto;
-  box-shadow: 0 10px 22px color-mix(in srgb, #000000 14%, transparent);
-}
-
-.brandName {
-  font-family: var(--font-serif);
-  font-size: 19px;
-  letter-spacing: -0.03em;
+.wordmark {
+  font-family: var(--font-mono);
+  font-size: 16px;
   font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .nav {
-  margin-left: 6px;
-}
-
-.navDesktop {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
-.navLink,
-.dropdownSummary,
-.mobileSummary {
+.navLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
+  height: 34px;
   padding: 0 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   background: transparent;
-  color: color-mix(in srgb, var(--fg) 82%, transparent);
+  color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   white-space: nowrap;
   user-select: none;
   transition:
-    border-color 180ms var(--ease-out),
-    background 180ms var(--ease-out),
-    color 180ms var(--ease-out),
-    transform 180ms var(--ease-out);
+    border-color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease);
 }
 
-.navLink:hover,
-.dropdownSummary:hover,
-.mobileSummary:hover {
-  color: var(--fg);
+.navLink:hover {
   border-color: var(--border);
-  background: color-mix(in srgb, var(--bg1) 74%, transparent);
-  transform: translateY(-1px);
-}
-
-.dropdown {
-  position: relative;
-}
-
-.dropdownSummary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.dropdownSummary::marker {
-  content: '';
-}
-
-.dropdownSummary::-webkit-details-marker {
-  display: none;
-}
-
-.dropdownSummary::after {
-  content: '▾';
-  margin-left: 8px;
-  font-size: 12px;
-  opacity: 0.65;
-}
-
-.dropdown[open] .dropdownSummary {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: var(--bg-1);
   color: var(--fg);
 }
 
-.dropdownPanel {
-  position: absolute;
-  left: 0;
-  top: calc(100% + 10px);
-  min-width: 200px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--bg1) 92%, transparent);
-  box-shadow: var(--shadow);
-  padding: 10px;
-  display: grid;
-  gap: 6px;
-}
-
-.dropdownLink {
-  border-radius: 12px;
-  padding: 10px 10px;
-  border: 1px solid transparent;
-  color: color-mix(in srgb, var(--fg) 84%, transparent);
-}
-
-.dropdownLink:hover {
-  border-color: var(--border);
-  background: color-mix(in srgb, var(--bg0) 68%, transparent);
-  color: var(--fg);
-}
-
-.navMobile {
-  display: none;
-  position: relative;
-}
-
-.mobileSummary {
-  cursor: pointer;
-  list-style: none;
-}
-
-.mobileSummary::marker {
-  content: '';
-}
-
-.mobileSummary::-webkit-details-marker {
-  display: none;
-}
-
-.mobilePanel {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
-  min-width: 220px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--bg1) 92%, transparent);
-  box-shadow: var(--shadow);
-  padding: 10px;
-  display: grid;
-  gap: 6px;
-}
-
-.mobileLink {
-  border-radius: 12px;
-  padding: 10px 10px;
-  border: 1px solid transparent;
-  color: color-mix(in srgb, var(--fg) 84%, transparent);
-}
-
-.mobileLink:hover {
-  border-color: var(--border);
-  background: color-mix(in srgb, var(--bg0) 68%, transparent);
-  color: var(--fg);
-}
-
-.spacer {
+.search {
   flex: 1;
+  max-width: 620px;
 }
 
 .actions {
@@ -240,35 +86,26 @@
   gap: 10px;
 }
 
-.search {
-  width: min(520px, 100%);
+@media (max-width: 920px) {
+  .nav {
+    display: none;
+  }
 }
 
-@media (max-width: 920px) {
+@media (max-width: 760px) {
   .inner {
     flex-wrap: wrap;
-  }
-
-  .navDesktop {
-    display: none;
-  }
-
-  .navMobile {
-    display: block;
-    margin-left: auto;
-  }
-
-  .spacer {
-    display: none;
-  }
-
-  .actions {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
+    gap: 10px;
   }
 
   .search {
-    width: 100%;
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .actions {
+    margin-left: auto;
   }
 }
+

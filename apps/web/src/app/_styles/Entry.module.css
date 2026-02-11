@@ -1,33 +1,78 @@
-.metaRow {
+.layout {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, var(--content-max)) 280px;
+  gap: 48px;
+  justify-content: center;
+  align-items: start;
+}
+
+.main {
+  min-width: 0;
+}
+
+.header {
+  padding: 18px 0 14px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 14px;
+}
+
+.badgeRow {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  padding: 12px 0 6px;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
-  font-size: 13px;
 }
 
-.pill {
+.typeBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 30px;
-  padding: 0 12px;
+  height: 28px;
+  padding: 0 10px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 72%, transparent)
-  );
+  border: 1px solid transparent;
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow:
-    0 10px 18px color-mix(in srgb, #000000 10%, transparent),
-    inset 0 1px 0 color-mix(in srgb, #ffffff 28%, transparent);
+  color: #ffffff;
+}
+
+.typeBadgeTerm {
+  background: var(--accent);
+}
+
+.typeBadgeAcronym {
+  background: var(--accent-2);
+}
+
+.updated {
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-size: clamp(34px, 4.1vw, 48px);
+  letter-spacing: -0.04em;
+  line-height: 1.04;
+  font-weight: 650;
+}
+
+.summary {
+  color: var(--fg-muted);
+  line-height: 1.7;
+  font-size: 15px;
+  max-width: 78ch;
+}
+
+.meta {
+  padding: 14px 0 0;
+  display: grid;
+  gap: 10px;
 }
 
 .tags {
@@ -36,30 +81,53 @@
   gap: 8px;
 }
 
-.tagLink {
-  border: 1px solid var(--border);
-  border-radius: 999px;
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 6px 10px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 72%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
   transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    color 180ms var(--ease-out);
+    border-color var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease);
 }
 
-.tagLink:hover {
+.tag:hover {
+  border-color: var(--border-hover);
   color: var(--fg);
-  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
-  transform: translateY(-1px);
+  background: var(--bg-2);
+}
+
+.variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.variant {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.variantStrong {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }
 
 .section {
@@ -71,155 +139,21 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
+  color: var(--fg-muted);
   margin-bottom: 10px;
 }
 
-.relList {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0;
-  margin: 0;
-}
-
-.relLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 72%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    color 180ms var(--ease-out);
-}
-
-.relLink:hover {
-  color: var(--fg);
-  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
-  transform: translateY(-1px);
-}
-
-.meanings {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.meaningLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 72%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    color 180ms var(--ease-out);
-}
-
-.meaningLink:hover {
-  color: var(--fg);
-  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
-  transform: translateY(-1px);
+.senseList {
+  display: grid;
+  gap: 12px;
 }
 
 .senseCard {
-  position: relative;
   border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 16px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bg1) 92%, transparent),
-      color-mix(in srgb, var(--bg1) 78%, transparent)
-    ),
-    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--fg) 3%, transparent) 1px, transparent 1.5px);
-  background-size: auto, 18px 18px;
-  box-shadow: var(--shadow-tight);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+  padding: 14px;
   scroll-margin-top: 96px;
-  overflow: clip;
-  transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    box-shadow 180ms var(--ease-out);
-}
-
-.senseCard + .senseCard {
-  margin-top: 12px;
-}
-
-.senseCard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 44%, transparent);
-  opacity: 0.75;
-}
-
-.senseCard::after {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent2) 65%, transparent),
-    transparent 70%
-  );
-  opacity: 0.55;
-}
-
-.senseCard:hover {
-  transform: translateY(-1px);
-}
-
-.senseCard[open] {
-  border-color: color-mix(in srgb, var(--accent2) 38%, var(--border));
-}
-
-.senseCard[open]::after {
-  opacity: 0.85;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent2) 80%, transparent),
-    color-mix(in srgb, var(--accent) 45%, transparent)
-  );
-}
-
-.senseHeader {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 10px;
 }
 
 .senseSummary {
@@ -236,326 +170,202 @@
   display: none;
 }
 
+.senseSummaryTop {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
 .senseLabel {
+  font-family: var(--font-mono);
   font-weight: 650;
   letter-spacing: -0.01em;
 }
 
-.senseSub {
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
+.senseExpanded {
+  color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 12px;
 }
 
 .senseChevron {
   margin-left: auto;
-  color: color-mix(in srgb, var(--fg) 58%, transparent);
+  color: var(--fg-muted);
   font-family: var(--font-mono);
   font-size: 12px;
   transform: rotate(0deg);
-  transition: transform 160ms var(--ease-out);
+  transition: transform var(--dur-accordion) var(--ease-in-out);
 }
 
 .senseCard[open] .senseChevron {
   transform: rotate(180deg);
 }
 
-.senseBody {
-  margin-top: 10px;
+.senseExcerpt {
+  margin-top: 8px;
+  color: color-mix(in srgb, var(--fg) 88%, var(--fg-muted));
+  line-height: 1.65;
+  font-size: 14px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
-.senseText {
-  line-height: 1.8;
-  color: color-mix(in srgb, var(--fg) 84%, transparent);
+.senseContent {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--dur-accordion) var(--ease-in-out);
 }
 
-.senseTextMuted {
-  line-height: 1.8;
-  color: color-mix(in srgb, var(--fg) 74%, transparent);
+.senseCard[open] .senseContent {
+  grid-template-rows: 1fr;
 }
 
-.examples {
-  margin-top: 12px;
-}
-
-.examplesList {
-  padding-left: 18px;
-  line-height: 1.8;
-  color: color-mix(in srgb, var(--fg) 84%, transparent);
-}
-
-.examplesList li + li {
-  margin-top: 6px;
-}
-
-.refs {
-  margin-top: 12px;
-  border-top: 1px dashed color-mix(in srgb, var(--fg) 18%, transparent);
+.senseContentInner {
+  overflow: hidden;
   padding-top: 12px;
 }
 
-.refsTitle {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
-  margin-bottom: 8px;
+.senseBody {
+  line-height: 1.8;
 }
 
-.refsList {
-  list-style: none;
-  display: grid;
+.senseMuted {
+  color: var(--fg-muted);
+  line-height: 1.8;
+}
+
+.inlineSources {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.examples {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.examplesList {
+  margin-top: 10px;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.exampleItem {
+  padding: 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.bib {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.bibList {
+  list-style: none;
   padding: 0;
   margin: 0;
+  display: grid;
+  gap: 10px;
   counter-reset: ref;
 }
 
-.refItem {
-  position: relative;
+.bibItem {
   counter-increment: ref;
-  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  border-radius: 14px;
-  padding: 10px 12px 10px 42px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 74%, transparent)
-  );
-  box-shadow:
-    0 10px 20px color-mix(in srgb, #000000 10%, transparent),
-    inset 0 1px 0 color-mix(in srgb, #ffffff 30%, transparent);
+  padding: 10px 10px 10px 42px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-0);
+  position: relative;
 }
 
-.refItem::before {
+.bibItem::before {
   content: counter(ref);
   position: absolute;
   left: 12px;
   top: 12px;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg0) 74%, transparent);
   font-family: var(--font-mono);
   font-size: 11px;
-  color: color-mix(in srgb, var(--fg) 70%, transparent);
+  color: var(--fg-muted);
 }
 
-.refLine1 {
+.bibSource {
+  font-weight: 650;
+}
+
+.bibMeta {
+  margin-top: 6px;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: baseline;
 }
 
-.refSource {
-  font-weight: 650;
-}
-
-.refDate {
-  color: color-mix(in srgb, var(--fg) 58%, transparent);
-  font-family: var(--font-mono);
-  font-size: 12px;
-}
-
-.refUrl {
+.bibUrl {
   margin-top: 6px;
   font-family: var(--font-mono);
   font-size: 12px;
-  color: color-mix(in srgb, var(--accent2) 80%, var(--fg));
+  color: color-mix(in srgb, var(--accent) 84%, var(--fg));
   word-break: break-word;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.refDocTitle {
+.bibDocTitle {
   margin-top: 6px;
-  color: color-mix(in srgb, var(--fg) 70%, transparent);
+  color: var(--fg-muted);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
-.refNote {
+.bibNote {
   margin-top: 8px;
-  color: color-mix(in srgb, var(--fg) 68%, transparent);
+  color: var(--fg-muted);
   font-size: 12px;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
-.variants {
+.relations {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.relationList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.variantPill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 72%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
-  font-size: 13px;
-  line-height: 1.3;
-  transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    color 180ms var(--ease-out);
-}
-
-.variantPill:hover {
-  color: var(--fg);
-  border-color: color-mix(in srgb, var(--accent2) 55%, var(--border));
-  transform: translateY(-1px);
-}
-
-.variantPillStrong {
-  color: var(--fg);
-  font-weight: 650;
-}
-
-.variantDetails {
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 12px;
-  background: color-mix(in srgb, var(--bg1) 76%, transparent);
-}
-
-.variantSummary {
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
-}
-
-.variantBody {
-  margin-top: 10px;
-}
-
-.emptyText {
-  margin-top: 10px;
-  color: color-mix(in srgb, var(--fg) 74%, transparent);
 }
 
 @media (max-width: 920px) {
-  .entryGrid {
+  .layout {
     grid-template-columns: 1fr;
-  }
-
-  .aside {
-    position: static;
+    gap: 18px;
   }
 }
-.entryGrid {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: 360px minmax(0, 1fr);
-  gap: 20px;
-  align-items: start;
-}
 
-.main {
-  min-width: 0;
-}
-
-.aside {
-  min-width: 0;
-  position: sticky;
-  top: 88px;
-  align-self: start;
-  display: grid;
-  gap: 12px;
-}
-
-.asideBlock {
-  position: relative;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 14px;
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bg1) 92%, transparent),
-      color-mix(in srgb, var(--bg1) 78%, transparent)
-    ),
-    radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--fg) 3%, transparent) 1px, transparent 1.5px);
-  background-size: auto, 18px 18px;
-  box-shadow: var(--shadow-tight);
-  overflow: clip;
-}
-
-.asideBlock::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 44%, transparent);
-  opacity: 0.75;
-}
-
-.asideTitle {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
-  margin-bottom: 10px;
-}
-
-.asideMetaRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-
-.asideTags {
-  margin-top: 10px;
-}
-
-.toc {
-  display: grid;
-  gap: 8px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-}
-
-.tocLink {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bg1) 90%, transparent),
-    color-mix(in srgb, var(--bg1) 72%, transparent)
-  );
-  padding: 8px 10px;
-  font-size: 13px;
-  color: color-mix(in srgb, var(--fg) 82%, transparent);
-  transition:
-    border-color 180ms var(--ease-out),
-    transform 180ms var(--ease-out),
-    color 180ms var(--ease-out);
-}
-
-.tocLink:hover {
-  color: var(--fg);
-  border-color: color-mix(in srgb, var(--accent2) 55%, var(--border));
-  transform: translateY(-1px);
-}

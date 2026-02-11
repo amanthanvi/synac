@@ -34,22 +34,36 @@ export default function ChangelogPage() {
               <li
                 key={entry.version}
                 id={`v-${entry.version.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                className={styles.node}
               >
                 <Panel className={styles.entry}>
                   <div className={styles.entryHeader}>
-                    <div className={styles.entryVersion}>{entry.version}</div>
-                    <div className={styles.entryDate}>{entry.date}</div>
+                    <div className={styles.badges}>
+                      <div className={styles.versionBadge}>{entry.version}</div>
+                      <div className={styles.dateBadge}>{entry.date}</div>
+                    </div>
                   </div>
 
                   <div className={styles.entryTitle}>{entry.title}</div>
 
-                  {entry.items.length ? (
-                    <ul className={styles.items}>
-                      {entry.items.map((item) => (
-                        <li key={item}>{item}</li>
+                  {entry.sections.length ? (
+                    <div className={styles.sections}>
+                      {entry.sections.map((section) => (
+                        <section key={section.title} className={styles.section}>
+                          <div className={styles.sectionLabel}>{section.title}</div>
+                          {section.items.length ? (
+                            <ul className={styles.items}>
+                              {section.items.map((item) => (
+                                <li key={item}>{item}</li>
+                              ))}
+                            </ul>
+                          ) : null}
+                        </section>
                       ))}
-                    </ul>
-                  ) : null}
+                    </div>
+                  ) : (
+                    <div className={styles.muted}>No changes listed yet.</div>
+                  )}
                 </Panel>
               </li>
             ))}

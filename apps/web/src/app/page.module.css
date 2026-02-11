@@ -1,251 +1,86 @@
-.hero {
-  padding: 40px 0 0;
-  position: relative;
-}
-
-.hero::before {
-  content: 'SYNAC';
-  position: absolute;
-  right: -0.2em;
-  top: -0.35em;
-  font-family: var(--font-mono);
-  font-size: clamp(84px, 10vw, 168px);
-  letter-spacing: 0.28em;
-  color: color-mix(in srgb, var(--fg) 3.6%, transparent);
-  transform: rotate(-8deg);
-  pointer-events: none;
-  user-select: none;
-}
-
-.kicker {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 68%, transparent);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 10px;
-  animation: rise 520ms var(--ease-out) both;
-}
-
-.kickerLabel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 26px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 18%, transparent),
-    color-mix(in srgb, var(--accent) 12%, transparent)
-  );
-  color: color-mix(in srgb, var(--fg) 88%, transparent);
-  box-shadow:
-    0 10px 20px color-mix(in srgb, #000000 10%, transparent),
-    inset 0 1px 0 color-mix(in srgb, #ffffff 28%, transparent);
-}
-
-.kickerSep {
-  opacity: 0.55;
-}
-
-.grid {
+.wrap {
+  padding-top: 22px;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 22px;
-  align-items: start;
+  gap: 34px;
 }
 
-.copy {
-  min-width: 0;
+.hero {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  text-align: center;
+  display: grid;
+  gap: 14px;
+  padding: 18px 0 0;
 }
 
 .title {
-  margin-top: 14px;
-  font-family: var(--font-serif);
-  font-size: clamp(44px, 5vw, 68px);
-  letter-spacing: -0.045em;
-  line-height: 1.02;
+  font-family: var(--font-mono);
+  font-size: clamp(42px, 5vw, 64px);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
   font-weight: 650;
-  animation: rise 520ms var(--ease-out) both;
-  animation-delay: 30ms;
 }
 
-.titleAccent {
-  position: relative;
-  display: inline-block;
-  color: var(--fg);
-}
-
-.titleAccent::before {
-  content: '';
-  position: absolute;
-  left: 0.04em;
-  right: 0.04em;
-  bottom: 0.08em;
-  height: 0.38em;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--accent2) 18%, transparent),
-    color-mix(in srgb, var(--accent) 26%, transparent),
-    color-mix(in srgb, var(--accent2) 16%, transparent)
-  );
-  transform: rotate(-1deg);
-  z-index: -1;
-}
-
-.lede {
-  margin-top: 14px;
-  max-width: 68ch;
-  font-size: 18px;
+.subtitle {
+  margin: 0 auto;
+  max-width: 66ch;
+  color: var(--fg-muted);
   line-height: 1.7;
-  color: color-mix(in srgb, var(--fg) 72%, transparent);
-  animation: rise 520ms var(--ease-out) both;
-  animation-delay: 60ms;
+  font-size: 15px;
 }
 
-.actions {
-  margin-top: 18px;
+.search {
+  margin-top: 10px;
+}
+
+.quick {
+  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  animation: rise 520ms var(--ease-out) both;
-  animation-delay: 90ms;
-}
-
-.kbdHint {
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
-  background: color-mix(in srgb, var(--bg0) 76%, transparent);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  color: color-mix(in srgb, var(--fg) 74%, transparent);
 }
 
-.metaHint {
-  margin-top: 12px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
-  animation: rise 520ms var(--ease-out) both;
-  animation-delay: 120ms;
-}
-
-.kbdInline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
-  background: color-mix(in srgb, var(--bg1) 84%, transparent);
-  color: color-mix(in srgb, var(--fg) 80%, transparent);
-}
-
-.sidebar {
-  min-width: 0;
-  animation: rise 560ms var(--ease-out) both;
-  animation-delay: 140ms;
-}
-
-.note {
-  padding: 16px 16px 14px;
-}
-
-.cards {
-  margin-top: 22px;
+.recent {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(3, 1fr);
-  animation: rise 620ms var(--ease-out) both;
-  animation-delay: 170ms;
 }
 
-.card {
-  padding: 16px;
-  transition: transform 180ms var(--ease-out);
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-}
-
-.cardTitle {
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-
-.cardBody {
-  margin-top: 8px;
-  color: color-mix(in srgb, var(--fg) 70%, transparent);
-  line-height: 1.7;
-}
-
-.noteTitle {
+.sectionTitle {
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 65%, transparent);
+  color: var(--fg-muted);
 }
 
-.noteList {
-  margin: 12px 0 0;
-  padding-left: 18px;
-  line-height: 1.7;
-  color: color-mix(in srgb, var(--fg) 78%, transparent);
-}
-
-.noteList li + li {
-  margin-top: 8px;
-}
-
-.noteLinks {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: baseline;
+.sectionLink {
   font-family: var(--font-mono);
   font-size: 12px;
-  letter-spacing: 0.04em;
-  color: color-mix(in srgb, var(--fg) 72%, transparent);
-}
-
-.noteLinks a {
+  color: color-mix(in srgb, var(--accent) 84%, var(--fg));
   text-decoration: underline;
   text-underline-offset: 2px;
-  color: color-mix(in srgb, var(--accent2) 80%, var(--fg));
 }
 
-.noteLinks a:hover {
-  color: color-mix(in srgb, var(--accent2) 92%, var(--fg));
+.sectionLink:hover {
+  color: color-mix(in srgb, var(--accent) 92%, var(--fg));
 }
 
-.noteDot {
-  opacity: 0.5;
-}
-
-@media (max-width: 920px) {
-  .grid {
-    grid-template-columns: 1fr;
+@media (prefers-reduced-motion: no-preference) {
+  .hero {
+    animation: rise 520ms var(--ease-out) both;
   }
 
-  .cards {
-    grid-template-columns: 1fr;
+  .recent {
+    animation: rise 520ms var(--ease-out) both;
+    animation-delay: 140ms;
   }
 }
 

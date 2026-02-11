@@ -1,24 +1,25 @@
-import Link from 'next/link';
-
 import { getPrismaClient, listTags } from '@synac/db';
 
+import { TagDirectory } from '@/components/TagDirectory';
 import { PageHeader } from '@/components/PageHeader';
 
 import styles from '../_styles/Tags.module.css';
 
 export const dynamic = 'force-dynamic';
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
-
 export default async function TagsPage() {
   const prisma = getPrismaClient();
   const tags = await listTags(prisma);
+  const counts = await prisma.entryTag.groupBy({
+    by: ['tagId'],
+    where: { tag: { deletedAt: null }, entry: { status: 'PUBLISHED', deletedAt: null } },
+    _count: { tagId: true },
+  });
+
+  const countByTagId = new Map<string, number>();
+  for (const row of counts) {
+    countByTagId.set(row.tagId, row._count.tagId);
+  }
 
   return (
     <>
@@ -31,21 +32,15 @@ export default async function TagsPage() {
       {tags.length === 0 ? (
         <div className={styles.empty}>No tags yet.</div>
       ) : (
-        <ol className={styles.list}>
-          {tags.map((tag) => (
-            <li key={tag.id} className={styles.item}>
-              <div className={styles.itemTitleRow}>
-                <Link className={styles.itemTitle} href={`/tags/${tag.slug}`}>
-                  {tag.name}
-                </Link>
-                <span className={styles.itemSlug}>Updated {formatDate(tag.updatedAt)}</span>
-              </div>
-              {tag.description ? (
-                <p className={styles.itemDesc}>{tag.description}</p>
-              ) : null}
-            </li>
-          ))}
-        </ol>
+        <TagDirectory
+          tags={tags.map((tag) => ({
+            id: tag.id,
+            name: tag.name,
+            slug: tag.slug,
+            description: tag.description,
+            count: countByTagId.get(tag.id) ?? 0,
+          }))}
+        />
       )}
     </>
   );

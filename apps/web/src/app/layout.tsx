@@ -1,29 +1,27 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
-import { Fraunces, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google';
+import { GeistMono } from 'geist/font/mono';
+import { GeistSans } from 'geist/font/sans';
 
+import { PageShell } from '@/components/PageShell';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import './globals.css';
 
-const instrumentSans = Instrument_Sans({
-  variable: '--font-sans',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const fraunces = Fraunces({
-  variable: '--font-serif',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const plexMono = IBM_Plex_Mono({
-  variable: '--font-mono',
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  display: 'swap',
-});
+const themeInitScript = `(() => {
+  try {
+    const stored = window.localStorage.getItem('synac-theme');
+    const root = document.documentElement;
+    if (stored === 'dark' || stored === 'light') {
+      root.setAttribute('data-theme', stored);
+    } else {
+      root.removeAttribute('data-theme');
+    }
+  } catch (error) {
+    void error;
+    document.documentElement.removeAttribute('data-theme');
+  }
+})();`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
@@ -52,18 +50,19 @@ export default function RootLayout({
         Skip to content
       </a>
       <SiteHeader />
-      <main id="content" className="appMain">
-        {children}
+      <main id="content">
+        <PageShell>{children}</PageShell>
       </main>
       <SiteFooter />
     </>
   );
 
   return (
-    <html lang="en">
-      <body
-        className={`${instrumentSans.variable} ${fraunces.variable} ${plexMono.variable}`}
-      >
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>
         {isClerkConfigured ? (
           <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" dynamic>
             {content}
