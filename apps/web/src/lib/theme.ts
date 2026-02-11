@@ -13,7 +13,8 @@ export function getStoredThemePreference(): ThemePreference {
 
   try {
     return parseThemePreference(window.localStorage.getItem(THEME_STORAGE_KEY)) ?? 'system';
-  } catch {
+  } catch (error) {
+    void error;
     return 'system';
   }
 }
@@ -36,16 +37,16 @@ export function setThemePreference(preference: ThemePreference): void {
 
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, preference);
-  } catch {
-    // Ignore storage failures (private mode, disabled storage, etc).
+  } catch (error) {
+    void error;
   }
 
   applyThemePreference(preference);
 
   try {
     window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
-  } catch {
-    // Ignore dispatch failures (very old browsers).
+  } catch (error) {
+    void error;
   }
 }
 

@@ -17,7 +17,10 @@ const themeInitScript = `(() => {
     } else {
       root.removeAttribute('data-theme');
     }
-  } catch {}
+  } catch (error) {
+    void error;
+    document.documentElement.removeAttribute('data-theme');
+  }
 })();`;
 
 export const metadata: Metadata = {
