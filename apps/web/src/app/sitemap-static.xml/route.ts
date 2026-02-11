@@ -17,7 +17,6 @@ export async function GET() {
     '/sources',
     '/search',
     '/recent',
-    '/trending',
     '/about',
     '/legal/privacy',
     '/legal/terms',
@@ -38,4 +37,3 @@ export async function GET() {
     },
   });
 }
-

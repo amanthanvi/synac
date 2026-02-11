@@ -245,14 +245,12 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 
 -   Alphabetical index (A–Z, 0–9) for terms and acronyms.
 -   “Recently updated” list.
--   “Trending” list (privacy-aware aggregate).
 -   Tag browsing and filter chips.
 
 **Acceptance Criteria**
 
 -   `/terms?letter=A` returns term entries starting with “A” (normalized).
 -   `/recent` shows last updated published entries (with timestamps).
--   `/trending` uses last 7 days aggregated page views (no per-user profiling).
 
 ---
 
@@ -426,7 +424,7 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 
 -   404 page provides search box + popular tags + browse links; does not leak internal IDs.
 -   500 page shows generic message with a support ID (request_id / error digest); errors captured in monitoring.
--   Empty states (no tags, no results, no trending yet) show helpful guidance without broken UI.
+-   Empty states (no tags, no results) show helpful guidance without broken UI.
 
 ---
 
@@ -1844,7 +1842,7 @@ All animations respect `prefers-reduced-motion: reduce` — disable non-essentia
 ### Rollout and rollback
 
 -   Rollout:
-    -   deploy to prod with feature flags for ingest apply and trending.
+    -   deploy to prod with feature flags for ingest apply/autopublish.
     -   on-demand ISR revalidation after publishing.
 -   Rollback:
     -   application rollback via previous container release,
@@ -2171,7 +2169,6 @@ synac/
 
 -   Feature flags for:
     -   ingest apply/autopublish,
-    -   trending visibility,
     -   new sources enablement.
 -   “Two-person rule” (recommended) for:
     -   enabling a new source in production,
