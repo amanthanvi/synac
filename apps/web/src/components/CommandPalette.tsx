@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 
 import styles from './CommandPalette.module.css';
 
@@ -62,6 +63,7 @@ function scoreCommand(query: string, command: CommandItem): number {
 
 export function CommandPalette() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -159,9 +161,22 @@ export function CommandPalette() {
   }, [activeIndex, items, open, router]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     const handle = window.setTimeout(() => inputRef.current?.focus(), 0);
     return () => window.clearTimeout(handle);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
   }, [open]);
 
   return (
@@ -183,69 +198,72 @@ export function CommandPalette() {
         </span>
       </button>
 
-      {open ? (
-        <div
-          className={styles.overlay}
-          onMouseDown={() => {
-            setOpen(false);
-            setQuery('');
-            setActiveIndex(0);
-          }}
-        >
-          <div
-            className={styles.dialog}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Command palette"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <div className={styles.top}>
-              <input
-                ref={inputRef}
-                className={styles.input}
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setActiveIndex(0);
-                }}
-                placeholder="Type to navigate…"
-                aria-label="Command query"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-              />
-              <div className={styles.meta} aria-hidden="true">
-                Esc
+      {open && mounted
+        ? createPortal(
+            <div
+              className={styles.overlay}
+              onMouseDown={() => {
+                setOpen(false);
+                setQuery('');
+                setActiveIndex(0);
+              }}
+            >
+              <div
+                className={styles.dialog}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Command palette"
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <div className={styles.top}>
+                  <input
+                    ref={inputRef}
+                    className={styles.input}
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setActiveIndex(0);
+                    }}
+                    placeholder="Type to navigate…"
+                    aria-label="Command query"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                  />
+                  <div className={styles.meta} aria-hidden="true">
+                    Esc
+                  </div>
+                </div>
+
+                <ul className={styles.list} role="listbox" aria-label="Commands">
+                  {items.map((item, idx) => (
+                    <li
+                      key={item.id}
+                      role="option"
+                      aria-selected={idx === activeIndex}
+                      className={`${styles.item} ${idx === activeIndex ? styles.itemActive : ''}`}
+                      onMouseEnter={() => setActiveIndex(idx)}
+                      onClick={() => {
+                        setOpen(false);
+                        setQuery('');
+                        setActiveIndex(0);
+                        router.push(item.href);
+                      }}
+                    >
+                      <span className={styles.label}>{item.label}</span>
+                      {item.hint ? <span className={styles.hint}>{item.hint}</span> : null}
+                    </li>
+                  ))}
+                </ul>
+
+                {items.length === 0 ? (
+                  <div className={styles.empty}>No matches. Try a different query.</div>
+                ) : null}
               </div>
-            </div>
-
-            <ul className={styles.list} role="listbox" aria-label="Commands">
-              {items.map((item, idx) => (
-                <li
-                  key={item.id}
-                  role="option"
-                  aria-selected={idx === activeIndex}
-                  className={`${styles.item} ${idx === activeIndex ? styles.itemActive : ''}`}
-                  onMouseEnter={() => setActiveIndex(idx)}
-                  onClick={() => {
-                    setOpen(false);
-                    setQuery('');
-                    setActiveIndex(0);
-                    router.push(item.href);
-                  }}
-                >
-                  <span className={styles.label}>{item.label}</span>
-                  {item.hint ? <span className={styles.hint}>{item.hint}</span> : null}
-                </li>
-              ))}
-            </ul>
-
-            {items.length === 0 ? (
-              <div className={styles.empty}>No matches. Try a different query.</div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body,
+          )
+        : null}
     </>
   );
 }
