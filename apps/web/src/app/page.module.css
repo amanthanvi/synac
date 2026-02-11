@@ -11,6 +11,8 @@
   display: grid;
   gap: 14px;
   padding: 18px 0 0;
+  position: relative;
+  z-index: 2;
 }
 
 .title {
@@ -44,6 +46,8 @@
 .recent {
   display: grid;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .sectionHead {
