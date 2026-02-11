@@ -106,10 +106,10 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 
 ### Phase 6 — Remove Deprecated Pages
 
-- [ ] Delete /trending page and route
-- [ ] Remove trending from nav, sitemap, internal links
-- [ ] Remove trending analytics aggregation (or defer — may keep data pipeline for future use)
-- [ ] Update SPEC.md to reflect removal
+- [x] Delete /trending page and route
+- [x] Remove trending from nav, sitemap, internal links
+- [x] Remove trending analytics aggregation (deferred; pipeline retained)
+- [x] Update SPEC.md to reflect removal
 
 ### Phase 7 — Polish + Verification
 
@@ -132,7 +132,7 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 - [ ] Mobile experience is first-class (not an afterthought)
 - [ ] Core Web Vitals within NFR targets
 - [ ] WCAG 2.2 AA pass
-- [ ] /trending removed
+- [x] /trending removed
 - [ ] SPEC.md fully updated to reflect all design changes
 
 ---
