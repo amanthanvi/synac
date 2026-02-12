@@ -33,6 +33,7 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # Equivalent to `pnpm gate`; split for clearer logs.
       - name: Lint
         run: pnpm lint
 
