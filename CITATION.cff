@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use SynAc in academic work, please cite it."
+title: "SynAc"
+type: software
+authors:
+  - family-names: "Thanvi"
+    given-names: "Aman"
+repository-code: "https://github.com/amanthanvi/synac"
+url: "https://synac.app"
+license: "MIT"
+version: "0.1.5"

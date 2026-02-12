@@ -1,103 +1,91 @@
 # SynAc
 
-SynAc is a public, internet-facing cybersecurity glossary with strong provenance and attribution.
+[![CI](https://github.com/amanthanvi/synac/actions/workflows/ci.yml/badge.svg)](https://github.com/amanthanvi/synac/actions/workflows/ci.yml)
+[![Security](https://github.com/amanthanvi/synac/actions/workflows/security.yml/badge.svg)](https://github.com/amanthanvi/synac/actions/workflows/security.yml)
 
-Canonical production domain: `synac.app`.
+SynAc is a public, internet-facing cybersecurity glossary built for practitioners: clear disambiguation, strong provenance, and explicit attribution.
 
-- Product + engineering specification: `SPEC.md`
-- Execution tracker: `PLAN.md`
-- Ops docs: `docs/`
+Canonical domain: `https://synac.app`.
 
-## Stack
+<p align="center">
+  <img src="docs/assets/readme-home.png" alt="SynAc home page" width="900" />
+</p>
 
-- Web: Next.js (App Router) + TypeScript (`apps/web`)
-- Auth: Clerk (`@clerk/nextjs`)
-- DB: Postgres + Prisma (`packages/db`)
-- Jobs: pg-boss (`apps/worker`)
-- Hosting: Railway (environments: `development`, `staging`, `production`)
+## Why this exists
 
-## Repo layout
+Security terms are overloaded. Acronyms collide. Vendor marketing rewrites meanings. One person’s “SOC” is another person’s “SOC”.
 
-- `apps/web`: public site + admin UI + API routes
-- `apps/worker`: ingest + promotion worker (pg-boss)
-- `packages/db`: Prisma schema + query layer + seed scripts
-- `packages/shared`: shared TS utilities
+SynAc is trying to be the thing you open when you want to answer:
 
-## Local development
+- “What does this mean *here*?”
+- “Which definition is supported by an actual source?”
+- “Where did this wording come from?”
+
+## What makes SynAc different
+
+- **Senses (multiple meanings) are first-class.** One entry can have multiple meanings with direct links.
+- **Provenance is built in.** Definitions carry citations, source metadata, and license notes.
+- **Terms and acronyms are treated differently.** `/term/*` and `/acronym/*` have canonical routing with redirects.
+- **Curated taxonomy.** Tags are a maintained classification system (not a free-for-all).
+
+<p align="center">
+  <img src="docs/assets/readme-entry.png" alt="SynAc entry page" width="900" />
+</p>
+
+## Quickstart (local dev)
 
 Prereqs:
 - Node `22.21.1` (see `.node-version`)
 - pnpm `10.27.0` (see `package.json#packageManager`)
 - A local Postgres database
 
-Setup:
-1. Create a local env file from `.env.example` (do not commit `.env*`).
-2. Run migrations + seed:
+Docs: `docs/contributing/local-dev.md`
+
+Fast path:
+1. Copy `.env.example` → `.env.local` (do not commit `.env*`).
+2. Migrate + seed:
    - `pnpm db:migrate`
    - `pnpm db:seed`
-   - `pnpm db:seed:content` (optional, seeds starter sources/tags/entries)
-3. Start dev:
+3. Run:
    - `pnpm dev`
 
-Notes:
-- Clerk is optional locally. If keys are not present, `/admin/*` will 404 and the site runs without auth.
-- Staging-first ingest is enabled when `SYNAC_STAGING_DATABASE_URL` is configured (see `.env.example`).
-
-Verification:
-- Run the gate before release/ship: `pnpm gate` (or `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`).
-
-## Deployment (Railway)
-
-Project name: `synac`.
-
-Services (per environment):
-- `synac` (web)
-- `worker`
-- `Postgres` (prod/dev DB)
-- `Postgres-cSfn` (staging DB; `Postgres` in staging is currently unused/no-deploy)
-
-Useful commands:
-- Deploy a service: `railway up -e <env> -s <service> -c`
-- Check status: `railway service status -a -e <env>`
-- Tail logs: `railway logs -e <env> -s <service>`
-- Run DB ops inside Railway (recommended when `DATABASE_URL` uses `postgres.railway.internal`):
-  - Migrate: `railway ssh -e <env> -s synac pnpm --filter @synac/db db:migrate:deploy`
-  - Seed roles/users: `railway ssh -e <env> -s synac pnpm db:seed`
-  - Seed starter content: `railway ssh -e <env> -s synac pnpm db:seed:content`
-  - Backfill acronyms (reclassify acronym-like terms): `railway ssh -e <env> -s synac pnpm --filter @synac/db db:reclassify:acronyms`
-  - Auto-tag entries: `railway ssh -e <env> -s synac pnpm --filter @synac/db db:tag:auto`
-
-## Ingest (staging-first)
-
-Production does not ingest directly. Instead:
-- Ingest runs/items are created in `staging` (staging DB).
-- The production worker runs promotion jobs to import validated runs into prod.
-- Tier‑1 sources auto-apply + auto-publish after validation (Tier‑2+ remain review-gated).
-
-Notes:
-- Ingest adapters can populate `entry_variants` (aliases/synonyms/abbreviations). Entry pages surface these as “Also known as”, and shortform entries with multi-word variants show a “Stands for” block.
-- Current ingest adapters: NIST CSRC glossary, NICCS (CISA) cybersecurity vocabulary (CSV export), IETF RFC 4949 glossary, MITRE ATT&CK CTI (Enterprise/Mobile/ICS), OWASP vulnerabilities.
-- NIST glossary ingest classifies acronym-like titles as `ACRONYM`. If a user lands on `/term/<slug>` for an acronym entry, it permanently redirects to `/acronym/<slug>` (and vice versa).
-- Tags are a curated taxonomy; some are auto-applied from entry text via `db:tag:auto`.
-
-Troubleshooting: `docs/runbooks/ingest-promotion.md`.
-
-## Status
-
-Released: `v0.1.5`.
-
-Latest UX note (v0.1.5): “Signal Ledger” redesign (instrument-panel header + archival paper/grain), ledger-style browse lists, and a left-rail entry layout for faster scanning.
-
-## License
-
-Code is MIT (see `LICENSE`).
-
-SynAc publishes content sourced from third parties with their own licenses and attribution requirements (see `/sources` and per-entry references). The repository license does not override third-party content licenses.
+Verification gate (before PRs): `pnpm gate`.
 
 ## Contributing
 
-See `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`.
+If you want to help, the highest-leverage contributions are usually:
+- Fixing unclear or incorrect docs
+- UI/UX + accessibility polish on the public site
+- Content corrections *with sources* (open an issue; see templates)
+
+Start here:
+- `CONTRIBUTING.md`
+- `CODE_OF_CONDUCT.md`
+- `GOVERNANCE.md`
+- `SUPPORT.md`
+
+Contribution boundary (by design): **docs + public web only**. Changes to ingest/DB/worker/admin/API require maintainer approval.
+
+## Project docs
+
+- Product/spec: `SPEC.md`
+- Execution tracker: `PLAN.md`
+- Ops + runbooks: `docs/` (index: `docs/README.md`)
+
+## Content & licensing
+
+SynAc publishes content sourced from third parties with their own licenses and attribution requirements. The repository’s MIT license does **not** override third-party content licenses.
+
+Policy: `docs/content/licensing.md`
+
+## Roadmap
+
+See `ROADMAP.md`.
 
 ## Security
 
 For vulnerability reporting, see `SECURITY.md` (please do not open public issues for security reports).
+
+## License
+
+MIT (see `LICENSE`).
