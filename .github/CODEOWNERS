@@ -1,0 +1,15 @@
+# Only sensitive / high-risk paths have required code owner review.
+# The repo intentionally keeps the “easy contribution surface” to docs + public web UI.
+
+packages/db/ @amanthanvi
+apps/worker/ @amanthanvi
+apps/web/src/app/admin/ @amanthanvi
+apps/web/src/app/api/ @amanthanvi
+.github/workflows/ @amanthanvi
+
+SECURITY.md @amanthanvi
+LICENSE @amanthanvi
+docs/content/ @amanthanvi
+
+SPEC.md @amanthanvi
+PLAN.md @amanthanvi

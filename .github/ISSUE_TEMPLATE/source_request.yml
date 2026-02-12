@@ -1,0 +1,58 @@
+name: Source request
+description: Propose a new source to ingest (include license and link).
+labels: ["source"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        SynAc ingests third-party sources. Licensing and attribution matter.
+
+        Please include the source’s license terms and a stable URL.
+  - type: input
+    id: name
+    attributes:
+      label: Source name
+      placeholder: NIST CSRC Glossary, RFC 4949, ...
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Source URL
+      placeholder: https://...
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: License / terms URL
+      description: Link to the license or terms governing reuse/attribution.
+      placeholder: https://...
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this source?
+      description: What does it add? Who uses it? What makes it authoritative?
+    validations:
+      required: true
+  - type: textarea
+    id: format
+    attributes:
+      label: Format + access method
+      description: How is the source accessed? (HTML pages, PDF, CSV export, API, Git repo, etc.)
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example entries / terms
+      description: A few representative terms that would be valuable to include.
+      placeholder: |
+        - Term A
+        - Term B
+        - Term C
+    validations:
+      required: false
+

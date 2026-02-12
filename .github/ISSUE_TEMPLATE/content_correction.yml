@@ -1,0 +1,42 @@
+name: Content correction
+description: Report an incorrect or unclear entry (include citations).
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve SynAc.
+
+        Please include supporting sources whenever possible. If this is a security issue, follow `SECURITY.md` instead of filing a public issue.
+  - type: input
+    id: url
+    attributes:
+      label: Entry URL
+      placeholder: https://synac.app/term/... or https://synac.app/acronym/...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What’s wrong?
+      description: Be specific about which sentence/section is incorrect or unclear.
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested correction
+      description: What should it say instead?
+    validations:
+      required: false
+  - type: textarea
+    id: sources
+    attributes:
+      label: Supporting citations / sources
+      description: Link to authoritative sources (standards, vendor docs, academic papers) and quote the relevant lines if possible.
+      placeholder: |
+        - https://example.com/...
+        - https://example.com/...
+    validations:
+      required: false
+
