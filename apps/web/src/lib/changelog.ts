@@ -1,3 +1,4 @@
+// Curated, site-facing changelog entries. Repo-canonical changelog lives in `CHANGELOG.md`.
 export type ChangelogEntry = {
   version: string;
   date: string; // YYYY-MM-DD
