@@ -9,9 +9,53 @@ export type ChangelogEntry = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: 'Unreleased',
-    date: '2026-02-08',
-    title: 'Work in progress',
-    sections: [],
+    date: '2026-03-24',
+    title: 'Correctness and operational hardening',
+    sections: [
+      {
+        title: 'Reliability',
+        items: [
+          'Added focused automated coverage for publish gating, promotion parsing, and search-index helpers.',
+          'Added search-index integrity reporting and rebuild tooling for the Postgres-backed entry_search system.',
+        ],
+      },
+      {
+        title: 'Content lifecycle',
+        items: [
+          'Integrated curated auto-tagging into entry publish flow so newly published content stays discoverable.',
+          'Improved promotion safeguards for malformed staged ingest payloads.',
+        ],
+      },
+      {
+        title: 'Maintainability',
+        items: [
+          'Refactored duplicated term/acronym entry rendering into shared public entry components and loaders.',
+          'Refactored duplicated browse-page data loading for terms and acronyms.',
+        ],
+      },
+    ],
+  },
+  {
+    version: 'v0.2.0',
+    date: '2026-02-10',
+    title: 'Clinical Reference UI overhaul',
+    sections: [
+      {
+        title: 'Public UI',
+        items: [
+          'Replaced Signal Ledger with the Clinical Reference visual system: dark-leaning, monospace-forward, and documentation-inspired.',
+          'Introduced stacked entry pages with sticky sense navigation, richer metadata, and hover previews.',
+          'Removed /trending and aligned navigation, sitemap, and public routes to the new product direction.',
+        ],
+      },
+      {
+        title: 'Design system',
+        items: [
+          'Adopted Geist Sans + Geist Mono across the public site.',
+          'Added system-aware theming with dark/light/system persistence and refreshed global design tokens.',
+        ],
+      },
+    ],
   },
   {
     version: 'v0.1.5',
