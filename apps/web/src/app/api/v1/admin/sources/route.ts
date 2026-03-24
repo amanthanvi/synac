@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server';
 
+import { getBoolean, getString, normalizeOptional } from '@synac/shared';
+
 import { requireAdminActor } from '@/lib/admin';
 import { createSource } from '@/lib/adminSources';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function getString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === 'string' ? value : '';
-}
-
-function getBoolean(body: Record<string, unknown>, key: string): boolean {
-  return body[key] === true;
-}
-
 export async function POST(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
 
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {

@@ -1,8 +1,13 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getPrismaClient, searchPublishedEntries } from '@synac/db';
+import {
+  getPrismaClient,
+  getSearchIndexCoverage,
+  searchPublishedEntries,
+} from '@synac/db';
 
 import { logger } from '@/lib/logger';
+import { logSearchIndexCoverage } from '@/lib/observability';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -44,6 +49,19 @@ export async function GET(request: NextRequest) {
     }
 
     const prisma = getPrismaClient();
+    if (page === 1) {
+      const coverage = await getSearchIndexCoverage(prisma, { limit: 10 });
+      if (coverage.missingEntryIds.length > 0 || coverage.orphanedEntryIds.length > 0) {
+        logSearchIndexCoverage({
+          location: 'api_v1_search',
+          publishedEntries: coverage.publishedEntries,
+          indexedEntries: coverage.indexedEntries,
+          missingEntryIds: coverage.missingEntryIds,
+          orphanedEntryIds: coverage.orphanedEntryIds,
+        });
+      }
+    }
+
     const results = await searchPublishedEntries(prisma, {
       query: q,
       entryType,

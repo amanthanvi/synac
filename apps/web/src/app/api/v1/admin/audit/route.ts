@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
 
 import { getPrismaClient } from '@synac/db';
+import { normalizeOptional } from '@synac/shared';
 
 import { requireAdminActor } from '@/lib/admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function normalizeOptional(value: string | null): string | undefined {
-  const v = value?.trim();
-  return v ? v : undefined;
-}
 
 export async function GET(request: Request) {
   await requireAdminActor();

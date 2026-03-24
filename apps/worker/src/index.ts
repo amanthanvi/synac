@@ -76,6 +76,12 @@ async function syncCronSchedules(): Promise<void> {
       });
     }
   }
+
+  logger.info('worker.schedule.sync_complete', {
+    enabledSourceCount: sources.length,
+    scheduledSourceCount: desired.size,
+    existingScheduleCount: existing.length,
+  });
 }
 
 if (isIngestEnabled(workerMode)) {
@@ -172,18 +178,14 @@ if (isPromotionEnabled(workerMode)) {
   await boss.work(PROMOTION_IMPORT_QUEUE, async (jobs) => {
     if (!jobs.length) return;
     const res = await importEligibleStagingRuns(prod, staging, { maxRuns: 20, maxItemsPerRun: 1000 });
-    if (res.runsImported || res.itemsImported) {
-      logger.info('promotion.import_runs.ok', { ...res, jobCount: jobs.length });
-    }
+    logger.info('promotion.import_runs.ok', { ...res, jobCount: jobs.length });
   });
 
   await boss.work(PROMOTION_AUTO_APPLY_QUEUE, async (jobs) => {
     if (!isTier1AutopublishEnabled()) return;
     if (!jobs.length) return;
     const res = await autoApplyTier1IngestItems(prod, { maxItems: 25 });
-    if (res.applied || res.failed) {
-      logger.info('autopublish.tier1.ok', { ...res, jobCount: jobs.length });
-    }
+    logger.info('autopublish.tier1.ok', { ...res, jobCount: jobs.length });
   });
 }
 

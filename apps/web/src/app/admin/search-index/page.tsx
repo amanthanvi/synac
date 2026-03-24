@@ -1,6 +1,7 @@
 import { PageHeader } from '@/components/PageHeader';
 import { Panel } from '@/components/ui/Panel';
 import { getPrismaClient, getSearchIndexCoverage } from '@synac/db';
+import { logSearchIndexCoverage } from '@/lib/observability';
 
 import layoutStyles from '@/app/_styles/Layout.module.css';
 
@@ -9,6 +10,13 @@ export const dynamic = 'force-dynamic';
 export default async function AdminSearchIndexPage() {
   const prisma = getPrismaClient();
   const coverage = await getSearchIndexCoverage(prisma, { limit: 20 });
+  logSearchIndexCoverage({
+    location: 'admin.search-index',
+    publishedEntries: coverage.publishedEntries,
+    indexedEntries: coverage.indexedEntries,
+    missingEntryIds: coverage.missingEntryIds,
+    orphanedEntryIds: coverage.orphanedEntryIds,
+  });
 
   return (
     <>

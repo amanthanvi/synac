@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+import { getString, normalizeOptional } from '@synac/shared';
+
 import { requireAdminActor } from '@/lib/admin';
 import { rejectIngestItem } from '@/lib/adminIngest';
 
@@ -7,7 +9,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
 
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
@@ -21,11 +23,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
   }
 
-  const reason = (body as Record<string, unknown>).reason;
+  const data = body as Record<string, unknown>;
   await rejectIngestItem({
     actorUserId: actor.dbUserId,
     ingestItemId,
-    reason: typeof reason === 'string' ? reason : '',
+    reason: getString(data, 'reason'),
   });
 
   return NextResponse.json({ ok: true });

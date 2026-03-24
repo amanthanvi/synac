@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+import { getBoolean, getNumber, getString, normalizeOptional } from '@synac/shared';
+
 import { getPrismaClient } from '@synac/db';
 
 import { requireAdminActor } from '@/lib/admin';
@@ -8,25 +10,8 @@ import { createIngestRun, createIngestRunsForAllSources } from '@/lib/adminInges
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function getString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === 'string' ? value : '';
-}
-
-function getNumber(body: Record<string, unknown>, key: string): number {
-  const value = body[key];
-  return typeof value === 'number' ? value : Number(value);
-}
-
-function getBoolean(body: Record<string, unknown>, key: string): boolean {
-  const value = body[key];
-  if (typeof value === 'boolean') return value;
-  const v = typeof value === 'string' ? value : String(value ?? '');
-  return v.trim().toLowerCase() === 'true' || v.trim() === '1';
-}
-
 export async function GET(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
 
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
@@ -60,7 +45,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
 
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
