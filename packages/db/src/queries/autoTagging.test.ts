@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AUTO_TAG_DEFINITIONS,
   collectAutoTagSlugsForDocument,
+  shouldCreateAutoTagDefinition,
 } from './autoTagging.js';
 
 describe('auto tagging', () => {
@@ -49,5 +50,13 @@ describe('auto tagging', () => {
 
   it('returns no tags for an empty document', () => {
     expect(collectAutoTagSlugsForDocument('   ')).toEqual([]);
+  });
+
+  it('only auto-creates missing tags and never revives deleted ones', () => {
+    expect(shouldCreateAutoTagDefinition(null)).toBe(true);
+    expect(shouldCreateAutoTagDefinition({ deletedAt: null })).toBe(false);
+    expect(shouldCreateAutoTagDefinition({ deletedAt: new Date('2026-03-24T00:00:00.000Z') })).toBe(
+      false,
+    );
   });
 });

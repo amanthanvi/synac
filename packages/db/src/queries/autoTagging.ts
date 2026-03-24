@@ -243,6 +243,12 @@ export function collectAutoTagSlugsForDocument(document: string): string[] {
   ).map((definition) => definition.slug);
 }
 
+export function shouldCreateAutoTagDefinition(
+  existing: { deletedAt: Date | null } | null,
+): boolean {
+  return existing === null;
+}
+
 export async function ensureAutoTagDefinitions(
   db: DbClientLike,
 ): Promise<Array<{ id: string; slug: string }>> {
@@ -322,4 +328,46 @@ export async function syncAutoTagsForPublishedEntry(
   }
 
   return { added: nextLinks.length, matchedSlugs: tags.map((tag) => tag.slug) };
+}
+
+export async function ensureMissingAutoTagDefinitions(
+  db: DbClientLike,
+  input: { slugs: string[] },
+): Promise<Array<{ id: string; slug: string }>> {
+  const requestedSlugs = new Set(input.slugs.map((slug) => slug.trim()).filter(Boolean));
+  if (requestedSlugs.size === 0) return [];
+
+  const definitions = AUTO_TAG_DEFINITIONS.filter((definition) => requestedSlugs.has(definition.slug));
+  const results: Array<{ id: string; slug: string }> = [];
+
+  for (const definition of definitions) {
+    const existing = await db.tag.findFirst({
+      where: { slug: definition.slug },
+      select: { id: true, slug: true, deletedAt: true },
+    });
+
+    if (!shouldCreateAutoTagDefinition(existing)) {
+      if (existing?.deletedAt === null) {
+        results.push({ id: existing.id, slug: existing.slug });
+      }
+      continue;
+    }
+
+    if (existing && existing.deletedAt === null) {
+      results.push(existing);
+      continue;
+    }
+
+    const created = await db.tag.create({
+      data: {
+        name: definition.name,
+        slug: definition.slug,
+        description: definition.description,
+      },
+      select: { id: true, slug: true },
+    });
+    results.push(created);
+  }
+
+  return results;
 }

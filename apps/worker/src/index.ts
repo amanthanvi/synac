@@ -32,6 +32,19 @@ await boss.createQueue(PROMOTION_AUTO_APPLY_QUEUE);
 const workerMode = getWorkerMode();
 logger.info('worker.mode', { mode: workerMode });
 
+function logIngestCronSkip(input: {
+  sourceId: string;
+  reason:
+    | 'source_not_found'
+    | 'source_disabled'
+    | 'missing_allowed_use'
+    | 'missing_attribution_requirements'
+    | 'missing_last_verified_at'
+    | 'ingest_run_already_running';
+}): void {
+  logger.info('worker.ingest_cron.skip', input);
+}
+
 async function syncCronSchedules(): Promise<void> {
   const prisma = getPrismaClient();
 
@@ -114,19 +127,34 @@ if (isIngestEnabled(workerMode)) {
       });
 
       if (!source) {
-        logger.warn('worker.ingest_cron.source_not_found', { sourceId });
+        logIngestCronSkip({ sourceId, reason: 'source_not_found' });
         continue;
       }
-      if (!source.enabled) continue;
-      if (!source.allowedUse.trim()) continue;
-      if (!source.attributionRequirements.trim()) continue;
-      if (!source.lastVerifiedAt) continue;
+      if (!source.enabled) {
+        logIngestCronSkip({ sourceId, reason: 'source_disabled' });
+        continue;
+      }
+      if (!source.allowedUse.trim()) {
+        logIngestCronSkip({ sourceId, reason: 'missing_allowed_use' });
+        continue;
+      }
+      if (!source.attributionRequirements.trim()) {
+        logIngestCronSkip({ sourceId, reason: 'missing_attribution_requirements' });
+        continue;
+      }
+      if (!source.lastVerifiedAt) {
+        logIngestCronSkip({ sourceId, reason: 'missing_last_verified_at' });
+        continue;
+      }
 
       const existingRun = await prisma.ingestRun.findFirst({
         where: { sourceId: source.id, status: 'RUNNING' },
         select: { id: true },
       });
-      if (existingRun) continue;
+      if (existingRun) {
+        logIngestCronSkip({ sourceId, reason: 'ingest_run_already_running' });
+        continue;
+      }
 
       const run = await prisma.ingestRun.create({
         data: {

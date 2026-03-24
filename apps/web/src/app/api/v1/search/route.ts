@@ -7,7 +7,10 @@ import {
 } from '@synac/db';
 
 import { logger } from '@/lib/logger';
-import { logSearchIndexCoverage } from '@/lib/observability';
+import {
+  shouldAuditSearchIndexCoverage,
+  logSearchIndexCoverage,
+} from '@/lib/observability';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -49,7 +52,23 @@ export async function GET(request: NextRequest) {
     }
 
     const prisma = getPrismaClient();
-    if (page === 1) {
+    const results = await searchPublishedEntries(prisma, {
+      query: q,
+      entryType,
+      tagSlug: tag?.trim() ? tag.trim().toLowerCase() : undefined,
+      page,
+      pageSize: 20,
+    });
+
+    const durationMs = Date.now() - startMs;
+    if (
+      shouldAuditSearchIndexCoverage({
+        query: q,
+        page,
+        durationMs,
+        resultsCount: results.length,
+      })
+    ) {
       const coverage = await getSearchIndexCoverage(prisma, { limit: 10 });
       if (coverage.missingEntryIds.length > 0 || coverage.orphanedEntryIds.length > 0) {
         logSearchIndexCoverage({
@@ -62,17 +81,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const results = await searchPublishedEntries(prisma, {
-      query: q,
-      entryType,
-      tagSlug: tag?.trim() ? tag.trim().toLowerCase() : undefined,
-      page,
-      pageSize: 20,
-    });
-
     logger.info('api.search.ok', {
       requestId,
-      durationMs: Date.now() - startMs,
+      durationMs,
       qLen: q.trim().length,
       entryType,
       tag: tag?.trim() ? tag.trim().toLowerCase() : undefined,
