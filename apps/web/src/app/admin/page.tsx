@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { PageHeader } from '@/components/PageHeader';
 import { Panel } from '@/components/ui/Panel';
 
@@ -19,6 +21,9 @@ export default function AdminDashboardPage() {
             This is the v0.1.0 admin surface. Use Entries to draft/publish, Sources + Ingest to
             populate the corpus, Tags to curate navigation, Takedown for removals, and Audit for
             history/rollback.
+          </p>
+          <p>
+            Search integrity can be inspected from <Link href="/admin/search-index">Search index</Link>.
           </p>
         </div>
       </Panel>

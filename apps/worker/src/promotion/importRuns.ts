@@ -2,7 +2,7 @@ import type { Prisma, PrismaClient } from '@synac/db';
 
 import type { ProposedChange } from './types.js';
 
-function getNormalizedProposedChange(item: {
+export function extractNormalizedProposedChange(item: {
   proposedChange: unknown;
   stageOutputs: unknown;
 }): ProposedChange | null {
@@ -181,7 +181,7 @@ export async function importEligibleStagingRuns(
       if (item.sourceDocument.doNotUse) continue;
       if (item.error?.trim()) continue;
 
-      const normalizedProposedChange = getNormalizedProposedChange(item);
+      const normalizedProposedChange = extractNormalizedProposedChange(item);
       if (!normalizedProposedChange) continue;
 
       const prodSourceDocumentId = await getOrCreateSourceDocument(prod, {
@@ -228,4 +228,19 @@ export async function importEligibleStagingRuns(
   }
 
   return { runsImported, itemsImported };
+}
+
+export function shouldImportStagingIngestItem(input: {
+  item: {
+    error: string | null;
+    sourceDocument: { doNotUse: boolean };
+  };
+  normalizedProposedChange: ProposedChange | null;
+  alreadyExistsInProd: boolean;
+}): boolean {
+  if (input.alreadyExistsInProd) return false;
+  if (input.item.sourceDocument.doNotUse) return false;
+  if (input.item.error?.trim()) return false;
+  if (!input.normalizedProposedChange) return false;
+  return true;
 }

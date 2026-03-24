@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
 
+import { getString } from '@synac/shared';
+
 import { requireAdminActor } from '@/lib/admin';
 import { createDraftEntry } from '@/lib/adminEntries';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function getString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === 'string' ? value : '';
-}
 
 function parseEntryType(value: string): 'TERM' | 'ACRONYM' {
   const v = value.toUpperCase();

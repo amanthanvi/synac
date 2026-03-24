@@ -1,4 +1,4 @@
-import { getPrismaClient } from '@synac/db';
+import { getPrismaClient, syncAutoTagsForPublishedEntry } from '@synac/db';
 
 import { markdownToText, normalizeTitle, slugify } from './text';
 
@@ -440,6 +440,8 @@ export async function publishEntry(input: {
       where: { id: { in: publishableWithCitations.map((s) => s.id) } },
       data: { status: 'PUBLISHED', publishedAt: now },
     });
+
+    await syncAutoTagsForPublishedEntry(tx, { entryId: entry.id });
 
     await tx.auditEvent.create({
       data: {

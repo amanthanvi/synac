@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server';
 
+import { getString } from '@synac/shared';
+
 import { requireAdminActor } from '@/lib/admin';
 import { updateEntry } from '@/lib/adminEntries';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function getString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === 'string' ? value : '';
-}
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const requestId = request.headers.get('x-request-id') ?? undefined;
