@@ -69,15 +69,20 @@ export async function GET(request: NextRequest) {
         resultsCount: results.length,
       })
     ) {
-      const coverage = await getSearchIndexCoverage(prisma, { limit: 10 });
-      if (coverage.missingEntryIds.length > 0 || coverage.orphanedEntryIds.length > 0) {
-        logSearchIndexCoverage({
-          location: 'api_v1_search',
-          publishedEntries: coverage.publishedEntries,
-          indexedEntries: coverage.indexedEntries,
-          missingEntryIds: coverage.missingEntryIds,
-          orphanedEntryIds: coverage.orphanedEntryIds,
-        });
+      try {
+        const coverage = await getSearchIndexCoverage(prisma, { limit: 10 });
+        if (coverage.missingEntryIds.length > 0 || coverage.orphanedEntryIds.length > 0) {
+          logSearchIndexCoverage({
+            location: 'api_v1_search',
+            publishedEntries: coverage.publishedEntries,
+            indexedEntries: coverage.indexedEntries,
+            missingEntryIds: coverage.missingEntryIds,
+            orphanedEntryIds: coverage.orphanedEntryIds,
+          });
+        }
+      } catch (coverageErr) {
+        const message = coverageErr instanceof Error ? coverageErr.message : String(coverageErr);
+        logger.warn('api.search.index_coverage_audit_failed', { requestId, error: message });
       }
     }
 

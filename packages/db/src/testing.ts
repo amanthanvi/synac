@@ -60,10 +60,12 @@ export async function resetIntegrationDatabase(prisma: PrismaClient): Promise<vo
 }
 
 export async function disconnectIntegrationPrisma(): Promise<void> {
-  if (!integrationPrisma) return;
-  await integrationPrisma.$disconnect();
-  integrationPrisma = null;
-  if (!integrationStagingPrisma) return;
-  await integrationStagingPrisma.$disconnect();
-  integrationStagingPrisma = null;
+  if (integrationPrisma) {
+    await integrationPrisma.$disconnect();
+    integrationPrisma = null;
+  }
+  if (integrationStagingPrisma) {
+    await integrationStagingPrisma.$disconnect();
+    integrationStagingPrisma = null;
+  }
 }

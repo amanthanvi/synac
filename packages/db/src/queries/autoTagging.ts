@@ -318,11 +318,6 @@ export async function ensureMissingAutoTagDefinitions(
       continue;
     }
 
-    if (existing && existing.deletedAt === null) {
-      results.push(existing);
-      continue;
-    }
-
     const created = await db.tag.create({
       data: {
         name: definition.name,

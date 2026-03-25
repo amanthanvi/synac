@@ -177,12 +177,19 @@ export async function importEligibleStagingRuns(
 
     for (const item of items) {
       const existingItem = await prod.ingestItem.findFirst({ where: { id: item.id }, select: { id: true } });
-      if (existingItem) continue;
-      if (item.sourceDocument.doNotUse) continue;
-      if (item.error?.trim()) continue;
-
       const normalizedProposedChange = extractNormalizedProposedChange(item);
-      if (!normalizedProposedChange) continue;
+      if (
+        !shouldImportStagingIngestItem({
+          item: {
+            error: item.error,
+            sourceDocument: { doNotUse: item.sourceDocument.doNotUse },
+          },
+          normalizedProposedChange,
+          alreadyExistsInProd: Boolean(existingItem),
+        })
+      ) {
+        continue;
+      }
 
       const prodSourceDocumentId = await getOrCreateSourceDocument(prod, {
         prodSourceId: prodSource.id,
