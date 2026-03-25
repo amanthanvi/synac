@@ -1,78 +1,106 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { NextRequest } from 'next/server';
 
-vi.mock('@synac/db', () => ({
-  getPrismaClient: vi.fn(),
-  getSearchIndexCoverage: vi.fn(),
-  searchPublishedEntries: vi.fn(),
-}));
-
-vi.mock('@/lib/rateLimit', () => ({
-  enforceRateLimit: vi.fn(),
-}));
-
-vi.mock('@/lib/observability', () => ({
-  shouldAuditSearchIndexCoverage: vi.fn(),
-  logSearchIndexCoverage: vi.fn(),
-}));
-
-vi.mock('@/lib/logger', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  },
-}));
-
-import {
-  getSearchIndexCoverage,
-  searchPublishedEntries,
-} from '@synac/db';
-
-import { shouldAuditSearchIndexCoverage } from '@/lib/observability';
-import { enforceRateLimit } from '@/lib/rateLimit';
+import { createIntegrationTestClient, resetIntegrationDatabase } from '@synac/db';
 
 import { GET } from './route';
 
-describe('GET /api/v1/search', () => {
-  it('does not inspect search index coverage for normal autocomplete traffic', async () => {
-    vi.mocked(enforceRateLimit).mockResolvedValue({
-      allowed: true,
-      retryAfterSeconds: 0,
-      remaining: 59,
-    });
-    vi.mocked(searchPublishedEntries).mockResolvedValue([]);
-    vi.mocked(shouldAuditSearchIndexCoverage).mockReturnValue(false);
+const prisma = createIntegrationTestClient();
 
-    const request = new Request('http://localhost:3000/api/v1/search?q=saml&page=1');
-    const response = await GET(request as never);
-
-    expect(response.status).toBe(200);
-    expect(searchPublishedEntries).toHaveBeenCalledOnce();
-    expect(shouldAuditSearchIndexCoverage).toHaveBeenCalledOnce();
-    expect(getSearchIndexCoverage).not.toHaveBeenCalled();
+async function createPublishedEntry(input: {
+  slug: string;
+  title: string;
+  summary: string;
+  definition: string;
+}) {
+  const entry = await prisma.entry.create({
+    data: {
+      entryType: 'TERM',
+      displayTitle: input.title,
+      normalizedTitle: input.title.toLowerCase(),
+      primarySlug: input.slug,
+      status: 'PUBLISHED',
+      summaryMd: input.summary,
+      summaryText: input.summary,
+    },
+    select: { id: true },
   });
 
-  it('inspects search index coverage only when anomaly gating says so', async () => {
-    vi.mocked(enforceRateLimit).mockResolvedValue({
-      allowed: true,
-      retryAfterSeconds: 0,
-      remaining: 59,
-    });
-    vi.mocked(searchPublishedEntries).mockResolvedValue([]);
-    vi.mocked(shouldAuditSearchIndexCoverage).mockReturnValue(true);
-    vi.mocked(getSearchIndexCoverage).mockResolvedValue({
-      publishedEntries: 10,
-      indexedEntries: 9,
-      missingEntryIds: ['entry-1'],
-      orphanedEntryIds: [],
+  await prisma.sense.create({
+    data: {
+      entryId: entry.id,
+      senseOrder: 0,
+      definitionMd: input.definition,
+      definitionText: input.definition,
+      status: 'PUBLISHED',
+    },
+  });
+
+  return entry;
+}
+
+describe('GET /api/v1/search integration', () => {
+  beforeEach(async () => {
+    await resetIntegrationDatabase(prisma);
+    vi.restoreAllMocks();
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  it('does not emit search-index coverage diagnostics for normal autocomplete traffic', async () => {
+    await createPublishedEntry({
+      slug: 'saml',
+      title: 'SAML',
+      summary: 'Security Assertion Markup Language.',
+      definition: 'SAML is used for federated authentication.',
     });
 
-    const request = new Request(
-      'http://localhost:3000/api/v1/search?q=authentication&page=1',
-    );
-    const response = await GET(request as never);
+    const infoSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const request = new NextRequest('http://localhost:3000/api/v1/search?q=saml&page=1', {
+      headers: { 'user-agent': 'vitest-search-route' },
+    });
+
+    const response = await GET(request);
+    const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(getSearchIndexCoverage).toHaveBeenCalledOnce();
+    expect(payload.results).toHaveLength(1);
+    expect(
+      infoSpy.mock.calls.some(([value]) =>
+        String(value).includes('"message":"search.index.coverage"'),
+      ),
+    ).toBe(false);
+  });
+
+  it('emits search-index coverage diagnostics only for anomalous searches with real missing index rows', async () => {
+    const entry = await createPublishedEntry({
+      slug: 'authentication',
+      title: 'Authentication',
+      summary: 'Authentication verifies an identity.',
+      definition: 'Authentication verifies an identity before access.',
+    });
+
+    await prisma.entrySearch.deleteMany({ where: { entryId: entry.id } });
+
+    const infoSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const request = new NextRequest(
+      'http://localhost:3000/api/v1/search?q=authentication&page=1',
+      {
+        headers: { 'user-agent': 'vitest-search-route-anomaly' },
+      },
+    );
+
+    const response = await GET(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload.results).toHaveLength(0);
+    expect(
+      infoSpy.mock.calls.some(([value]) =>
+        String(value).includes('"message":"search.index.coverage"'),
+      ),
+    ).toBe(true);
   });
 });

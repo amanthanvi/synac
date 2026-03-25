@@ -22,7 +22,7 @@
     "start": "pnpm --filter @synac/web start",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "pnpm -r --workspace-concurrency=1 test",
     "format": "pnpm -r format",
     "db:generate": "pnpm --filter @synac/db db:generate",
     "db:migrate": "pnpm --filter @synac/db db:migrate",

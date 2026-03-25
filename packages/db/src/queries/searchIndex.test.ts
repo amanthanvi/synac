@@ -1,88 +1,138 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  getSearchIndexCoverage,
-  rebuildSearchIndex,
-} from './searchIndex.js';
+import { createIntegrationTestClient, resetIntegrationDatabase } from '../testing.js';
+import { getSearchIndexCoverage, rebuildSearchIndex } from './searchIndex.js';
 
-type GlobalSearchIndexState = typeof globalThis & {
-  __searchIndexQueryCount?: number;
-};
+const prisma = createIntegrationTestClient();
+
+async function createPublishedEntry(input: { slug: string; title: string; definition: string }) {
+  const entry = await prisma.entry.create({
+    data: {
+      entryType: 'TERM',
+      displayTitle: input.title,
+      normalizedTitle: input.title.toLowerCase(),
+      primarySlug: input.slug,
+      status: 'PUBLISHED',
+      summaryMd: input.definition,
+      summaryText: input.definition,
+    },
+    select: { id: true },
+  });
+
+  await prisma.sense.create({
+    data: {
+      entryId: entry.id,
+      senseOrder: 0,
+      definitionMd: input.definition,
+      definitionText: input.definition,
+      status: 'PUBLISHED',
+    },
+  });
+
+  return entry;
+}
 
 describe('search index helpers', () => {
-  it('reports coverage from published, indexed, missing, and orphaned rows', async () => {
-    const globalState = globalThis as GlobalSearchIndexState;
-    const db = {
-      entry: {
-        count: async () => 3,
-      },
-      entrySearch: {
-        count: async () => 2,
-      },
-      $queryRaw: async () => {
-        if (!globalState.__searchIndexQueryCount) {
-          globalState.__searchIndexQueryCount = 1;
-          return [{ id: 'missing-entry' }];
-        }
+  beforeEach(async () => {
+    await resetIntegrationDatabase(prisma);
+  });
 
-        return [{ id: 'orphaned-entry' }];
-      },
-    } as unknown as {
-      entry: { count: () => Promise<number> };
-      entrySearch: { count: () => Promise<number> };
-      $queryRaw: (query: unknown) => Promise<Array<{ id: string }>>;
-    };
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
 
-    const coverage = await getSearchIndexCoverage(
-      db as never,
-      { limit: 25 },
-    );
-
-    expect(coverage).toEqual({
-      publishedEntries: 3,
-      indexedEntries: 2,
-      missingEntryIds: ['missing-entry'],
-      orphanedEntryIds: ['orphaned-entry'],
+  it('reports coverage for real published, missing, and orphaned search rows', async () => {
+    const indexedEntry = await createPublishedEntry({
+      slug: 'authentication',
+      title: 'Authentication',
+      definition: 'Authentication verifies an identity.',
+    });
+    const missingEntry = await createPublishedEntry({
+      slug: 'authorization',
+      title: 'Authorization',
+      definition: 'Authorization grants permissions.',
     });
 
-    delete globalState.__searchIndexQueryCount;
+    await prisma.entrySearch.deleteMany({ where: { entryId: missingEntry.id } });
+    await prisma.entry.update({
+      where: { id: indexedEntry.id },
+      data: { status: 'ARCHIVED' },
+    });
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO entry_search (
+        entry_id,
+        entry_type,
+        normalized_title,
+        primary_slug,
+        search_document,
+        updated_at
+      ) VALUES (
+        '${indexedEntry.id}'::uuid,
+        'TERM'::"EntryType",
+        'authentication',
+        'authentication',
+        'authentication verifies an identity',
+        NOW()
+      )
+      ON CONFLICT (entry_id) DO UPDATE SET
+        entry_type = EXCLUDED.entry_type,
+        normalized_title = EXCLUDED.normalized_title,
+        primary_slug = EXCLUDED.primary_slug,
+        search_document = EXCLUDED.search_document,
+        updated_at = NOW()
+    `);
+
+    const coverage = await getSearchIndexCoverage(prisma, { limit: 25 });
+
+    expect(coverage.publishedEntries).toBe(1);
+    expect(coverage.indexedEntries).toBe(1);
+    expect(coverage.missingEntryIds).toContain(missingEntry.id);
+    expect(coverage.orphanedEntryIds).toContain(indexedEntry.id);
   });
 
   it('rebuilds only the requested entry ids when provided', async () => {
-    const executed: unknown[] = [];
-    const db = {
-      $executeRaw: async (query: unknown) => {
-        executed.push(query);
-        return 1;
-      },
-    } as unknown as {
-      $executeRaw: (query: unknown) => Promise<number>;
-    };
-
-    const result = await rebuildSearchIndex(db as never, {
-      entryIds: ['a', ' ', 'b'],
+    const firstEntry = await createPublishedEntry({
+      slug: 'integrity',
+      title: 'Integrity',
+      definition: 'Integrity protects data from unauthorized changes.',
+    });
+    const secondEntry = await createPublishedEntry({
+      slug: 'availability',
+      title: 'Availability',
+      definition: 'Availability keeps systems accessible.',
     });
 
-    expect(result).toEqual({ rebuiltCount: 2 });
-    expect(executed).toHaveLength(1);
+    await prisma.entrySearch.deleteMany({
+      where: { entryId: { in: [firstEntry.id, secondEntry.id] } },
+    });
+
+    const result = await rebuildSearchIndex(prisma, { entryIds: [firstEntry.id] });
+
+    expect(result).toEqual({ rebuiltCount: 1 });
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: firstEntry.id } })).not.toBeNull();
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: secondEntry.id } })).toBeNull();
   });
 
   it('rebuilds the full published corpus when ids are omitted', async () => {
-    const executed: unknown[] = [];
-    const db = {
-      $queryRaw: async () => [{ id: '1' }, { id: '2' }, { id: '3' }],
-      $executeRaw: async (query: unknown) => {
-        executed.push(query);
-        return 3;
-      },
-    } as unknown as {
-      $queryRaw: (query: unknown) => Promise<Array<{ id: string }>>;
-      $executeRaw: (query: unknown) => Promise<number>;
-    };
+    const firstEntry = await createPublishedEntry({
+      slug: 'confidentiality',
+      title: 'Confidentiality',
+      definition: 'Confidentiality protects information from disclosure.',
+    });
+    const secondEntry = await createPublishedEntry({
+      slug: 'cia-triad',
+      title: 'CIA Triad',
+      definition: 'The CIA triad covers confidentiality, integrity, and availability.',
+    });
 
-    const result = await rebuildSearchIndex(db as never);
+    await prisma.entrySearch.deleteMany({
+      where: { entryId: { in: [firstEntry.id, secondEntry.id] } },
+    });
 
-    expect(result).toEqual({ rebuiltCount: 3 });
-    expect(executed).toHaveLength(1);
+    const result = await rebuildSearchIndex(prisma);
+
+    expect(result).toEqual({ rebuiltCount: 2 });
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: firstEntry.id } })).not.toBeNull();
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: secondEntry.id } })).not.toBeNull();
   });
 });
