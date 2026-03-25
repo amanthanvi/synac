@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AUTO_TAG_DEFINITIONS,
   collectAutoTagSlugsForDocument,
+  ensureMissingAutoTagDefinitions,
   shouldCreateAutoTagDefinition,
 } from './autoTagging.js';
 
@@ -58,5 +59,38 @@ describe('auto tagging', () => {
     expect(shouldCreateAutoTagDefinition({ deletedAt: new Date('2026-03-24T00:00:00.000Z') })).toBe(
       false,
     );
+  });
+
+  it('ensures only missing definitions without overwriting existing curated metadata', async () => {
+    const updates: unknown[] = [];
+    const creates: unknown[] = [];
+
+    const db = {
+      tag: {
+        findFirst: async ({ where }: { where: { slug: string } }) => {
+          if (where.slug === 'identity') {
+            return { id: 'tag-1', slug: 'identity', deletedAt: null };
+          }
+
+          return null;
+        },
+        create: async ({ data }: { data: { name: string; slug: string; description: string } }) => {
+          creates.push(data);
+          return { id: `created-${data.slug}`, slug: data.slug };
+        },
+        update: async ({ data }: { data: unknown }) => {
+          updates.push(data);
+          return { id: 'tag-1', slug: 'identity' };
+        },
+      },
+    } as never;
+
+    const tags = await ensureMissingAutoTagDefinitions(db, {
+      slugs: ['identity', 'privacy'],
+    });
+
+    expect(tags.some((tag) => tag.slug === 'identity')).toBe(true);
+    expect(updates).toHaveLength(0);
+    expect(creates.length).toBeGreaterThan(0);
   });
 });

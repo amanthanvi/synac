@@ -176,4 +176,45 @@ describe('publish entry workflow', () => {
     expect(result).toEqual({ publishedSenseCount: 2 });
     expect(updates).toEqual(['entry', 'senses:sense-1,sense-2', 'auto-tags', 'audit']);
   });
+
+  it('keeps publish-time auto-tagging non-destructive to curated metadata', async () => {
+    const updates: Array<string> = [];
+
+    const result = await publishEntryWithDeps(
+      {
+        getEntry: async () => ({
+          id: 'entry-4',
+          status: 'DRAFT',
+          summaryMd: 'Summary',
+          publishedAt: null,
+        }),
+        listSenses: async () => [
+          {
+            id: 'sense-1',
+            definitionMd: 'Definition',
+            definitionText: 'Definition',
+            isEditorial: false,
+            editorialRationale: null,
+          },
+        ],
+        getSenseProvenanceCounts: async () => new Map([['sense-1', 1]]),
+        updateEntry: async () => {
+          updates.push('entry');
+        },
+        publishSenses: async () => {
+          updates.push('sense');
+        },
+        createAuditEvent: async () => {
+          updates.push('audit');
+        },
+        syncAutoTags: async () => {
+          updates.push('auto-tags:add-links-only');
+        },
+      },
+      { actorUserId: 'actor-1', entryId: 'entry-4', now: new Date('2026-03-24T12:00:00.000Z') },
+    );
+
+    expect(result).toEqual({ publishedSenseCount: 1 });
+    expect(updates).toEqual(['entry', 'sense', 'auto-tags:add-links-only', 'audit']);
+  });
 });

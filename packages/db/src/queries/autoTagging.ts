@@ -249,41 +249,6 @@ export function shouldCreateAutoTagDefinition(
   return existing === null;
 }
 
-export async function ensureAutoTagDefinitions(
-  db: DbClientLike,
-): Promise<Array<{ id: string; slug: string }>> {
-  const results: Array<{ id: string; slug: string }> = [];
-
-  for (const definition of AUTO_TAG_DEFINITIONS) {
-    const existing = await db.tag.findFirst({
-      where: { slug: definition.slug, deletedAt: null },
-      select: { id: true, slug: true },
-    });
-
-    const tag = existing
-      ? await db.tag.update({
-          where: { id: existing.id },
-          data: {
-            name: definition.name,
-            description: definition.description,
-          },
-          select: { id: true, slug: true },
-        })
-      : await db.tag.create({
-          data: {
-            name: definition.name,
-            slug: definition.slug,
-            description: definition.description,
-          },
-          select: { id: true, slug: true },
-        });
-
-    results.push(tag);
-  }
-
-  return results;
-}
-
 export async function syncAutoTagsForPublishedEntry(
   db: DbClientLike,
   input: { entryId: string; ensureDefinitions?: boolean },
@@ -303,7 +268,7 @@ export async function syncAutoTagsForPublishedEntry(
   }
 
   if (input.ensureDefinitions !== false) {
-    await ensureAutoTagDefinitions(db);
+    await ensureMissingAutoTagDefinitions(db, { slugs: matchedSlugs });
   }
 
   const tags = await db.tag.findMany({
