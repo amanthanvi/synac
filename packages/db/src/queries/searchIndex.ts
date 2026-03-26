@@ -17,6 +17,33 @@ export type SearchIndexCoverage = {
   orphanedEntryIds: string[];
 };
 
+function entryIdSqlList(entryIds: string[]): Prisma.Sql {
+  return Prisma.join(entryIds.map((id) => Prisma.sql`${id}::uuid`));
+}
+
+async function deleteOrphanedSearchIndexRows(
+  db: DbClientLike,
+  input?: { entryIds?: string[] },
+): Promise<void> {
+  const requestedIds = input?.entryIds;
+  const requestedFilter =
+    requestedIds && requestedIds.length > 0
+      ? Prisma.sql`AND es.entry_id IN (${entryIdSqlList(requestedIds)})`
+      : Prisma.empty;
+
+  await db.$executeRaw(Prisma.sql`
+    DELETE FROM entry_search es
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM entries e
+      WHERE e.id = es.entry_id
+        AND e.status = 'PUBLISHED'
+        AND e.deleted_at IS NULL
+    )
+    ${requestedFilter}
+  `);
+}
+
 export async function getSearchIndexCoverage(
   db: DbClientLike,
   input?: { limit?: number },
@@ -75,12 +102,14 @@ export async function rebuildSearchIndex(
   }
 
   if (requestedIds.length > 0) {
+    await deleteOrphanedSearchIndexRows(db, { entryIds: requestedIds });
+
     const matchedRows = await db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
       SELECT id
       FROM entries
       WHERE status = 'PUBLISHED'
         AND deleted_at IS NULL
-        AND id IN (${Prisma.join(requestedIds.map((id) => Prisma.sql`${id}::uuid`))})
+        AND id IN (${entryIdSqlList(requestedIds)})
     `);
 
     if (matchedRows.length === 0) {
@@ -92,11 +121,13 @@ export async function rebuildSearchIndex(
       FROM entries
       WHERE status = 'PUBLISHED'
         AND deleted_at IS NULL
-        AND id IN (${Prisma.join(matchedRows.map((row) => Prisma.sql`${row.id}::uuid`))})
+        AND id IN (${entryIdSqlList(matchedRows.map((row) => row.id))})
     `);
 
     return { rebuiltCount: matchedRows.length };
   }
+
+  await deleteOrphanedSearchIndexRows(db);
 
   const rows = await db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
     SELECT id

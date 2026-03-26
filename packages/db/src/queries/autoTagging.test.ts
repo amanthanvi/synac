@@ -209,4 +209,71 @@ describe('auto tagging integration', () => {
     });
     expect(activeAppSec).toHaveLength(0);
   });
+
+  it('drops stale auto tags when republished content no longer matches', async () => {
+    const manualTag = await prisma.tag.create({
+      data: {
+        name: 'Manual tag',
+        slug: 'manual-tag',
+        description: 'Should remain attached',
+      },
+      select: { id: true },
+    });
+
+    const entry = await prisma.entry.create({
+      data: {
+        entryType: 'TERM',
+        displayTitle: 'Republish test',
+        normalizedTitle: 'republish test',
+        primarySlug: 'republish-test',
+        status: 'PUBLISHED',
+        summaryMd: 'Authentication tokens need protection.',
+        summaryText: 'Authentication tokens need protection.',
+      },
+      select: { id: true },
+    });
+
+    await prisma.entryTag.create({
+      data: { entryId: entry.id, tagId: manualTag.id },
+    });
+
+    const sense = await prisma.sense.create({
+      data: {
+        entryId: entry.id,
+        senseOrder: 0,
+        definitionMd: 'Web vulnerabilities can expose credentials.',
+        definitionText: 'Web vulnerabilities can expose credentials.',
+        status: 'PUBLISHED',
+      },
+      select: { id: true },
+    });
+
+    const first = await syncAutoTagsForPublishedEntry(prisma, { entryId: entry.id });
+    expect(first.matchedSlugs).toContain('identity');
+
+    await prisma.entry.update({
+      where: { id: entry.id },
+      data: {
+        summaryMd: 'Orchards and soil conditions.',
+        summaryText: 'Orchards and soil conditions.',
+      },
+    });
+    await prisma.sense.update({
+      where: { id: sense.id },
+      data: {
+        definitionMd: 'Fruit trees and seasonal harvests.',
+        definitionText: 'Fruit trees and seasonal harvests.',
+      },
+    });
+
+    const second = await syncAutoTagsForPublishedEntry(prisma, { entryId: entry.id });
+    const entryTags = await prisma.entryTag.findMany({
+      where: { entryId: entry.id },
+      include: { tag: { select: { slug: true } } },
+      orderBy: { tagId: 'asc' },
+    });
+
+    expect(second).toEqual({ added: 0, matchedSlugs: [] });
+    expect(entryTags.map((row) => row.tag.slug)).toEqual(['manual-tag']);
+  });
 });

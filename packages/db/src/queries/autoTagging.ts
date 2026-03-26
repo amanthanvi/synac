@@ -240,6 +240,8 @@ export const AUTO_TAG_DEFINITIONS: AutoTagDefinition[] = [
   },
 ];
 
+const AUTO_TAG_SLUGS = AUTO_TAG_DEFINITIONS.map((definition) => definition.slug);
+
 export function collectAutoTagSlugsForDocument(document: string): string[] {
   const normalizedDocument = document.trim();
   if (!normalizedDocument) return [];
@@ -264,41 +266,55 @@ export async function syncAutoTagsForPublishedEntry(
     select: { entryId: true, searchDocument: true },
   });
 
-  if (!search?.searchDocument?.trim()) {
-    return { added: 0, matchedSlugs: [] };
-  }
+  const matchedSlugs = search?.searchDocument?.trim()
+    ? collectAutoTagSlugsForDocument(search.searchDocument)
+    : [];
 
-  const matchedSlugs = collectAutoTagSlugsForDocument(search.searchDocument);
-  if (matchedSlugs.length === 0) {
-    return { added: 0, matchedSlugs: [] };
-  }
-
-  if (input.ensureDefinitions !== false) {
+  if (input.ensureDefinitions !== false && matchedSlugs.length > 0) {
     await ensureMissingAutoTagDefinitions(db, { slugs: matchedSlugs });
   }
 
   const tags = await db.tag.findMany({
-    where: { slug: { in: matchedSlugs }, deletedAt: null },
+    where: { slug: { in: AUTO_TAG_SLUGS }, deletedAt: null },
     select: { id: true, slug: true },
   });
-  if (tags.length === 0) {
-    return { added: 0, matchedSlugs: [] };
-  }
+  const matchedTagIds = new Set(
+    tags.filter((tag) => matchedSlugs.includes(tag.slug)).map((tag) => tag.id),
+  );
 
   const existing = await db.entryTag.findMany({
-    where: { entryId: input.entryId, tagId: { in: tags.map((tag) => tag.id) } },
+    where: {
+      entryId: input.entryId,
+      tag: { slug: { in: AUTO_TAG_SLUGS } },
+    },
     select: { tagId: true },
   });
   const existingTagIds = new Set(existing.map((row) => row.tagId));
+  const staleTagIds = Array.from(existingTagIds).filter((tagId) => !matchedTagIds.has(tagId));
+
+  if (staleTagIds.length > 0) {
+    await db.entryTag.deleteMany({
+      where: {
+        entryId: input.entryId,
+        tagId: { in: staleTagIds },
+      },
+    });
+  }
+
   const nextLinks = tags
-    .filter((tag) => !existingTagIds.has(tag.id))
+    .filter((tag) => matchedTagIds.has(tag.id) && !existingTagIds.has(tag.id))
     .map((tag) => ({ entryId: input.entryId, tagId: tag.id }));
 
   if (nextLinks.length > 0) {
     await db.entryTag.createMany({ data: nextLinks, skipDuplicates: true });
   }
 
-  return { added: nextLinks.length, matchedSlugs: tags.map((tag) => tag.slug) };
+  return {
+    added: nextLinks.length,
+    matchedSlugs: tags
+      .filter((tag) => matchedTagIds.has(tag.id))
+      .map((tag) => tag.slug),
+  };
 }
 
 export async function ensureMissingAutoTagDefinitions(

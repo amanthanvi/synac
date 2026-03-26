@@ -166,6 +166,54 @@ describe('search index helpers', () => {
     expect(await prisma.entrySearch.findUnique({ where: { entryId: published.id } })).not.toBeNull();
   });
 
+  it('full rebuild clears orphaned rows while restoring published rows', async () => {
+    const published = await createPublishedEntry({
+      slug: 'rebuild-clears-orphans',
+      title: 'Rebuild clears orphans',
+      definition: 'Published entries should be restored.',
+    });
+    const archived = await createPublishedEntry({
+      slug: 'archived-orphan',
+      title: 'Archived orphan',
+      definition: 'This row should be removed from the index.',
+    });
+
+    await prisma.entrySearch.deleteMany({ where: { entryId: published.id } });
+    await prisma.entry.update({
+      where: { id: archived.id },
+      data: { status: 'ARCHIVED' },
+    });
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO entry_search (
+        entry_id,
+        entry_type,
+        normalized_title,
+        primary_slug,
+        search_document,
+        updated_at
+      ) VALUES (
+        '${archived.id}'::uuid,
+        'TERM'::"EntryType",
+        'archived orphan',
+        'archived-orphan',
+        'archived orphan should not stay searchable',
+        NOW()
+      )
+      ON CONFLICT (entry_id) DO UPDATE SET
+        entry_type = EXCLUDED.entry_type,
+        normalized_title = EXCLUDED.normalized_title,
+        primary_slug = EXCLUDED.primary_slug,
+        search_document = EXCLUDED.search_document,
+        updated_at = NOW()
+    `);
+
+    const result = await rebuildSearchIndex(prisma);
+
+    expect(result).toEqual({ rebuiltCount: 1 });
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: published.id } })).not.toBeNull();
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: archived.id } })).toBeNull();
+  });
+
   it('rebuilds the full published corpus when ids are omitted', async () => {
     const firstEntry = await createPublishedEntry({
       slug: 'confidentiality',
