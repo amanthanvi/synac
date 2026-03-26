@@ -123,6 +123,28 @@ describe('auto tagging integration', () => {
     expect(created.map((tag) => tag.slug)).not.toContain('privacy');
   });
 
+  it('does not create auto tags for slugs reserved in tag_slug_history', async () => {
+    const tag = await prisma.tag.create({
+      data: {
+        name: 'Renamed identity',
+        slug: 'identity-curated',
+        description: 'Curator renamed away from catalog slug',
+      },
+      select: { id: true },
+    });
+    await prisma.tagSlugHistory.create({
+      data: { tagId: tag.id, slug: 'identity' },
+    });
+
+    const created = await ensureMissingAutoTagDefinitions(prisma, { slugs: ['identity'] });
+    expect(created.map((t) => t.slug)).not.toContain('identity');
+    const ghost = await prisma.tag.findFirst({
+      where: { slug: 'identity', deletedAt: null },
+      select: { id: true },
+    });
+    expect(ghost).toBeNull();
+  });
+
   it('syncs entry tag links using the live search index without mutating curated tags', async () => {
     const identityTag = await prisma.tag.create({
       data: {

@@ -92,6 +92,60 @@ function scoreByDefinition(expansion: string, definition: string): number {
   return score;
 }
 
+function dedupeVariantTexts(variants: Array<{ variantText: string }>): string[] {
+  const seen = new Set<string>();
+  const values: string[] = [];
+  for (const variant of variants) {
+    const text = variant.variantText.trim();
+    if (!text) continue;
+    const key = text.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    values.push(text);
+  }
+  return values;
+}
+
+function dedupeNormalizedStrings(raw: string[]): string[] {
+  const seen = new Set<string>();
+  const values: string[] = [];
+  for (const value of raw) {
+    const text = value.trim();
+    if (!text) continue;
+    const key = text.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    values.push(text);
+  }
+  return values;
+}
+
+type EntrySummaryForStand = { summaryText: string | null; summaryMd: string | null };
+
+function standsForPrimaryFromCandidates(
+  candidates: string[],
+  entry: EntrySummaryForStand,
+): { primary: string | null; alternates: string[] } {
+  if (candidates.length === 0) {
+    return { primary: null, alternates: [] };
+  }
+  if (candidates.length === 1) {
+    return { primary: candidates[0]!, alternates: [] };
+  }
+  const definition = (entry.summaryText ?? entry.summaryMd ?? '').trim();
+  if (!definition) {
+    return { primary: candidates[0]!, alternates: candidates.slice(1) };
+  }
+  const scored = candidates
+    .map((value) => ({ text: value, score: scoreByDefinition(value, definition) }))
+    .sort((left, right) => right.score - left.score || left.text.localeCompare(right.text));
+  const primary = scored[0]!.text;
+  return {
+    primary,
+    alternates: candidates.filter((value) => value.toLowerCase() !== primary.toLowerCase()),
+  };
+}
+
 export function formatEntryDate(value: Date): string {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
@@ -225,65 +279,16 @@ export async function loadPublicEntryPageData(input: {
   }));
 
   if (input.requestedType === 'ACRONYM') {
-    const variants = (() => {
-      const seen = new Set<string>();
-      const values: string[] = [];
-      for (const variant of entry.variants) {
-        const text = variant.variantText.trim();
-        if (!text) continue;
-        const key = text.toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        values.push(text);
-      }
-      return values;
-    })();
+    const variants = dedupeVariantTexts(entry.variants);
 
-    const expandedForms = (() => {
-      const raw = [
-        ...entry.senses
-          .map((sense) => sense.expandedForm)
-          .filter((value): value is string => Boolean(value?.trim())),
-        ...variants.filter((value) => value.includes(' ')),
-      ];
+    const expandedForms = dedupeNormalizedStrings([
+      ...entry.senses
+        .map((sense) => sense.expandedForm)
+        .filter((value): value is string => Boolean(value?.trim())),
+      ...variants.filter((value) => value.includes(' ')),
+    ]);
 
-      const seen = new Set<string>();
-      const values: string[] = [];
-      for (const value of raw) {
-        const text = value.trim();
-        if (!text) continue;
-        const key = text.toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        values.push(text);
-      }
-      return values;
-    })();
-
-    const standsForPrimary = (() => {
-      if (expandedForms.length === 0) {
-        return { primary: null, alternates: [] as string[] };
-      }
-
-      if (expandedForms.length === 1) {
-        return { primary: expandedForms[0]!, alternates: [] as string[] };
-      }
-
-      const definition = (entry.summaryText ?? entry.summaryMd ?? '').trim();
-      if (!definition) {
-        return { primary: expandedForms[0]!, alternates: expandedForms.slice(1) };
-      }
-
-      const scored = expandedForms
-        .map((value) => ({ text: value, score: scoreByDefinition(value, definition) }))
-        .sort((left, right) => right.score - left.score || left.text.localeCompare(right.text));
-
-      const primary = scored[0]!.text;
-      return {
-        primary,
-        alternates: expandedForms.filter((value) => value.toLowerCase() !== primary.toLowerCase()),
-      };
-    })();
+    const standsForPrimary = standsForPrimaryFromCandidates(expandedForms, entry);
 
     const alsoKnownAs = variants.filter(
       (variant) => !expandedForms.some((expanded) => expanded.toLowerCase() === variant.toLowerCase()),
@@ -301,19 +306,7 @@ export async function loadPublicEntryPageData(input: {
     };
   }
 
-  const variants = (() => {
-    const seen = new Set<string>();
-    const values: string[] = [];
-    for (const variant of entry.variants) {
-      const text = variant.variantText.trim();
-      if (!text) continue;
-      const key = text.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      values.push(text);
-    }
-    return values;
-  })();
+  const variants = dedupeVariantTexts(entry.variants);
 
   const titleIsShortform = (() => {
     const value = entry.displayTitle.trim();
@@ -331,26 +324,10 @@ export async function loadPublicEntryPageData(input: {
       ? variants.filter((variant) => !variant.includes(' '))
       : variants;
 
-  const standsForPrimary = (() => {
-    if (!titleIsShortform || standsFor.length === 0) {
-      return { primary: null, alternates: [] as string[] };
-    }
-
-    const definition = (entry.summaryText ?? entry.summaryMd ?? '').trim();
-    if (!definition) {
-      return { primary: standsFor[0]!, alternates: standsFor.slice(1) };
-    }
-
-    const scored = standsFor
-      .map((variant) => ({ text: variant, score: scoreByDefinition(variant, definition) }))
-      .sort((left, right) => right.score - left.score || left.text.localeCompare(right.text));
-
-    const primary = scored[0]!.text;
-    return {
-      primary,
-      alternates: standsFor.filter((variant) => variant.toLowerCase() !== primary.toLowerCase()),
-    };
-  })();
+  const standsForPrimary =
+    titleIsShortform && standsFor.length > 0
+      ? standsForPrimaryFromCandidates(standsFor, entry)
+      : { primary: null, alternates: [] as string[] };
 
   return {
     entry,

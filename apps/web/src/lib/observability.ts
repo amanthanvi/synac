@@ -22,21 +22,25 @@ function readCoverageAuditFirstPage(): number {
   return n;
 }
 
+const SEARCH_COVERAGE_AUDIT_THRESHOLDS = {
+  firstPage: readCoverageAuditFirstPage(),
+  minQueryLength: readPositiveIntEnv(
+    'SYNAC_SEARCH_COVERAGE_AUDIT_MIN_QUERY_LENGTH',
+    SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS.minQueryLength,
+  ),
+  slowThresholdMs: readPositiveIntEnv(
+    'SYNAC_SEARCH_COVERAGE_AUDIT_SLOW_MS',
+    SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS.slowThresholdMs,
+  ),
+} as const;
+
 export function shouldAuditSearchIndexCoverage(input: {
   page: number;
   query: string;
   resultsCount: number;
   durationMs: number;
 }): boolean {
-  const firstPage = readCoverageAuditFirstPage();
-  const minQueryLength = readPositiveIntEnv(
-    'SYNAC_SEARCH_COVERAGE_AUDIT_MIN_QUERY_LENGTH',
-    SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS.minQueryLength,
-  );
-  const slowThresholdMs = readPositiveIntEnv(
-    'SYNAC_SEARCH_COVERAGE_AUDIT_SLOW_MS',
-    SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS.slowThresholdMs,
-  );
+  const { firstPage, minQueryLength, slowThresholdMs } = SEARCH_COVERAGE_AUDIT_THRESHOLDS;
 
   const normalizedQuery = input.query.trim();
   if (input.page !== firstPage) return false;

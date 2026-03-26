@@ -1,4 +1,10 @@
+import { Prisma } from '@prisma/client';
+
 import type { DbClientLike } from '../client.js';
+
+function isUniqueConstraintViolation(err: unknown): boolean {
+  return err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002';
+}
 
 export type AutoTagDefinition = {
   name: string;
@@ -306,16 +312,31 @@ export async function ensureMissingAutoTagDefinitions(
   if (definitions.length === 0) return [];
 
   const slugList = definitions.map((d) => d.slug);
-  const existingRows = await db.tag.findMany({
-    where: { slug: { in: slugList } },
-    select: { id: true, slug: true, deletedAt: true },
-  });
+  const [existingRows, historyRows] = await Promise.all([
+    db.tag.findMany({
+      where: { slug: { in: slugList } },
+      select: { id: true, slug: true, deletedAt: true },
+    }),
+    db.tagSlugHistory.findMany({
+      where: { slug: { in: slugList } },
+      select: { slug: true },
+    }),
+  ]);
   const bySlug = new Map(existingRows.map((row) => [row.slug, row]));
+  const reservedSlugs = new Set(historyRows.map((row) => row.slug));
 
   const results: Array<{ id: string; slug: string }> = [];
   const createPayload: Array<{ name: string; slug: string; description: string }> = [];
 
   for (const definition of definitions) {
+    if (reservedSlugs.has(definition.slug)) {
+      const existing = bySlug.get(definition.slug) ?? null;
+      if (existing?.deletedAt === null) {
+        results.push({ id: existing.id, slug: existing.slug });
+      }
+      continue;
+    }
+
     const existing = bySlug.get(definition.slug) ?? null;
 
     if (!shouldCreateAutoTagDefinition(existing)) {
@@ -333,15 +354,23 @@ export async function ensureMissingAutoTagDefinitions(
   }
 
   if (createPayload.length > 0) {
-    const createdRows = await Promise.all(
-      createPayload.map((data) =>
-        db.tag.create({
+    const createdBySlug = new Map<string, { id: string; slug: string }>();
+    for (const data of createPayload) {
+      try {
+        const row = await db.tag.create({
           data,
           select: { id: true, slug: true },
-        }),
-      ),
-    );
-    const createdBySlug = new Map(createdRows.map((row) => [row.slug, row]));
+        });
+        createdBySlug.set(data.slug, row);
+      } catch (err) {
+        if (!isUniqueConstraintViolation(err)) throw err;
+        const row = await db.tag.findFirst({
+          where: { slug: data.slug, deletedAt: null },
+          select: { id: true, slug: true },
+        });
+        if (row) createdBySlug.set(data.slug, row);
+      }
+    }
     const createSlugSet = new Set(createPayload.map((row) => row.slug));
     for (const definition of definitions) {
       if (!createSlugSet.has(definition.slug)) continue;

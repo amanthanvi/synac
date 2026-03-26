@@ -292,6 +292,7 @@ model Tag {
   slugHistory TagSlugHistory[]
 
   @@index([slug])
+  // DB: partial unique index tags_slug_active_unique on (slug) WHERE deleted_at IS NULL — see migrations.
   @@map("tags")
 }
 
