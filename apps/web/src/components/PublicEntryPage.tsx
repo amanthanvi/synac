@@ -16,6 +16,7 @@ import {
   type PublicEntrySense,
   type PublicEntryTagLink,
   type PublicEntryPageData,
+  type PublicSenseProvenance,
 } from '@/lib/publicEntryPage';
 import { markdownToText } from '@/lib/text';
 
@@ -81,9 +82,7 @@ function SenseCard({
   sense: PublicEntrySense;
   entryType: 'TERM' | 'ACRONYM';
   openByDefault: boolean;
-  provenanceItems: PublicEntryPageData['provenanceBySenseId'] extends Map<string, infer TValue>
-    ? TValue
-    : never;
+  provenanceItems: PublicSenseProvenance[];
 }) {
   const citations = buildSenseCitations(provenanceItems);
   const excerpt = (() => {

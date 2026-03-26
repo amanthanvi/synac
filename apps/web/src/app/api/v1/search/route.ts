@@ -60,12 +60,12 @@ export async function GET(request: NextRequest) {
       pageSize: 20,
     });
 
-    const durationMs = Date.now() - startMs;
+    const durationAfterSearchMs = Date.now() - startMs;
     if (
       shouldAuditSearchIndexCoverage({
         query: q,
         page,
-        durationMs,
+        durationMs: durationAfterSearchMs,
         resultsCount: results.length,
       })
     ) {
@@ -86,9 +86,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const totalDurationMs = Date.now() - startMs;
+
     logger.info('api.search.ok', {
       requestId,
-      durationMs,
+      durationMs: totalDurationMs,
       qLen: q.trim().length,
       entryType,
       tag: tag?.trim() ? tag.trim().toLowerCase() : undefined,

@@ -90,6 +90,32 @@ describe('search index helpers', () => {
     expect(coverage.orphanedEntryIds).toContain(indexedEntry.id);
   });
 
+  it('does not full-rebuild when entryIds is an explicit empty array', async () => {
+    const entry = await createPublishedEntry({
+      slug: 'empty-ids-array',
+      title: 'Empty ids',
+      definition: 'No work when the caller passes [].',
+    });
+
+    await prisma.entrySearch.deleteMany({ where: { entryId: entry.id } });
+
+    const result = await rebuildSearchIndex(prisma, { entryIds: [] });
+
+    expect(result).toEqual({ rebuiltCount: 0 });
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: entry.id } })).toBeNull();
+  });
+
+  it('returns zero rebuilt count for invalid entry id strings', async () => {
+    await createPublishedEntry({
+      slug: 'uuid-test',
+      title: 'UUID test',
+      definition: 'Coverage for invalid id inputs.',
+    });
+
+    const result = await rebuildSearchIndex(prisma, { entryIds: ["not-a-uuid'; DROP TABLE entries;--"] });
+    expect(result).toEqual({ rebuiltCount: 0 });
+  });
+
   it('rebuilds only the requested entry ids when provided', async () => {
     const firstEntry = await createPublishedEntry({
       slug: 'integrity',
@@ -111,6 +137,33 @@ describe('search index helpers', () => {
     expect(result).toEqual({ rebuiltCount: 1 });
     expect(await prisma.entrySearch.findUnique({ where: { entryId: firstEntry.id } })).not.toBeNull();
     expect(await prisma.entrySearch.findUnique({ where: { entryId: secondEntry.id } })).toBeNull();
+  });
+
+  it('full rebuild targets published entries only', async () => {
+    const published = await createPublishedEntry({
+      slug: 'published-only',
+      title: 'Published only',
+      definition: 'Included in full rebuild.',
+    });
+    await prisma.entry.create({
+      data: {
+        entryType: 'TERM',
+        displayTitle: 'Draft row',
+        normalizedTitle: 'draft row',
+        primarySlug: 'draft-row',
+        status: 'DRAFT',
+        summaryMd: 'draft',
+        summaryText: 'draft',
+      },
+      select: { id: true },
+    });
+
+    await prisma.entrySearch.deleteMany({ where: { entryId: published.id } });
+
+    const result = await rebuildSearchIndex(prisma);
+
+    expect(result).toEqual({ rebuiltCount: 1 });
+    expect(await prisma.entrySearch.findUnique({ where: { entryId: published.id } })).not.toBeNull();
   });
 
   it('rebuilds the full published corpus when ids are omitted', async () => {

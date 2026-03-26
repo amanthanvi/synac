@@ -2,6 +2,14 @@ import { Prisma } from '@prisma/client';
 
 import type { DbClientLike } from '../client.js';
 
+/** Matches canonical UUID strings (parameterized as `::uuid` in raw SQL). */
+const UUID_STRING_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isSearchIndexEntryId(value: string): boolean {
+  return UUID_STRING_RE.test(value.trim());
+}
+
 export type SearchIndexCoverage = {
   publishedEntries: number;
   indexedEntries: number;
@@ -52,28 +60,56 @@ export async function rebuildSearchIndex(
   db: DbClientLike,
   input?: { entryIds?: string[] },
 ): Promise<{ rebuiltCount: number }> {
-  const entryIds = (input?.entryIds ?? []).map((entryId) => entryId.trim()).filter(Boolean);
+  const rawEntryIds = input?.entryIds;
+  const partialRebuildRequested = rawEntryIds !== undefined;
 
-  if (entryIds.length > 0) {
+  const requestedIds = (rawEntryIds ?? [])
+    .map((entryId) => entryId.trim())
+    .filter(Boolean)
+    .filter(isSearchIndexEntryId);
+
+  if (partialRebuildRequested) {
+    if (requestedIds.length === 0) {
+      return { rebuiltCount: 0 };
+    }
+  }
+
+  if (requestedIds.length > 0) {
+    const matchedRows = await db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+      SELECT id
+      FROM entries
+      WHERE status = 'PUBLISHED'
+        AND deleted_at IS NULL
+        AND id IN (${Prisma.join(requestedIds.map((id) => Prisma.sql`${id}::uuid`))})
+    `);
+
+    if (matchedRows.length === 0) {
+      return { rebuiltCount: 0 };
+    }
+
     await db.$executeRaw(Prisma.sql`
       SELECT synac_refresh_entry_search(id)
       FROM entries
-      WHERE id IN (${Prisma.join(entryIds.map((entryId) => Prisma.sql`${entryId}::uuid`))})
+      WHERE status = 'PUBLISHED'
+        AND deleted_at IS NULL
+        AND id IN (${Prisma.join(matchedRows.map((row) => Prisma.sql`${row.id}::uuid`))})
     `);
 
-    return { rebuiltCount: entryIds.length };
+    return { rebuiltCount: matchedRows.length };
   }
 
   const rows = await db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
     SELECT id
     FROM entries
-    WHERE deleted_at IS NULL
+    WHERE status = 'PUBLISHED'
+      AND deleted_at IS NULL
   `);
 
   await db.$executeRaw(Prisma.sql`
     SELECT synac_refresh_entry_search(id)
     FROM entries
-    WHERE deleted_at IS NULL
+    WHERE status = 'PUBLISHED'
+      AND deleted_at IS NULL
   `);
 
   return { rebuiltCount: rows.length };
