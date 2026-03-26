@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server';
 
+import { getString, normalizeOptional } from '@synac/shared';
+
 import { requireAdminActor } from '@/lib/admin';
 import { mergeTags } from '@/lib/adminTags';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function getString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === 'string' ? value : '';
-}
-
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
 
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {

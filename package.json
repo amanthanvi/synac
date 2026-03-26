@@ -22,7 +22,7 @@
     "start": "pnpm --filter @synac/web start",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test",
+    "test": "pnpm -r --workspace-concurrency=1 test",
     "format": "pnpm -r format",
     "db:generate": "pnpm --filter @synac/db db:generate",
     "db:migrate": "pnpm --filter @synac/db db:migrate",
@@ -34,5 +34,19 @@
     "eslint": "^9.39.2",
     "globals": "^17.0.0",
     "typescript-eslint": "^8.55.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "minimatch@^3.0.0": "^3.1.4",
+      "minimatch@^9.0.0": "^9.0.7",
+      "vitest>picomatch": "^4.0.4",
+      "rollup": "^4.59.0",
+      "@prisma/dev>hono": "^4.12.4",
+      "@prisma/dev>@hono/node-server": "^1.19.10",
+      "flat-cache>flatted": "^3.4.2",
+      "@prisma/config>effect": "^3.20.0",
+      "micromatch>picomatch": "^2.3.2",
+      "tinyglobby>picomatch": "^4.0.4"
+    }
   }
 }

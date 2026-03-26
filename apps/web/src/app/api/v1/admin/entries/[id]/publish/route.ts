@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+import { normalizeOptional } from '@synac/shared';
+
 import { requireAdminActor } from '@/lib/admin';
 import { publishEntry } from '@/lib/adminEntries';
 
@@ -7,7 +9,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
 
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {

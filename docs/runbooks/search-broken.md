@@ -4,9 +4,18 @@
 
 - Confirm `/api/v1/search` health and latency.
 - Check Postgres extensions and indexes (FTS + `pg_trgm`).
+- Measure search-index coverage before making changes:
+  - `pnpm --filter @synac/db db:search:index:check`
+  - Review the `missingEntryIds` and `orphanedEntryIds` fields in the JSON output.
 
 ## Mitigation
 
 - Temporarily direct users to browse pages.
-- Rebuild indexes if needed.
+- Rebuild the search index if coverage is incomplete or stale:
+  - `pnpm --filter @synac/db db:search:index:rebuild`
+- Re-check coverage after rebuild and confirm `after.missingEntryIds` / `after.orphanedEntryIds` are empty.
+- If coverage still looks wrong after rebuild:
+  - inspect recent publish/ingest activity,
+  - verify the `synac_refresh_entry_search` DB function still exists,
+  - verify entry/sense/variant triggers are present in the database.
 

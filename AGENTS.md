@@ -34,3 +34,16 @@ Source of truth: `SPEC.md` (product/spec) + `PLAN.md` (execution tracker).
 
 - Tokens live in `apps/web/src/app/globals.css` (single source of truth).
 - Prefer updating primitives in `apps/web/src/components/ui/*` rather than ad-hoc styles.
+
+## Learned User Preferences
+
+- When CI fails, keep iterating with real fixes until checks pass; do not skip tests or otherwise fake a green pipeline.
+
+## Learned Workspace Facts
+
+- Search index maintenance for `@synac/db` uses `pnpm --filter @synac/db db:search:index:check` and `db:search:index:rebuild` (not `db:search:rebuild`).
+- `packages/db` integration-style helpers can truncate or wipe schema data; point local Vitest/integration `DATABASE_URL` at a dedicated test database, not shared dev or production URLs.
+
+## Self-Correction Log
+
+- 2026-03-25: For Railway SSH probes, avoid nested shell/backtick quoting; write unique temp scripts under `/app/packages/db` to prevent stray local artifacts and cross-command races.

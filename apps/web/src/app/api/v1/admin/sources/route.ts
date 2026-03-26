@@ -1,22 +1,19 @@
 import { NextResponse } from 'next/server';
 
+import { getString, normalizeOptional } from '@synac/shared';
+
 import { requireAdminActor } from '@/lib/admin';
 import { createSource } from '@/lib/adminSources';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function getString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === 'string' ? value : '';
-}
-
-function getBoolean(body: Record<string, unknown>, key: string): boolean {
-  return body[key] === true;
+function strictBooleanTrue(data: Record<string, unknown>, key: string): boolean {
+  return data[key] === true;
 }
 
 export async function POST(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
 
   const actor = await requireAdminActor();
   if (!actor.roleNames.includes('ADMIN')) {
@@ -45,7 +42,7 @@ export async function POST(request: Request) {
     contact: getString(data, 'contact'),
     lastVerifiedAt: getString(data, 'lastVerifiedAt'),
     trustTier: getString(data, 'trustTier'),
-    enabled: getBoolean(data, 'enabled'),
+    enabled: strictBooleanTrue(data, 'enabled'),
     notesInternal: getString(data, 'notesInternal'),
   });
 

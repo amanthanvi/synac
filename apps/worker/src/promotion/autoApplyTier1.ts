@@ -1,6 +1,6 @@
 import type { Prisma, PrismaClient } from '@synac/db';
 
-import { ensureSystemActor } from '@synac/db';
+import { ensureSystemActor, syncAutoTagsForPublishedEntry } from '@synac/db';
 
 import { logger } from '../logger.js';
 import { markdownToText, normalizeTitle, slugify } from './text.js';
@@ -153,6 +153,8 @@ async function publishEntry(
     where: { id: { in: publishableWithCitations.map((s) => s.id) } },
     data: { status: 'PUBLISHED', publishedAt: now },
   });
+
+  await syncAutoTagsForPublishedEntry(tx, { entryId: entry.id });
 
   await tx.auditEvent.create({
     data: {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { getString, normalizeOptional } from '@synac/shared';
 import { getPrismaClient } from '@synac/db';
 
 import { requireAdminActor } from '@/lib/admin';
@@ -7,11 +8,6 @@ import { createTag } from '@/lib/adminTags';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function getString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === 'string' ? value : '';
-}
 
 export async function GET(request: Request) {
   const requestId = request.headers.get('x-request-id') ?? undefined;
@@ -49,8 +45,8 @@ export async function POST(request: Request) {
   const result = await createTag({
     actorUserId: actor.dbUserId,
     name: getString(data, 'name'),
-    slug: getString(data, 'slug') || null,
-    description: getString(data, 'description') || null,
+    slug: normalizeOptional(getString(data, 'slug')) ?? null,
+    description: normalizeOptional(getString(data, 'description')) ?? null,
   });
 
   return NextResponse.json(result);

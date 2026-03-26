@@ -2,7 +2,7 @@ import type { Prisma, PrismaClient } from '@synac/db';
 
 import type { ProposedChange } from './types.js';
 
-function getNormalizedProposedChange(item: {
+export function extractNormalizedProposedChange(item: {
   proposedChange: unknown;
   stageOutputs: unknown;
 }): ProposedChange | null {
@@ -177,12 +177,19 @@ export async function importEligibleStagingRuns(
 
     for (const item of items) {
       const existingItem = await prod.ingestItem.findFirst({ where: { id: item.id }, select: { id: true } });
-      if (existingItem) continue;
-      if (item.sourceDocument.doNotUse) continue;
-      if (item.error?.trim()) continue;
-
-      const normalizedProposedChange = getNormalizedProposedChange(item);
-      if (!normalizedProposedChange) continue;
+      const normalizedProposedChange = extractNormalizedProposedChange(item);
+      if (
+        !shouldImportStagingIngestItem({
+          item: {
+            error: item.error,
+            sourceDocument: { doNotUse: item.sourceDocument.doNotUse },
+          },
+          normalizedProposedChange,
+          alreadyExistsInProd: Boolean(existingItem),
+        })
+      ) {
+        continue;
+      }
 
       const prodSourceDocumentId = await getOrCreateSourceDocument(prod, {
         prodSourceId: prodSource.id,
@@ -228,4 +235,19 @@ export async function importEligibleStagingRuns(
   }
 
   return { runsImported, itemsImported };
+}
+
+export function shouldImportStagingIngestItem(input: {
+  item: {
+    error: string | null;
+    sourceDocument: { doNotUse: boolean };
+  };
+  normalizedProposedChange: ProposedChange | null;
+  alreadyExistsInProd: boolean;
+}): boolean {
+  if (input.alreadyExistsInProd) return false;
+  if (input.item.sourceDocument.doNotUse) return false;
+  if (input.item.error?.trim()) return false;
+  if (!input.normalizedProposedChange) return false;
+  return true;
 }

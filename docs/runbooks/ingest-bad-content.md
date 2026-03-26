@@ -13,4 +13,12 @@
 
 - Add or tighten license gate rules.
 - Add test fixtures covering the failure mode.
+- Check prod worker logs for:
+  - `promotion.import_runs.ok`
+  - `autopublish.tier1.ok`
+  - `autopublish.item_failed`
+- If bad content originated from autopublish, inspect:
+  - the staging ingest item payload,
+  - prod `INGEST_ITEM_AUTO_APPLY` / `ENTRY_PUBLISH` audit events,
+  - source-document provenance and do-not-use flags.
 
