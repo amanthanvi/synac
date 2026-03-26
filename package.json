@@ -41,6 +41,8 @@
       "minimatch@^9.0.0": "^9.0.7",
       "vitest>picomatch": "^4.0.4",
       "rollup": "^4.59.0",
+      "ajv": "^6.14.0",
+      "lodash": "^4.17.23",
       "@prisma/dev>hono": "^4.12.4",
       "@prisma/dev>@hono/node-server": "^1.19.10",
       "flat-cache>flatted": "^3.4.2",
