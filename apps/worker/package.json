@@ -23,6 +23,6 @@
   },
   "dependencies": {
     "@synac/db": "workspace:*",
-    "pg-boss": "^12.5.4"
+    "pg-boss": "^12.12.0"
   }
 }
