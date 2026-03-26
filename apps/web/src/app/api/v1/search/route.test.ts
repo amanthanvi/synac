@@ -3,7 +3,24 @@ import { NextRequest } from 'next/server';
 
 import { createIntegrationTestClient, resetIntegrationDatabase } from '@synac/db';
 
+import { logger } from '@/lib/logger';
+
 import { GET } from './route';
+
+async function waitForCoverageAuditLog(infoSpy: { mock: { calls: unknown[][] } }): Promise<void> {
+  const deadline = Date.now() + 5000;
+  while (Date.now() < deadline) {
+    if (infoSpy.mock.calls.some((call) => call[0] === 'search.index.coverage')) return;
+    await new Promise((r) => setTimeout(r, 20));
+  }
+  throw new Error('timed out waiting for search.index.coverage log');
+}
+
+async function settleDeferredSearchWork(): Promise<void> {
+  await new Promise<void>((r) => setImmediate(r));
+  await new Promise<void>((r) => setImmediate(r));
+  await new Promise<void>((r) => setTimeout(r, 100));
+}
 
 const prisma = createIntegrationTestClient();
 
@@ -57,7 +74,7 @@ describe('GET /api/v1/search integration', () => {
       definition: 'SAML is used for federated authentication.',
     });
 
-    const infoSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const infoSpy = vi.spyOn(logger, 'info').mockImplementation(() => {});
     const request = new NextRequest('http://localhost:3000/api/v1/search?q=saml&page=1', {
       headers: { 'user-agent': 'vitest-search-route' },
     });
@@ -67,11 +84,8 @@ describe('GET /api/v1/search integration', () => {
 
     expect(response.status).toBe(200);
     expect(payload.results).toHaveLength(1);
-    expect(
-      infoSpy.mock.calls.some(([value]) =>
-        String(value).includes('"message":"search.index.coverage"'),
-      ),
-    ).toBe(false);
+    await settleDeferredSearchWork();
+    expect(infoSpy.mock.calls.some((call) => call[0] === 'search.index.coverage')).toBe(false);
   });
 
   it('emits search-index coverage diagnostics only for anomalous searches with real missing index rows', async () => {
@@ -84,7 +98,7 @@ describe('GET /api/v1/search integration', () => {
 
     await prisma.entrySearch.deleteMany({ where: { entryId: entry.id } });
 
-    const infoSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const infoSpy = vi.spyOn(logger, 'info').mockImplementation(() => {});
     const request = new NextRequest(
       'http://localhost:3000/api/v1/search?q=authentication&page=1',
       {
@@ -97,10 +111,10 @@ describe('GET /api/v1/search integration', () => {
 
     expect(response.status).toBe(200);
     expect(payload.results).toHaveLength(0);
-    expect(
-      infoSpy.mock.calls.some(([value]) =>
-        String(value).includes('"message":"search.index.coverage"'),
-      ),
-    ).toBe(true);
+    await waitForCoverageAuditLog(infoSpy);
+    expect(infoSpy).toHaveBeenCalledWith(
+      'search.index.coverage',
+      expect.objectContaining({ location: 'api_v1_search' }),
+    );
   });
 });

@@ -25,7 +25,7 @@ export default defineConfig({
     env: {
       DATABASE_URL:
         process.env.DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/synac?schema=public',
+        'postgresql://postgres:postgres@localhost:5432/synac_test?schema=public',
       NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
     },
     fileParallelism: false,

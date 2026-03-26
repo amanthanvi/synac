@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server';
 
-import { getBoolean, getString, normalizeOptional } from '@synac/shared';
+import { getString, normalizeOptional } from '@synac/shared';
 
 import { requireAdminActor } from '@/lib/admin';
 import { createSource } from '@/lib/adminSources';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+function strictBooleanTrue(data: Record<string, unknown>, key: string): boolean {
+  return data[key] === true;
+}
 
 export async function POST(request: Request) {
   const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
@@ -38,7 +42,7 @@ export async function POST(request: Request) {
     contact: getString(data, 'contact'),
     lastVerifiedAt: getString(data, 'lastVerifiedAt'),
     trustTier: getString(data, 'trustTier'),
-    enabled: getBoolean(data, 'enabled'),
+    enabled: strictBooleanTrue(data, 'enabled'),
     notesInternal: getString(data, 'notesInternal'),
   });
 

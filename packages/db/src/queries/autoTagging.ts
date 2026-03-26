@@ -303,13 +303,20 @@ export async function ensureMissingAutoTagDefinitions(
   if (requestedSlugs.size === 0) return [];
 
   const definitions = AUTO_TAG_DEFINITIONS.filter((definition) => requestedSlugs.has(definition.slug));
+  if (definitions.length === 0) return [];
+
+  const slugList = definitions.map((d) => d.slug);
+  const existingRows = await db.tag.findMany({
+    where: { slug: { in: slugList } },
+    select: { id: true, slug: true, deletedAt: true },
+  });
+  const bySlug = new Map(existingRows.map((row) => [row.slug, row]));
+
   const results: Array<{ id: string; slug: string }> = [];
+  const createPayload: Array<{ name: string; slug: string; description: string }> = [];
 
   for (const definition of definitions) {
-    const existing = await db.tag.findFirst({
-      where: { slug: definition.slug },
-      select: { id: true, slug: true, deletedAt: true },
-    });
+    const existing = bySlug.get(definition.slug) ?? null;
 
     if (!shouldCreateAutoTagDefinition(existing)) {
       if (existing?.deletedAt === null) {
@@ -318,15 +325,29 @@ export async function ensureMissingAutoTagDefinitions(
       continue;
     }
 
-    const created = await db.tag.create({
-      data: {
-        name: definition.name,
-        slug: definition.slug,
-        description: definition.description,
-      },
-      select: { id: true, slug: true },
+    createPayload.push({
+      name: definition.name,
+      slug: definition.slug,
+      description: definition.description,
     });
-    results.push(created);
+  }
+
+  if (createPayload.length > 0) {
+    const createdRows = await Promise.all(
+      createPayload.map((data) =>
+        db.tag.create({
+          data,
+          select: { id: true, slug: true },
+        }),
+      ),
+    );
+    const createdBySlug = new Map(createdRows.map((row) => [row.slug, row]));
+    const createSlugSet = new Set(createPayload.map((row) => row.slug));
+    for (const definition of definitions) {
+      if (!createSlugSet.has(definition.slug)) continue;
+      const row = createdBySlug.get(definition.slug);
+      if (row) results.push(row);
+    }
   }
 
   return results;

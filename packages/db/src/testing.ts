@@ -3,9 +3,9 @@ import { Prisma } from '@prisma/client';
 import { createPrismaClient, type PrismaClient } from './client.js';
 
 const DEFAULT_TEST_DATABASE_URL =
-  'postgresql://postgres:postgres@localhost:5432/synac?schema=public';
+  'postgresql://postgres:postgres@localhost:5432/synac_test?schema=public';
 const DEFAULT_TEST_STAGING_DATABASE_URL =
-  'postgresql://postgres:postgres@localhost:5432/synac_staging?schema=public';
+  'postgresql://postgres:postgres@localhost:5432/synac_staging_test?schema=public';
 
 export function getIntegrationDatabaseUrl(): string {
   return process.env.DATABASE_URL?.trim() || DEFAULT_TEST_DATABASE_URL;
@@ -50,13 +50,10 @@ function integrationDatabaseResetAllowedByEnv(): boolean {
 
 /**
  * Allowlist by actual `current_database()` — not `DATABASE_URL` — so staging vs main clients are checked correctly.
- * We intentionally do not require `inet_server_addr()` loopback: Docker Postgres (and similar) often reports a bridge
- * IP (e.g. 172.17.x.x) even when the client connected via localhost port mapping.
+ * Only names ending in `_test` are permitted unless `SYNAC_ALLOW_INTEGRATION_DB_RESET=1` (full bypass above).
  */
 function integrationDatabaseNameAllowedForReset(dbName: string): boolean {
-  if (dbName.endsWith('_test')) return true;
-  if (dbName === 'synac' || dbName === 'synac_staging') return true;
-  return false;
+  return dbName.endsWith('_test');
 }
 
 async function assertIntegrationDatabaseSafeForTruncate(prisma: PrismaClient): Promise<void> {
@@ -80,7 +77,7 @@ async function assertIntegrationDatabaseSafeForTruncate(prisma: PrismaClient): P
 
   if (!integrationDatabaseNameAllowedForReset(meta.db)) {
     throw new Error(
-      `resetIntegrationDatabase refused: database "${meta.db}" is not an allowed integration test target (use synac/synac_staging, a *_test database name, or SYNAC_ALLOW_INTEGRATION_DB_RESET=1).`,
+      `resetIntegrationDatabase refused: database "${meta.db}" is not an allowed integration test target (use a name ending in _test, e.g. synac_test, or set SYNAC_ALLOW_INTEGRATION_DB_RESET=1).`,
     );
   }
 }

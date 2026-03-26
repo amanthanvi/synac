@@ -16,10 +16,10 @@ export default defineConfig({
     env: {
       DATABASE_URL:
         process.env.DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/synac?schema=public',
+        'postgresql://postgres:postgres@localhost:5432/synac_test?schema=public',
       SYNAC_STAGING_DATABASE_URL:
         process.env.SYNAC_STAGING_DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/synac_staging?schema=public',
+        'postgresql://postgres:postgres@localhost:5432/synac_staging_test?schema=public',
     },
   },
 });
