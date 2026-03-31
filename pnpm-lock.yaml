@@ -124,8 +124,8 @@ importers:
   packages/db:
     dependencies:
       '@prisma/adapter-pg':
-        specifier: ^7.4.0
-        version: 7.4.0
+        specifier: ^7.6.0
+        version: 7.6.0
       '@prisma/client':
         specifier: ^7.4.0
         version: 7.4.0(prisma@7.4.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3))(typescript@5.9.3)
@@ -919,8 +919,8 @@ packages:
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
 
-  '@prisma/adapter-pg@7.4.0':
-    resolution: {integrity: sha512-LWwTHaio0bMxvzahmpwpWqsZM0vTfMqwF8zo06YvILL/o47voaSfKzCVxZw/o9awf4fRgS5Vgthobikj9Dusaw==}
+  '@prisma/adapter-pg@7.6.0':
+    resolution: {integrity: sha512-BjHNmJqqa42NqJSDPnXUfwUofWo8LJY7Ui2gqxN4DmAOb+H/gGKv+hln2Xq/1kSJXPW5AXMXuNiPDMpywvyIOw==}
 
   '@prisma/client-runtime-utils@7.4.0':
     resolution: {integrity: sha512-jTmWAOBGBSCT8n7SMbpjCpHjELgcDW9GNP/CeK6CeqjUFlEL6dn8Cl81t/NBDjJdXDm85XDJmc+PEQqqQee3xw==}
@@ -946,11 +946,14 @@ packages:
   '@prisma/debug@7.4.0':
     resolution: {integrity: sha512-fZicwzgFHvvPMrRLCUinrsBTdadJsi/1oirzShjmFvNLwtu2DYlkxwRVy5zEGhp85mrEGnLeS/PdNRCdE027+Q==}
 
+  '@prisma/debug@7.6.0':
+    resolution: {integrity: sha512-LpHr3qos4lQZ6sxwjStf59YBht7m9/QF7NSQsMH6qGENWZu2w3UkQUGn1h5iRkDjnWRj3VHykOu9qFhps4ADvA==}
+
   '@prisma/dev@0.20.0':
     resolution: {integrity: sha512-ovlBYwWor0OzG+yH4J3Ot+AneD818BttLA+Ii7wjbcLHUrnC4tbUPVGyNd3c/+71KETPKZfjhkTSpdS15dmXNQ==}
 
-  '@prisma/driver-adapter-utils@7.4.0':
-    resolution: {integrity: sha512-jEyE5LkqZ27Ba/DIOfCGOQl6nKMLxuwJNRceCfh7/LRs46UkIKn3bmkI97MEH2t7zkYV3PGBrUr+6sMJaHvc0A==}
+  '@prisma/driver-adapter-utils@7.6.0':
+    resolution: {integrity: sha512-D8j3p0RnhLuufMaRLX6QqtGgPC5Ao3l5oFP6Q5AL0rTHi4vna+NzGEipwCsfvcSvaGFCbsH3lsTMbb4WvY+ovA==}
 
   '@prisma/engines-version@7.4.0-20.ab56fe763f921d033a6c195e7ddeb3e255bdbb57':
     resolution: {integrity: sha512-5o3/bubIYdUeg38cyNf+VDq+LVtxvvi2393Fd1Uru52LPfkGJnmVbCaX1wBOAncgKR3BCloMJFD+Koog9LtYqQ==}
@@ -1149,6 +1152,9 @@ packages:
 
   '@types/node@25.2.3':
     resolution: {integrity: sha512-m0jEgYlYz+mDJZ2+F4v8D1AyQb+QzsNqRuI7xg1VQX/KlKS0qT9r1Mo16yo5F/MtifXFgaofIFsdFMox2SxIbQ==}
+
+  '@types/pg@8.20.0':
+    resolution: {integrity: sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow==}
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -2695,6 +2701,9 @@ packages:
   pg-protocol@1.11.0:
     resolution: {integrity: sha512-pfsxk2M9M3BuGgDOfuy37VNRRX3jmKgMjcvAcWqNDpZSf4cUmv8HSOl5ViRQFsfARFn0KuUQTgLxVMbNq5NW3g==}
 
+  pg-protocol@1.13.0:
+    resolution: {integrity: sha512-zzdvXfS6v89r6v7OcFCHfHlyG/wvry1ALxZo4LqgUoy7W9xhBDMaqOuMiF3qEV45VqsN6rdlcehHrfDtlCPc8w==}
+
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
@@ -3924,9 +3933,10 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@prisma/adapter-pg@7.4.0':
+  '@prisma/adapter-pg@7.6.0':
     dependencies:
-      '@prisma/driver-adapter-utils': 7.4.0
+      '@prisma/driver-adapter-utils': 7.6.0
+      '@types/pg': 8.20.0
       pg: 8.18.0
       postgres-array: 3.0.4
     transitivePeerDependencies:
@@ -3954,6 +3964,8 @@ snapshots:
 
   '@prisma/debug@7.4.0': {}
 
+  '@prisma/debug@7.6.0': {}
+
   '@prisma/dev@0.20.0(typescript@5.9.3)':
     dependencies:
       '@electric-sql/pglite': 0.3.15
@@ -3976,9 +3988,9 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@prisma/driver-adapter-utils@7.4.0':
+  '@prisma/driver-adapter-utils@7.6.0':
     dependencies:
-      '@prisma/debug': 7.4.0
+      '@prisma/debug': 7.6.0
 
   '@prisma/engines-version@7.4.0-20.ab56fe763f921d033a6c195e7ddeb3e255bdbb57': {}
 
@@ -4135,6 +4147,12 @@ snapshots:
   '@types/node@25.2.3':
     dependencies:
       undici-types: 7.16.0
+
+  '@types/pg@8.20.0':
+    dependencies:
+      '@types/node': 25.2.3
+      pg-protocol: 1.13.0
+      pg-types: 2.2.0
 
   '@types/react-dom@19.2.3(@types/react@19.2.14)':
     dependencies:
@@ -4931,8 +4949,8 @@ snapshots:
       '@next/eslint-plugin-next': 16.1.6
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.2(jiti@2.6.1))
@@ -4954,7 +4972,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3
@@ -4965,22 +4983,22 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.2(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -4991,7 +5009,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.57.2(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.2(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -6135,6 +6153,8 @@ snapshots:
       pg: 8.18.0
 
   pg-protocol@1.11.0: {}
+
+  pg-protocol@1.13.0: {}
 
   pg-types@2.2.0:
     dependencies:
