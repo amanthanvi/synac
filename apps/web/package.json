@@ -13,7 +13,7 @@
     "format:write": "prettier . --write --ignore-path ../../.prettierignore"
   },
   "dependencies": {
-    "@clerk/nextjs": "6.37.4",
+    "@clerk/nextjs": "6.39.2",
     "@synac/db": "workspace:*",
     "@synac/shared": "workspace:*",
     "geist": "^1.7.0",
