@@ -1,25 +1,16 @@
-import { getPrismaClient, listTags } from '@synac/db';
+import { queryPublicConvex } from '@synac/db';
 
 import { TagDirectory } from '@/components/TagDirectory';
 import { PageHeader } from '@/components/PageHeader';
 
 import styles from '../_styles/Tags.module.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900;
 
 export default async function TagsPage() {
-  const prisma = getPrismaClient();
-  const tags = await listTags(prisma);
-  const counts = await prisma.entryTag.groupBy({
-    by: ['tagId'],
-    where: { tag: { deletedAt: null }, entry: { status: 'PUBLISHED', deletedAt: null } },
-    _count: { tagId: true },
-  });
-
-  const countByTagId = new Map<string, number>();
-  for (const row of counts) {
-    countByTagId.set(row.tagId, row._count.tagId);
-  }
+  const tags = await queryPublicConvex<
+    Array<{ id: string; name: string; slug: string; description: string | null; count: number }>
+  >('listTagsWithCounts');
 
   return (
     <>
@@ -38,7 +29,7 @@ export default async function TagsPage() {
             name: tag.name,
             slug: tag.slug,
             description: tag.description,
-            count: countByTagId.get(tag.id) ?? 0,
+            count: tag.count,
           }))}
         />
       )}

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-import { getPrismaClient, resolvePublicSourceBySlug } from '@synac/db';
+import { getPrismaClient, queryPublicConvex, resolvePublicSourceBySlug } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
@@ -14,7 +14,7 @@ import layoutStyles from '../../_styles/Layout.module.css';
 import browseStyles from '../../_styles/Browse.module.css';
 import styles from './page.module.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900;
 
 type SourcePageProps = {
   params: Promise<{ slug: string }>;
@@ -55,23 +55,6 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
   const sp = (await searchParams) ?? {};
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const pageSize = 50;
-  const offset = (page - 1) * pageSize;
-
-  const citedCountRows = await prisma.$queryRaw<Array<{ count: number }>>`
-    SELECT COUNT(DISTINCT e.id)::int AS "count"
-    FROM entries e
-    JOIN senses s ON s.entry_id = e.id
-    JOIN field_provenance fp ON fp.entity_type = 'SENSE' AND fp.entity_id = s.id
-    JOIN citations c ON c.id = fp.citation_id
-    WHERE e.status = 'PUBLISHED'
-      AND e.deleted_at IS NULL
-      AND s.status = 'PUBLISHED'
-      AND s.deleted_at IS NULL
-      AND c.source_id = ${source.id}::uuid
-  `;
-
-  const citedCount = citedCountRows[0]?.count ?? 0;
-
   type CitedEntryRow = {
     id: string;
     entryType: 'TERM' | 'ACRONYM';
@@ -81,34 +64,20 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
     updatedAt: Date;
   };
 
-  const citedEntries = await prisma.$queryRaw<CitedEntryRow[]>`
-    SELECT DISTINCT
-      e.id AS "id",
-      e.entry_type AS "entryType",
-      e.display_title AS "displayTitle",
-      e.primary_slug AS "primarySlug",
-      e.summary_text AS "summaryText",
-      e.updated_at AS "updatedAt"
-    FROM entries e
-    JOIN senses s ON s.entry_id = e.id
-    JOIN field_provenance fp ON fp.entity_type = 'SENSE' AND fp.entity_id = s.id
-    JOIN citations c ON c.id = fp.citation_id
-    WHERE e.status = 'PUBLISHED'
-      AND e.deleted_at IS NULL
-      AND s.status = 'PUBLISHED'
-      AND s.deleted_at IS NULL
-      AND c.source_id = ${source.id}::uuid
-    ORDER BY e.normalized_title ASC
-    LIMIT ${pageSize} OFFSET ${offset}
-  `;
+  const cited = await queryPublicConvex<{ count: number; entries: CitedEntryRow[] }>('listCitedEntriesForSource', {
+    sourceId: source.id,
+    page,
+    pageSize,
+  });
+  const citedCount = cited.count;
+  const citedEntries = cited.entries;
 
   const citedEntryIds = citedEntries.map((e) => e.id);
   const citedEntryTags = citedEntryIds.length
-    ? await prisma.entryTag.findMany({
-        where: { entryId: { in: citedEntryIds }, tag: { deletedAt: null } },
-        select: { entryId: true, tag: { select: { id: true, name: true, slug: true } } },
-        orderBy: [{ tag: { name: 'asc' } }],
-      })
+    ? await queryPublicConvex<Array<{ entryId: string; tag: { id: string; name: string; slug: string } }>>(
+        'listEntryTagsForEntries',
+        { entryIds: citedEntryIds },
+      )
     : [];
 
   const tagsByEntryId = new Map<string, Array<(typeof citedEntryTags)[number]['tag']>>();

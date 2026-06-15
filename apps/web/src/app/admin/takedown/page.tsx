@@ -4,6 +4,7 @@ import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { ButtonLink } from '@/components/ui/Button';
+import { requireAdminActor } from '@/lib/admin';
 
 import browseStyles from '@/app/_styles/Browse.module.css';
 import layoutStyles from '@/app/_styles/Layout.module.css';
@@ -28,6 +29,8 @@ function truncate(value: string, max: number): string {
 }
 
 export default async function AdminTakedownPage() {
+  await requireAdminActor();
+
   const prisma = getPrismaClient();
   const cases = await prisma.takedownCase.findMany({
     select: {

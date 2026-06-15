@@ -40,6 +40,8 @@ function formatDate(value: Date | null): string {
 }
 
 export default async function AdminEntryPage({ params, searchParams }: AdminEntryPageProps) {
+  await requireAdminActor();
+
   const { id } = await params;
   const qp = (await searchParams) ?? {};
 

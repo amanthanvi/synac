@@ -23,9 +23,7 @@ export default defineConfig({
   },
   test: {
     env: {
-      DATABASE_URL:
-        process.env.DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/synac_test?schema=public',
+      CONVEX_URL: process.env.CONVEX_URL ?? 'http://127.0.0.1:3210',
       NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
     },
     fileParallelism: false,

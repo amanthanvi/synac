@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import type { InputJsonObject, InputJsonValue, PrismaClient } from '@synac/db';
 
 import { safeFetch } from '../net/safeFetch.js';
 import { evaluateLicenseGate } from './licenseGate.js';
@@ -122,7 +122,7 @@ export async function ingestOwaspVulnerabilities(
       ...(res.lastModified ? { lastModified: res.lastModified } : {}),
       sha256: res.sha256,
       sourceLocator: { headingId: 'overview' },
-    } satisfies Prisma.InputJsonObject;
+    } satisfies InputJsonObject;
 
     let sourceDocumentId: string;
     let sourceDocumentCreated = false;
@@ -178,7 +178,7 @@ export async function ingestOwaspVulnerabilities(
       ],
     };
 
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
+    const stageOutputs: Record<string, InputJsonValue> = { extracted };
 
     const ingestItem = await prisma.ingestItem.create({
       data: {

@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 
-import { getPrismaClient, type Prisma } from '@synac/db';
+import { getPrismaClient, type InputJsonValue } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -26,10 +26,10 @@ function formatDate(value: Date): string {
   }).format(value);
 }
 
-function parseJsonInput(value: string): Prisma.InputJsonValue | undefined {
+function parseJsonInput(value: string): InputJsonValue | undefined {
   const trimmed = value.trim();
   if (!trimmed) return undefined;
-  return JSON.parse(trimmed) as Prisma.InputJsonValue;
+  return JSON.parse(trimmed) as InputJsonValue;
 }
 
 function parseAffectedEntityIds(value: unknown): Record<string, unknown> {
@@ -51,7 +51,7 @@ function mergeAffectedEntityIds(
     entriesSummaryCleared?: string[];
     entriesArchived?: string[];
   },
-): Prisma.InputJsonValue {
+): InputJsonValue {
   const sourceDocuments = new Set(normalizeStringArray(before.sourceDocuments));
   const senses = new Set(normalizeStringArray(before.senses));
   const entriesSummaryCleared = new Set(normalizeStringArray(before.entriesSummaryCleared));

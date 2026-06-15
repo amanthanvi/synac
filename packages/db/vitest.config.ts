@@ -3,9 +3,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     env: {
-      DATABASE_URL:
-        process.env.DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/synac_test?schema=public',
+      CONVEX_URL: process.env.CONVEX_URL ?? 'http://127.0.0.1:3210',
     },
     fileParallelism: false,
     maxWorkers: 1,

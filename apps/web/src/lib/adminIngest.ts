@@ -1,8 +1,5 @@
-import { randomUUID } from 'node:crypto';
+import { createConvexIngestRun, getPrismaClient, type InputJsonValue } from '@synac/db';
 
-import { getPrismaClient, getPrismaClientForUrl, type Prisma } from '@synac/db';
-
-import { getBoss, getBossForDatabaseUrl } from '@/lib/boss';
 import { createDraftEntry, createDraftSense, updateEntry, updateSense } from '@/lib/adminEntries';
 import { normalizeTitle } from '@/lib/text';
 
@@ -21,116 +18,12 @@ export async function createIngestRun(input: {
   maxItems: number;
   forceReprocess: boolean;
 }): Promise<{ ingestRunId: string }> {
-  const prisma = getPrismaClient();
-
-  const source = await prisma.source.findFirst({
-    where: { id: input.sourceId },
-    select: {
-      id: true,
-      sourceSlug: true,
-      enabled: true,
-      allowedUse: true,
-      attributionRequirements: true,
-      lastVerifiedAt: true,
-    },
+  return createConvexIngestRun({
+    actorUserId: input.actorUserId,
+    sourceId: input.sourceId,
+    maxItems: normalizeMaxItems(input.maxItems),
+    forceReprocess: Boolean(input.forceReprocess),
   });
-  if (!source) throw new Error('Source not found');
-  if (!source.enabled) throw new Error('Source is disabled');
-  if (!source.allowedUse.trim()) throw new Error('Source missing allowedUse');
-  if (!source.attributionRequirements.trim()) throw new Error('Source missing attributionRequirements');
-  if (!source.lastVerifiedAt) throw new Error('Source must be verified (lastVerifiedAt) before ingest');
-
-  const maxItems = normalizeMaxItems(input.maxItems);
-  const forceReprocess = Boolean(input.forceReprocess);
-
-  const stagingDatabaseUrl = process.env.SYNAC_STAGING_DATABASE_URL?.trim();
-  if (stagingDatabaseUrl) {
-    const staging = getPrismaClientForUrl(stagingDatabaseUrl);
-
-    const stagingSource = await staging.source.findFirst({
-      where: { sourceSlug: source.sourceSlug },
-      select: { id: true, enabled: true, allowedUse: true, attributionRequirements: true, lastVerifiedAt: true },
-    });
-    if (!stagingSource) {
-      throw new Error(`Staging source not found (sourceSlug=${source.sourceSlug}). Wait for promotion sync.`);
-    }
-    if (!stagingSource.enabled) throw new Error('Staging source is disabled');
-    if (!stagingSource.allowedUse.trim()) throw new Error('Staging source missing allowedUse');
-    if (!stagingSource.attributionRequirements.trim()) throw new Error('Staging source missing attributionRequirements');
-    if (!stagingSource.lastVerifiedAt) throw new Error('Staging source must be verified (lastVerifiedAt) before ingest');
-
-    const runId = randomUUID();
-    const now = new Date();
-
-    await staging.ingestRun.create({
-      data: {
-        id: runId,
-        sourceId: stagingSource.id,
-        startedAt: now,
-        status: 'RUNNING',
-        triggeredBy: 'MANUAL',
-        triggeredByUserId: null,
-        configSnapshot: { maxItems, forceReprocess },
-      },
-      select: { id: true },
-    });
-
-    const mirrored = await prisma.ingestRun.create({
-      data: {
-        id: runId,
-        sourceId: source.id,
-        startedAt: now,
-        status: 'RUNNING',
-        triggeredBy: 'MANUAL',
-        triggeredByUserId: input.actorUserId,
-        configSnapshot: { maxItems, forceReprocess },
-        stats: { stagingFirst: true, stagingSourceSlug: source.sourceSlug },
-      },
-      select: { id: true, sourceId: true, startedAt: true, status: true, triggeredBy: true, configSnapshot: true },
-    });
-
-    await prisma.auditEvent.create({
-      data: {
-        actorUserId: input.actorUserId,
-        action: 'INGEST_RUN_CREATE',
-        entityType: 'INGEST_RUN',
-        entityId: mirrored.id,
-        after: toJsonSafe(mirrored),
-      },
-    });
-
-    const stagingBoss = await getBossForDatabaseUrl(stagingDatabaseUrl);
-    await stagingBoss.send('ingest_run', { ingestRunId: runId });
-
-    return { ingestRunId: runId };
-  }
-
-  const run = await prisma.ingestRun.create({
-    data: {
-      sourceId: source.id,
-      startedAt: new Date(),
-      status: 'RUNNING',
-      triggeredBy: 'MANUAL',
-      triggeredByUserId: input.actorUserId,
-      configSnapshot: { maxItems, forceReprocess },
-    },
-    select: { id: true, sourceId: true, startedAt: true, status: true, triggeredBy: true, configSnapshot: true },
-  });
-
-  await prisma.auditEvent.create({
-    data: {
-      actorUserId: input.actorUserId,
-      action: 'INGEST_RUN_CREATE',
-      entityType: 'INGEST_RUN',
-      entityId: run.id,
-      after: toJsonSafe(run),
-    },
-  });
-
-  const boss = await getBoss();
-  await boss.send('ingest_run', { ingestRunId: run.id });
-
-  return { ingestRunId: run.id };
 }
 
 export async function createIngestRunsForAllSources(input: {
@@ -369,7 +262,7 @@ export async function approveIngestItem(input: {
     select: { id: true },
   });
 
-  const citation =
+  const citation: { id: string } =
     existingCitation ??
     (await prisma.citation.create({
       data: {
@@ -397,7 +290,7 @@ export async function approveIngestItem(input: {
     extractionMethod: typeof extractionMethod;
     extractorVersion: string;
     extractedAt: Date;
-    sourceLocator?: Prisma.InputJsonValue;
+    sourceLocator?: InputJsonValue;
   }> = [];
 
   if (proposed.kind === 'CREATE_ENTRY' && proposed.summaryMd?.trim()) {
@@ -410,7 +303,7 @@ export async function approveIngestItem(input: {
       extractionMethod,
       extractorVersion,
       extractedAt: item.sourceDocument.fetchedAt,
-      sourceLocator: firstSense.sourceLocator as Prisma.InputJsonValue,
+      sourceLocator: firstSense.sourceLocator as InputJsonValue,
     });
   }
 
@@ -424,7 +317,7 @@ export async function approveIngestItem(input: {
       extractionMethod: parseExtractionMethod(sense.extractionMethod ?? extractionMethod),
       extractorVersion: sense.extractorVersion?.trim() ? sense.extractorVersion.trim() : extractorVersion,
       extractedAt: item.sourceDocument.fetchedAt,
-      sourceLocator: sense.sourceLocator as Prisma.InputJsonValue,
+      sourceLocator: sense.sourceLocator as InputJsonValue,
     });
   }
 

@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import {
   getPrismaClient,
   listPublishedRelationshipsForEntry,
+  queryPublicConvex,
   resolvePublishedEntryBySlug,
 } from '@synac/db';
 
@@ -209,64 +210,33 @@ export async function loadPublicEntryPageData(input: {
     );
   }
 
-  const entry = await prisma.entry.findFirst({
-    where: { id: resolved.entry.id, status: 'PUBLISHED', deletedAt: null },
-    include: {
-      variants: { orderBy: [{ variantType: 'asc' }, { variantText: 'asc' }] },
-      senses: {
-        where: { status: 'PUBLISHED', deletedAt: null },
-        orderBy: [{ senseOrder: 'asc' }],
-        include: { examples: { orderBy: [{ exampleOrder: 'asc' }] } },
-      },
-      entryTags: {
-        where: { tag: { deletedAt: null } },
-        include: { tag: true },
-      },
-    },
-  });
+  const pageData = await queryPublicConvex<{
+    entry: PublicEntryRecord;
+    provenance: PublicSenseProvenance[];
+    relationships: Awaited<ReturnType<typeof listPublishedRelationshipsForEntry>>;
+    relatedSummaries: Array<{ id: string; summaryText: string | null; summaryMd: string | null }>;
+  } | null>('getPublicEntryPage', { entryId: resolved.entry.id, relationshipLimit: 50 });
 
-  if (!entry) {
+  if (!pageData) {
     notFound();
   }
 
-  const senseIds = entry.senses.map((sense) => sense.id);
-  const provenance = senseIds.length
-    ? await prisma.fieldProvenance.findMany({
-        where: { entityType: 'SENSE', entityId: { in: senseIds } },
-        include: { citation: { include: { source: true, sourceDocument: true } } },
-        orderBy: [{ extractedAt: 'desc' }],
-      })
-    : [];
-
-  const provenanceBySenseId = new Map<string, Array<(typeof provenance)[number]>>();
-  for (const item of provenance) {
-    if (item.entityType !== 'SENSE') continue;
+  const entry = pageData.entry;
+  const provenanceBySenseId = new Map<string, PublicSenseProvenance[]>();
+  for (const item of pageData.provenance) {
     const list = provenanceBySenseId.get(item.entityId) ?? [];
     list.push(item);
     provenanceBySenseId.set(item.entityId, list);
   }
 
-  const relationships = await listPublishedRelationshipsForEntry(prisma, {
-    entryId: entry.id,
-    limit: 50,
-  });
+  const relationships = pageData.relationships;
   const related = relationships.filter((relationship) => relationship.relationshipType === 'RELATED').slice(0, 10);
   const seeAlso = relationships
     .filter((relationship) => relationship.relationshipType === 'SEE_ALSO')
     .slice(0, 10);
 
-  const relatedEntryIds = Array.from(
-    new Set([...related, ...seeAlso].map((relationship) => relationship.otherEntry.id)),
-  );
-  const relatedSummaries = relatedEntryIds.length
-    ? await prisma.entry.findMany({
-        where: { id: { in: relatedEntryIds }, status: 'PUBLISHED', deletedAt: null },
-        select: { id: true, summaryText: true, summaryMd: true },
-      })
-    : [];
-
   const otherSummaryById = new Map<string, string | null>();
-  for (const other of relatedSummaries) {
+  for (const other of pageData.relatedSummaries) {
     otherSummaryById.set(
       other.id,
       other.summaryText ?? (other.summaryMd ? markdownToText(other.summaryMd) : null),
@@ -379,4 +349,3 @@ export function buildSenseCitations(
 
   return Array.from(byKey.values());
 }
-

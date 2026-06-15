@@ -64,6 +64,8 @@ function getExtractedText(stageOutputs: unknown): string | null {
 }
 
 export default async function AdminIngestRunPage({ params, searchParams }: AdminIngestRunPageProps) {
+  await requireAdminActor();
+
   const { id } = await params;
   const qp = searchParams ? await searchParams : {};
 

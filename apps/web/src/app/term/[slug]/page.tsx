@@ -4,7 +4,7 @@ import { PublicEntryPage } from '@/components/PublicEntryPage';
 import { getPrismaClient, resolvePublishedEntryBySlug } from '@synac/db';
 import { loadPublicEntryPageData } from '@/lib/publicEntryPage';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type TermEntryPageProps = {
   params: Promise<{ slug: string }>;

@@ -4,6 +4,7 @@ import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { ButtonLink } from '@/components/ui/Button';
+import { requireAdminActor } from '@/lib/admin';
 
 import browseStyles from '@/app/_styles/Browse.module.css';
 import layoutStyles from '@/app/_styles/Layout.module.css';
@@ -19,6 +20,8 @@ function formatDate(value: Date): string {
 }
 
 export default async function AdminEntriesPage() {
+  await requireAdminActor();
+
   const prisma = getPrismaClient();
   const entries = await prisma.entry.findMany({
     where: { deletedAt: null },

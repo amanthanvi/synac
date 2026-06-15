@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import type { InputJsonObject, InputJsonValue, PrismaClient } from '@synac/db';
 
 import { safeFetch } from '../net/safeFetch.js';
 import { evaluateLicenseGate } from './licenseGate.js';
@@ -171,7 +171,7 @@ export async function ingestMitreAttackCti(
         stixId: p.stixId,
         externalId: p.externalId,
       },
-    } satisfies Prisma.InputJsonObject;
+    } satisfies InputJsonObject;
 
     const createEntryProposedChange = {
       kind: 'CREATE_ENTRY',
@@ -192,7 +192,7 @@ export async function ingestMitreAttackCti(
       ],
     };
 
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
+    const stageOutputs: Record<string, InputJsonValue> = { extracted };
 
     const ingestItem = await prisma.ingestItem.create({
       data: {

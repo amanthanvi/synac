@@ -14,12 +14,7 @@ export default defineConfig({
   test: {
     fileParallelism: false,
     env: {
-      DATABASE_URL:
-        process.env.DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/synac_test?schema=public',
-      SYNAC_STAGING_DATABASE_URL:
-        process.env.SYNAC_STAGING_DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/synac_staging_test?schema=public',
+      CONVEX_URL: process.env.CONVEX_URL ?? 'http://127.0.0.1:3210',
     },
   },
 });

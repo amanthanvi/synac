@@ -22,7 +22,6 @@
     "vitest": "^4.0.18"
   },
   "dependencies": {
-    "@synac/db": "workspace:*",
-    "pg-boss": "^12.12.0"
+    "@synac/db": "workspace:*"
   }
 }

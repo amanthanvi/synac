@@ -12,7 +12,7 @@ import {
 
 import styles from '../_styles/Browse.module.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type AcronymsPageProps = {
   searchParams?: Promise<{ letter?: string; page?: string; tag?: string; sort?: string; q?: string }>;

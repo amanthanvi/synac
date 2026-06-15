@@ -10,7 +10,7 @@ import { Pagination } from '@/components/Pagination';
 import browseStyles from '../../_styles/Browse.module.css';
 import tagStyles from '../../_styles/Tags.module.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type TagPageProps = {
   params: Promise<{ slug: string }>;

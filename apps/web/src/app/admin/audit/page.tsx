@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { getPrismaClient } from '@synac/db';
 
 import { Button } from '@/components/ui/Button';
+import { requireAdminActor } from '@/lib/admin';
 
 import styles from './page.module.css';
 
@@ -34,6 +35,8 @@ function formatDate(value: Date): string {
 }
 
 export default async function AdminAuditPage({ searchParams }: AdminAuditPageProps) {
+  await requireAdminActor();
+
   const qp = searchParams ? await searchParams : {};
   const entityType = normalizeOptional(qp.entityType);
   const entityId = normalizeOptional(qp.entityId);

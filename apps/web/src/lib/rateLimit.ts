@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 import type { NextRequest } from 'next/server';
 
-import { getPrismaClient } from '@synac/db';
+import { hitConvexRateLimit } from '@synac/db';
 
 const SESSION_COOKIE = 'synac_session';
 
@@ -51,18 +51,7 @@ export async function enforceRateLimit(input: {
 
   const key = input.key?.trim() ? input.key.trim() : getRateLimitKey(input.request);
 
-  const prisma = getPrismaClient();
-  const bucket = await prisma.rateLimitBucket.upsert({
-    where: { scope_key_windowStart: { scope: input.scope, key, windowStart } },
-    create: {
-      scope: input.scope,
-      key,
-      windowStart,
-      count: 1,
-    },
-    update: { count: { increment: 1 } },
-    select: { count: true },
-  });
+  const bucket = await hitConvexRateLimit({ scope: input.scope, key, windowStart });
 
   const elapsedSeconds = Math.floor((nowMs - windowStart.getTime()) / 1000);
   const retryAfterSeconds = Math.max(0, windowSeconds - elapsedSeconds);
@@ -70,4 +59,3 @@ export async function enforceRateLimit(input: {
 
   return { allowed: bucket.count <= limit, retryAfterSeconds, remaining };
 }
-

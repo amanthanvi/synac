@@ -6,6 +6,19 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
+        userAgent: [
+          'GPTBot',
+          'ChatGPT-User',
+          'ClaudeBot',
+          'anthropic-ai',
+          'CCBot',
+          'Google-Extended',
+          'PerplexityBot',
+          'Bytespider',
+        ],
+        disallow: '/',
+      },
+      {
         userAgent: '*',
         allow: '/',
         disallow: ['/admin', '/api'],
@@ -14,4 +27,3 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
-

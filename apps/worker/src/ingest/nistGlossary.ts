@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import type { InputJsonObject, InputJsonValue, PrismaClient } from '@synac/db';
 
 import { safeFetch } from '../net/safeFetch.js';
 import { evaluateLicenseGate } from './licenseGate.js';
@@ -170,7 +170,7 @@ export async function ingestNistGlossary(
       ...(res.lastModified ? { lastModified: res.lastModified } : {}),
       sha256: res.sha256,
       sourceLocator: { selector: '#term-def-text-0' },
-    } satisfies Prisma.InputJsonObject;
+    } satisfies InputJsonObject;
 
     const createEntryProposedChange = {
       kind: 'CREATE_ENTRY',
@@ -227,7 +227,7 @@ export async function ingestNistGlossary(
       if (prior) continue;
     }
 
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
+    const stageOutputs: Record<string, InputJsonValue> = { extracted };
 
     const ingestItem = await prisma.ingestItem.create({
       data: {

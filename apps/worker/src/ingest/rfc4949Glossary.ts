@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import type { InputJsonObject, InputJsonValue, PrismaClient } from '@synac/db';
 
 import { safeFetch } from '../net/safeFetch.js';
 import { evaluateLicenseGate } from './licenseGate.js';
@@ -368,7 +368,7 @@ export async function ingestRfc4949Glossary(
       ...(res.lastModified ? { lastModified: res.lastModified } : {}),
       sha256: res.sha256,
       sourceLocator: entry.sourceLocator,
-    } satisfies Prisma.InputJsonObject;
+    } satisfies InputJsonObject;
 
     const variants = entry.variants;
 
@@ -389,7 +389,7 @@ export async function ingestRfc4949Glossary(
       })),
     };
 
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
+    const stageOutputs: Record<string, InputJsonValue> = { extracted };
 
     const ingestItem = await prisma.ingestItem.create({
       data: {
@@ -410,7 +410,7 @@ export async function ingestRfc4949Glossary(
       where: { id: ingestItem.id },
       data: {
         stage: 'NORMALIZED',
-        proposedChange: createEntryProposedChange as Prisma.InputJsonValue,
+        proposedChange: createEntryProposedChange as InputJsonValue,
         stageOutputs,
       },
       select: { id: true },
@@ -440,7 +440,7 @@ export async function ingestRfc4949Glossary(
       where: { id: ingestItem.id },
       data: {
         stage: 'DEDUPED',
-        proposedChange: proposedChange as Prisma.InputJsonValue,
+        proposedChange: proposedChange as InputJsonValue,
         stageOutputs,
       },
       select: { id: true },

@@ -1,11 +1,11 @@
-import { getPrismaClient, type Prisma } from '@synac/db';
+import { getPrismaClient, type InputJsonValue } from '@synac/db';
 
 function toJsonSafe<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function toInputJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+function toInputJson(value: unknown): InputJsonValue {
+  return JSON.parse(JSON.stringify(value)) as InputJsonValue;
 }
 
 function parseActions(value: unknown): Array<Record<string, unknown>> {
@@ -216,7 +216,7 @@ export async function updateTakedownCase(input: {
   status?: 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
   internalNotes?: string;
   appendAction?: string;
-  affectedEntityIds?: Prisma.InputJsonValue;
+  affectedEntityIds?: InputJsonValue;
 }): Promise<void> {
   const prisma = getPrismaClient();
 

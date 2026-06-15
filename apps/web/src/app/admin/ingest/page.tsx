@@ -25,6 +25,8 @@ function formatDate(value: Date): string {
 }
 
 export default async function AdminIngestPage() {
+  await requireAdminActor();
+
   const prisma = getPrismaClient();
   const sources = await prisma.source.findMany({
     select: { id: true, name: true, enabled: true, lastVerifiedAt: true },

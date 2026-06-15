@@ -16,7 +16,7 @@ export const CHANGELOG: ChangelogEntry[] = [
         title: 'Reliability',
         items: [
           'Added focused automated coverage for publish gating, promotion parsing, and search-index helpers.',
-          'Added search-index integrity reporting and rebuild tooling for the Postgres-backed entry_search system.',
+          'Added search-index integrity reporting and rebuild tooling for the entry search system.',
         ],
       },
       {

@@ -1,12 +1,12 @@
 import Link from 'next/link';
 
-import { getPrismaClient, listPublicSources } from '@synac/db';
+import { queryPublicConvex } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 
 import styles from '../_styles/Browse.module.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900;
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat('en-US', {
@@ -17,28 +17,19 @@ function formatDate(value: Date): string {
 }
 
 export default async function SourcesPage() {
-  const prisma = getPrismaClient();
-  const sources = await listPublicSources(prisma);
-  const sourceIds = sources.map((s) => s.id);
-  const citationAgg = sourceIds.length
-    ? await prisma.citation.groupBy({
-        by: ['sourceId'],
-        where: { sourceId: { in: sourceIds } },
-        _count: { sourceId: true },
-        _max: { accessedAt: true },
-      })
-    : [];
-
-  const citationBySourceId = new Map<
-    string,
-    { count: number; maxAccessedAt: Date | null }
-  >();
-  for (const row of citationAgg) {
-    citationBySourceId.set(row.sourceId, {
-      count: row._count.sourceId,
-      maxAccessedAt: row._max.accessedAt ?? null,
-    });
-  }
+  const sources = await queryPublicConvex<
+    Array<{
+      id: string;
+      name: string;
+      sourceSlug: string;
+      baseUrl: string;
+      licenseType: string;
+      lastVerifiedAt: Date | null;
+      trustTier: string;
+      citationCount: number;
+      maxAccessedAt: Date | null;
+    }>
+  >('listPublicSourcesWithStats');
 
   return (
     <>
@@ -56,11 +47,6 @@ export default async function SourcesPage() {
       ) : (
         <ol className={styles.list}>
           {sources.map((source) => {
-            const stats = citationBySourceId.get(source.id) ?? {
-              count: 0,
-              maxAccessedAt: null as Date | null,
-            };
-
             return (
               <li key={source.id} className={styles.item}>
                 <div className={styles.itemTitleRow}>
@@ -68,8 +54,8 @@ export default async function SourcesPage() {
                     {source.name}
                   </Link>
                   <span className={styles.itemSlug}>
-                    {stats.maxAccessedAt ? (
-                      <>Latest {formatDate(stats.maxAccessedAt)}</>
+                    {source.maxAccessedAt ? (
+                      <>Latest {formatDate(source.maxAccessedAt)}</>
                     ) : (
                       <>No citations yet</>
                     )}
@@ -82,7 +68,7 @@ export default async function SourcesPage() {
                 </p>
                 <div className={styles.itemTags}>
                   <span className={styles.tag}>{source.trustTier.replace('_', ' ')}</span>
-                  <span className={styles.tag}>{stats.count.toLocaleString()} citations</span>
+                  <span className={styles.tag}>{source.citationCount.toLocaleString()} citations</span>
                   <span className={styles.tag}>
                     {source.lastVerifiedAt
                       ? `Verified ${formatDate(source.lastVerifiedAt)}`

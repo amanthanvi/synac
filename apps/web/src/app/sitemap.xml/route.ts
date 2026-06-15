@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getSiteUrl, renderSitemapIndex } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export async function GET() {
   const siteUrl = getSiteUrl();
@@ -20,8 +20,7 @@ export async function GET() {
   return new NextResponse(xml, {
     headers: {
       'content-type': 'application/xml; charset=utf-8',
-      'cache-control': 'public, max-age=300',
+      'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400',
     },
   });
 }
-

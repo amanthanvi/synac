@@ -21,3 +21,4 @@ yarn-error.log*
 packages/db/prisma/dev.db
 packages/db/prisma/dev.db-journal
 packages/db/src/generated/
+.vercel

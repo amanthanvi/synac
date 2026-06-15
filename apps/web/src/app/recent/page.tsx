@@ -1,13 +1,13 @@
 import Link from 'next/link';
 
-import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
+import { getPrismaClient, listRecentPublishedEntries, queryPublicConvex } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 
 import styles from '../_styles/Browse.module.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type RecentPageProps = {
   searchParams?: Promise<{ page?: string }>;
@@ -52,11 +52,10 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
 
   const entryIds = entries.map((e) => e.id);
   const entryTags = entryIds.length
-    ? await prisma.entryTag.findMany({
-        where: { entryId: { in: entryIds }, tag: { deletedAt: null } },
-        select: { entryId: true, tag: { select: { id: true, name: true, slug: true } } },
-        orderBy: [{ tag: { name: 'asc' } }],
-      })
+    ? await queryPublicConvex<Array<{ entryId: string; tag: { id: string; name: string; slug: string } }>>(
+        'listEntryTagsForEntries',
+        { entryIds },
+      )
     : [];
 
   const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();

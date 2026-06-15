@@ -1,6 +1,7 @@
 import { PageHeader } from '@/components/PageHeader';
 import { Panel } from '@/components/ui/Panel';
 import { getPrismaClient, getSearchIndexCoverage } from '@synac/db';
+import { requireAdminActor } from '@/lib/admin';
 import { logSearchIndexCoverage } from '@/lib/observability';
 
 import layoutStyles from '@/app/_styles/Layout.module.css';
@@ -8,6 +9,8 @@ import layoutStyles from '@/app/_styles/Layout.module.css';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSearchIndexPage() {
+  await requireAdminActor();
+
   const prisma = getPrismaClient();
   const coverage = await getSearchIndexCoverage(prisma, { limit: 20 });
   logSearchIndexCoverage({
@@ -23,7 +26,7 @@ export default async function AdminSearchIndexPage() {
       <PageHeader
         badge="Admin"
         title="Search index"
-        subtitle="Coverage and integrity of the Postgres-backed entry_search index."
+        subtitle="Coverage and integrity of the Convex-backed entry search index."
       />
 
       <div className={layoutStyles.stack}>
@@ -66,7 +69,7 @@ export default async function AdminSearchIndexPage() {
         <Panel className={layoutStyles.narrow}>
           <div className={layoutStyles.stack}>
             <div>
-              <strong>Orphaned entry_search rows</strong>
+              <strong>Orphaned search rows</strong>
             </div>
             {coverage.orphanedEntryIds.length === 0 ? (
               <div>None.</div>

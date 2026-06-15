@@ -13,6 +13,8 @@ export async function EntryTagsSection(props: {
   entryId: string;
   entryTags: Array<{ tagId: string; tag: { id: string; name: string; slug: string } }>;
 }) {
+  await requireAdminActor();
+
   const prisma = getPrismaClient();
   const allTags = await prisma.tag.findMany({
     where: { deletedAt: null },

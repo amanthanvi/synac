@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { getPrismaClient } from '@synac/db';
+import { trackPublishedEntryView } from '@synac/db';
 
 import { logger } from '@/lib/logger';
 import { enforceRateLimit } from '@/lib/rateLimit';
@@ -12,6 +12,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const SESSION_COOKIE = 'synac_session';
+const VIEW_UPDATE_MIN_INTERVAL_MS = 30 * 60 * 1000;
 
 function isUuid(value: unknown): value is string {
   if (typeof value !== 'string') return false;
@@ -55,21 +56,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'invalid_entry_id', requestId }, { status: 400 });
     }
 
-    const prisma = getPrismaClient();
-    const entry = await prisma.entry.findFirst({
-      where: { id: entryId, status: 'PUBLISHED', deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!entry) {
-      return NextResponse.json({ ok: true });
-    }
-
     const sessionHash = hashSession(sessionId);
-    await prisma.entryView.upsert({
-      where: { entryId_sessionHash: { entryId, sessionHash } },
-      create: { entryId, sessionHash, lastSeenAt: new Date() },
-      update: { lastSeenAt: new Date() },
+    await trackPublishedEntryView({
+      entryId,
+      sessionHash,
+      now: new Date(),
+      minIntervalMs: VIEW_UPDATE_MIN_INTERVAL_MS,
     });
 
     return NextResponse.json({ ok: true });

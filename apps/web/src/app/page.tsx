@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
+import { getPrismaClient, listRecentPublishedEntries, queryPublicConvex } from '@synac/db';
 
 import { SearchForm } from '@/components/SearchForm';
 import { ButtonLink } from '@/components/ui/Button';
@@ -8,7 +8,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import browseStyles from './_styles/Browse.module.css';
 import styles from './page.module.css';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat('en-US', {
@@ -24,11 +24,10 @@ export default async function Home() {
 
   const entryIds = recent.map((e) => e.id);
   const entryTags = entryIds.length
-    ? await prisma.entryTag.findMany({
-        where: { entryId: { in: entryIds }, tag: { deletedAt: null } },
-        select: { entryId: true, tag: { select: { id: true, name: true, slug: true } } },
-        orderBy: [{ tag: { name: 'asc' } }],
-      })
+    ? await queryPublicConvex<Array<{ entryId: string; tag: { id: string; name: string; slug: string } }>>(
+        'listEntryTagsForEntries',
+        { entryIds },
+      )
     : [];
 
   const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();

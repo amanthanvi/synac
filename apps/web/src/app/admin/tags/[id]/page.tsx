@@ -15,6 +15,8 @@ type AdminTagPageProps = {
 };
 
 export default async function AdminTagPage({ params, searchParams }: AdminTagPageProps) {
+  await requireAdminActor();
+
   const { id } = await params;
   const qp = (await searchParams) ?? {};
 
@@ -171,4 +173,3 @@ async function merge(formData: FormData) {
 
   redirect(`/admin/tags/${intoTagId}?merged=1`);
 }
-
