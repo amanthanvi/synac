@@ -64,8 +64,18 @@ const MODEL_BY_TABLE = Object.fromEntries(
   Object.entries(TABLE_BY_MODEL).map(([model, table]) => [table, model]),
 ) as Record<TableName, ModelName>;
 
-const DEFAULT_LIMIT = 5000;
+const DEFAULT_LIMIT = 500;
 const MAX_ENTRY_SEARCH_DOCUMENT_CHARS = 6_000;
+const PUBLIC_BROWSE_SCAN_LIMIT = 500;
+const PUBLIC_TAG_SCAN_LIMIT = 100;
+const PUBLIC_TAG_LINK_SCAN_LIMIT = 500;
+const PUBLIC_SOURCE_SCAN_LIMIT = 100;
+const PUBLIC_CITATION_SCAN_LIMIT = 500;
+const PUBLIC_PROVENANCE_SCAN_LIMIT = 50;
+const SITEMAP_SCAN_LIMIT = 1000;
+const ADMIN_DRY_RUN_SCAN_LIMIT = 500;
+const SEARCH_COMPACTION_BATCH_LIMIT = 50;
+const RATE_LIMIT_PRUNE_BATCH_LIMIT = 100;
 
 function asModel(value: string): ModelName {
   if (value in TABLE_BY_MODEL) return value as ModelName;
@@ -1114,10 +1124,15 @@ export const resolveTagBySlug = query({
 export const listTagsWithCounts = query({
   args: {},
   handler: async (ctx) => {
-    const tags = (await ctx.db.query("tags").withIndex("by_name").take(500)).map(docRecord).filter(isLiveTag);
+    const tags = (await ctx.db.query("tags").withIndex("by_name").take(PUBLIC_TAG_SCAN_LIMIT))
+      .map(docRecord)
+      .filter(isLiveTag);
     const result = [];
     for (const tag of tags) {
-      const links = await ctx.db.query("entryTags").withIndex("by_tagId", (index) => index.eq("tagId", tag.id)).take(5000);
+      const links = await ctx.db
+        .query("entryTags")
+        .withIndex("by_tagId", (index) => index.eq("tagId", tag.id))
+        .take(PUBLIC_TAG_LINK_SCAN_LIMIT);
       let count = 0;
       for (const link of links.map(docRecord)) {
         const entry = await entryById(ctx, String(link.entryId));
@@ -1135,7 +1150,10 @@ export const listPublishedEntriesForTag = query({
     const page = Math.max(1, Math.floor(args.page));
     const pageSize = Math.max(1, Math.min(200, Math.floor(args.pageSize)));
     const entryType = typeof args.entryType === "string" && args.entryType ? args.entryType : null;
-    const links = await ctx.db.query("entryTags").withIndex("by_tagId", (index) => index.eq("tagId", args.tagId)).take(5000);
+    const links = await ctx.db
+      .query("entryTags")
+      .withIndex("by_tagId", (index) => index.eq("tagId", args.tagId))
+      .take(PUBLIC_TAG_LINK_SCAN_LIMIT);
     const entries = [];
     for (const link of links.map(docRecord)) {
       const entry = await entryById(ctx, String(link.entryId));
@@ -1270,7 +1288,10 @@ export const loadBrowsePageData = query({
     const candidates = [];
 
     if (liveActiveTag) {
-      const links = await ctx.db.query("entryTags").withIndex("by_tagId", (index) => index.eq("tagId", liveActiveTag.id)).take(5000);
+      const links = await ctx.db
+        .query("entryTags")
+        .withIndex("by_tagId", (index) => index.eq("tagId", liveActiveTag.id))
+        .take(PUBLIC_TAG_LINK_SCAN_LIMIT);
       for (const link of links.map(docRecord)) {
         const entry = await entryById(ctx, String(link.entryId));
         if (isPublishedEntry(entry) && entry.entryType === args.entryType) candidates.push(entry);
@@ -1283,7 +1304,7 @@ export const loadBrowsePageData = query({
         .withIndex("by_entryType_and_normalizedTitle", (index) =>
           index.eq("entryType", args.entryType).gte("normalizedTitle", prefixStart).lt("normalizedTitle", prefixEnd),
         )
-        .take(1000);
+        .take(PUBLIC_BROWSE_SCAN_LIMIT);
       for (const row of rows.map(docRecord)) if (isPublishedEntry(row)) candidates.push(row);
     }
 
@@ -1334,7 +1355,10 @@ export const loadBrowsePageData = query({
 export const listPublicSources = query({
   args: {},
   handler: async (ctx) => {
-    const sources = await ctx.db.query("sources").withIndex("by_enabled", (index) => index.eq("enabled", true)).take(500);
+    const sources = await ctx.db
+      .query("sources")
+      .withIndex("by_enabled", (index) => index.eq("enabled", true))
+      .take(PUBLIC_SOURCE_SCAN_LIMIT);
     return sources.map(docRecord).map(publicSource).sort((left, right) => String(left.name).localeCompare(String(right.name)));
   },
 });
@@ -1342,10 +1366,18 @@ export const listPublicSources = query({
 export const listPublicSourcesWithStats = query({
   args: {},
   handler: async (ctx) => {
-    const sources = (await ctx.db.query("sources").withIndex("by_enabled", (index) => index.eq("enabled", true)).take(500)).map(docRecord);
+    const sources = (
+      await ctx.db
+        .query("sources")
+        .withIndex("by_enabled", (index) => index.eq("enabled", true))
+        .take(PUBLIC_SOURCE_SCAN_LIMIT)
+    ).map(docRecord);
     const out = [];
     for (const source of sources) {
-      const citations = await ctx.db.query("citations").withIndex("by_sourceId", (index) => index.eq("sourceId", source.id)).take(5000);
+      const citations = await ctx.db
+        .query("citations")
+        .withIndex("by_sourceId", (index) => index.eq("sourceId", source.id))
+        .take(PUBLIC_CITATION_SCAN_LIMIT);
       let maxAccessedAt: number | null = null;
       for (const citation of citations.map(docRecord)) {
         const accessedAt = typeof citation.accessedAt === "number" ? citation.accessedAt : null;
@@ -1374,13 +1406,16 @@ export const listCitedEntriesForSource = query({
   handler: async (ctx, args) => {
     const page = Math.max(1, Math.floor(args.page));
     const pageSize = Math.max(1, Math.min(200, Math.floor(args.pageSize)));
-    const citations = await ctx.db.query("citations").withIndex("by_sourceId", (index) => index.eq("sourceId", args.sourceId)).take(5000);
+    const citations = await ctx.db
+      .query("citations")
+      .withIndex("by_sourceId", (index) => index.eq("sourceId", args.sourceId))
+      .take(PUBLIC_CITATION_SCAN_LIMIT);
     const entryIds = new Set<string>();
     for (const citation of citations.map(docRecord)) {
       const provenances = await ctx.db
         .query("fieldProvenance")
         .withIndex("by_citationId", (index) => index.eq("citationId", citation.id))
-        .take(200);
+        .take(PUBLIC_PROVENANCE_SCAN_LIMIT);
       for (const provenance of provenances.map(docRecord)) {
         if (provenance.entityType !== "SENSE") continue;
         const sense = await firstById(ctx, "sense", String(provenance.entityId));
@@ -1406,7 +1441,7 @@ export const listSitemapEntries = query({
     const entries = await ctx.db
       .query("entries")
       .withIndex("by_entryType_and_normalizedTitle", (index) => index.eq("entryType", args.entryType))
-      .take(5000);
+      .take(SITEMAP_SCAN_LIMIT);
     return entries
       .map(docRecord)
       .filter(isPublishedEntry)
@@ -1417,7 +1452,7 @@ export const listSitemapEntries = query({
 export const listSitemapTags = query({
   args: {},
   handler: async (ctx) =>
-    (await ctx.db.query("tags").withIndex("by_slug").take(5000))
+    (await ctx.db.query("tags").withIndex("by_slug").take(SITEMAP_SCAN_LIMIT))
       .map(docRecord)
       .filter(isLiveTag)
       .map((tag) => ({ slug: tag.slug, updatedAt: tag.updatedAt ?? null })),
@@ -1426,7 +1461,12 @@ export const listSitemapTags = query({
 export const listSitemapSources = query({
   args: {},
   handler: async (ctx) =>
-    (await ctx.db.query("sources").withIndex("by_enabled", (index) => index.eq("enabled", true)).take(5000))
+    (
+      await ctx.db
+        .query("sources")
+        .withIndex("by_enabled", (index) => index.eq("enabled", true))
+        .take(SITEMAP_SCAN_LIMIT)
+    )
       .map(docRecord)
       .map((source) => ({ sourceSlug: source.sourceSlug, updatedAt: source.updatedAt ?? null })),
 });
@@ -1438,7 +1478,7 @@ export const auditRetentionDryRun = query({
   },
   handler: async (ctx, args) => {
     const cutoff = now() - Math.max(1, Math.floor(args.olderThanDays)) * 24 * 60 * 60 * 1000;
-    const limit = Math.max(1, Math.min(5000, Math.floor(args.limit ?? 1000)));
+    const limit = Math.max(1, Math.min(ADMIN_DRY_RUN_SCAN_LIMIT, Math.floor(args.limit ?? 100)));
     const oldAuditEvents = (await ctx.db.query("auditEvents").withIndex("by_createdAt", (index) => index.lt("createdAt", cutoff)).take(limit))
       .map(docRecord);
     const oldIngestRuns = (await ctx.db
@@ -1854,7 +1894,7 @@ export const searchPublishedEntries = query({
           ? (await ctx.db
               .query("senses")
               .withIndex("by_entryId_and_senseOrder", (index) => index.eq("entryId", entry.id))
-              .collect()
+              .take(50)
             )
               .map(docRecord)
               .filter((sense) => sense.status === "PUBLISHED" && !sense.deletedAt)
@@ -1901,7 +1941,10 @@ export const compactEntrySearchBatch = internalMutation({
   handler: async (ctx, args) => {
     const paginationOpts = {
       ...args.paginationOpts,
-      numItems: Math.max(1, Math.min(250, Math.floor(args.paginationOpts.numItems))),
+      numItems: Math.max(
+        1,
+        Math.min(SEARCH_COMPACTION_BATCH_LIMIT, Math.floor(args.paginationOpts.numItems)),
+      ),
     };
     const result = await ctx.db.query("entrySearch").withIndex("by_normalizedTitle").paginate(paginationOpts);
     let compacted = 0;
@@ -1945,7 +1988,7 @@ export const pruneRateLimitBuckets = internalMutation({
     const rows = await ctx.db
       .query("rateLimitBuckets")
       .withIndex("by_windowStart", (index) => index.lt("windowStart", cutoff))
-      .take(500);
+      .take(RATE_LIMIT_PRUNE_BATCH_LIMIT);
     for (const row of rows) await ctx.db.delete(row._id);
     return { deleted: rows.length };
   },
