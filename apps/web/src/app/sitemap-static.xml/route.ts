@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const siteUrl = getSiteUrl();

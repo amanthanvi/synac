@@ -5,7 +5,7 @@ import { queryPublicConvex } from '@synac/db';
 import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const siteUrl = getSiteUrl();
