@@ -28,6 +28,32 @@ export async function GET(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') ?? undefined;
 
   try {
+    const url = new URL(request.url);
+    const q = (url.searchParams.get('q') ?? '').trim();
+    const normalizedQuery = q.toLowerCase().replace(/\s+/g, ' ').trim();
+    const page = Math.max(1, Math.min(10, Number(url.searchParams.get('page') ?? 1) || 1));
+
+    if (!q || q.length > 120) {
+      return NextResponse.json({
+        results: [],
+        meta: { page, pageSize: 20 },
+      });
+    }
+
+    if (
+      normalizedQuery.length <= 1 ||
+      normalizedQuery === 'a' ||
+      normalizedQuery === 'an' ||
+      normalizedQuery === 'and' ||
+      normalizedQuery === 'or' ||
+      normalizedQuery === 'the'
+    ) {
+      return NextResponse.json({
+        results: [],
+        meta: { page, pageSize: 20 },
+      });
+    }
+
     const rate = await enforceRateLimit({ request, scope: 'api_v1_search', limit: 60, windowSeconds: 60 });
     if (!rate.allowed) {
       logger.warn('api.search.rate_limited', { requestId, retryAfterSeconds: rate.retryAfterSeconds });
@@ -37,19 +63,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const url = new URL(request.url);
-
-    const q = url.searchParams.get('q') ?? '';
     const entryType = parseEntryType(url.searchParams.get('type'));
     const tag = url.searchParams.get('tag') ?? undefined;
-    const page = Math.max(1, Number(url.searchParams.get('page') ?? 1) || 1);
-
-    if (!q.trim()) {
-      return NextResponse.json({
-        results: [],
-        meta: { page, pageSize: 20 },
-      });
-    }
 
     const prisma = getPrismaClient();
     const results = await searchPublishedEntries(prisma, {

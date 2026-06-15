@@ -1795,16 +1795,16 @@ export const searchPublishedEntries = query({
     pageSize: v.number(),
   },
   handler: async (ctx, args) => {
-    const raw = args.query.trim();
+    const raw = args.query.trim().slice(0, 120);
     if (!raw) return [];
     const q = raw.toLowerCase().replace(/\s+/g, " ");
     if (q.length <= 1 || ["a", "an", "and", "or", "the"].includes(q)) return [];
     const slug = q.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const page = Math.max(1, Math.floor(args.page));
-    const pageSize = Math.max(1, Math.min(100, Math.floor(args.pageSize)));
+    const page = Math.max(1, Math.min(10, Math.floor(args.page)));
+    const pageSize = Math.max(1, Math.min(50, Math.floor(args.pageSize)));
     const entryType = typeof args.entryType === "string" && args.entryType ? args.entryType : null;
     const tagSlug = typeof args.tagSlug === "string" && args.tagSlug ? args.tagSlug : null;
-    const candidateLimit = Math.min(500, Math.max(page * pageSize * 4, pageSize + 100));
+    const candidateLimit = Math.min(200, Math.max(page * pageSize * 3, pageSize + 40));
     const candidates = new Map<string, GenericDoc>();
     const addSearchRows = (rows: unknown[]) => {
       for (const row of rows) {
@@ -1820,14 +1820,17 @@ export const searchPublishedEntries = query({
         .withIndex("by_normalizedTitle", (index) => index.gte("normalizedTitle", q).lt("normalizedTitle", `${q}\uffff`))
         .take(candidateLimit),
     );
-    addSearchRows(
-      await ctx.db
-        .query("entrySearch")
-        .withSearchIndex("search_searchDocument", (search) =>
-          entryType ? search.search("searchDocument", raw).eq("entryType", entryType) : search.search("searchDocument", raw),
-        )
-        .take(candidateLimit),
-    );
+    const shouldSearchFullText = q.includes(" ") || q.length >= 4;
+    if (shouldSearchFullText) {
+      addSearchRows(
+        await ctx.db
+          .query("entrySearch")
+          .withSearchIndex("search_searchDocument", (search) =>
+            entryType ? search.search("searchDocument", raw).eq("entryType", entryType) : search.search("searchDocument", raw),
+          )
+          .take(candidateLimit),
+      );
+    }
     if (slug) {
       for (const type of entryType ? [entryType] : ["TERM", "ACRONYM"]) {
         const entryBySlug = await ctx.db

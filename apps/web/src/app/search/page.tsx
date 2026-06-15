@@ -21,7 +21,7 @@ type SearchPageProps = {
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = (await searchParams) ?? {};
-  const query = (params.q ?? '').trim();
+  const query = (params.q ?? '').trim().slice(0, 120);
   const normalizedQuery = query.toLowerCase().replace(/\s+/g, ' ').trim();
   const isIgnoredQuery =
     normalizedQuery.length <= 1 ||
@@ -30,7 +30,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     normalizedQuery === 'and' ||
     normalizedQuery === 'or' ||
     normalizedQuery === 'the';
-  const page = Math.max(1, Number(params.page ?? 1) || 1);
+  const page = Math.max(1, Math.min(10, Number(params.page ?? 1) || 1));
   const entryType =
     params.type?.toUpperCase() === 'TERM'
       ? 'TERM'
