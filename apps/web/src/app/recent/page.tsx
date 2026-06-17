@@ -43,8 +43,9 @@ function formatRelativeDate(value: Date, now: Date): string {
 
 export default async function RecentPage({ searchParams }: RecentPageProps) {
   const sp = (await searchParams) ?? {};
-  const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const pageSize = 50;
+  const maxPage = 4;
+  const page = Math.min(maxPage, Math.max(1, Number(sp.page ?? 1) || 1));
 
   const prisma = getPrismaClient();
   const entries = await listRecentPublishedEntries(prisma, { page, pageSize });
@@ -66,7 +67,7 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
   }
 
   const prevHref = page > 1 ? `/recent?page=${page - 1}` : undefined;
-  const nextHref = entries.length === pageSize ? `/recent?page=${page + 1}` : undefined;
+  const nextHref = page < maxPage && entries.length === pageSize ? `/recent?page=${page + 1}` : undefined;
 
   return (
     <>

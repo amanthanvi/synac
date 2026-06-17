@@ -67,6 +67,8 @@ const MODEL_BY_TABLE = Object.fromEntries(
 const DEFAULT_LIMIT = 500;
 const MAX_ENTRY_SEARCH_DOCUMENT_CHARS = 6_000;
 const PUBLIC_BROWSE_SCAN_LIMIT = 500;
+const PUBLIC_RECENT_PAGE_SIZE_LIMIT = 50;
+const PUBLIC_RECENT_SCAN_LIMIT = 200;
 const PUBLIC_TAG_SCAN_LIMIT = 100;
 const PUBLIC_TAG_LINK_SCAN_LIMIT = 500;
 const PUBLIC_SOURCE_SCAN_LIMIT = 100;
@@ -1065,9 +1067,12 @@ export const listRecentPublishedEntries = query({
   args: { page: v.number(), pageSize: v.number(), entryType: v.optional(v.union(v.string(), v.null())) },
   handler: async (ctx, args) => {
     const page = Math.max(1, Math.floor(args.page));
-    const pageSize = Math.max(1, Math.min(200, Math.floor(args.pageSize)));
+    const pageSize = Math.max(1, Math.min(PUBLIC_RECENT_PAGE_SIZE_LIMIT, Math.floor(args.pageSize)));
+    const start = (page - 1) * pageSize;
+    if (start >= PUBLIC_RECENT_SCAN_LIMIT) return [];
     const target = page * pageSize;
     const entryType = typeof args.entryType === "string" && args.entryType ? args.entryType : null;
+    const readLimit = Math.min(PUBLIC_RECENT_SCAN_LIMIT, target + pageSize);
     const rows = entryType
       ? await ctx.db
           .query("entries")
@@ -1075,16 +1080,16 @@ export const listRecentPublishedEntries = query({
             index.eq("status", "PUBLISHED").eq("entryType", entryType),
           )
           .order("desc")
-          .take(Math.min(500, target + pageSize))
+          .take(readLimit)
       : await ctx.db
           .query("entries")
           .withIndex("by_status_and_updatedAt", (index) => index.eq("status", "PUBLISHED"))
           .order("desc")
-          .take(Math.min(500, target + pageSize));
+          .take(readLimit);
     return rows
       .map(docRecord)
       .filter((row) => !row.deletedAt)
-      .slice((page - 1) * pageSize, target)
+      .slice(start, target)
       .map(publicEntry);
   },
 });
