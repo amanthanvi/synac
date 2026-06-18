@@ -71,8 +71,11 @@ const PUBLIC_RECENT_PAGE_SIZE_LIMIT = 50;
 const PUBLIC_RECENT_SCAN_LIMIT = 200;
 const PUBLIC_TAG_SCAN_LIMIT = 100;
 const PUBLIC_TAG_LINK_SCAN_LIMIT = 500;
+const PUBLIC_TAG_DIRECTORY_COUNT_LIMIT = 25;
 const PUBLIC_SOURCE_SCAN_LIMIT = 100;
 const PUBLIC_CITATION_SCAN_LIMIT = 500;
+const PUBLIC_SOURCE_DIRECTORY_CITATION_COUNT_LIMIT = 25;
+const PUBLIC_SOURCE_DIRECTORY_LATEST_LIMIT = 3;
 const PUBLIC_PROVENANCE_SCAN_LIMIT = 50;
 const SITEMAP_SCAN_LIMIT = 1000;
 const ADMIN_DRY_RUN_SCAN_LIMIT = 500;
@@ -1137,13 +1140,12 @@ export const listTagsWithCounts = query({
       const links = await ctx.db
         .query("entryTags")
         .withIndex("by_tagId", (index) => index.eq("tagId", tag.id))
-        .take(PUBLIC_TAG_LINK_SCAN_LIMIT);
-      let count = 0;
-      for (const link of links.map(docRecord)) {
-        const entry = await entryById(ctx, String(link.entryId));
-        if (isPublishedEntry(entry)) count += 1;
-      }
-      result.push({ ...publicTag(tag), count });
+        .take(PUBLIC_TAG_DIRECTORY_COUNT_LIMIT + 1);
+      result.push({
+        ...publicTag(tag),
+        count: Math.min(links.length, PUBLIC_TAG_DIRECTORY_COUNT_LIMIT),
+        countIsApproximate: links.length > PUBLIC_TAG_DIRECTORY_COUNT_LIMIT,
+      });
     }
     return result;
   },
@@ -1382,13 +1384,23 @@ export const listPublicSourcesWithStats = query({
       const citations = await ctx.db
         .query("citations")
         .withIndex("by_sourceId", (index) => index.eq("sourceId", source.id))
-        .take(PUBLIC_CITATION_SCAN_LIMIT);
+        .take(PUBLIC_SOURCE_DIRECTORY_CITATION_COUNT_LIMIT + 1);
+      const latestCitations = await ctx.db
+        .query("citations")
+        .withIndex("by_sourceId_and_accessedAt", (index) => index.eq("sourceId", source.id))
+        .order("desc")
+        .take(PUBLIC_SOURCE_DIRECTORY_LATEST_LIMIT);
       let maxAccessedAt: number | null = null;
-      for (const citation of citations.map(docRecord)) {
+      for (const citation of latestCitations.map(docRecord)) {
         const accessedAt = typeof citation.accessedAt === "number" ? citation.accessedAt : null;
         if (accessedAt !== null && (maxAccessedAt === null || accessedAt > maxAccessedAt)) maxAccessedAt = accessedAt;
       }
-      out.push({ ...publicSource(source), citationCount: citations.length, maxAccessedAt });
+      out.push({
+        ...publicSource(source),
+        citationCount: Math.min(citations.length, PUBLIC_SOURCE_DIRECTORY_CITATION_COUNT_LIMIT),
+        citationCountIsApproximate: citations.length > PUBLIC_SOURCE_DIRECTORY_CITATION_COUNT_LIMIT,
+        maxAccessedAt,
+      });
     }
     return out.sort((left, right) => String(left.name).localeCompare(String(right.name)));
   },

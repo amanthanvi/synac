@@ -9,7 +9,14 @@ export const revalidate = 900;
 
 export default async function TagsPage() {
   const tags = await queryPublicConvex<
-    Array<{ id: string; name: string; slug: string; description: string | null; count: number }>
+    Array<{
+      id: string;
+      name: string;
+      slug: string;
+      description: string | null;
+      count: number;
+      countIsApproximate?: boolean;
+    }>
   >('listTagsWithCounts');
 
   return (
@@ -30,6 +37,7 @@ export default async function TagsPage() {
             slug: tag.slug,
             description: tag.description,
             count: tag.count,
+            countIsApproximate: tag.countIsApproximate,
           }))}
         />
       )}

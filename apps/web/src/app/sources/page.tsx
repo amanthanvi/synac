@@ -27,6 +27,7 @@ export default async function SourcesPage() {
       lastVerifiedAt: Date | null;
       trustTier: string;
       citationCount: number;
+      citationCountIsApproximate?: boolean;
       maxAccessedAt: Date | null;
     }>
   >('listPublicSourcesWithStats');
@@ -68,7 +69,10 @@ export default async function SourcesPage() {
                 </p>
                 <div className={styles.itemTags}>
                   <span className={styles.tag}>{source.trustTier.replace('_', ' ')}</span>
-                  <span className={styles.tag}>{source.citationCount.toLocaleString()} citations</span>
+                  <span className={styles.tag}>
+                    {source.citationCount.toLocaleString()}
+                    {source.citationCountIsApproximate ? '+' : ''} citations
+                  </span>
                   <span className={styles.tag}>
                     {source.lastVerifiedAt
                       ? `Verified ${formatDate(source.lastVerifiedAt)}`

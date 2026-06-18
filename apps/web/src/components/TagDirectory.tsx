@@ -12,6 +12,7 @@ export type TagDirectoryItem = {
   slug: string;
   description?: string | null;
   count: number;
+  countIsApproximate?: boolean;
 };
 
 export function TagDirectory({ tags }: { tags: TagDirectoryItem[] }) {
@@ -53,7 +54,10 @@ export function TagDirectory({ tags }: { tags: TagDirectoryItem[] }) {
                 <Link className={tagStyles.itemTitle} href={`/tags/${tag.slug}`}>
                   {tag.name}
                 </Link>
-                <span className={tagStyles.itemSlug}>{tag.count.toLocaleString()} entries</span>
+                <span className={tagStyles.itemSlug}>
+                  {tag.count.toLocaleString()}
+                  {tag.countIsApproximate ? '+' : ''} entries
+                </span>
               </div>
               {tag.description ? <p className={tagStyles.itemDesc}>{tag.description}</p> : null}
             </li>
@@ -63,4 +67,3 @@ export function TagDirectory({ tags }: { tags: TagDirectoryItem[] }) {
     </section>
   );
 }
-
