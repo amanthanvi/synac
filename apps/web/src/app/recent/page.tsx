@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { getPrismaClient, listRecentPublishedEntries, queryPublicConvex } from '@synac/db';
 
@@ -45,7 +46,10 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
   const sp = (await searchParams) ?? {};
   const pageSize = 50;
   const maxPage = 4;
-  const page = Math.min(maxPage, Math.max(1, Number(sp.page ?? 1) || 1));
+  const parsedPage = Math.floor(Number(sp.page ?? 1));
+  const requestedPage = Number.isFinite(parsedPage) ? parsedPage : 1;
+  if (requestedPage > maxPage) redirect(`/recent?page=${maxPage}`);
+  const page = Math.max(1, requestedPage);
 
   const prisma = getPrismaClient();
   const entries = await listRecentPublishedEntries(prisma, { page, pageSize });
