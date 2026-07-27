@@ -9,7 +9,12 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-  await requireAdminActor();
+  // The audit trail records what admins did, so it is ADMIN-only to read —
+  // an EDITOR could otherwise enumerate admin identities and entity IDs.
+  const actor = await requireAdminActor();
+  if (!actor.roleNames.includes('ADMIN')) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
 
   const url = new URL(request.url);
   const entity = normalizeOptional(url.searchParams.get('entity'));

@@ -218,7 +218,7 @@ const searchRef = makeFunctionReference<
   unknown
 >('data:searchPublishedEntries');
 
-const rebuildSearchRef = makeFunctionReference<'mutation', Record<string, never>, unknown>('data:rebuildSearchIndex');
+const rebuildSearchRef = makeFunctionReference<'mutation', { adminKey?: string | null }, unknown>('data:rebuildSearchIndex');
 
 const ingestCreateManualRunRef = makeFunctionReference<
   'mutation',
@@ -501,7 +501,7 @@ export async function searchConvexEntries(input: {
 }
 
 export async function rebuildConvexSearchIndex(): Promise<unknown> {
-  return getPrismaClient().mutation(rebuildSearchRef, {});
+  return getPrismaClient().mutation(rebuildSearchRef, { adminKey: genericWriteAdminKey() });
 }
 
 export async function createConvexIngestRun(input: {

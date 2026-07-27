@@ -29,7 +29,12 @@ function truncate(value: string, max: number): string {
 }
 
 export default async function AdminTakedownPage() {
-  await requireAdminActor();
+  // Matches the detail page and every takedown mutation: this list exposes
+  // complainant contact details and DMCA correspondence.
+  const actor = await requireAdminActor();
+  if (!actor.roleNames.includes('ADMIN')) {
+    throw new Error('Only ADMIN can manage takedown');
+  }
 
   const prisma = getPrismaClient();
   const cases = await prisma.takedownCase.findMany({

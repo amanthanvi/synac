@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import type { DataModel } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 
@@ -256,7 +256,6 @@ async function requireAdminForGenericWrite(ctx: MutationCtx, adminKey: string | 
   if (secret && adminKey === secret) return;
   const identity = await ctx.auth.getUserIdentity();
   if (!identity?.tokenIdentifier) {
-    if (process.env.NODE_ENV === "test") return;
     throw new Error("Unauthorized");
   }
   const user = await ctx.db
@@ -278,7 +277,6 @@ async function requireAdminForGenericRead(ctx: QueryCtx, adminKey: string | null
   if (secret && adminKey === secret) return;
   const identity = await ctx.auth.getUserIdentity();
   if (!identity?.tokenIdentifier) {
-    if (process.env.NODE_ENV === "test") return;
     throw new Error("Unauthorized");
   }
   const user = await ctx.db
@@ -1488,7 +1486,10 @@ export const listSitemapSources = query({
       .map((source) => ({ sourceSlug: source.sourceSlug, updatedAt: source.updatedAt ?? null })),
 });
 
-export const auditRetentionDryRun = query({
+// Internal: this reports audit-event, ingest-run and source-document volumes
+// plus sample row IDs. Its only caller is scripts/convex-retention-dry-run.mjs,
+// which runs it through `npx convex run` on deploy-key credentials.
+export const auditRetentionDryRun = internalQuery({
   args: {
     olderThanDays: v.number(),
     limit: v.optional(v.number()),
@@ -1945,8 +1946,11 @@ export const searchPublishedEntries = query({
 });
 
 export const rebuildSearchIndex = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    adminKey: v.optional(v.union(v.string(), v.null())),
+  },
+  handler: async (ctx, args) => {
+    await requireAdminForGenericWrite(ctx, args.adminKey);
     const entries = await filteredRows(ctx, "entry", { where: { status: "PUBLISHED", deletedAt: null } });
     for (const entry of entries) await refreshEntrySearch(ctx, entry.id);
     return { rebuilt: entries.length };

@@ -11,7 +11,6 @@ async function requireAdmin(ctx: MutationCtx, adminKey: string | null | undefine
   if (secret && adminKey === secret) return;
   const identity = await ctx.auth.getUserIdentity();
   if (!identity?.tokenIdentifier) {
-    if (process.env.NODE_ENV === "test") return;
     throw new Error("Unauthorized");
   }
   const user = await ctx.db

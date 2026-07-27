@@ -87,12 +87,6 @@ import {
   searchConvexEntries,
 } from './client.js';
 
-function normalizeQueryPage(input: { page: number; pageSize: number }): { page: number; pageSize: number; skip: number } {
-  const page = Math.max(1, Math.floor(input.page));
-  const pageSize = Math.min(200, Math.max(1, Math.floor(input.pageSize)));
-  return { page, pageSize, skip: (page - 1) * pageSize };
-}
-
 export async function resolvePublishedEntryBySlug(
   _db: DbClientLike,
   input: { entryType: EntryType; slug: string },
@@ -258,7 +252,9 @@ export async function upsertUserFromOidc(
   return db.user.upsert<UserWithRoles>({
     where: { email: input.email.trim().toLowerCase() },
     update: {
-      status: 'ACTIVE',
+      // Deliberately not resetting `status` here: re-activating on every login
+      // made disabling a user a no-op, since the next sign-in flipped them
+      // straight back to ACTIVE. Only the create branch sets the initial state.
       displayName: input.displayName ?? null,
       providerSubject: input.providerSubject ?? null,
       lastLoginAt: input.lastLoginAt ?? new Date(),
@@ -294,8 +290,28 @@ export async function bootstrapUserFromAllowlist(
 ): Promise<{ user: UserWithRoles; allowlistedRole: AllowlistedRole | null }> {
   const allowlistedRole = pickAllowlistedRole(input.email, input.allowlists);
   const user = await upsertUserFromOidc(db, input);
-  if (!allowlistedRole) return { user, allowlistedRole: null };
   const roles = await ensureDefaultRoles(db);
+
+  // The allowlist is the source of truth. Role grants used to be upsert-only,
+  // so demoting someone in SYNAC_ADMIN_EMAILS left their old ADMIN row behind
+  // and they kept every ADMIN-gated capability. Drop anything the allowlist no
+  // longer grants before granting the current role. Only roles the user
+  // actually holds are touched, so the steady state costs no extra writes.
+  const staleRoleIds = user.roles
+    .filter((link) => link.role.name !== allowlistedRole)
+    .map((link) => link.role.id);
+  for (const roleId of staleRoleIds) {
+    await db.userRole.deleteMany({ where: { userId: user.id, roleId } });
+  }
+
+  if (!allowlistedRole) {
+    const stripped = await db.user.findUniqueOrThrow<UserWithRoles>({
+      where: { id: user.id },
+      include: { roles: { include: { role: true } } },
+    });
+    return { user: stripped, allowlistedRole: null };
+  }
+
   await ensureUserRole(db, { userId: user.id, roleId: roles[allowlistedRole] });
   const refreshed = await db.user.findUniqueOrThrow<UserWithRoles>({
     where: { id: user.id },
