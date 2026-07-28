@@ -41,7 +41,10 @@ Source of truth: `SPEC.md` (product/spec) + `PLAN.md` (execution tracker).
 
 ## Learned Workspace Facts
 
-- Search index maintenance now lives in Convex (`data:rebuildSearchIndex`).
+- Search index maintenance now lives in Convex. The app calls the public
+  `data:rebuildSearchIndex`, which requires the admin key. From a terminal use
+  `npx convex run data:rebuildSearchIndexFromCli` -- it is internal, so the CLI
+  deploy key authorizes it and no secret goes on the command line.
 
 ## Self-Correction Log
 

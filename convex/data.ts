@@ -1945,16 +1945,31 @@ export const searchPublishedEntries = query({
   },
 });
 
+async function rebuildEntrySearchIndex(ctx: MutationCtx): Promise<{ rebuilt: number }> {
+  const entries = await filteredRows(ctx, "entry", { where: { status: "PUBLISHED", deletedAt: null } });
+  for (const entry of entries) await refreshEntrySearch(ctx, entry.id);
+  return { rebuilt: entries.length };
+}
+
+// Called by the app through packages/db, which passes SYNAC_CONVEX_ADMIN_KEY.
 export const rebuildSearchIndex = mutation({
   args: {
     adminKey: v.optional(v.union(v.string(), v.null())),
   },
   handler: async (ctx, args) => {
     await requireAdminForGenericWrite(ctx, args.adminKey);
-    const entries = await filteredRows(ctx, "entry", { where: { status: "PUBLISHED", deletedAt: null } });
-    for (const entry of entries) await refreshEntrySearch(ctx, entry.id);
-    return { rebuilt: entries.length };
+    return rebuildEntrySearchIndex(ctx);
   },
+});
+
+// Operator entry point for `npx convex run data:rebuildSearchIndexFromCli`.
+// The CLI authenticates with a deploy key, which is stronger than the shared
+// admin key, but it sets no user identity and passes no adminKey -- so the
+// public mutation above would reject it. Internal functions are reachable from
+// `convex run` and from nothing else, so this needs no argument-borne secret.
+export const rebuildSearchIndexFromCli = internalMutation({
+  args: {},
+  handler: async (ctx) => rebuildEntrySearchIndex(ctx),
 });
 
 export const compactEntrySearchBatch = internalMutation({

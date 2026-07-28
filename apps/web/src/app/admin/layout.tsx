@@ -10,6 +10,9 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const actor = await requireAdminActor();
+  // Takedown and Audit are ADMIN-only. Linking them for EDITORs produced a
+  // dead end -- the page denies the request the moment the link is followed.
+  const isAdmin = actor.roleNames.includes('ADMIN');
 
   return (
     <div className={styles.shell}>
@@ -30,12 +33,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <ButtonLink href="/admin/ingest" size="sm">
             Ingest
           </ButtonLink>
-          <ButtonLink href="/admin/takedown" size="sm">
-            Takedown
-          </ButtonLink>
-          <ButtonLink href="/admin/audit" size="sm">
-            Audit
-          </ButtonLink>
+          {isAdmin ? (
+            <>
+              <ButtonLink href="/admin/takedown" size="sm">
+                Takedown
+              </ButtonLink>
+              <ButtonLink href="/admin/audit" size="sm">
+                Audit
+              </ButtonLink>
+            </>
+          ) : null}
         </nav>
 
         <div className={styles.actor}>

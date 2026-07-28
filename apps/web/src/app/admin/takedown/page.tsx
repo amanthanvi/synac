@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 import { getPrismaClient } from '@synac/db';
 
@@ -32,9 +33,7 @@ export default async function AdminTakedownPage() {
   // Matches the detail page and every takedown mutation: this list exposes
   // complainant contact details and DMCA correspondence.
   const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage takedown');
-  }
+  if (!actor.roleNames.includes('ADMIN')) notFound();
 
   const prisma = getPrismaClient();
   const cases = await prisma.takedownCase.findMany({
