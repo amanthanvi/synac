@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/amanthanvi/synac/issues"
   },
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.34.4",
   "engines": {
     "node": ">=22.21.1"
   },
