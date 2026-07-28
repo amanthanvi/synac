@@ -72,9 +72,7 @@ function mergeAffectedEntityIds(
 
 export default async function AdminTakedownCasePage({ params, searchParams }: AdminTakedownCasePageProps) {
   const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage takedown');
-  }
+  if (!actor.roleNames.includes('ADMIN')) notFound();
 
   const { id } = await params;
   const qp = searchParams ? await searchParams : {};

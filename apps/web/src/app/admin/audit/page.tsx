@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 import { PageHeader } from '@/components/PageHeader';
 import { getPrismaClient } from '@synac/db';
@@ -35,7 +36,10 @@ function formatDate(value: Date): string {
 }
 
 export default async function AdminAuditPage({ searchParams }: AdminAuditPageProps) {
-  await requireAdminActor();
+  // ADMIN-only for the same reason as GET /api/v1/admin/audit: this page reads
+  // the audit trail directly, so gating only the API would leave the data open.
+  const actor = await requireAdminActor();
+  if (!actor.roleNames.includes('ADMIN')) notFound();
 
   const qp = searchParams ? await searchParams : {};
   const entityType = normalizeOptional(qp.entityType);

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 import { getPrismaClient } from '@synac/db';
 
@@ -29,7 +30,10 @@ function truncate(value: string, max: number): string {
 }
 
 export default async function AdminTakedownPage() {
-  await requireAdminActor();
+  // Matches the detail page and every takedown mutation: this list exposes
+  // complainant contact details and DMCA correspondence.
+  const actor = await requireAdminActor();
+  if (!actor.roleNames.includes('ADMIN')) notFound();
 
   const prisma = getPrismaClient();
   const cases = await prisma.takedownCase.findMany({

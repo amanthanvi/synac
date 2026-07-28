@@ -4,7 +4,6 @@ import { notFound } from 'next/navigation';
 import {
   bootstrapUserFromAllowlist,
   getPrismaClient,
-  getRoleNames,
   parseCsv,
   pickAllowlistedRole,
 } from '@synac/db';
@@ -33,8 +32,13 @@ export async function requireAdminActor(): Promise<AdminActor> {
   if (!session.userId) notFound();
 
   const clerkUser = await currentUser();
-  const email = clerkUser?.primaryEmailAddress?.emailAddress;
+  const primaryEmail = clerkUser?.primaryEmailAddress;
+  const email = primaryEmail?.emailAddress;
   if (!email) notFound();
+
+  // The allowlist is keyed on this address, so an unverified one would let
+  // anyone who can type an admin's email into Clerk inherit their access.
+  if (primaryEmail?.verification?.status !== 'verified') notFound();
 
   const allowlists = getAllowlists();
   const allowlistedRole = pickAllowlistedRole(email, allowlists);
@@ -48,7 +52,11 @@ export async function requireAdminActor(): Promise<AdminActor> {
     allowlists,
   });
 
-  const roleNames = getRoleNames(user);
+  if (user.status !== 'ACTIVE') notFound();
+
+  // Authorize off the allowlist rather than the persisted role rows, so a
+  // demotion takes effect on the next request even if a stale grant lingers.
+  const roleNames: AdminActor['roleNames'] = [allowlistedRole];
 
   return {
     userId: session.userId,
