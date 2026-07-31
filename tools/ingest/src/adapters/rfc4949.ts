@@ -1,7 +1,11 @@
-import type { InputJsonObject, InputJsonValue, PrismaClient } from '@synac/db';
+import { slugify } from '@synac/content-tools';
 
 import { safeFetch } from '../net/safeFetch.js';
-import { evaluateLicenseGate } from './licenseGate.js';
+import { finalizeBundle, type AdapterContext, type DraftEntry } from '../bundle.js';
+import type { BundleFile } from '@synac/content-tools';
+
+export const ADAPTER_VERSION = 'rfc4949/1.0.0';
+const DOCUMENT_KEY = 'rfc4949-txt';
 
 type DefinitionType = 'I' | 'N' | 'O' | 'D';
 
@@ -12,7 +16,7 @@ type ParsedSense = {
   expandedForm: string | null;
 };
 
-type ParsedEntry = {
+export type ParsedEntry = {
   title: string;
   normalizedTitle: string;
   entryType: 'TERM' | 'ACRONYM';
@@ -24,16 +28,8 @@ type ParsedEntry = {
 
 const BASE_INDENT = '      ';
 
-function normalizeMaxItems(value: number): number {
-  if (!Number.isFinite(value)) return 200;
-  return Math.max(1, Math.min(1000, Math.floor(value)));
-}
-
 function normalizeTitle(value: string): string {
-  return value
-    .trim()
-    .replace(/\s+/g, ' ')
-    .toLowerCase();
+  return value.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 function stripBaseIndent(value: string): string {
@@ -44,7 +40,7 @@ function stripBaseIndent(value: string): string {
 function isPageNoiseLine(line: string): boolean {
   const trimmed = line.trim();
   if (!trimmed) return false;
-  if (trimmed === '\f' || trimmed === '') return true;
+  if (trimmed === '\f' || trimmed === '') return true;
   if (trimmed.startsWith('RFC 4949')) return true;
   if (trimmed.startsWith('Shirey') && trimmed.includes('[Page')) return true;
   return false;
@@ -146,7 +142,11 @@ function parseDefinitionHeader(line: string): {
   return { indexLabel, definitionType, context: context || null, rest };
 }
 
-function buildSenseLabel(input: { indexLabel: string | null; definitionType: DefinitionType; context: string | null }): string {
+function buildSenseLabel(input: {
+  indexLabel: string | null;
+  definitionType: DefinitionType;
+  context: string | null;
+}): string {
   const parts: string[] = [];
   if (input.indexLabel) parts.push(input.indexLabel);
   parts.push(`(${input.definitionType})`);
@@ -277,198 +277,83 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
   return parsed;
 }
 
-export async function ingestRfc4949Glossary(
-  prisma: PrismaClient,
-  input: {
-    ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
-    maxItems: number;
-    forceReprocess: boolean;
-  },
-): Promise<{ itemsCreated: number }> {
-  const url = new URL(input.source.baseUrl);
-  const allowedHosts = [url.hostname];
+/** Maps parsed RFC entries onto bundle entries, deduplicating slug collisions. */
+export function bundleEntriesFromParsed(parsed: ParsedEntry[], maxItems: number): DraftEntry[] {
+  const out: DraftEntry[] = [];
+  const seenKeys = new Set<string>();
+  for (const entry of parsed.slice(0, maxItems)) {
+    const slug = slugify(entry.title);
+    if (!slug) continue;
+    const key = `${entry.entryType}:${slug}`;
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
 
-  const maxItems = normalizeMaxItems(input.maxItems);
-  const fetchedAt = new Date();
+    out.push({
+      entryType: entry.entryType,
+      slug,
+      title: entry.title,
+      aliases: entry.variants.map((variant) => variant.variantText),
+      tags: [],
+      summaryMd: entry.summaryMd,
+      senses: entry.senses.map((sense, index) => ({
+        key: sense.senseLabel ? slugify(sense.senseLabel) || `sense-${index + 1}` : `sense-${index + 1}`,
+        ...(sense.senseLabel ? { label: sense.senseLabel } : {}),
+        definitionMd: sense.definitionMd,
+        ...(sense.expandedForm ? { expandedForm: sense.expandedForm } : {}),
+        examples: [],
+        citation: {
+          documentKey: DOCUMENT_KEY,
+          citationText: `RFC 4949, § "${entry.title}"`,
+          locator: `line ${entry.sourceLocator.line}`,
+        },
+      })),
+      relationships: [],
+    });
+  }
+  return out;
+}
+
+export async function runRfc4949(ctx: AdapterContext): Promise<BundleFile> {
+  const url = new URL(ctx.source.baseUrl);
 
   const res = await safeFetch({
     url: url.toString(),
-    allowedHosts,
+    allowedHosts: [url.hostname],
     allowedContentTypePrefixes: ['text/plain'],
     maxRedirects: 3,
     timeoutMs: 30_000,
     maxBytes: 10 * 1024 * 1024,
     headers: {
-      'user-agent': 'synac-worker/0.0.0 (+https://github.com/amanthanvi/synac)',
+      'user-agent': 'synac-ingest/1.0 (+https://github.com/amanthanvi/synac)',
     },
   });
-
   if (res.status !== 200) {
     throw new Error(`RFC 4949 fetch failed (${res.status}) for ${url.toString()}`);
   }
 
-  let sourceDocumentId: string;
-  let sourceDocumentCreated = false;
-  try {
-    const created = await prisma.sourceDocument.create({
-      data: {
-        sourceId: input.source.id,
+  // Upstream unchanged: keep the previous bundle byte-identical.
+  const previousDocument = ctx.previous?.documents.find((doc) => doc.key === DOCUMENT_KEY);
+  if (ctx.previous && previousDocument?.contentSha256 === res.sha256) {
+    return ctx.previous;
+  }
+
+  const parsed = parseRfc4949Entries(res.body.toString('utf8'));
+
+  return finalizeBundle({
+    source: ctx.source,
+    adapterVersion: ADAPTER_VERSION,
+    documents: [
+      {
+        key: DOCUMENT_KEY,
         url: url.toString(),
-        canonicalUrl: res.url,
-        title: 'RFC 4949 — Internet Security Glossary (Version 2)',
-        contentType: res.contentType,
-        etag: res.etag,
-        lastModified: res.lastModified,
-        fetchedAt,
+        title: 'RFC 4949: Internet Security Glossary, Version 2',
+        contentType: res.contentType.split(';')[0]!.trim() || 'text/plain',
         contentSha256: res.sha256,
-        snapshotAllowed: false,
-        snapshotStorageUri: null,
+        fetchedAt: ctx.now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
       },
-      select: { id: true },
-    });
-    sourceDocumentId = created.id;
-    sourceDocumentCreated = true;
-  } catch (err) {
-    const existing = await prisma.sourceDocument.findFirst({
-      where: { sourceId: input.source.id, url: url.toString(), contentSha256: res.sha256 },
-      select: { id: true },
-    });
-    if (!existing) throw err;
-    sourceDocumentId = existing.id;
-  }
-
-  if (!sourceDocumentCreated && !input.forceReprocess) {
-    return { itemsCreated: 0 };
-  }
-
-  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
-    licenseType: input.source.licenseType,
-    lastVerifiedAt: input.source.lastVerifiedAt,
+    ],
+    entries: bundleEntriesFromParsed(parsed, ctx.maxItems),
+    previous: ctx.previous,
+    now: ctx.now,
   });
-
-  const text = res.body.toString('utf8');
-  const parsedEntries = parseRfc4949Entries(text);
-
-  let itemsCreated = 0;
-  const seenItemKeys = new Set<string>();
-
-  for (const entry of parsedEntries.slice(0, maxItems)) {
-    const itemKey = `term:${entry.normalizedTitle}`;
-    if (seenItemKeys.has(itemKey)) continue;
-    seenItemKeys.add(itemKey);
-
-    const extracted = {
-      title: entry.title,
-      fetchedAt: fetchedAt.toISOString(),
-      url: url.toString(),
-      canonicalUrl: res.url,
-      contentType: res.contentType,
-      ...(res.etag ? { etag: res.etag } : {}),
-      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
-      sha256: res.sha256,
-      sourceLocator: entry.sourceLocator,
-    } satisfies InputJsonObject;
-
-    const variants = entry.variants;
-
-    const createEntryProposedChange = {
-      kind: 'CREATE_ENTRY',
-      entryType: entry.entryType,
-      displayTitle: entry.title,
-      summaryMd: entry.summaryMd,
-      ...(variants.length ? { variants } : {}),
-      senses: entry.senses.map((s) => ({
-        ...(s.senseLabel ? { senseLabel: s.senseLabel } : {}),
-        ...(s.expandedForm ? { expandedForm: s.expandedForm } : {}),
-        definitionMd: s.definitionMd,
-        contentMode: 'QUOTED',
-        extractionMethod: 'HTML',
-        extractorVersion: 'synac-worker/0.0.0',
-        sourceLocator: entry.sourceLocator,
-      })),
-    };
-
-    const stageOutputs: Record<string, InputJsonValue> = { extracted };
-
-    const ingestItem = await prisma.ingestItem.create({
-      data: {
-        ingestRunId: input.ingestRunId,
-        sourceDocumentId,
-        itemKey,
-        stage: 'EXTRACTED',
-        stageOutputs,
-        confidenceScore: 0.85,
-        licenseGate,
-        licenseGateReason,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'NORMALIZED',
-        proposedChange: createEntryProposedChange as InputJsonValue,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    const existingEntry = await prisma.entry.findFirst({
-      where: { entryType: entry.entryType, normalizedTitle: entry.normalizedTitle, deletedAt: null },
-      select: { id: true, displayTitle: true },
-    });
-
-    const proposedChange = existingEntry
-      ? {
-          kind: 'ADD_SENSES',
-          entryId: existingEntry.id,
-          entryType: entry.entryType,
-          displayTitle: existingEntry.displayTitle,
-          ...(variants.length ? { variants } : {}),
-          senses: createEntryProposedChange.senses,
-        }
-      : createEntryProposedChange;
-
-    stageOutputs.deduped = existingEntry
-      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
-      : { action: 'CREATE_ENTRY' };
-
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'DEDUPED',
-        proposedChange: proposedChange as InputJsonValue,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.enriched = {};
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'ENRICHED',
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.validated = { ok: true };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'VALIDATED',
-        error: null,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    itemsCreated += 1;
-  }
-
-  return { itemsCreated };
 }

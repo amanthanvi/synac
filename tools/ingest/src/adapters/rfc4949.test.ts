@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseRfc4949Entries } from './rfc4949Glossary.js';
+import { bundleEntriesFromParsed, parseRfc4949Entries } from './rfc4949.js';
 
 describe('rfc4949 parsing', () => {
   it('parses multi-definition entries and strips page headers', () => {
@@ -15,7 +15,7 @@ describe('rfc4949 parsing', () => {
       '      includes a set of system resources.',
       '',
       'Shirey                       Informational                    [Page 109]',
-      '',
+      '',
       'RFC 4949         Internet Security Glossary, Version 2       August 2007',
       '',
       '      Tutorial: A "controlled interface" is required.',
@@ -53,5 +53,20 @@ describe('rfc4949 parsing', () => {
     expect(entries[0]!.title).toBe('Abstract Syntax Notation One');
     expect(entries[0]!.variants).toEqual([{ variantText: 'ASN.1', variantType: 'ABBREVIATION' }]);
   });
-});
 
+  it('maps parsed entries to bundle entries with stable sense keys and citations', () => {
+    const sample = [
+      '   $ domain',
+      '      1a. (I) /general security/ An environment or context.',
+      '      1b. (O) /security policy/ A set of users.',
+    ].join('\n');
+
+    const [entry] = bundleEntriesFromParsed(parseRfc4949Entries(sample), 100);
+    expect(entry).toMatchObject({ entryType: 'TERM', slug: 'domain', title: 'domain' });
+    expect(entry.senses.map((sense) => sense.key)).toEqual(['1a-i-general-security', '1b-o-security-policy']);
+    expect(entry.senses[0].citation).toMatchObject({
+      documentKey: 'rfc4949-txt',
+      citationText: 'RFC 4949, § "domain"',
+    });
+  });
+});

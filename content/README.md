@@ -30,7 +30,7 @@ deployment when changes land on `main`. Git history is the audit log.
 
 ## Bootstrap status
 
-`generated/rfc4949.json` currently contains a **small pre-bootstrap sample**
-(adapterVersion `sample-0`) so the pipeline can be exercised end to end. It is
-replaced by real data the first time the ingest workflow runs (or by the
-one-time production export transform in `tools/content/`).
+`generated/rfc4949.json` holds the full RFC 4949 glossary from a live adapter
+run. The other registered sources (NIST, NICCS, OWASP, MITRE ATT&CK) get
+their bundles the first time the ingest workflow runs for them
+(`Actions → Ingest → Run workflow`), or locally via `pnpm ingest -- --all`.
