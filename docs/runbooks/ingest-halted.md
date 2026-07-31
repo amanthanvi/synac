@@ -1,25 +1,23 @@
 # Runbook: Ingest halted
 
+Ingest runs as the scheduled `Ingest` GitHub Actions workflow, which
+regenerates `content/generated/*` bundles and opens a PR when content changed.
+
 ## Triage
 
-- Check worker process health and logs.
-- Check `pg-boss` queue depth and schedules.
-- Verify the source is still enabled and verified.
-- Check worker logs for:
-  - `ingest.run.failed`
-  - `worker.ingest_cron.source_not_found`
-  - `promotion.sync_sources.ok`
-  - `promotion.import_runs.ok`
-  - `autopublish.tier1.ok`
-- If staging-first ingest is enabled, verify whether the failure is in:
-  - staging ingestion,
-  - promotion import,
-  - or Tier-1 auto-apply/autopublish.
+- Check the latest `Ingest` workflow runs (Actions tab) for failures.
+- A failing adapter prints `✗ <source-slug>: <error>` in the "Regenerate
+  bundles" step. Typical causes: upstream HTML/JSON layout changed, upstream
+  outage, or a moved URL.
+- `pnpm content:check` failures mean the regenerated bundle violates the
+  content schema — treat as an adapter bug.
 
 ## Mitigation
 
-- Restart worker.
-- Disable the offending source (if adapter or upstream is failing).
-- Re-run ingest manually from `/admin/ingest`.
-- If promotion is the bottleneck, inspect prod worker logs for imported/applied/skipped counts before retrying.
-
+- Reproduce locally: `pnpm ingest -- --source <slug>`.
+- Upstream outage: re-run the workflow later (`workflow_dispatch`).
+- Parser drift: fix the adapter in `tools/ingest/src/adapters/` (tests live
+  next to each adapter).
+- Broken source: set `"enabled": false` in `content/sources/<slug>.json` via
+  PR; its content stops being served after the next sync, and the adapter is
+  skipped.

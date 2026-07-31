@@ -28,9 +28,7 @@ This directory contains operational docs, runbooks, and contributor guidance.
 - Runbooks:
   - `docs/runbooks/site-down.md`
   - `docs/runbooks/search-broken.md`
-  - `docs/runbooks/db-restore.md`
   - `docs/runbooks/suspected-compromise.md`
   - `docs/runbooks/ingest-halted.md`
   - `docs/runbooks/ingest-bad-content.md`
-  - `docs/runbooks/ingest-promotion.md`
 

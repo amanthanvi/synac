@@ -1,47 +1,56 @@
 # Releasing SynAc
 
-This repo is released at `v0.1.5` and targets a `v0.1.x` release cadence.
+Deployment is continuous: every push to `main` triggers the `Deploy` workflow,
+which validates `content/`, deploys the Convex functions, and syncs the
+compiled content into the production deployment. Vercel builds the web app
+from `main` independently.
 
-## Pre-flight
+## Required configuration
 
-- Ensure CI is green on `main`.
-- CodeQL uploads results to GitHub Code Scanning.
-- Ensure DB migrations are ready to deploy (`packages/db/prisma/migrations/*`).
-- Confirm required env vars are present in production (see `.env.example`).
-- If using staging-first ingest:
-  - staging DB/service is deployed and migrated,
-  - staging worker runs in `SYNAC_WORKER_MODE=ingest`,
-  - prod worker runs in `SYNAC_WORKER_MODE=promotion` with `SYNAC_STAGING_DATABASE_URL` configured.
+GitHub repository secrets:
 
-## Adding sources (staging-first ingest)
+- `CONVEX_DEPLOY_KEY` — production deploy key from the Convex dashboard
+  (Deployment settings → Deploy keys).
 
-- Upsert the new Source Registry entries in **prod** (Admin → Sources or `pnpm db:seed:content`).
-- Ensure prod worker allowlists the new slugs for sync → staging (`SYNAC_STAGING_SOURCE_ALLOWLIST`).
-- If the change includes a new ingest adapter, deploy `worker` in `staging` before triggering runs.
-- Trigger a staging ingest run (Admin → Ingest) and verify:
-  - staging worker logs `ingest.run.success`,
-  - prod worker logs `promotion.import_runs.ok`,
-  - Tier‑1 sources: prod worker logs `autopublish.tier1.ok`.
+Convex production deployment environment variables:
 
-## Release steps
+- `SYNAC_CONVEX_SERVICE_KEY` — random secret shared with the web server.
 
-1. Run the local gate:
-   - `pnpm gate` (or run `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`)
-2. Bump versions (root + workspaces).
-3. Update changelogs:
-   - Repo: `CHANGELOG.md`
-   - Site (curated): `apps/web/src/lib/changelog.ts`
-4. Deploy (Railway):
-   - Apply DB migrations in production (run inside Railway so `postgres.railway.internal` resolves):
-     - `railway ssh -e production -s synac pnpm --filter @synac/db db:migrate:deploy`
-   - Deploy `synac` (web) and `worker`
-   - One-time (new DB): seed roles/users and optional starter content:
-     - `railway ssh -e production -s synac pnpm db:seed`
-     - `railway ssh -e production -s synac pnpm db:seed:content`
-5. Verify:
-   - Smoke browse/search/entry pages.
-   - Smoke admin auth + `/admin` loads.
-   - If staging-first ingest is enabled: trigger one ingest run from prod `/admin/ingest` and verify promotion/autopublish behavior.
-6. Tag and push (for tagged releases):
-   - `git tag -a vX.Y.Z -m "vX.Y.Z"`
-   - `git push --tags`
+Vercel environment variables (see `.env.example`):
+
+- `NEXT_PUBLIC_CONVEX_URL`, `SYNAC_CONVEX_SERVICE_KEY`,
+  `NEXT_PUBLIC_SITE_URL`, `SYNAC_SESSION_HASH_SALT`, `SYNAC_RATE_LIMIT_SALT`.
+
+## Cutting a versioned release
+
+1. Ensure CI is green on `main`.
+2. Update `CHANGELOG.md` (canonical) and mirror the entry in
+   `apps/web/src/lib/changelog.ts`.
+3. Bump `version` in the root and workspace `package.json` files.
+4. Tag: `git tag vX.Y.Z && git push --tags`.
+
+## One-time GitOps cutover (from the pre-content-as-code deployment)
+
+Performed once when this architecture first ships:
+
+1. Export the old production data: `npx convex export --prod --path snapshot.zip`
+   (or download a dashboard backup) and keep it as the rollback artifact.
+2. Bootstrap `content/` from the snapshot:
+   `pnpm --filter @synac/content-tools exec tsx src/bootstrap-from-export.ts <extracted-snapshot-dir>`
+   then review, run `pnpm content:check`, and commit.
+3. Clear the old tables (dashboard → Data → clear, or restore an empty
+   backup) — the new schema cannot validate rows from the old one.
+4. Merge to `main`; the deploy workflow pushes the new schema + functions and
+   syncs the content in.
+5. Verify: `/`, an entry page, `/search?q=…`, `/sources`, and
+   `npx convex run sync:status --prod`.
+6. Decommission Clerk (delete the application) and remove Clerk env vars from
+   Vercel.
+
+## Rollback
+
+- Content problem: revert the offending content PR — the next sync converges
+  the deployment to the reverted state.
+- Function problem: revert the code PR; the deploy workflow redeploys.
+- Catastrophic data problem: restore the latest Convex backup, then re-run
+  the sync from `main`.

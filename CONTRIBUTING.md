@@ -6,24 +6,39 @@ SynAc is a public, internet-facing cybersecurity glossary. Contributions are wel
 
 Highest-leverage contributions:
 
+- **Content**: propose a term (issue template), request a source, or edit
+  `content/overrides/**` directly — summaries, extra tags, aliases, editorial
+  senses, corrections. Every entry the site serves comes from `content/`.
 - **Docs fixes**: unclear instructions, missing context, broken links.
 - **Public web polish**: UI/UX improvements, accessibility fixes, content readability.
-- **Content corrections (with sources)**: if an entry is wrong/unclear, open an issue and include citations.
 - **Bug reports**: reproducible issues with URLs, screenshots, and steps.
+
+## Contributing content
+
+All glossary content lives in `content/` — see `content/README.md` for the
+layout. The short version:
+
+- `content/overrides/term/<slug>.json` and `content/overrides/acronym/<slug>.json`
+  are the human-editable layer: sparse files that adjust summaries, tags,
+  aliases, and relationships, add editorial senses, or suppress an entry
+  (the takedown mechanism).
+- `content/generated/**` is machine-owned — the ingest workflow regenerates it;
+  don't hand-edit those files.
+- `content/sources/*.json` and `content/tags.json` are curated registries;
+  new sources need complete license terms (see `docs/content/licensing.md`).
+- Validate locally with `pnpm content:check`; CI runs the same check on every PR.
+- When a content PR merges to `main`, the deploy workflow syncs it into the
+  live site. Git history is the audit trail.
 
 ## Contribution boundary (important)
 
-To keep the project safe and reviewable, we intentionally keep the “easy contribution surface” narrow:
+To keep the project safe and reviewable:
 
-- ✅ Welcome: `docs/**`, `README.md`, and **public** web UI under `apps/web/src/**`
-- 🚫 Requires prior maintainer approval: ingest/worker/DB/admin/API changes
-
-Concretely, please don’t open drive-by PRs that modify:
-
-- `packages/db/**`
-- `apps/worker/**`
-- `apps/web/src/app/admin/**`
-- `apps/web/src/app/api/**`
+- ✅ Welcome: `content/overrides/**`, `content/tags.json`, `docs/**`,
+  `README.md`, and **public** web UI under `apps/web/src/**`
+- 🚫 Requires prior maintainer review (enforced via CODEOWNERS):
+  `content/sources/**`, `content/generated/**`, `convex/**`, `tools/**`,
+  and `.github/workflows/**`
 
 If you have an idea in those areas, open an issue first.
 

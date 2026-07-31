@@ -12,7 +12,7 @@ export function SiteFooter() {
         <div className={styles.links}>
           <Link href="/about">About</Link>
           <Link href="/legal/privacy">Privacy</Link>
-          <Link href="/legal/terms">Terms</Link>
+          <Link href="/legal/terms">Terms of Use</Link>
           <Link href="/changelog">Changelog</Link>
           <a
             href="https://github.com/amanthanvi/synac"

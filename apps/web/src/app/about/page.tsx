@@ -49,6 +49,22 @@ export default function AboutPage() {
             Explore the full registry of provenance at <Link href="/sources">Sources</Link>, or
             browse the taxonomy at <Link href="/tags">Tags</Link>.
           </p>
+
+          <h2>How content is maintained</h2>
+          <p>
+            All content — terms, senses, citations, tags, and the source registry — lives in the{' '}
+            <a
+              href="https://github.com/amanthanvi/synac"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              open-source repository
+            </a>
+            . Changes happen through pull requests: automated ingest proposes updates from
+            authoritative sources, and humans review every change before it publishes. To suggest a
+            term, propose a source, or request a correction or removal, open an issue on GitHub —
+            the git history is the public audit trail.
+          </p>
         </div>
       </div>
     </>

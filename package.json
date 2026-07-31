@@ -26,11 +26,10 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --workspace-concurrency=1 test && pnpm test:convex",
     "test:convex": "vitest run -c vitest.convex.config.ts",
-    "test:migration": "node --test scripts/*.test.mjs",
     "format": "pnpm -r format",
     "convex:dev": "convex dev",
     "convex:validate": "convex dev --once",
-    "retention:dry-run": "node scripts/convex-retention-dry-run.mjs"
+    "ingest": "pnpm --filter @synac/ingest-tools ingest"
   },
   "pnpm": {
     "overrides": {

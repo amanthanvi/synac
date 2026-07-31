@@ -1,5 +1,15 @@
 # SynAc v0.2.0 — Production Specification (SPEC.md)
 
+> **Note (2026-07, GitOps rework):** This spec predates the content-as-code
+> architecture. The described admin surface, Clerk auth, RBAC, staging-first
+> ingest pipeline, and Postgres/Prisma data layer have been **removed**: all
+> content now lives in `content/` in this repository, changes flow through
+> pull requests, ingest runs as a scheduled GitHub Actions workflow, and the
+> backend is a clean Convex deployment synced from the repo. See
+> `docs/architecture/overview.md` for the current architecture. The product
+> behavior described here (senses, provenance, terms vs. acronyms, curated
+> tags, search) remains accurate.
+
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
 
 > **Note (v0.2.0):** Full public-facing UI/UX overhaul. Replaces the “Signal Ledger” aesthetic with “Clinical Reference” — a monospace-forward, dark-leaning, developer-documentation aesthetic. Typography: Geist Sans + Geist Mono. Colors: cool/clinical blue-gray with electric accents. Entry pages: full-width stacked layout with sticky floating TOC and hover preview cards. Home page: search-forward portal. Theme: system-first detection with manual toggle + persistence. `/trending` removed. Admin UI unchanged (future scope).

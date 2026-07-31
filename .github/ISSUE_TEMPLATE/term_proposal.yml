@@ -1,0 +1,41 @@
+name: Term proposal
+description: Propose a new term or acronym for the glossary.
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Glossary content lives in this repository under `content/`. Proposals
+        become pull requests — either yours or a maintainer's — and every
+        change is reviewed before it publishes.
+
+        For terms covered by an authoritative source (NIST, RFC 4949, MITRE
+        ATT&CK, …), the best path is a **Source request** so ingest can pick
+        the whole source up. Use this template for individual terms with a
+        supporting citation.
+  - type: input
+    id: term
+    attributes:
+      label: Term or acronym
+      placeholder: zero trust, SBOM, ...
+    validations:
+      required: true
+  - type: textarea
+    id: definition
+    attributes:
+      label: Proposed definition
+      description: Your own wording, or a short quote with the citation below.
+    validations:
+      required: true
+  - type: input
+    id: citation
+    attributes:
+      label: Supporting source (URL)
+      placeholder: https://...
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Disambiguation, related terms, or why this belongs in the glossary.

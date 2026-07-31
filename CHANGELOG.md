@@ -6,18 +6,33 @@ Note: the website also has an in-app changelog at `/changelog`. That view is cur
 
 ## Unreleased
 
-- Repo/community polish (docs, templates, contributor experience)
+Open content model (GitOps rework).
 
-## v0.1.5 — 2026-02-08
+- Content as code: all glossary content (terms, senses, citations, tags, source
+  registry) moved into this repository under `content/`; changes flow through
+  pull requests and git history is the audit trail.
+- Removed accounts and the private admin surface entirely; the site is fully
+  public and anonymous.
+- Automated source ingest moved to a scheduled GitHub Actions workflow that
+  opens a reviewable pull request when upstream content changes.
+- Rebuilt the backend on a clean Convex schema with typed relations, a
+  validated content-sync pipeline, and service-key-guarded runtime endpoints.
+- Repo/community polish (docs, templates, contributor experience).
 
-Signal Ledger UI overhaul.
+## v0.1.5 — 2026-02-10
+
+Clinical Reference UI.
 
 - Public UI:
-  - New visual system: instrument-panel header over archival paper (dot-grid + grain).
-  - Browse listings redesigned as ledger sheets for faster scanning.
-  - Entry pages: left-rail layout and restyled sense “evidence cards”.
-- Typography:
-  - Fraunces display with Instrument Sans + IBM Plex Mono.
+  - Adopted the Clinical Reference visual system: dark-leaning,
+    monospace-forward, and documentation-inspired.
+  - Stacked entry pages with sticky sense navigation, richer metadata, and
+    hover previews.
+  - Removed /trending and aligned navigation, sitemap, and public routes to
+    the new product direction.
+- Design system:
+  - Geist Sans + Geist Mono across the public site.
+  - System-aware theming with dark/light/system persistence.
 
 ## v0.1.4 — 2026-01-09
 
