@@ -140,9 +140,6 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
                   ))}
                 </nav>
 
-                <div className={styles.hint}>
-                  Tip: press <strong>/</strong> to search · <strong>⌘K</strong> for commands.
-                </div>
               </div>
             </div>,
             document.body,

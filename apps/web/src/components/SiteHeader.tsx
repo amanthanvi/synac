@@ -1,8 +1,7 @@
 import Link from 'next/link';
 
-import { CommandPalette } from './CommandPalette';
 import { MobileNav } from './MobileNav';
-import { SearchForm } from './SearchForm';
+import { SearchPalette } from './SearchPalette';
 import { ThemeToggle } from './ThemeToggle';
 import styles from './SiteHeader.module.css';
 
@@ -19,7 +18,7 @@ export function SiteHeader() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <Link className={styles.brand} href="/">
-          <span className={styles.wordmark}>SynAc</span>
+          SynAc
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">
@@ -30,13 +29,9 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className={styles.search}>
-          <SearchForm inputId="site-search" placeholder="Search… ( / )" />
-        </div>
-
         <div className={styles.actions}>
+          <SearchPalette />
           <ThemeToggle />
-          <CommandPalette />
           <MobileNav links={[...NAV_LINKS]} />
         </div>
       </div>
