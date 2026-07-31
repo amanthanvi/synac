@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "source": "rfc4949",
+  "generatedAt": "2026-07-31T00:00:00Z",
+  "adapterVersion": "sample-0",
+  "documents": [
+    {
+      "key": "rfc4949-txt",
+      "url": "https://www.rfc-editor.org/rfc/rfc4949.txt",
+      "title": "RFC 4949: Internet Security Glossary, Version 2",
+      "contentType": "text/plain",
+      "contentSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "fetchedAt": "2026-07-31T00:00:00Z"
+    }
+  ],
+  "entries": [
+    {
+      "entryType": "TERM",
+      "slug": "back-door",
+      "title": "Back Door",
+      "aliases": ["trapdoor"],
+      "tags": ["malware", "access-control"],
+      "updatedAt": "2026-07-31",
+      "senses": [
+        {
+          "key": "back-door",
+          "definitionMd": "A hardware or software mechanism that provides access to a system and its resources by other than the usual procedure, was deliberately left in place by the system's designers or maintainers, and usually is not publicly known.",
+          "examples": [],
+          "citation": {
+            "documentKey": "rfc4949-txt",
+            "citationText": "RFC 4949, § \"back door\""
+          }
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "entryType": "TERM",
+      "slug": "handshake",
+      "title": "Handshake",
+      "aliases": [],
+      "tags": ["protocols", "network-security"],
+      "updatedAt": "2026-07-31",
+      "senses": [
+        {
+          "key": "handshake",
+          "definitionMd": "A protocol dialogue between two systems for synchronizing states, exchanging data, or identifying and authenticating each other before the intended communication begins.",
+          "examples": [],
+          "citation": {
+            "documentKey": "rfc4949-txt",
+            "citationText": "RFC 4949, § \"handshake\""
+          }
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "entryType": "TERM",
+      "slug": "brute-force",
+      "title": "Brute Force",
+      "aliases": ["brute-force attack"],
+      "tags": ["cryptography", "access-control"],
+      "updatedAt": "2026-07-31",
+      "senses": [
+        {
+          "key": "brute-force",
+          "definitionMd": "A cryptanalysis technique or other kind of attack method that involves an exhaustive procedure trying all possibilities, one by one — for example, trying every possible key to decrypt a ciphertext.",
+          "examples": [],
+          "citation": {
+            "documentKey": "rfc4949-txt",
+            "citationText": "RFC 4949, § \"brute force\""
+          }
+        }
+      ],
+      "relationships": [
+        { "toType": "TERM", "toSlug": "back-door", "type": "RELATED" }
+      ]
+    }
+  ]
+}

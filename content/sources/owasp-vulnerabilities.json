@@ -1,0 +1,17 @@
+{
+  "slug": "owasp-vulnerabilities",
+  "name": "OWASP Community Vulnerabilities",
+  "baseUrl": "https://owasp.org/www-community/vulnerabilities/",
+  "license": {
+    "type": "CC_BY_SA_4_0",
+    "url": "https://owasp.org/www-community/about",
+    "notes": "OWASP community content is CC BY-SA 4.0; derivative text must be shared alike.",
+    "allowedUse": "Reproduce and adapt with attribution and share-alike per CC BY-SA 4.0.",
+    "attributionRequirements": "OWASP Foundation, OWASP Community Pages (CC BY-SA 4.0)"
+  },
+  "accessMethod": "HTML",
+  "trustTier": "TIER2",
+  "enabled": true,
+  "ingest": { "adapter": "owaspVulnerabilities", "schedule": "weekly" },
+  "lastVerifiedAt": "2026-02-10"
+}

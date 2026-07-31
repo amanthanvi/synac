@@ -17,7 +17,9 @@
   },
   "scripts": {
     "dev": "pnpm -r --parallel --if-present dev",
-    "gate": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "gate": "pnpm lint && pnpm typecheck && pnpm test && pnpm content:check && pnpm build",
+    "content:check": "pnpm --filter @synac/content-tools check",
+    "content:compile": "pnpm --filter @synac/content-tools compile",
     "build": "pnpm -r build",
     "start": "pnpm --filter @synac/web start",
     "lint": "pnpm -r lint",

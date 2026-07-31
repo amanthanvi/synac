@@ -1,0 +1,17 @@
+{
+  "slug": "rfc4949",
+  "name": "RFC 4949 — Internet Security Glossary, Version 2",
+  "baseUrl": "https://www.rfc-editor.org/rfc/rfc4949.txt",
+  "license": {
+    "type": "OTHER",
+    "url": "https://www.rfc-editor.org/copyright/",
+    "notes": "IETF RFC; reproduction permitted with attribution per RFC Editor copyright policy.",
+    "allowedUse": "Reproduce definitions with attribution to the RFC and the IETF.",
+    "attributionRequirements": "RFC 4949, Internet Security Glossary, Version 2 (IETF, August 2007)"
+  },
+  "accessMethod": "TEXT",
+  "trustTier": "TIER1",
+  "enabled": true,
+  "ingest": { "adapter": "rfc4949Glossary", "schedule": "monthly" },
+  "lastVerifiedAt": "2026-02-10"
+}
