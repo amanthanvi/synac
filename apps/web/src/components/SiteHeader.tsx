@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { MobileNav } from './MobileNav';
+import { NavLinks } from './NavLinks';
 import { SearchPalette } from './SearchPalette';
 import { ThemeToggle } from './ThemeToggle';
 import styles from './SiteHeader.module.css';
@@ -22,11 +23,7 @@ export function SiteHeader() {
         </Link>
 
         <nav className={styles.nav} aria-label="Primary">
-          {NAV_LINKS.map((l) => (
-            <Link key={l.href} className={styles.navLink} href={l.href}>
-              {l.label}
-            </Link>
-          ))}
+          <NavLinks links={[...NAV_LINKS]} />
         </nav>
 
         <div className={styles.actions}>

@@ -294,7 +294,9 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
 
         {showToc ? (
           <div className={styles.rail}>
-            <StickySenseToc items={tocItems} />
+            <div className={styles.railInner}>
+              <StickySenseToc items={tocItems} />
+            </div>
           </div>
         ) : null}
       </article>

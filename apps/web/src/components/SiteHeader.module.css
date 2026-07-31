@@ -52,6 +52,11 @@
   color: var(--fg);
 }
 
+.navLinkCurrent {
+  color: var(--fg);
+  font-weight: var(--weight-medium);
+}
+
 .actions {
   display: flex;
   align-items: center;

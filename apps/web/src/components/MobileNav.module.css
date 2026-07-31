@@ -114,3 +114,8 @@
 .link:hover {
   background: var(--bg-2);
 }
+
+.linkCurrent {
+  background: var(--bg-2);
+  font-weight: var(--weight-medium);
+}

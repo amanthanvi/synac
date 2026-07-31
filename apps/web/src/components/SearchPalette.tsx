@@ -72,6 +72,7 @@ export function SearchPalette() {
   const [entries, setEntries] = useState<EntryResult[]>([]);
   const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const q = normalizeQuery(query);
 
@@ -133,6 +134,7 @@ export function SearchPalette() {
     setOpen(false);
     setQuery('');
     setActiveIndex(0);
+    triggerRef.current?.focus();
   }
 
   function openPalette() {
@@ -170,6 +172,13 @@ export function SearchPalette() {
       }
 
       if (!open) return;
+
+      // The input is the dialog's only focusable element; keep focus inside.
+      if (key === 'tab') {
+        e.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
 
       if (key === 'escape') {
         e.preventDefault();
@@ -223,6 +232,7 @@ export function SearchPalette() {
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         className={styles.trigger}
         onClick={openPalette}

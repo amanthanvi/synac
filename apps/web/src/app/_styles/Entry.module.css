@@ -1,16 +1,12 @@
 /* Entry page — dictionary structure: headword block, numbered senses. */
 
-.layout {
+/* The content column sits at the same x-position with or without the rail;
+   the sense TOC occupies the right margin beside it. */
+.layout,
+.layoutWithToc {
   max-width: var(--content-max);
   margin: 0 auto;
-}
-
-.layoutWithToc {
-  display: grid;
-  grid-template-columns: minmax(0, var(--content-max)) 220px;
-  gap: var(--space-7);
-  justify-content: center;
-  align-items: start;
+  position: relative;
 }
 
 .main {
@@ -18,16 +14,19 @@
 }
 
 .rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(100% + var(--space-7));
+  width: 220px;
+}
+
+.railInner {
   position: sticky;
   top: 76px;
 }
 
-@media (max-width: 1023px) {
-  .layoutWithToc {
-    display: block;
-    max-width: var(--content-max);
-  }
-
+@media (max-width: 1279px) {
   .rail {
     display: none;
   }

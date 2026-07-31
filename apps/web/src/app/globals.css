@@ -59,7 +59,7 @@
   --bg-2: #f1efec;
   --fg: #211f1c;
   --fg-muted: #6c675f;
-  --fg-subtle: #7d7870;
+  --fg-subtle: #6e695f;
   --border: #e8e5e0;
   --border-hover: #d5d1ca;
   --border-strong: #c6c1b8;
@@ -155,7 +155,7 @@ html[data-theme='light'] {
   --bg-2: #f1efec;
   --fg: #211f1c;
   --fg-muted: #6c675f;
-  --fg-subtle: #7d7870;
+  --fg-subtle: #6e695f;
   --border: #e8e5e0;
   --border-hover: #d5d1ca;
   --border-strong: #c6c1b8;
