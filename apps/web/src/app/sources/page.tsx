@@ -52,7 +52,7 @@ export default async function SourcesPage() {
                 </span>
               </div>
               <p className={styles.itemDesc}>
-                {source.licenseType} ·{' '}
+                {source.trustTier.replace(/_/g, ' ').toLowerCase()} · {source.licenseType} ·{' '}
                 {source.lastVerifiedAt
                   ? `verified ${formatDate(source.lastVerifiedAt)}`
                   : 'not yet verified'}
