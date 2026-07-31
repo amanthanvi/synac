@@ -22,6 +22,18 @@ This is the living implementation tracker for `SPEC.md`.
 - Commit + push frequently (same branch).
 - Keep code aligned with `SPEC.md`; when reality diverges, update `SPEC.md` (don’t ship undocumented behavior).
 
+## Unreleased — Public UI redesign (“Reference Canon”, PR #179)
+
+Supersedes the v0.2.0 “Clinical Reference” visual decisions for the public site. Authoritative design record: `apps/web/DESIGN.md`; SPEC §11a and §22.5 updated to match.
+
+- [x] Token layer rebuilt: warm neutrals (light+dark tuned separately), semantic type scale, mono demoted to code/data/kbd; legacy aliases preserved for `/admin`
+- [x] One search surface: ⌘K/`/` SearchPalette with live results; CommandPalette + inline header search removed; home + `/search` use plain GET forms
+- [x] Entry pages in dictionary form: headword block, flat numbered senses (accordion removed; TOC + `#sense-*` anchors preserve orientation and deep links), per-sense Sources list replacing pills + bibliography
+- [x] Sense headings prefer authored `senseLabel` over shared `expandedForm` (disambiguation), expansion shown as muted detail
+- [x] Shared `EntryRow` idiom across home/browse/search/recent/tags/sources; quiet lowercase type markers replace colored badges (acronym headwords remain uppercase for scan differentiation)
+- [x] Secondary surfaces (changelog, about, legal, 404, error) on the new system; nav gains `aria-current`; a11y: contrast ≥4.5:1 both themes, focus containment in overlays, reduced-motion honored
+- [x] `apps/web/PRODUCT.md` + `apps/web/DESIGN.md` recorded
+
 ## v0.2.0 — Full UI/UX Overhaul (“Clinical Reference”)
 
 Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic with a polished, monospace-forward, dark-leaning developer-documentation aesthetic inspired by Stripe Docs, Vercel Docs, and Tailwind CSS Docs. Authoritative, clean, clinical.

@@ -127,7 +127,15 @@ function Sense({
   showNumber: boolean;
   provenanceItems: PublicSenseProvenance[];
 }) {
-  const heading = sense.expandedForm ?? sense.senseLabel;
+  // The authored label is the curator's disambiguator — it wins over the
+  // expansion, which several senses of one acronym can share.
+  const heading = sense.senseLabel ?? sense.expandedForm;
+  const headingDetail =
+    sense.senseLabel &&
+    sense.expandedForm &&
+    sense.expandedForm.trim().toLowerCase() !== sense.senseLabel.trim().toLowerCase()
+      ? sense.expandedForm
+      : null;
 
   return (
     <li
@@ -140,7 +148,14 @@ function Sense({
         </span>
       ) : null}
       <div className={styles.senseBody}>
-        {heading ? <h3 className={styles.senseHeading}>{heading}</h3> : null}
+        {heading ? (
+          <h3 className={styles.senseHeading}>
+            {heading}
+            {headingDetail ? (
+              <span className={styles.senseHeadingDetail}> · {headingDetail}</span>
+            ) : null}
+          </h3>
+        ) : null}
         <div className={styles.senseDefinition}>
           {sense.definitionMd ? (
             <Markdown>{sense.definitionMd}</Markdown>
@@ -201,7 +216,7 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
 
   const tocItems = entry.senses.map((sense) => ({
     id: sense.id,
-    label: sense.expandedForm ?? sense.senseLabel ?? `Sense ${sense.senseOrder + 1}`,
+    label: sense.senseLabel ?? sense.expandedForm ?? `Sense ${sense.senseOrder + 1}`,
   }));
   const showToc = entry.senses.length >= 3;
 

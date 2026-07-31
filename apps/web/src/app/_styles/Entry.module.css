@@ -159,6 +159,13 @@
   margin-bottom: calc(-1 * var(--space-2));
 }
 
+.senseHeadingDetail {
+  font-size: var(--text-body);
+  font-weight: var(--weight-body);
+  letter-spacing: normal;
+  color: var(--fg-muted);
+}
+
 .senseDefinition {
   font-size: var(--text-body);
   line-height: var(--text-body-lh);
