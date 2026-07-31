@@ -9,8 +9,16 @@
  */
 
 import type * as crons from "../crons.js";
-import type * as data from "../data.js";
-import type * as ingest from "../ingest.js";
+import type * as lib_serviceKey from "../lib/serviceKey.js";
+import type * as publicBrowse from "../publicBrowse.js";
+import type * as publicEntries from "../publicEntries.js";
+import type * as rateLimit from "../rateLimit.js";
+import type * as search from "../search.js";
+import type * as sitemap from "../sitemap.js";
+import type * as sources from "../sources.js";
+import type * as sync from "../sync.js";
+import type * as tags from "../tags.js";
+import type * as views from "../views.js";
 
 import type {
   ApiFromModules,
@@ -20,8 +28,16 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
-  data: typeof data;
-  ingest: typeof ingest;
+  "lib/serviceKey": typeof lib_serviceKey;
+  publicBrowse: typeof publicBrowse;
+  publicEntries: typeof publicEntries;
+  rateLimit: typeof rateLimit;
+  search: typeof search;
+  sitemap: typeof sitemap;
+  sources: typeof sources;
+  sync: typeof sync;
+  tags: typeof tags;
+  views: typeof views;
 }>;
 
 /**
@@ -50,4 +66,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};

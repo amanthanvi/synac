@@ -35,8 +35,10 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Convex codegen
-        run: npx convex codegen
+      # Deploys schema + functions to a throwaway local backend, which also
+      # regenerates convex/_generated and typechecks the functions.
+      - name: Validate Convex functions
+        run: CONVEX_AGENT_MODE=anonymous npx convex dev --once
 
       # Equivalent to `pnpm gate`; split for clearer logs.
       - name: Lint

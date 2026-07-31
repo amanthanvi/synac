@@ -284,6 +284,15 @@ export function compileContent(input: ContentInput): CompileResult {
     );
     const citedSourceSlugs = [...new Set(entrySenses.flatMap((s) => s.citations.map((c) => c.sourceSlug)))].sort();
 
+    // For acronyms the browse/search UIs show a compact expansion summary.
+    const senseSummary =
+      item.entryType === 'ACRONYM'
+        ? entrySenses
+            .slice(0, 3)
+            .map((sense) => (sense.label ?? sense.expandedForm ?? '').trim())
+            .filter(Boolean)
+            .join(' · ') || undefined
+        : undefined;
     const compiled: CompiledEntry = {
       key,
       entryType: item.entryType,
@@ -295,6 +304,8 @@ export function compileContent(input: ContentInput): CompileResult {
       summaryText: summaryMd ? markdownToText(summaryMd) : undefined,
       editorialNotes: override?.editorialNotes,
       updatedAt,
+      senseCount: entrySenses.length,
+      senseSummary,
       searchDocument: compactSearchDocument([
         title,
         normalizeTitle(title),
@@ -353,6 +364,19 @@ export function compileContent(input: ContentInput): CompileResult {
 
   if (errors.length > 0) return { ok: false, errors: [...new Set(errors)].sort(), warnings };
 
+  const citedEntryCounts = new Map<string, number>();
+  for (const entry of entries) {
+    for (const sourceSlug of entry.citedSourceSlugs) {
+      citedEntryCounts.set(sourceSlug, (citedEntryCounts.get(sourceSlug) ?? 0) + 1);
+    }
+  }
+  const tagEntryCounts = new Map<string, number>();
+  for (const entry of entries) {
+    for (const tagSlug of entry.tagSlugs) {
+      tagEntryCounts.set(tagSlug, (tagEntryCounts.get(tagSlug) ?? 0) + 1);
+    }
+  }
+
   const compiledSources: CompiledSource[] = [...sourcesBySlug.values()]
     .map((source) => ({
       slug: source.slug,
@@ -366,6 +390,7 @@ export function compileContent(input: ContentInput): CompileResult {
       trustTier: source.trustTier,
       enabled: source.enabled,
       lastVerifiedAt: dateMs(source.lastVerifiedAt),
+      citedEntryCount: citedEntryCounts.get(source.slug) ?? 0,
     }))
     .sort((a, b) => a.slug.localeCompare(b.slug));
 
@@ -373,7 +398,12 @@ export function compileContent(input: ContentInput): CompileResult {
     contentVersion: '',
     sources: compiledSources,
     tags: [...input.tags.tags]
-      .map((tag) => ({ slug: tag.slug, name: tag.name, description: tag.description }))
+      .map((tag) => ({
+        slug: tag.slug,
+        name: tag.name,
+        description: tag.description,
+        entryCount: tagEntryCounts.get(tag.slug) ?? 0,
+      }))
       .sort((a, b) => a.slug.localeCompare(b.slug)),
     entries,
     senses,

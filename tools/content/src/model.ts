@@ -232,6 +232,8 @@ export type CompiledEntry = {
   summaryText: string | undefined;
   editorialNotes: string | undefined;
   updatedAt: number;
+  senseCount: number;
+  senseSummary: string | undefined;
   searchDocument: string;
   tagSlugs: string[];
   citedSourceSlugs: string[];
@@ -249,12 +251,13 @@ export type CompiledSource = {
   trustTier: (typeof TRUST_TIERS)[number];
   enabled: boolean;
   lastVerifiedAt: number;
+  citedEntryCount: number;
 };
 
 export type CompiledDataset = {
   contentVersion: string;
   sources: CompiledSource[];
-  tags: Array<{ slug: string; name: string; description: string | undefined }>;
+  tags: Array<{ slug: string; name: string; description: string | undefined; entryCount: number }>;
   entries: CompiledEntry[];
   senses: CompiledSense[];
   relationships: Array<{ fromKey: string; toKey: string; type: RelationshipType }>;

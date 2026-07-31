@@ -24,7 +24,8 @@
     "start": "pnpm --filter @synac/web start",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r --workspace-concurrency=1 test",
+    "test": "pnpm -r --workspace-concurrency=1 test && pnpm test:convex",
+    "test:convex": "vitest run -c vitest.convex.config.ts",
     "test:migration": "node --test scripts/*.test.mjs",
     "format": "pnpm -r format",
     "convex:dev": "convex dev",
@@ -41,12 +42,16 @@
     }
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.39.2",
+    "convex-test": "^0.0.54",
     "eslint": "^9.39.2",
     "globals": "^17.3.0",
-    "typescript-eslint": "^8.56.0"
+    "typescript-eslint": "^8.56.0",
+    "vitest": "^4.1.0"
   },
   "dependencies": {
+    "@convex-dev/rate-limiter": "^0.3.2",
     "convex": "^1.39.1"
   }
 }
