@@ -190,9 +190,9 @@ function Sense({
             <ul className={styles.examplesList}>
               {examples.map((example: PublicEntryExample) => (
                 <li key={example.id} className={styles.exampleItem}>
-                  {example.exampleMd ? (
+                  {example.exampleMd?.trim() ? (
                     <Markdown>{example.exampleMd}</Markdown>
-                  ) : example.exampleText ? (
+                  ) : example.exampleText?.trim() ? (
                     <p>{example.exampleText}</p>
                   ) : null}
                 </li>

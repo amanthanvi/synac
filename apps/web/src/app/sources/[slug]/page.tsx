@@ -68,7 +68,7 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
 
   const prevHref = page > 1 ? `/sources/${source.sourceSlug}?page=${page - 1}` : undefined;
   const nextHref =
-    citedEntries.length === pageSize ? `/sources/${source.sourceSlug}?page=${page + 1}` : undefined;
+    page * pageSize < citedCount ? `/sources/${source.sourceSlug}?page=${page + 1}` : undefined;
 
   return (
     <div className={layoutStyles.pageNarrow}>

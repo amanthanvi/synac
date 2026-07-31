@@ -34,7 +34,7 @@ Supersedes the v0.2.0 “Clinical Reference” visual decisions for the public s
 - [x] Secondary surfaces (changelog, about, legal, 404, error) on the new system; nav gains `aria-current`; a11y: contrast ≥4.5:1 both themes, focus containment in overlays, reduced-motion honored
 - [x] `apps/web/PRODUCT.md` + `apps/web/DESIGN.md` recorded
 
-## v0.2.0 — Full UI/UX Overhaul (“Clinical Reference”)
+## v0.2.0 — Full UI/UX Overhaul (“Clinical Reference”) — SUPERSEDED (historical; see Reference Canon above)
 
 Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic with a polished, monospace-forward, dark-leaning developer-documentation aesthetic inspired by Stripe Docs, Vercel Docs, and Tailwind CSS Docs. Authoritative, clean, clinical.
 
