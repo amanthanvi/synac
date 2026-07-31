@@ -5,6 +5,8 @@ const PREVIEWS = [
   { href: '/preview/entry-term', label: 'Entry — term, 1 sense, duplicated summary (default credentials)' },
   { href: '/preview/entry-long', label: 'Entry — 12 senses (shell)' },
   { href: '/preview/entry-loading', label: 'Entry — loading skeleton' },
+  { href: '/preview/home', label: 'Home' },
+  { href: '/preview/browse', label: 'Browse index' },
 ] as const;
 
 export default function PreviewIndex() {

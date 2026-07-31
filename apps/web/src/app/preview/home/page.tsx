@@ -1,13 +1,10 @@
 import Link from 'next/link';
 
-import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
-
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { SearchForm } from '@/components/SearchForm';
 
-import styles from './page.module.css';
-
-export const revalidate = 300;
+import styles from '../../page.module.css';
+import { browseRowsFixture } from '../fixtures';
 
 function formatDate(value: Date): string {
   return new Intl.DateTimeFormat('en-US', {
@@ -17,10 +14,7 @@ function formatDate(value: Date): string {
   }).format(value);
 }
 
-export default async function Home() {
-  const prisma = getPrismaClient();
-  const recent = await listRecentPublishedEntries(prisma, { page: 1, pageSize: 8 });
-
+export default function PreviewHome() {
   return (
     <div className={styles.wrap}>
       <section className={styles.hero} aria-label="Glossary search">
@@ -47,26 +41,18 @@ export default async function Home() {
           </Link>
         </div>
 
-        {recent.length === 0 ? (
-          <p className={styles.empty}>No published entries yet.</p>
-        ) : (
-          <EntryRowList>
-            {recent.map((entry) => (
-              <EntryRow
-                key={entry.id}
-                href={
-                  entry.entryType === 'TERM'
-                    ? `/term/${entry.primarySlug}`
-                    : `/acronym/${entry.primarySlug}`
-                }
-                title={entry.displayTitle}
-                entryType={entry.entryType}
-                summary={entry.summaryText}
-                meta={formatDate(entry.updatedAt)}
-              />
-            ))}
-          </EntryRowList>
-        )}
+        <EntryRowList>
+          {browseRowsFixture.map((entry) => (
+            <EntryRow
+              key={entry.id}
+              href="/preview/entry-acronym"
+              title={entry.displayTitle}
+              entryType={entry.entryType}
+              summary={entry.summaryText}
+              meta={formatDate(entry.updatedAt)}
+            />
+          ))}
+        </EntryRowList>
       </section>
     </div>
   );

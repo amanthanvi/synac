@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { TypeMarker } from './ui/TypeMarker';
 import styles from './SearchForm.module.css';
 
 type SearchFormProps = {
@@ -279,15 +280,11 @@ export function SearchForm({
                     commitSelection(idx);
                   }}
                 >
-                  <span
-                    className={`${styles.badge} ${
-                      r.entryType === 'ACRONYM' ? styles.badgeAcronym : styles.badgeTerm
-                    }`}
-                  >
-                    {r.entryType}
-                  </span>
                   <span className={styles.optionBody}>
-                    <span className={styles.optionTitle}>{r.displayTitle}</span>
+                    <span className={styles.optionTitleRow}>
+                      <span className={styles.optionTitle}>{r.displayTitle}</span>
+                      <TypeMarker type={r.entryType} />
+                    </span>
                     {r.summaryText ? (
                       <span className={styles.optionSummary}>{r.summaryText}</span>
                     ) : null}
@@ -307,9 +304,13 @@ export function SearchForm({
                     commitSelection(results.length);
                   }}
                 >
-                  <span className={styles.badge}>↵</span>
                   <span className={styles.optionBody}>
-                    <span className={styles.optionTitle}>Search for “{trimmed}”</span>
+                    <span className={styles.optionTitleRow}>
+                      <span className={styles.optionTitle}>Search for “{trimmed}”</span>
+                      <kbd className={styles.optionKbd} aria-hidden="true">
+                        ↵
+                      </kbd>
+                    </span>
                     <span className={styles.optionSummary}>See all results</span>
                   </span>
                 </li>

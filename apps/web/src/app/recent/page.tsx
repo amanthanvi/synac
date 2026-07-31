@@ -1,12 +1,12 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { getPrismaClient, listRecentPublishedEntries, queryPublicConvex } from '@synac/db';
+import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
 
+import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 
-import styles from '../_styles/Browse.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
 
 export const revalidate = 300;
 
@@ -55,85 +55,47 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
   const entries = await listRecentPublishedEntries(prisma, { page, pageSize });
   const now = new Date();
 
-  const entryIds = entries.map((e) => e.id);
-  const entryTags = entryIds.length
-    ? await queryPublicConvex<Array<{ entryId: string; tag: { id: string; name: string; slug: string } }>>(
-        'listEntryTagsForEntries',
-        { entryIds },
-      )
-    : [];
-
-  const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();
-  for (const row of entryTags) {
-    const list = tagsByEntryId.get(row.entryId) ?? [];
-    list.push(row.tag);
-    tagsByEntryId.set(row.entryId, list);
-  }
-
   const prevHref = page > 1 ? `/recent?page=${page - 1}` : undefined;
-  const nextHref = page < maxPage && entries.length === pageSize ? `/recent?page=${page + 1}` : undefined;
+  const nextHref =
+    page < maxPage && entries.length === pageSize ? `/recent?page=${page + 1}` : undefined;
 
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader
-        badge="Discovery"
         title="Recently updated"
         subtitle="Published entries ordered by most recent updates."
       />
 
       {entries.length === 0 ? (
-        <div className={styles.empty}>No published entries yet.</div>
+        <p className={layoutStyles.bodyText}>No published entries yet.</p>
       ) : (
         <>
-          <ol className={styles.list}>
+          <EntryRowList>
             {entries.map((entry) => (
-              <li key={entry.id} className={styles.item}>
-                <div className={styles.itemTitleRow}>
-                  <div className={styles.itemTitleLeft}>
-                    <span
-                      className={`${styles.typeBadge} ${
-                        entry.entryType === 'TERM'
-                          ? styles.typeBadgeTerm
-                          : styles.typeBadgeAcronym
-                      }`}
-                    >
-                      {entry.entryType}
-                    </span>
-                    <Link
-                      className={styles.itemTitle}
-                      href={
-                        entry.entryType === 'TERM'
-                          ? `/term/${entry.primarySlug}`
-                          : `/acronym/${entry.primarySlug}`
-                      }
-                    >
-                      {entry.displayTitle}
-                    </Link>
-                  </div>
-                  <span className={styles.itemSlug}>
-                    <time dateTime={entry.updatedAt.toISOString()} title={formatDate(entry.updatedAt)}>
-                      {formatRelativeDate(entry.updatedAt, now)}
-                    </time>
-                  </span>
-                </div>
-                {entry.summaryText ? (
-                  <p className={styles.itemSummary}>{entry.summaryText}</p>
-                ) : null}
-                {(tagsByEntryId.get(entry.id) ?? []).length ? (
-                  <div className={styles.itemTags}>
-                    {(tagsByEntryId.get(entry.id) ?? []).map((tag) => (
-                      <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+              <EntryRow
+                key={entry.id}
+                href={
+                  entry.entryType === 'TERM'
+                    ? `/term/${entry.primarySlug}`
+                    : `/acronym/${entry.primarySlug}`
+                }
+                title={entry.displayTitle}
+                entryType={entry.entryType}
+                summary={entry.summaryText}
+                meta={
+                  <time
+                    dateTime={entry.updatedAt.toISOString()}
+                    title={formatDate(entry.updatedAt)}
+                  >
+                    {formatRelativeDate(entry.updatedAt, now)}
+                  </time>
+                }
+              />
             ))}
-          </ol>
+          </EntryRowList>
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>
       )}
-    </>
+    </div>
   );
 }

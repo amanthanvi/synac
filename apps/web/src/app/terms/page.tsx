@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { BrowseControls } from '@/components/BrowseControls';
+import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import {
@@ -72,11 +73,7 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
 
   return (
     <>
-      <PageHeader
-        badge="Browse"
-        title="Terms"
-        subtitle="Alphabetical index of published term entries with tag filters and quick sort."
-      />
+      <PageHeader title="Terms" subtitle="Alphabetical index of published term entries." />
 
       <nav className={styles.letters} aria-label="Term letters">
         {letters.map((l) => (
@@ -112,33 +109,18 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
         </div>
       ) : (
         <>
-          <ol className={styles.list}>
+          <EntryRowList>
             {entries.map((entry) => (
-              <li key={entry.id} className={styles.item}>
-                <div className={styles.itemTitleRow}>
-                  <div className={styles.itemTitleLeft}>
-                    <span className={`${styles.typeBadge} ${styles.typeBadgeTerm}`}>TERM</span>
-                    <Link className={styles.itemTitle} href={`/term/${entry.primarySlug}`}>
-                      {entry.displayTitle}
-                    </Link>
-                  </div>
-                  <span className={styles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
-                </div>
-                {entry.summaryText ? (
-                  <p className={styles.itemSummary}>{entry.summaryText}</p>
-                ) : null}
-                {entry.entryTags.length ? (
-                  <div className={styles.itemTags}>
-                    {entry.entryTags.map(({ tag }) => (
-                      <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+              <EntryRow
+                key={entry.id}
+                href={`/term/${entry.primarySlug}`}
+                title={entry.displayTitle}
+                entryType="TERM"
+                summary={entry.summaryText}
+                meta={`Updated ${formatDate(entry.updatedAt)}`}
+              />
             ))}
-          </ol>
+          </EntryRowList>
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>
       )}

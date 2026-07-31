@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { BrowseControls } from '@/components/BrowseControls';
+import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import {
@@ -72,11 +73,7 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
 
   return (
     <>
-      <PageHeader
-        badge="Browse"
-        title="Acronyms"
-        subtitle="Alphabetical index of published acronym entries with tag filters and quick sort."
-      />
+      <PageHeader title="Acronyms" subtitle="Alphabetical index of published acronym entries." />
 
       <nav className={styles.letters} aria-label="Acronym letters">
         {letters.map((l) => (
@@ -112,35 +109,18 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
         </div>
       ) : (
         <>
-          <ol className={styles.list}>
+          <EntryRowList>
             {entries.map((entry) => (
-              <li key={entry.id} className={styles.item}>
-                <div className={styles.itemTitleRow}>
-                  <div className={styles.itemTitleLeft}>
-                    <span className={`${styles.typeBadge} ${styles.typeBadgeAcronym}`}>
-                      ACRONYM
-                    </span>
-                    <Link className={styles.itemTitle} href={`/acronym/${entry.primarySlug}`}>
-                      {entry.displayTitle}
-                    </Link>
-                  </div>
-                  <span className={styles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
-                </div>
-                {entry.summaryText ? (
-                  <p className={styles.itemSummary}>{entry.summaryText}</p>
-                ) : null}
-                {entry.entryTags.length ? (
-                  <div className={styles.itemTags}>
-                    {entry.entryTags.map(({ tag }) => (
-                      <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+              <EntryRow
+                key={entry.id}
+                href={`/acronym/${entry.primarySlug}`}
+                title={entry.displayTitle}
+                entryType="ACRONYM"
+                summary={entry.summaryText}
+                meta={`Updated ${formatDate(entry.updatedAt)}`}
+              />
             ))}
-          </ol>
+          </EntryRowList>
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>
       )}

@@ -1,80 +1,67 @@
-.section {
-  margin-top: 14px;
-}
-
-.queryPanel {
+.wrap {
+  max-width: var(--content-max);
+  margin: 0 auto;
   display: grid;
-  gap: 12px;
+  gap: var(--space-5);
 }
 
-.queryRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+.form {
+  width: min(560px, 100%);
 }
 
-.queryLabel {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.guidance {
+  display: grid;
+  gap: var(--space-2);
   color: var(--fg-muted);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
 }
 
-.queryValue {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.02em;
-  color: var(--fg);
-}
-
-.queryActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-.queryHint {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.02em;
+.browseLinks a,
+.empty a {
   color: var(--fg-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+  transition: color var(--dur-hover) var(--ease);
 }
 
-.kbdInline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--bg-1);
+.browseLinks a:hover,
+.empty a:hover {
   color: var(--fg);
-  font-family: var(--font-mono);
-  font-size: 12px;
 }
 
 .filters {
-  margin-top: 12px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-1);
+}
+
+.filter {
+  display: inline-flex;
   align-items: center;
-}
-
-.resultsList {
-  margin-top: 14px;
-}
-
-.resultsEmpty {
-  margin-top: 14px;
-}
-
-.senseSummary {
-  margin: 0;
+  height: 30px;
+  padding: 0 var(--space-3);
+  border-radius: 999px;
+  font-size: var(--text-ui);
   color: var(--fg-muted);
-  line-height: 1.65;
-  font-size: 13px;
+  transition:
+    background var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease);
+}
+
+.filter:hover {
+  background: var(--bg-2);
+  color: var(--fg);
+}
+
+.filterActive {
+  background: var(--bg-2);
+  color: var(--fg);
+  font-weight: var(--weight-medium);
+}
+
+.empty {
+  color: var(--fg-muted);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
 }
