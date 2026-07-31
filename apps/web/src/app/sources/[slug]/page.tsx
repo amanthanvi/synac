@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
-import { getPrismaClient, queryPublicConvex, resolvePublicSourceBySlug } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import { ButtonLink } from '@/components/ui/Button';
@@ -23,8 +22,7 @@ type SourcePageProps = {
 
 export async function generateMetadata({ params }: SourcePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const prisma = getPrismaClient();
-  const source = await resolvePublicSourceBySlug(prisma, { slug });
+  const source = await getConvexClient().query(api.sources.bySlug, { slug });
 
   if (!source) {
     return { title: 'Source not found' };
@@ -33,7 +31,7 @@ export async function generateMetadata({ params }: SourcePageProps): Promise<Met
   return {
     title: source.name,
     description: `License notes and attribution requirements for ${source.name}.`,
-    alternates: { canonical: `/sources/${source.sourceSlug}` },
+    alternates: { canonical: `/sources/${source.slug}` },
   };
 }
 
@@ -47,51 +45,23 @@ function formatDate(value: Date): string {
 
 export default async function SourcePage({ params, searchParams }: SourcePageProps) {
   const { slug } = await params;
-  const prisma = getPrismaClient();
-  const source = await resolvePublicSourceBySlug(prisma, { slug });
+  const client = getConvexClient();
+  const source = await client.query(api.sources.bySlug, { slug });
 
   if (!source) notFound();
 
   const sp = (await searchParams) ?? {};
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const pageSize = 50;
-  type CitedEntryRow = {
-    id: string;
-    entryType: 'TERM' | 'ACRONYM';
-    displayTitle: string;
-    primarySlug: string;
-    summaryText: string | null;
-    updatedAt: Date;
-  };
 
-  const cited = await queryPublicConvex<{ count: number; entries: CitedEntryRow[] }>('listCitedEntriesForSource', {
-    sourceId: source.id,
+  const { entries: citedEntries, hasMore } = await client.query(api.sources.citedEntries, {
+    sourceSlug: source.slug,
     page,
     pageSize,
   });
-  const citedCount = cited.count;
-  const citedEntries = cited.entries;
 
-  const citedEntryIds = citedEntries.map((e) => e.id);
-  const citedEntryTags = citedEntryIds.length
-    ? await queryPublicConvex<Array<{ entryId: string; tag: { id: string; name: string; slug: string } }>>(
-        'listEntryTagsForEntries',
-        { entryIds: citedEntryIds },
-      )
-    : [];
-
-  const tagsByEntryId = new Map<string, Array<(typeof citedEntryTags)[number]['tag']>>();
-  for (const row of citedEntryTags) {
-    const list = tagsByEntryId.get(row.entryId) ?? [];
-    list.push(row.tag);
-    tagsByEntryId.set(row.entryId, list);
-  }
-
-  const prevHref = page > 1 ? `/sources/${source.sourceSlug}?page=${page - 1}` : undefined;
-  const nextHref =
-    citedEntries.length === pageSize
-      ? `/sources/${source.sourceSlug}?page=${page + 1}`
-      : undefined;
+  const prevHref = page > 1 ? `/sources/${source.slug}?page=${page - 1}` : undefined;
+  const nextHref = hasMore ? `/sources/${source.slug}?page=${page + 1}` : undefined;
 
   return (
     <>
@@ -105,15 +75,10 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
         <Panel className={layoutStyles.narrow}>
           <KeyValueList
             items={[
-              {
-                label: 'Verified',
-                value: source.lastVerifiedAt
-                  ? `Verified ${formatDate(source.lastVerifiedAt)}`
-                  : 'Not yet verified',
-              },
+              { label: 'Verified', value: `Verified ${formatDate(new Date(source.lastVerifiedAt))}` },
               { label: 'License', value: source.licenseType },
               { label: 'Trust', value: source.trustTier },
-              { label: 'Cited by', value: `${citedCount.toLocaleString()} entries` },
+              { label: 'Cited by', value: `${source.citedEntryCount.toLocaleString()} entries` },
             ]}
           />
 
@@ -141,10 +106,12 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
             </div>
           ) : null}
 
-          {source.contact ? (
+          {source.licenseUrl ? (
             <div className={styles.section}>
-              <div className={styles.sectionLabel}>Contact</div>
-              <p className={styles.sectionText}>{source.contact}</p>
+              <div className={styles.sectionLabel}>License terms</div>
+              <a className={styles.link} href={source.licenseUrl} target="_blank" rel="noopener noreferrer">
+                {source.licenseUrl}
+              </a>
             </div>
           ) : null}
 
@@ -169,14 +136,10 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
                 <ol className={browseStyles.list}>
                   {citedEntries.map((entry) => {
                     const href =
-                      entry.entryType === 'TERM'
-                        ? `/term/${entry.primarySlug}`
-                        : `/acronym/${entry.primarySlug}`;
-
-                    const entryTags = tagsByEntryId.get(entry.id) ?? [];
+                      entry.entryType === 'TERM' ? `/term/${entry.slug}` : `/acronym/${entry.slug}`;
 
                     return (
-                      <li key={entry.id} className={browseStyles.item}>
+                      <li key={entry.key} className={browseStyles.item}>
                         <div className={browseStyles.itemTitleRow}>
                           <div className={browseStyles.itemTitleLeft}>
                             <span
@@ -189,11 +152,11 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
                               {entry.entryType}
                             </span>
                             <Link className={browseStyles.itemTitle} href={href}>
-                              {entry.displayTitle}
+                              {entry.title}
                             </Link>
                           </div>
                           <span className={browseStyles.itemSlug}>
-                            Updated {formatDate(entry.updatedAt)}
+                            Updated {formatDate(new Date(entry.updatedAt))}
                           </span>
                         </div>
 
@@ -201,11 +164,11 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
                           <p className={browseStyles.itemSummary}>{entry.summaryText}</p>
                         ) : null}
 
-                        {entryTags.length ? (
+                        {entry.tags.length ? (
                           <div className={browseStyles.itemTags}>
-                            {entryTags.map((tag) => (
+                            {entry.tags.map((tag) => (
                               <Link
-                                key={tag.id}
+                                key={tag.slug}
                                 href={`/tags/${tag.slug}`}
                                 className={browseStyles.tag}
                               >

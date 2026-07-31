@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 import type { NextRequest } from 'next/server';
 
-import { hitConvexRateLimit } from '@synac/db';
+import { api, getConvexClient, getServiceKey } from './convex';
 
 const SESSION_COOKIE = 'synac_session';
 
@@ -31,31 +31,14 @@ function getRateLimitKey(request: NextRequest): string {
   return `ua:${hash(ua)}`;
 }
 
-function getWindowStart(windowSeconds: number, nowMs: number): Date {
-  const windowMs = windowSeconds * 1000;
-  const startMs = nowMs - (nowMs % windowMs);
-  return new Date(startMs);
-}
-
+/** Limits per scope are configured in convex/rateLimit.ts. */
 export async function enforceRateLimit(input: {
   request: NextRequest;
-  scope: string;
-  limit: number;
-  windowSeconds: number;
-  key?: string;
-}): Promise<{ allowed: boolean; retryAfterSeconds: number; remaining: number }> {
-  const limit = Math.max(1, Math.floor(input.limit));
-  const windowSeconds = Math.max(1, Math.floor(input.windowSeconds));
-  const nowMs = Date.now();
-  const windowStart = getWindowStart(windowSeconds, nowMs);
-
-  const key = input.key?.trim() ? input.key.trim() : getRateLimitKey(input.request);
-
-  const bucket = await hitConvexRateLimit({ scope: input.scope, key, windowStart });
-
-  const elapsedSeconds = Math.floor((nowMs - windowStart.getTime()) / 1000);
-  const retryAfterSeconds = Math.max(0, windowSeconds - elapsedSeconds);
-  const remaining = Math.max(0, limit - bucket.count);
-
-  return { allowed: bucket.count <= limit, retryAfterSeconds, remaining };
+  scope: 'api_v1_search' | 'api_v1_view';
+}): Promise<{ allowed: boolean; retryAfterSeconds: number }> {
+  return getConvexClient().mutation(api.rateLimit.consume, {
+    serviceKey: getServiceKey(),
+    scope: input.scope,
+    key: getRateLimitKey(input.request),
+  });
 }

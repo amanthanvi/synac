@@ -33,7 +33,12 @@ export const bySlug = query({
 });
 
 export const entriesForTag = query({
-  args: { tagSlug: v.string(), page: v.number(), pageSize: v.number() },
+  args: {
+    tagSlug: v.string(),
+    entryType: v.optional(v.union(v.literal("TERM"), v.literal("ACRONYM"), v.null())),
+    page: v.number(),
+    pageSize: v.number(),
+  },
   handler: async (ctx, args) => {
     const page = Math.max(1, Math.min(10, Math.floor(args.page)));
     const pageSize = Math.max(1, Math.min(100, Math.floor(args.pageSize)));
@@ -41,12 +46,16 @@ export const entriesForTag = query({
       .query("entryTags")
       .withIndex("by_tagSlug_and_updatedAt", (q) => q.eq("tagSlug", args.tagSlug))
       .order("desc")
-      .take(page * pageSize + 1);
-    const pageLinks = links.slice((page - 1) * pageSize, page * pageSize);
-    const entries: EntrySummary[] = [];
-    for (const link of pageLinks) {
+      .take(1000);
+    let tagged = [];
+    for (const link of links) {
       const entry = await ctx.db.get(link.entryId);
-      if (!entry) continue;
+      if (entry) tagged.push(entry);
+    }
+    if (args.entryType) tagged = tagged.filter((entry) => entry.entryType === args.entryType);
+    const pageRows = tagged.slice((page - 1) * pageSize, page * pageSize);
+    const entries: EntrySummary[] = [];
+    for (const entry of pageRows) {
       entries.push({
         key: entry.key,
         entryType: entry.entryType,
@@ -58,6 +67,6 @@ export const entriesForTag = query({
         tags: await tagNames(ctx, entry.tagSlugs),
       });
     }
-    return { entries, hasMore: links.length > page * pageSize };
+    return { entries, hasMore: tagged.length > page * pageSize };
   },
 });

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-import { queryPublicConvex } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { PageHeader } from '@/components/PageHeader';
 
 import styles from '../_styles/Browse.module.css';
@@ -17,20 +16,7 @@ function formatDate(value: Date): string {
 }
 
 export default async function SourcesPage() {
-  const sources = await queryPublicConvex<
-    Array<{
-      id: string;
-      name: string;
-      sourceSlug: string;
-      baseUrl: string;
-      licenseType: string;
-      lastVerifiedAt: Date | null;
-      trustTier: string;
-      citationCount: number;
-      citationCountIsApproximate?: boolean;
-      maxAccessedAt: Date | null;
-    }>
-  >('listPublicSourcesWithStats');
+  const sources = await getConvexClient().query(api.sources.list, {});
 
   return (
     <>
@@ -42,24 +28,20 @@ export default async function SourcesPage() {
 
       {sources.length === 0 ? (
         <div className={styles.empty}>
-          No sources yet. Once ingest is configured, this page will list attribution requirements
-          per source.
+          No sources yet. The source registry lives in the open-source repository under
+          content/sources.
         </div>
       ) : (
         <ol className={styles.list}>
           {sources.map((source) => {
             return (
-              <li key={source.id} className={styles.item}>
+              <li key={source.slug} className={styles.item}>
                 <div className={styles.itemTitleRow}>
-                  <Link className={styles.itemTitle} href={`/sources/${source.sourceSlug}`}>
+                  <Link className={styles.itemTitle} href={`/sources/${source.slug}`}>
                     {source.name}
                   </Link>
                   <span className={styles.itemSlug}>
-                    {source.maxAccessedAt ? (
-                      <>Latest {formatDate(source.maxAccessedAt)}</>
-                    ) : (
-                      <>No citations yet</>
-                    )}
+                    Verified {formatDate(new Date(source.lastVerifiedAt))}
                   </span>
                 </div>
                 <p className={styles.itemSummary}>
@@ -70,13 +52,7 @@ export default async function SourcesPage() {
                 <div className={styles.itemTags}>
                   <span className={styles.tag}>{source.trustTier.replace('_', ' ')}</span>
                   <span className={styles.tag}>
-                    {source.citationCount.toLocaleString()}
-                    {source.citationCountIsApproximate ? '+' : ''} citations
-                  </span>
-                  <span className={styles.tag}>
-                    {source.lastVerifiedAt
-                      ? `Verified ${formatDate(source.lastVerifiedAt)}`
-                      : 'Unverified'}
+                    {source.citedEntryCount.toLocaleString()} cited entries
                   </span>
                 </div>
               </li>

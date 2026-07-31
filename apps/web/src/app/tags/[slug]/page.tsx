@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { permanentRedirect } from 'next/navigation';
 
-import { getPrismaClient, listPublishedEntriesForTag, resolveTagBySlug } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 
@@ -19,17 +17,16 @@ type TagPageProps = {
 
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const prisma = getPrismaClient();
-  const resolved = await resolveTagBySlug(prisma, { slug });
+  const tag = await getConvexClient().query(api.tags.bySlug, { slug });
 
-  if (!resolved) {
+  if (!tag) {
     return { title: 'Tag not found' };
   }
 
   return {
-    title: resolved.tag.name,
-    description: resolved.tag.description ?? `SynAc entries tagged “${resolved.tag.name}”.`,
-    alternates: { canonical: `/tags/${resolved.canonicalSlug}` },
+    title: tag.name,
+    description: tag.description ?? `SynAc entries tagged “${tag.name}”.`,
+    alternates: { canonical: `/tags/${tag.slug}` },
   };
 }
 
@@ -56,10 +53,10 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const pageSize = 50;
 
-  const prisma = getPrismaClient();
-  const resolved = await resolveTagBySlug(prisma, { slug });
+  const client = getConvexClient();
+  const tag = await client.query(api.tags.bySlug, { slug });
 
-  if (!resolved) {
+  if (!tag) {
     return (
       <>
         <PageHeader badge="Tag" title="Not found" subtitle="This tag does not exist." />
@@ -70,53 +67,41 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     );
   }
 
-  if (resolved.needsRedirect) {
-    permanentRedirect(`/tags/${resolved.canonicalSlug}`);
-  }
-
-  const entries = await listPublishedEntriesForTag(prisma, {
-    tagId: resolved.tag.id,
-    entryType,
+  const { entries, hasMore } = await client.query(api.tags.entriesForTag, {
+    tagSlug: tag.slug,
+    entryType: entryType ?? null,
     page,
     pageSize,
   });
 
-  const baseHref = `/tags/${resolved.tag.slug}${
-    entryType ? `?type=${encodeURIComponent(entryType)}` : ''
-  }`;
-  const prevHref =
-    page > 1
-      ? `${baseHref}${entryType ? '&' : '?'}page=${page - 1}`
-      : undefined;
-  const nextHref =
-    entries.length === pageSize
-      ? `${baseHref}${entryType ? '&' : '?'}page=${page + 1}`
-      : undefined;
+  const baseHref = `/tags/${tag.slug}${entryType ? `?type=${encodeURIComponent(entryType)}` : ''}`;
+  const prevHref = page > 1 ? `${baseHref}${entryType ? '&' : '?'}page=${page - 1}` : undefined;
+  const nextHref = hasMore ? `${baseHref}${entryType ? '&' : '?'}page=${page + 1}` : undefined;
 
   return (
     <>
       <PageHeader
         badge="Tag"
-        title={resolved.tag.name}
-        subtitle={resolved.tag.description ?? 'Published entries associated with this tag.'}
+        title={tag.name}
+        subtitle={tag.description ?? 'Published entries associated with this tag.'}
       />
 
       <nav className={tagStyles.filters} aria-label="Entry type filter">
         <Link
           className={`${tagStyles.chip} ${!entryType ? tagStyles.chipActive : ''}`}
-          href={`/tags/${resolved.tag.slug}`}
+          href={`/tags/${tag.slug}`}
         >
           All
         </Link>
         <Link
           className={`${tagStyles.chip} ${entryType === 'TERM' ? tagStyles.chipActive : ''}`}
-          href={`/tags/${resolved.tag.slug}?type=TERM`}
+          href={`/tags/${tag.slug}?type=TERM`}
         >
           Terms
         </Link>
         <Link
           className={`${tagStyles.chip} ${entryType === 'ACRONYM' ? tagStyles.chipActive : ''}`}
-          href={`/tags/${resolved.tag.slug}?type=ACRONYM`}
+          href={`/tags/${tag.slug}?type=ACRONYM`}
         >
           Acronyms
         </Link>
@@ -128,7 +113,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         <>
           <ol className={browseStyles.list}>
             {entries.map((entry) => (
-              <li key={entry.id} className={browseStyles.item}>
+              <li key={entry.key} className={browseStyles.item}>
                 <div className={browseStyles.itemTitleRow}>
                   <div className={browseStyles.itemTitleLeft}>
                     <span
@@ -143,16 +128,14 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
                     <Link
                       className={browseStyles.itemTitle}
                       href={
-                        entry.entryType === 'TERM'
-                          ? `/term/${entry.primarySlug}`
-                          : `/acronym/${entry.primarySlug}`
+                        entry.entryType === 'TERM' ? `/term/${entry.slug}` : `/acronym/${entry.slug}`
                       }
                     >
-                      {entry.displayTitle}
+                      {entry.title}
                     </Link>
                   </div>
                   <span className={browseStyles.itemSlug}>
-                    Updated {formatDate(entry.updatedAt)}
+                    Updated {formatDate(new Date(entry.updatedAt))}
                   </span>
                 </div>
                 {entry.summaryText ? (

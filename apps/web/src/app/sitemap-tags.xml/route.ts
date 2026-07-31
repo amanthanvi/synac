@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { queryPublicConvex } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
@@ -9,14 +8,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const siteUrl = getSiteUrl();
-  const tags = await queryPublicConvex<Array<{ slug: string; updatedAt: Date }>>('listSitemapTags');
+  const tags = await getConvexClient().query(api.sitemap.tagSlugs, {});
 
-  const xml = renderUrlSet(
-    tags.map((t) => ({
-      loc: `${siteUrl}/tags/${t.slug}`,
-      lastmod: t.updatedAt,
-    })),
-  );
+  const xml = renderUrlSet(tags.map((tag) => ({ loc: `${siteUrl}/tags/${tag.slug}` })));
 
   return new NextResponse(xml, {
     headers: {

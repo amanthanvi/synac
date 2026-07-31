@@ -10,6 +10,7 @@ export const relationshipType = v.union(
 
 export const citationValidator = v.object({
   sourceSlug: v.string(),
+  sourceName: v.string(),
   url: v.string(),
   documentTitle: v.optional(v.string()),
   citationText: v.optional(v.string()),

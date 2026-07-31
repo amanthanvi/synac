@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { getPrismaClient, searchPublishedEntries } from '@synac/db';
+import { api, getConvexClient } from '@/lib/convex';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
@@ -124,13 +124,12 @@ async function Results({
   page: number;
   entryType?: 'TERM' | 'ACRONYM';
 }) {
-  const prisma = getPrismaClient();
   const pageSize = 20;
-  const results = await searchPublishedEntries(prisma, {
+  const results = await getConvexClient().query(api.search.search, {
     query,
     page,
     pageSize,
-    entryType,
+    entryType: entryType ?? null,
   });
 
   if (results.length === 0) {
@@ -152,7 +151,7 @@ async function Results({
     <>
       <ol className={`${styles.list} ${pageStyles.resultsList}`}>
         {results.map((r) => (
-          <li key={r.id} className={styles.item}>
+          <li key={r.key} className={styles.item}>
             <div className={styles.itemTitleRow}>
               <div className={styles.itemTitleLeft}>
                 <span
@@ -166,15 +165,15 @@ async function Results({
                   className={styles.itemTitle}
                   href={
                     r.entryType === 'TERM'
-                      ? `/term/${r.primarySlug}`
-                      : `/acronym/${r.primarySlug}`
+                      ? `/term/${r.slug}`
+                      : `/acronym/${r.slug}`
                   }
                 >
-                  {r.displayTitle}
+                  {r.title}
                 </Link>
               </div>
               <span className={styles.itemSlug}>
-                /{r.entryType === 'TERM' ? 'term' : 'acronym'}/{r.primarySlug}
+                /{r.entryType === 'TERM' ? 'term' : 'acronym'}/{r.slug}
               </span>
             </div>
             {r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 ? (

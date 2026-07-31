@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
+import { tagNames } from "./publicEntries";
 
 function publicSource(source: {
   slug: string;
@@ -71,6 +72,7 @@ export const citedEntries = query({
         title: entry.title,
         summaryText: entry.summaryText ?? null,
         updatedAt: entry.updatedAt,
+        tags: await tagNames(ctx, entry.tagSlugs),
       });
     }
     return { entries, hasMore: links.length > page * pageSize };

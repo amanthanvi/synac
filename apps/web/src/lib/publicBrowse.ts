@@ -1,4 +1,4 @@
-import { queryPublicConvex } from '@synac/db';
+import { api, getConvexClient } from './convex';
 
 export type BrowseType = 'TERM' | 'ACRONYM';
 export type BrowseSort = 'title' | 'updated';
@@ -40,18 +40,14 @@ export async function loadBrowsePageData(input: {
   sort: BrowseSort;
   query: string;
   rawTag: string;
-}): Promise<{
-  activeTag: { id: string; name: string; slug: string } | null;
-  tags: Array<{ id: string; name: string; slug: string }>;
-  entries: Array<{
-    id: string;
-    entryType: BrowseType;
-    displayTitle: string;
-    primarySlug: string;
-    summaryText: string | null;
-    updatedAt: Date;
-    entryTags: Array<{ tag: { id: string; name: string; slug: string } }>;
-  }>;
-}> {
-  return queryPublicConvex('loadBrowsePageData', input);
+}) {
+  return getConvexClient().query(api.publicBrowse.browse, {
+    entryType: input.entryType,
+    letter: input.letter,
+    page: input.page,
+    pageSize: input.pageSize,
+    sort: input.sort,
+    query: input.query,
+    tagSlug: input.rawTag.trim() ? input.rawTag.trim().toLowerCase() : null,
+  });
 }

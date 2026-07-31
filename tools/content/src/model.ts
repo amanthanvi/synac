@@ -197,6 +197,7 @@ export type RelationshipType = (typeof RELATIONSHIP_TYPES)[number];
 
 export type CompiledCitation = {
   sourceSlug: string;
+  sourceName: string;
   url: string;
   documentTitle: string | undefined;
   citationText: string | undefined;

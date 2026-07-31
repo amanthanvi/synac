@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getPrismaClient, searchPublishedEntries } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { logger } from '@/lib/logger';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
@@ -46,7 +45,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const rate = await enforceRateLimit({ request, scope: 'api_v1_search', limit: 60, windowSeconds: 60 });
+    const rate = await enforceRateLimit({ request, scope: 'api_v1_search' });
     if (!rate.allowed) {
       logger.warn('api.search.rate_limited', { requestId, retryAfterSeconds: rate.retryAfterSeconds });
       return NextResponse.json(
@@ -58,11 +57,10 @@ export async function GET(request: NextRequest) {
     const entryType = parseEntryType(url.searchParams.get('type'));
     const tag = url.searchParams.get('tag') ?? undefined;
 
-    const prisma = getPrismaClient();
-    const results = await searchPublishedEntries(prisma, {
+    const results = await getConvexClient().query(api.search.search, {
       query: q,
-      entryType,
-      tagSlug: tag?.trim() ? tag.trim().toLowerCase() : undefined,
+      entryType: entryType ?? null,
+      tagSlug: tag?.trim() ? tag.trim().toLowerCase() : null,
       page,
       pageSize: 20,
     });
@@ -81,15 +79,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       results: results.map((r) => ({
-        id: r.id,
+        id: r.key,
         entryType: r.entryType,
-        displayTitle: r.displayTitle,
-        primarySlug: r.primarySlug,
+        displayTitle: r.title,
+        primarySlug: r.slug,
         summaryText: r.summaryText,
         snippet: r.snippet,
         senseCount: r.senseCount,
         senseSummary: r.senseSummary,
-        url: r.entryType === 'TERM' ? `/term/${r.primarySlug}` : `/acronym/${r.primarySlug}`,
+        url: r.entryType === 'TERM' ? `/term/${r.slug}` : `/acronym/${r.slug}`,
         score: r.score,
         bucket: r.bucket,
       })),

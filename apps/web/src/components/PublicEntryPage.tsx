@@ -9,16 +9,13 @@ import { ViewTracker } from '@/components/ViewTracker';
 import { KeyValueList } from '@/components/ui/KeyValue';
 import styles from '@/app/_styles/Entry.module.css';
 import {
-  buildSenseCitations,
+  dedupeSenseCitations,
   formatEntryDate,
-  type PublicEntryExample,
+  senseAnchorId,
+  type PublicEntryPageData,
   type PublicEntryRelation,
   type PublicEntrySense,
-  type PublicEntryTagLink,
-  type PublicEntryPageData,
-  type PublicSenseProvenance,
 } from '@/lib/publicEntryPage';
-import { markdownToText } from '@/lib/text';
 
 type PublicEntryPageProps = {
   entryType: 'TERM' | 'ACRONYM';
@@ -28,11 +25,9 @@ type PublicEntryPageProps = {
 function RelationList({
   title,
   relationships,
-  summaryById,
 }: {
   title: string;
   relationships: PublicEntryRelation[];
-  summaryById: Map<string, string | null>;
 }) {
   if (relationships.length === 0) return null;
 
@@ -41,17 +36,15 @@ function RelationList({
       <h2 className={styles.sectionTitle}>{title}</h2>
       <ul className={styles.relationList}>
         {relationships.map((relationship) => {
-          const href =
-            relationship.otherEntry.entryType === 'TERM'
-              ? `/term/${relationship.otherEntry.primarySlug}`
-              : `/acronym/${relationship.otherEntry.primarySlug}`;
+          const other = relationship.entry;
+          const href = other.entryType === 'TERM' ? `/term/${other.slug}` : `/acronym/${other.slug}`;
           return (
-            <li key={relationship.otherEntry.id}>
+            <li key={other.key}>
               <EntryPreviewLink
                 href={href}
-                title={relationship.otherEntry.displayTitle}
-                entryType={relationship.otherEntry.entryType}
-                summary={summaryById.get(relationship.otherEntry.id) ?? null}
+                title={other.title}
+                entryType={other.entryType}
+                summary={other.summaryText}
               />
             </li>
           );
@@ -61,11 +54,11 @@ function RelationList({
   );
 }
 
-function TagList({ entryTags }: { entryTags: PublicEntryTagLink[] }) {
+function TagList({ tags }: { tags: Array<{ slug: string; name: string }> }) {
   return (
     <div className={styles.tags}>
-      {entryTags.map(({ tag }) => (
-        <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
+      {tags.map((tag) => (
+        <Link key={tag.slug} href={`/tags/${tag.slug}`} className={styles.tag}>
           {tag.name}
         </Link>
       ))}
@@ -77,39 +70,23 @@ function SenseCard({
   sense,
   entryType,
   openByDefault,
-  provenanceItems,
 }: {
   sense: PublicEntrySense;
   entryType: 'TERM' | 'ACRONYM';
   openByDefault: boolean;
-  provenanceItems: PublicSenseProvenance[];
 }) {
-  const citations = buildSenseCitations(provenanceItems);
-  const excerpt = (() => {
-    const raw = sense.definitionText
-      ? sense.definitionText
-      : sense.definitionMd
-        ? markdownToText(sense.definitionMd)
-        : '';
-    const cleaned = raw.replace(/\s+/g, ' ').trim();
-    return cleaned || 'No definition yet.';
-  })();
+  const citations = dedupeSenseCitations(sense.citations);
+  const excerpt = sense.definitionText.replace(/\s+/g, ' ').trim() || 'No definition yet.';
 
   return (
-    <details
-      id={`sense-${sense.id}`}
-      className={styles.senseCard}
-      open={openByDefault}
-      data-sense
-    >
+    <details id={senseAnchorId(sense)} className={styles.senseCard} open={openByDefault} data-sense>
       <summary className={styles.senseSummary}>
         <div className={styles.senseSummaryTop}>
-          <span className={styles.senseLabel}>
-            {sense.senseLabel ?? `Sense ${sense.senseOrder + 1}`}
-          </span>
+          <span className={styles.senseLabel}>{sense.label ?? `Sense ${sense.order + 1}`}</span>
           {entryType === 'ACRONYM' && sense.expandedForm ? (
             <span className={styles.senseExpanded}>{sense.expandedForm}</span>
           ) : null}
+          {sense.isEditorial ? <span className={styles.senseExpanded}>Editorial</span> : null}
           <span className={styles.senseChevron} aria-hidden="true">
             ▾
           </span>
@@ -120,27 +97,20 @@ function SenseCard({
       <div className={styles.senseContent}>
         <div className={styles.senseContentInner}>
           <div className={styles.senseBody}>
-            {sense.definitionMd ? (
-              <Markdown>{sense.definitionMd}</Markdown>
-            ) : sense.definitionText ? (
-              <p>{sense.definitionText}</p>
-            ) : (
-              <p className={styles.senseMuted}>No definition yet.</p>
-            )}
+            <Markdown>{sense.definitionMd}</Markdown>
           </div>
 
           {citations.length ? (
             <div className={styles.inlineSources} aria-label="Sources">
-              {citations.map(({ citation, contentMode }) => (
+              {citations.map((citation) => (
                 <CitationPill
-                  key={citation.id}
-                  sourceName={citation.source.name}
+                  key={`${citation.sourceSlug}:${citation.url}`}
+                  sourceName={citation.sourceName}
                   url={citation.url}
-                  accessedAtLabel={formatEntryDate(citation.accessedAt)}
-                  documentTitle={citation.sourceDocument.title}
-                  licenseNote={citation.licenseNote}
+                  accessedAtLabel={formatEntryDate(new Date(citation.accessedAt))}
+                  documentTitle={citation.documentTitle ?? null}
+                  licenseNote={citation.licenseNote ?? null}
                   attributionText={citation.attributionText}
-                  contentMode={contentMode}
                 />
               ))}
             </div>
@@ -150,40 +120,41 @@ function SenseCard({
             <div className={styles.examples}>
               <div className={styles.sectionTitle}>Examples</div>
               <ul className={styles.examplesList}>
-                {sense.examples.map((example: PublicEntryExample) => (
-                  <li key={example.id} className={styles.exampleItem}>
-                    {example.exampleMd ? (
-                      <Markdown>{example.exampleMd}</Markdown>
-                    ) : example.exampleText ? (
-                      <p>{example.exampleText}</p>
-                    ) : null}
+                {sense.examples.map((example) => (
+                  <li key={example.md} className={styles.exampleItem}>
+                    <Markdown>{example.md}</Markdown>
                   </li>
                 ))}
               </ul>
             </div>
           ) : null}
 
+          {sense.isEditorial && sense.editorialRationale ? (
+            <div className={styles.bib} aria-label="Editorial note">
+              <div className={styles.sectionTitle}>Editorial note</div>
+              <div className={styles.senseMuted}>{sense.editorialRationale}</div>
+            </div>
+          ) : null}
+
           <div className={styles.bib} aria-label="Bibliography">
             <div className={styles.sectionTitle}>Bibliography</div>
             {citations.length === 0 ? (
-              <div className={styles.senseMuted}>No references recorded for this sense yet.</div>
+              <div className={styles.senseMuted}>
+                {sense.isEditorial
+                  ? 'Editorial sense — maintained in the SynAc repository.'
+                  : 'No references recorded for this sense yet.'}
+              </div>
             ) : (
               <ol className={styles.bibList}>
-                {citations.map(({ citation, contentMode }) => (
-                  <li key={citation.id} className={styles.bibItem}>
-                    <div className={styles.bibSource}>{citation.source.name}</div>
+                {citations.map((citation) => (
+                  <li key={`${citation.sourceSlug}:${citation.url}`} className={styles.bibItem}>
+                    <div className={styles.bibSource}>{citation.sourceName}</div>
                     <div className={styles.bibMeta}>
-                      <span>Accessed {formatEntryDate(citation.accessedAt)}</span>
-                      <span>
-                        {contentMode === 'QUOTED'
-                          ? 'Quoted'
-                          : contentMode === 'PARAPHRASED'
-                            ? 'Paraphrased'
-                            : 'Summarized'}
-                      </span>
+                      <span>Accessed {formatEntryDate(new Date(citation.accessedAt))}</span>
+                      {citation.citationText ? <span>{citation.citationText}</span> : null}
                     </div>
-                    {citation.sourceDocument.title ? (
-                      <div className={styles.bibDocTitle}>{citation.sourceDocument.title}</div>
+                    {citation.documentTitle ? (
+                      <div className={styles.bibDocTitle}>{citation.documentTitle}</div>
                     ) : null}
                     <a
                       className={styles.bibUrl}
@@ -212,10 +183,11 @@ function SenseCard({
 
 export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
   const { entry } = data;
+  const updatedAt = new Date(entry.updatedAt);
 
   return (
     <>
-      <ViewTracker entryId={entry.id} />
+      <ViewTracker entryKey={entry.key} />
       <div className={styles.layout}>
         <div className={styles.main}>
           <header className={styles.header}>
@@ -228,7 +200,7 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
                 {entryType}
               </span>
             </div>
-            <h1 className={styles.title}>{entry.displayTitle}</h1>
+            <h1 className={styles.title}>{entry.title}</h1>
             {entry.summaryMd ? (
               <div className={styles.summary}>
                 <Markdown>{entry.summaryMd}</Markdown>
@@ -243,8 +215,8 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
                   {
                     label: 'Updated',
                     value: (
-                      <time className={styles.updated} dateTime={entry.updatedAt.toISOString()}>
-                        {formatEntryDate(entry.updatedAt)}
+                      <time className={styles.updated} dateTime={updatedAt.toISOString()}>
+                        {formatEntryDate(updatedAt)}
                       </time>
                     ),
                   },
@@ -283,11 +255,11 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
                         },
                       ]
                     : []),
-                  ...(entry.entryTags.length
+                  ...(entry.tags.length
                     ? [
                         {
                           label: 'Tags',
-                          value: <TagList entryTags={entry.entryTags} />,
+                          value: <TagList tags={entry.tags} />,
                         },
                       ]
                     : []),
@@ -304,17 +276,14 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
               <div data-senses>
                 <EntrySenseHashSync collapseOthers={entry.senses.length >= 10} />
                 <div className={styles.senseList}>
-                  {entry.senses.map((sense, index) => {
-                    return (
-                      <SenseCard
-                        key={sense.id}
-                        sense={sense}
-                        entryType={entryType}
-                        openByDefault={entry.senses.length === 1 || index === 0}
-                        provenanceItems={data.provenanceBySenseId.get(sense.id) ?? []}
-                      />
-                    );
-                  })}
+                  {entry.senses.map((sense, index) => (
+                    <SenseCard
+                      key={sense.key}
+                      sense={sense}
+                      entryType={entryType}
+                      openByDefault={entry.senses.length === 1 || index === 0}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -322,16 +291,8 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
 
           {data.related.length || data.seeAlso.length ? (
             <section className={styles.relations} aria-label="Related entries">
-              <RelationList
-                title="Related"
-                relationships={data.related}
-                summaryById={data.otherSummaryById}
-              />
-              <RelationList
-                title="See also"
-                relationships={data.seeAlso}
-                summaryById={data.otherSummaryById}
-              />
+              <RelationList title="Related" relationships={data.related} />
+              <RelationList title="See also" relationships={data.seeAlso} />
             </section>
           ) : null}
         </div>

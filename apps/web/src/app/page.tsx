@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-import { getPrismaClient, listRecentPublishedEntries, queryPublicConvex } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { SearchForm } from '@/components/SearchForm';
 import { ButtonLink } from '@/components/ui/Button';
 
@@ -19,23 +18,10 @@ function formatDate(value: Date): string {
 }
 
 export default async function Home() {
-  const prisma = getPrismaClient();
-  const recent = await listRecentPublishedEntries(prisma, { page: 1, pageSize: 8 });
-
-  const entryIds = recent.map((e) => e.id);
-  const entryTags = entryIds.length
-    ? await queryPublicConvex<Array<{ entryId: string; tag: { id: string; name: string; slug: string } }>>(
-        'listEntryTagsForEntries',
-        { entryIds },
-      )
-    : [];
-
-  const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();
-  for (const row of entryTags) {
-    const list = tagsByEntryId.get(row.entryId) ?? [];
-    list.push(row.tag);
-    tagsByEntryId.set(row.entryId, list);
-  }
+  const { entries: recent } = await getConvexClient().query(api.publicEntries.listRecent, {
+    page: 1,
+    pageSize: 8,
+  });
 
   return (
     <div className={styles.wrap}>
@@ -76,13 +62,10 @@ export default async function Home() {
           <ol className={browseStyles.list}>
             {recent.map((entry) => {
               const href =
-                entry.entryType === 'TERM'
-                  ? `/term/${entry.primarySlug}`
-                  : `/acronym/${entry.primarySlug}`;
-              const entryTags = tagsByEntryId.get(entry.id) ?? [];
+                entry.entryType === 'TERM' ? `/term/${entry.slug}` : `/acronym/${entry.slug}`;
 
               return (
-                <li key={entry.id} className={browseStyles.item}>
+                <li key={entry.key} className={browseStyles.item}>
                   <div className={browseStyles.itemTitleRow}>
                     <div className={browseStyles.itemTitleLeft}>
                       <span
@@ -95,20 +78,22 @@ export default async function Home() {
                         {entry.entryType}
                       </span>
                       <Link className={browseStyles.itemTitle} href={href}>
-                        {entry.displayTitle}
+                        {entry.title}
                       </Link>
                     </div>
-                    <span className={browseStyles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
+                    <span className={browseStyles.itemSlug}>
+                      Updated {formatDate(new Date(entry.updatedAt))}
+                    </span>
                   </div>
 
                   {entry.summaryText ? (
                     <p className={browseStyles.itemSummary}>{entry.summaryText}</p>
                   ) : null}
 
-                  {entryTags.length ? (
+                  {entry.tags.length ? (
                     <div className={browseStyles.itemTags}>
-                      {entryTags.map((tag) => (
-                        <Link key={tag.id} href={`/tags/${tag.slug}`} className={browseStyles.tag}>
+                      {entry.tags.map((tag) => (
+                        <Link key={tag.slug} href={`/tags/${tag.slug}`} className={browseStyles.tag}>
                           {tag.name}
                         </Link>
                       ))}

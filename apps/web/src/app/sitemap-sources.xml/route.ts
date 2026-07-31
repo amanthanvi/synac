@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { queryPublicConvex } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
@@ -9,12 +8,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const siteUrl = getSiteUrl();
-  const sources = await queryPublicConvex<Array<{ sourceSlug: string; updatedAt: Date }>>('listSitemapSources');
+  const sources = await getConvexClient().query(api.sitemap.sourceSlugs, {});
 
   const xml = renderUrlSet(
-    sources.map((s) => ({
-      loc: `${siteUrl}/sources/${s.sourceSlug}`,
-      lastmod: s.updatedAt,
+    sources.map((source) => ({
+      loc: `${siteUrl}/sources/${source.slug}`,
+      lastmod: new Date(source.lastVerifiedAt),
     })),
   );
 

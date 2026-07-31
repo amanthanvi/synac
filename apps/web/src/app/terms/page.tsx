@@ -37,7 +37,7 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
   const sort = params.sort === 'updated' ? 'updated' : 'title';
   const query = (params.q ?? '').trim();
   const rawTag = (params.tag ?? '').trim().toLowerCase();
-  const { activeTag, tags, entries } = await loadBrowsePageData({
+  const { activeTag, tags, entries, hasMore } = await loadBrowsePageData({
     entryType: 'TERM',
     letter,
     page,
@@ -59,7 +59,7 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
         })
       : undefined;
   const nextHref =
-    entries.length === pageSize
+    hasMore
       ? buildBrowseHref({
           basePath: '/terms',
           letter,
@@ -114,23 +114,23 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
         <>
           <ol className={styles.list}>
             {entries.map((entry) => (
-              <li key={entry.id} className={styles.item}>
+              <li key={entry.key} className={styles.item}>
                 <div className={styles.itemTitleRow}>
                   <div className={styles.itemTitleLeft}>
                     <span className={`${styles.typeBadge} ${styles.typeBadgeTerm}`}>TERM</span>
-                    <Link className={styles.itemTitle} href={`/term/${entry.primarySlug}`}>
-                      {entry.displayTitle}
+                    <Link className={styles.itemTitle} href={`/term/${entry.slug}`}>
+                      {entry.title}
                     </Link>
                   </div>
-                  <span className={styles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
+                  <span className={styles.itemSlug}>Updated {formatDate(new Date(entry.updatedAt))}</span>
                 </div>
                 {entry.summaryText ? (
                   <p className={styles.itemSummary}>{entry.summaryText}</p>
                 ) : null}
-                {entry.entryTags.length ? (
+                {entry.tags.length ? (
                   <div className={styles.itemTags}>
-                    {entry.entryTags.map(({ tag }) => (
-                      <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
+                    {entry.tags.map((tag) => (
+                      <Link key={tag.slug} href={`/tags/${tag.slug}`} className={styles.tag}>
                         {tag.name}
                       </Link>
                     ))}

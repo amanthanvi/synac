@@ -185,6 +185,7 @@ export function compileContent(input: ContentInput): CompileResult {
           ? [
               {
                 sourceSlug: source.slug,
+                sourceName: source.name,
                 url: document.url,
                 documentTitle: document.title,
                 citationText: sense.citation.citationText,

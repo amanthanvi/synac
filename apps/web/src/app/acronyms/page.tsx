@@ -37,7 +37,7 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
   const sort = params.sort === 'updated' ? 'updated' : 'title';
   const query = (params.q ?? '').trim();
   const rawTag = (params.tag ?? '').trim().toLowerCase();
-  const { activeTag, tags, entries } = await loadBrowsePageData({
+  const { activeTag, tags, entries, hasMore } = await loadBrowsePageData({
     entryType: 'ACRONYM',
     letter,
     page,
@@ -59,7 +59,7 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
         })
       : undefined;
   const nextHref =
-    entries.length === pageSize
+    hasMore
       ? buildBrowseHref({
           basePath: '/acronyms',
           letter,
@@ -114,25 +114,25 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
         <>
           <ol className={styles.list}>
             {entries.map((entry) => (
-              <li key={entry.id} className={styles.item}>
+              <li key={entry.key} className={styles.item}>
                 <div className={styles.itemTitleRow}>
                   <div className={styles.itemTitleLeft}>
                     <span className={`${styles.typeBadge} ${styles.typeBadgeAcronym}`}>
                       ACRONYM
                     </span>
-                    <Link className={styles.itemTitle} href={`/acronym/${entry.primarySlug}`}>
-                      {entry.displayTitle}
+                    <Link className={styles.itemTitle} href={`/acronym/${entry.slug}`}>
+                      {entry.title}
                     </Link>
                   </div>
-                  <span className={styles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
+                  <span className={styles.itemSlug}>Updated {formatDate(new Date(entry.updatedAt))}</span>
                 </div>
                 {entry.summaryText ? (
                   <p className={styles.itemSummary}>{entry.summaryText}</p>
                 ) : null}
-                {entry.entryTags.length ? (
+                {entry.tags.length ? (
                   <div className={styles.itemTags}>
-                    {entry.entryTags.map(({ tag }) => (
-                      <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
+                    {entry.tags.map((tag) => (
+                      <Link key={tag.slug} href={`/tags/${tag.slug}`} className={styles.tag}>
                         {tag.name}
                       </Link>
                     ))}

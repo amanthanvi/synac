@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { ClerkProvider } from '@clerk/nextjs';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 
@@ -43,21 +42,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isClerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
   const nonce = (await headers()).get('x-nonce') ?? undefined;
-
-  const content = (
-    <>
-      <a className="srOnly" href="#content">
-        Skip to content
-      </a>
-      <SiteHeader />
-      <main id="content">
-        <PageShell>{children}</PageShell>
-      </main>
-      <SiteFooter />
-    </>
-  );
 
   return (
     <html
@@ -69,13 +54,14 @@ export default async function RootLayout({
         <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
-        {isClerkConfigured ? (
-          <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-up" dynamic>
-            {content}
-          </ClerkProvider>
-        ) : (
-          content
-        )}
+        <a className="srOnly" href="#content">
+          Skip to content
+        </a>
+        <SiteHeader />
+        <main id="content">
+          <PageShell>{children}</PageShell>
+        </main>
+        <SiteFooter />
       </body>
     </html>
   );

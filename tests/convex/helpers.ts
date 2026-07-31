@@ -31,6 +31,7 @@ export function makeEntryRow(overrides: Record<string, unknown> = {}) {
         citations: [
           {
             sourceSlug: 'rfc4949',
+            sourceName: 'RFC 4949',
             url: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
             attributionText: 'RFC 4949, IETF',
             accessedAt: Date.parse('2026-07-01T00:00:00Z'),

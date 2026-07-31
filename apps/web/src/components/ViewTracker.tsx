@@ -3,14 +3,14 @@
 import { useEffect } from 'react';
 
 type ViewTrackerProps = {
-  entryId: string;
+  entryKey: string;
 };
 
-export function ViewTracker({ entryId }: ViewTrackerProps) {
+export function ViewTracker({ entryKey }: ViewTrackerProps) {
   useEffect(() => {
-    if (!entryId) return;
+    if (!entryKey) return;
 
-    const payload = JSON.stringify({ entryId });
+    const payload = JSON.stringify({ entryKey });
 
     if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
       const blob = new Blob([payload], { type: 'application/json' });
@@ -24,8 +24,7 @@ export function ViewTracker({ entryId }: ViewTrackerProps) {
       body: payload,
       keepalive: true,
     }).catch(() => {});
-  }, [entryId]);
+  }, [entryKey]);
 
   return null;
 }
-

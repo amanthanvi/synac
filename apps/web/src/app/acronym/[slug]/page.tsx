@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 import { PublicEntryPage } from '@/components/PublicEntryPage';
-import { getPrismaClient, resolvePublishedEntryBySlug } from '@synac/db';
+import { api, getConvexClient } from '@/lib/convex';
 import { loadPublicEntryPageData } from '@/lib/publicEntryPage';
 
 export const revalidate = 300;
@@ -10,23 +10,23 @@ type AcronymEntryPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export async function generateMetadata({
-  params,
-}: AcronymEntryPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: AcronymEntryPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const prisma = getPrismaClient();
-  const resolved = await resolvePublishedEntryBySlug(prisma, { entryType: 'ACRONYM', slug });
+  const page = await getConvexClient().query(api.publicEntries.getEntryPage, {
+    entryType: 'ACRONYM',
+    slug: slug.trim().toLowerCase(),
+  });
 
-  if (!resolved) {
+  if (!page) {
     return { title: 'Not found' };
   }
 
   return {
-    title: resolved.entry.displayTitle,
+    title: page.entry.title,
     description:
-      resolved.entry.summaryText ??
-      `SynAc entry for the cybersecurity acronym “${resolved.entry.displayTitle}”.`,
-    alternates: { canonical: `/acronym/${resolved.canonicalSlug}` },
+      page.entry.summaryText ??
+      `SynAc entry for the cybersecurity acronym “${page.entry.title}”.`,
+    alternates: { canonical: `/acronym/${page.entry.slug}` },
   };
 }
 
