@@ -1,16 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import {
-  getPrismaClient,
-  getSearchIndexCoverage,
-  searchPublishedEntries,
-} from '@synac/db';
+import { getPrismaClient, searchPublishedEntries } from '@synac/db';
 
 import { logger } from '@/lib/logger';
-import {
-  shouldAuditSearchIndexCoverage,
-  logSearchIndexCoverage,
-} from '@/lib/observability';
 import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
@@ -74,38 +66,6 @@ export async function GET(request: NextRequest) {
       page,
       pageSize: 20,
     });
-
-    const durationAfterSearchMs = Date.now() - startMs;
-    if (
-      shouldAuditSearchIndexCoverage({
-        query: q,
-        page,
-        durationMs: durationAfterSearchMs,
-        resultsCount: results.length,
-      })
-    ) {
-      const prismaClient = prisma;
-      const rid = requestId;
-      setImmediate(() => {
-        void (async () => {
-          try {
-            const coverage = await getSearchIndexCoverage(prismaClient, { limit: 10 });
-            if (coverage.missingEntryIds.length > 0 || coverage.orphanedEntryIds.length > 0) {
-              logSearchIndexCoverage({
-                location: 'api_v1_search',
-                publishedEntries: coverage.publishedEntries,
-                indexedEntries: coverage.indexedEntries,
-                missingEntryIds: coverage.missingEntryIds,
-                orphanedEntryIds: coverage.orphanedEntryIds,
-              });
-            }
-          } catch (coverageErr) {
-            const message = coverageErr instanceof Error ? coverageErr.message : String(coverageErr);
-            logger.warn('api.search.index_coverage_audit_failed', { requestId: rid, error: message });
-          }
-        })();
-      });
-    }
 
     const totalDurationMs = Date.now() - startMs;
 

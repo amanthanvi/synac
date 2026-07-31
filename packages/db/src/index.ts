@@ -191,23 +191,6 @@ export async function listPublishedRelationshipsForEntry(
     .slice(0, input.limit);
 }
 
-export async function getSearchIndexCoverage(
-  db: DbClientLike,
-  input?: { limit?: number },
-): Promise<{
-  publishedEntries: number;
-  indexedEntries: number;
-  missingEntryIds: string[];
-  orphanedEntryIds: string[];
-}> {
-  void input;
-  const [publishedEntries, indexedEntries] = await Promise.all([
-    db.entry.count({ where: { status: 'PUBLISHED', deletedAt: null } }),
-    db.entrySearch.count({}),
-  ]);
-  return { publishedEntries, indexedEntries, missingEntryIds: [], orphanedEntryIds: [] };
-}
-
 export async function rebuildSearchIndex(): Promise<unknown> {
   return rebuildConvexSearchIndex();
 }

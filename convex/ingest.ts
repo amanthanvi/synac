@@ -130,17 +130,3 @@ export const runQueuedIngest = internalMutation({
     return { processed: runs.length };
   },
 });
-
-export const promoteCompletedIngest = internalMutation({
-  args: {},
-  handler: async () => {
-    return { promotedRuns: 0, stagingDatabasePromotion: "replaced-by-convex-deployment-data" };
-  },
-});
-
-export const autoApplyTier1Ingest = internalMutation({
-  args: {},
-  handler: async () => {
-    return { applied: 0 };
-  },
-});
