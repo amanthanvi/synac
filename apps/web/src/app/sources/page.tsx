@@ -4,7 +4,8 @@ import { queryPublicConvex } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 
-import styles from '../_styles/Browse.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
+import styles from '../_styles/Tags.module.css';
 
 export const revalidate = 900;
 
@@ -33,57 +34,41 @@ export default async function SourcesPage() {
   >('listPublicSourcesWithStats');
 
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader
-        badge="Sources"
         title="Sources"
         subtitle="Registered sources with license notes and attribution requirements."
       />
 
       {sources.length === 0 ? (
-        <div className={styles.empty}>
+        <p className={styles.empty}>
           No sources yet. Once ingest is configured, this page will list attribution requirements
           per source.
-        </div>
+        </p>
       ) : (
         <ol className={styles.list}>
-          {sources.map((source) => {
-            return (
-              <li key={source.id} className={styles.item}>
-                <div className={styles.itemTitleRow}>
-                  <Link className={styles.itemTitle} href={`/sources/${source.sourceSlug}`}>
-                    {source.name}
-                  </Link>
-                  <span className={styles.itemSlug}>
-                    {source.maxAccessedAt ? (
-                      <>Latest {formatDate(source.maxAccessedAt)}</>
-                    ) : (
-                      <>No citations yet</>
-                    )}
-                  </span>
-                </div>
-                <p className={styles.itemSummary}>
-                  <span className={styles.metaStrong}>{source.baseUrl}</span>
-                  <span className={styles.metaSep}>·</span>
-                  <span className={styles.metaMuted}>{source.licenseType}</span>
-                </p>
-                <div className={styles.itemTags}>
-                  <span className={styles.tag}>{source.trustTier.replace('_', ' ')}</span>
-                  <span className={styles.tag}>
-                    {source.citationCount.toLocaleString()}
-                    {source.citationCountIsApproximate ? '+' : ''} citations
-                  </span>
-                  <span className={styles.tag}>
-                    {source.lastVerifiedAt
-                      ? `Verified ${formatDate(source.lastVerifiedAt)}`
-                      : 'Unverified'}
-                  </span>
-                </div>
-              </li>
-            );
-          })}
+          {sources.map((source) => (
+            <li key={source.id} className={styles.item}>
+              <div className={styles.itemTitleRow}>
+                <Link className={styles.itemTitle} href={`/sources/${source.sourceSlug}`}>
+                  {source.name}
+                </Link>
+                <span className={styles.itemSlug}>
+                  {source.citationCount.toLocaleString()}
+                  {source.citationCountIsApproximate ? '+' : ''} citations
+                </span>
+              </div>
+              <p className={styles.itemDesc}>
+                {source.licenseType} ·{' '}
+                {source.lastVerifiedAt
+                  ? `verified ${formatDate(source.lastVerifiedAt)}`
+                  : 'not yet verified'}
+                {source.maxAccessedAt ? ` · latest access ${formatDate(source.maxAccessedAt)}` : ''}
+              </p>
+            </li>
+          ))}
         </ol>
       )}
-    </>
+    </div>
   );
 }

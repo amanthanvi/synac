@@ -9,48 +9,41 @@ export const dynamic = 'force-dynamic';
 
 export default function AboutPage() {
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader
-        badge="About"
         title="About SynAc"
         subtitle="A cybersecurity glossary designed for practitioners: disambiguation, provenance, and attribution as first-class features."
       />
 
-      <div className={layoutStyles.narrow}>
-        <div className={proseStyles.prose}>
-          <p>
-            SynAc is a public reference for cybersecurity terms and acronyms. The goal is simple:
-            help you answer “what does this mean here?” quickly, with enough context to trust the
-            result.
-          </p>
+      <div className={proseStyles.prose}>
+        <p>
+          SynAc is a public reference for cybersecurity terms and acronyms. The goal is simple:
+          help you answer “what does this mean here?” quickly, with enough context to trust the
+          result.
+        </p>
 
-          <h2>How to read entries</h2>
-          <ul>
-            <li>
-              <strong>Type badge:</strong> every entry is either a <strong>TERM</strong> or an{' '}
-              <strong>ACRONYM</strong>.
-            </li>
-            <li>
-              <strong>Senses:</strong> each sense is a distinct meaning. Use the on-page table of
-              contents to jump between them.
-            </li>
-            <li>
-              <strong>Source pills:</strong> small inline pills indicate which source supports a
-              given piece of text. Hover for details (document title, URL, access date, license
-              notes).
-            </li>
-            <li>
-              <strong>Bibliography:</strong> each sense includes a reference list for deeper
-              reading and attribution.
-            </li>
-          </ul>
+        <h2>How to read entries</h2>
+        <ul>
+          <li>
+            <strong>Type:</strong> every entry is either a term or an acronym — the small label
+            next to the headword.
+          </li>
+          <li>
+            <strong>Senses:</strong> each numbered sense is a distinct meaning. Entries with
+            several senses include an on-page list to jump between them.
+          </li>
+          <li>
+            <strong>Sources:</strong> each sense lists the sources that support it — with document
+            title, access date, whether the text is quoted, paraphrased, or summarized, and any
+            license or attribution notes.
+          </li>
+        </ul>
 
-          <p>
-            Explore the full registry of provenance at <Link href="/sources">Sources</Link>, or
-            browse the taxonomy at <Link href="/tags">Tags</Link>.
-          </p>
-        </div>
+        <p>
+          Explore the full registry of provenance at <Link href="/sources">Sources</Link>, or
+          browse the taxonomy at <Link href="/tags">Tags</Link>.
+        </p>
       </div>
-    </>
+    </div>
   );
 }

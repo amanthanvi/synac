@@ -12,6 +12,7 @@ import {
 } from '@/lib/publicBrowse';
 
 import styles from '../_styles/Browse.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
 
 export const revalidate = 300;
 
@@ -72,7 +73,7 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
       : undefined;
 
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader title="Acronyms" subtitle="Alphabetical index of published acronym entries." />
 
       <nav className={styles.letters} aria-label="Acronym letters">
@@ -124,6 +125,6 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>
       )}
-    </>
+    </div>
   );
 }

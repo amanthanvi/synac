@@ -4,6 +4,7 @@ import { TagDirectory } from '@/components/TagDirectory';
 import { PageHeader } from '@/components/PageHeader';
 
 import styles from '../_styles/Tags.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
 
 export const revalidate = 900;
 
@@ -20,11 +21,10 @@ export default async function TagsPage() {
   >('listTagsWithCounts');
 
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader
-        badge="Browse"
         title="Tags"
-        subtitle="Curated tags for browsing and filtering. Some tags may be auto-applied based on entry text; tag pages preserve old slugs via redirects."
+        subtitle="A curated taxonomy for browsing and filtering entries."
       />
 
       {tags.length === 0 ? (
@@ -41,6 +41,6 @@ export default async function TagsPage() {
           }))}
         />
       )}
-    </>
+    </div>
   );
 }

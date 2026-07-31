@@ -1,24 +1,31 @@
 .list {
   display: grid;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-3);
   align-items: baseline;
 }
 
 .key {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 60%, transparent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--fg-subtle);
 }
 
 .value {
-  color: color-mix(in srgb, var(--fg) 84%, transparent);
+  color: var(--fg);
+  font-size: var(--text-ui);
+  line-height: 1.5;
+  min-width: 0;
 }
 
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
