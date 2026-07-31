@@ -66,7 +66,11 @@ export default async function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable}`}
     >
       <head>
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
       </head>
       <body>
         {isClerkConfigured ? (
