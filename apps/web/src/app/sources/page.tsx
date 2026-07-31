@@ -2,20 +2,13 @@ import Link from 'next/link';
 
 import { queryPublicConvex } from '@synac/db';
 
+import { formatDate } from '@/lib/dates';
 import { PageHeader } from '@/components/PageHeader';
 
 import layoutStyles from '../_styles/Layout.module.css';
 import styles from '../_styles/Tags.module.css';
 
 export const revalidate = 900;
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function SourcesPage() {
   const sources = await queryPublicConvex<

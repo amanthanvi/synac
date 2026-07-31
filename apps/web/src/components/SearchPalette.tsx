@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPortal } from 'react-dom';
 
+import { renderHeadline } from '@/lib/highlight';
 import { TypeMarker } from './ui/TypeMarker';
 import styles from './SearchPalette.module.css';
 
@@ -149,9 +150,11 @@ export function SearchPalette() {
     router.push(href);
   }
 
+  // Reset the selection whenever the option list changes — including when
+  // debounced results arrive — so Enter never fires on a shifted item.
   useEffect(() => {
     setActiveIndex(0);
-  }, [q]);
+  }, [items]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -309,7 +312,9 @@ export function SearchPalette() {
                           </span>
                           {item.entry.snippet || item.entry.summaryText ? (
                             <span className={styles.entrySummary}>
-                              {item.entry.snippet ?? item.entry.summaryText}
+                              {item.entry.snippet
+                                ? renderHeadline(item.entry.snippet)
+                                : item.entry.summaryText}
                             </span>
                           ) : null}
                         </span>

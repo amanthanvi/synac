@@ -3,7 +3,13 @@ import loadingStyles from '@/app/_styles/EntryLoading.module.css';
 
 export default function Loading() {
   return (
-    <div className={entryStyles.layout} aria-busy="true" aria-label="Loading entry">
+    <div
+      className={entryStyles.layout}
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Loading entry"
+    >
       <div className={entryStyles.main} aria-hidden="true">
         <header className={entryStyles.header}>
           <div className={`skeleton ${loadingStyles.title}`} />

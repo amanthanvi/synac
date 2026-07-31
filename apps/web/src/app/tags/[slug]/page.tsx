@@ -4,6 +4,7 @@ import { permanentRedirect } from 'next/navigation';
 
 import { getPrismaClient, listPublishedEntriesForTag, resolveTagBySlug } from '@synac/db';
 
+import { formatDate } from '@/lib/dates';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
@@ -42,14 +43,6 @@ function parseEntryType(value: string | undefined): 'TERM' | 'ACRONYM' | undefin
   return undefined;
 }
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
-
 export default async function TagPage({ params, searchParams }: TagPageProps) {
   const { slug } = await params;
   const sp = (await searchParams) ?? {};
@@ -63,12 +56,12 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   if (!resolved) {
     return (
-      <>
+      <div className={layoutStyles.pageNarrow}>
         <PageHeader title="Tag not found" subtitle="This tag does not exist." />
         <div className={tagStyles.empty}>
           Try <Link href="/tags">all tags</Link>.
         </div>
-      </>
+      </div>
     );
   }
 

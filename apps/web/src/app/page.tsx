@@ -2,20 +2,13 @@ import Link from 'next/link';
 
 import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
 
+import { formatDate } from '@/lib/dates';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { SearchForm } from '@/components/SearchForm';
 
 import styles from './page.module.css';
 
 export const revalidate = 300;
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function Home() {
   const prisma = getPrismaClient();

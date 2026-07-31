@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { formatDate } from '@/lib/dates';
 import { BrowseControls } from '@/components/BrowseControls';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
@@ -21,14 +22,6 @@ type TermsPageProps = {
 };
 
 const letters = getBrowseLetters();
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function TermsPage({ searchParams }: TermsPageProps) {
   const params = (await searchParams) ?? {};

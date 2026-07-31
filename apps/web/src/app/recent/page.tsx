@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
 
+import { formatDate } from '@/lib/dates';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
@@ -13,14 +14,6 @@ export const revalidate = 300;
 type RecentPageProps = {
   searchParams?: Promise<{ page?: string }>;
 };
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 function formatRelativeDate(value: Date, now: Date): string {
   const diffMs = now.getTime() - value.getTime();

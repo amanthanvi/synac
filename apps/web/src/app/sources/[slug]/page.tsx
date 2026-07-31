@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { getPrismaClient, queryPublicConvex, resolvePublicSourceBySlug } from '@synac/db';
 
+import { formatDate } from '@/lib/dates';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
@@ -33,14 +34,6 @@ export async function generateMetadata({ params }: SourcePageProps): Promise<Met
     description: `License notes and attribution requirements for ${source.name}.`,
     alternates: { canonical: `/sources/${source.sourceSlug}` },
   };
-}
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
 }
 
 export default async function SourcePage({ params, searchParams }: SourcePageProps) {
@@ -102,7 +95,7 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
                 ),
               },
               { label: 'License', value: source.licenseType },
-              { label: 'Trust', value: source.trustTier.replace('_', ' ').toLowerCase() },
+              { label: 'Trust', value: source.trustTier.replace(/_/g, ' ').toLowerCase() },
               {
                 label: 'Verified',
                 value: source.lastVerifiedAt

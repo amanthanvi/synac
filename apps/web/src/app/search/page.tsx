@@ -1,8 +1,8 @@
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 
 import { getPrismaClient, searchPublishedEntries } from '@synac/db';
 
+import { renderHeadline } from '@/lib/highlight';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
@@ -157,27 +157,4 @@ async function Results({
       <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
     </>
   );
-}
-
-function renderHeadline(headline: string): ReactNode {
-  const pieces: React.ReactNode[] = [];
-  const tokens = headline.split(/(<<|>>)/g);
-  let highlight = false;
-  let key = 0;
-
-  for (const token of tokens) {
-    if (!token) continue;
-    if (token === '<<') {
-      highlight = true;
-      continue;
-    }
-    if (token === '>>') {
-      highlight = false;
-      continue;
-    }
-
-    pieces.push(highlight ? <mark key={key++}>{token}</mark> : <span key={key++}>{token}</span>);
-  }
-
-  return <>{pieces}</>;
 }

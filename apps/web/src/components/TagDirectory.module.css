@@ -26,6 +26,5 @@
 }
 
 .search:focus-visible {
-  outline: none;
   border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }

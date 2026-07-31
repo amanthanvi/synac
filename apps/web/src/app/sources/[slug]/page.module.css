@@ -33,7 +33,7 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
-  word-break: break-word;
+  overflow-wrap: break-word;
   transition: color var(--dur-hover) var(--ease);
 }
 

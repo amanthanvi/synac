@@ -6,19 +6,13 @@ import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { isCurrentNavPath } from '@/lib/nav';
 import styles from './MobileNav.module.css';
 
 type MobileNavLink = {
   href: string;
   label: string;
 };
-
-function isCurrent(pathname: string, href: string): boolean {
-  if (pathname === href) return true;
-  if (href === '/terms' && pathname.startsWith('/term/')) return true;
-  if (href === '/acronyms' && pathname.startsWith('/acronym/')) return true;
-  return pathname.startsWith(`${href}/`);
-}
 
 export function MobileNav({ links }: { links: MobileNavLink[] }) {
   const pathname = usePathname() ?? '';
@@ -138,7 +132,7 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
 
                 <nav className={styles.links} aria-label="Mobile">
                   {links.map((l) => {
-                    const current = isCurrent(pathname, l.href);
+                    const current = isCurrentNavPath(pathname, l.href);
                     return (
                       <Link
                         key={l.href}

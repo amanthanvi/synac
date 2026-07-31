@@ -22,6 +22,11 @@ type PublicEntryPageProps = {
   data: PublicEntryPageData;
 };
 
+function externalHttpUrl(value: string): string | null {
+  const trimmed = value.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : null;
+}
+
 function comparableText(value: string | null): string {
   if (!value) return '';
   return markdownToText(value)
@@ -32,7 +37,8 @@ function comparableText(value: string | null): string {
 }
 
 function senseText(sense: PublicEntrySense): string {
-  return comparableText(sense.definitionText ?? sense.definitionMd);
+  // Compare the field the sense actually renders (markdown first).
+  return comparableText(sense.definitionMd ?? sense.definitionText);
 }
 
 function contentModeLabel(mode: PublicSenseProvenance['contentMode']): string {
@@ -87,17 +93,23 @@ function SenseSources({ provenanceItems }: { provenanceItems: PublicSenseProvena
         {citations.length === 1 ? 'Source' : 'Sources'}
       </div>
       <ul className={styles.sourceList}>
-        {citations.map(({ citation, contentMode }) => (
+        {citations.map(({ citation, contentMode }) => {
+          const url = externalHttpUrl(citation.url);
+          return (
           <li key={citation.id} className={styles.sourceItem}>
             <div className={styles.sourceLine}>
-              <a
-                className={styles.sourceName}
-                href={citation.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {citation.source.name}
-              </a>
+              {url ? (
+                <a
+                  className={styles.sourceName}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {citation.source.name}
+                </a>
+              ) : (
+                <span className={styles.sourceDoc}>{citation.source.name}</span>
+              )}
               {citation.sourceDocument.title ? (
                 <span className={styles.sourceDoc}>{citation.sourceDocument.title}</span>
               ) : null}
@@ -112,7 +124,8 @@ function SenseSources({ provenanceItems }: { provenanceItems: PublicSenseProvena
               </div>
             ) : null}
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );
@@ -136,6 +149,9 @@ function Sense({
     sense.expandedForm.trim().toLowerCase() !== sense.senseLabel.trim().toLowerCase()
       ? sense.expandedForm
       : null;
+  const examples = sense.examples.filter(
+    (example) => example.exampleMd?.trim() || example.exampleText?.trim(),
+  );
 
   return (
     <li
@@ -149,12 +165,12 @@ function Sense({
       ) : null}
       <div className={styles.senseBody}>
         {heading ? (
-          <h3 className={styles.senseHeading}>
+          <h2 className={styles.senseHeading}>
             {heading}
             {headingDetail ? (
               <span className={styles.senseHeadingDetail}> · {headingDetail}</span>
             ) : null}
-          </h3>
+          </h2>
         ) : null}
         <div className={styles.senseDefinition}>
           {sense.definitionMd ? (
@@ -166,13 +182,13 @@ function Sense({
           )}
         </div>
 
-        {sense.examples.length ? (
+        {examples.length ? (
           <div className={styles.examples}>
             <div className={styles.examplesLabel}>
-              {sense.examples.length === 1 ? 'Example' : 'Examples'}
+              {examples.length === 1 ? 'Example' : 'Examples'}
             </div>
             <ul className={styles.examplesList}>
-              {sense.examples.map((example: PublicEntryExample) => (
+              {examples.map((example: PublicEntryExample) => (
                 <li key={example.id} className={styles.exampleItem}>
                   {example.exampleMd ? (
                     <Markdown>{example.exampleMd}</Markdown>
@@ -205,7 +221,7 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
   ].filter((value) => !senseExpansions.has(value.trim().toLowerCase()));
 
   // Hide the lede only when it clearly repeats the sole sense's definition.
-  const summaryComparable = comparableText(entry.summaryText ?? entry.summaryMd);
+  const summaryComparable = comparableText(entry.summaryMd ?? entry.summaryText);
   const firstSenseComparable = entry.senses.length === 1 ? senseText(entry.senses[0]!) : '';
   const summaryDuplicatesSense =
     Boolean(summaryComparable) &&
