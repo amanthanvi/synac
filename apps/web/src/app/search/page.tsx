@@ -126,7 +126,9 @@ async function Results({
     entryType ? `&type=${encodeURIComponent(entryType)}` : ''
   }`;
   const prevHref = page > 1 ? `${baseHref}&page=${page - 1}` : undefined;
-  const nextHref = results.length === pageSize ? `${baseHref}&page=${page + 1}` : undefined;
+  // page is clamped to 10 upstream — don't link past the cap.
+  const nextHref =
+    page < 10 && results.length === pageSize ? `${baseHref}&page=${page + 1}` : undefined;
 
   return (
     <>

@@ -1325,7 +1325,7 @@ Warm-tinted neutrals tuned separately per theme (dark is not inverted light), ha
 -   Layout components:
     -   PageShell (unified max-width container + rhythm), ThemeToggle (dark/light/system with localStorage persistence).
 -   Navigation components:
-    -   SearchPalette (⌘K/`/` live entry search + navigation shortcuts), SearchForm (plain GET search input), MobileNav (slide-out drawer), NavLinks (active-state nav).
+    -   SearchPalette (`⌘K` / `/` live entry search + navigation shortcuts), SearchForm (plain GET search input), MobileNav (slide-out drawer), NavLinks (active-state nav).
 -   Markdown rendering:
     -   render Markdown to HTML with a strict sanitizer and no raw HTML support.
 
@@ -1906,7 +1906,7 @@ Warm-tinted neutrals tuned separately per theme (dark is not inverted light), ha
 | **Color palette** | Warm-tinted neutrals | One restrained blue accent. Light and dark both first-class, tuned separately. |
 | **Theme** | System-first, lean dark | Manual toggle with `localStorage` persistence. Three states: dark, light, system. |
 | **Brand** | Typographic wordmark only | Geist Sans semibold treatment. No shield icon. |
-| **Global search** | Single ⌘K/`/` palette | One suggestion surface (SearchPalette) with live entry results; home + /search use plain GET forms. |
+| **Global search** | Single `⌘K` / `/` palette | One suggestion surface (SearchPalette) with live entry results; home + /search use plain GET forms. |
 | **Command palette** | Merged into SearchPalette | Entry search + navigation shortcuts in one keyboard-first overlay. |
 | **Entry page layout** | Dictionary form | Centered reading column; headword block; flat numbered senses; margin TOC for 3+ senses; hover preview cards for cross-refs. |
 | **Browse paradigm** | Hybrid grid + filter | Alpha A-Z index + tag filter chips + sort controls + live search overlay. |
