@@ -61,7 +61,15 @@
 }
 
 @media (max-width: 560px) {
+  /* Reflow the meta under the title instead of dropping it — on /recent it
+     carries the only timestamp. */
+  .titleRow {
+    flex-wrap: wrap;
+  }
+
   .meta {
-    display: none;
+    margin-left: 0;
+    flex-basis: 100%;
+    white-space: normal;
   }
 }

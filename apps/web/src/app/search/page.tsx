@@ -143,10 +143,12 @@ async function Results({
                 : undefined
             }
             summary={
-              r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 && r.senseSummary ? (
-                r.senseSummary
-              ) : r.snippet ? (
+              // The highlighted snippet explains why the result matched, so it
+              // wins; the "N meanings" meta keeps the multi-sense context.
+              r.snippet ? (
                 renderHeadline(r.snippet)
+              ) : r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 && r.senseSummary ? (
+                r.senseSummary
               ) : (
                 (r.summaryText ?? undefined)
               )
