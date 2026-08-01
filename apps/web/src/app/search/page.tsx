@@ -143,9 +143,13 @@ async function Results({
                 : undefined
             }
             summary={
-              // The highlighted snippet explains why the result matched, so it
-              // wins; the "N meanings" meta keeps the multi-sense context.
-              r.snippet ? (
+              // Title matches (buckets 1-2) produce a redundant snippet — the
+              // search document starts with the title — so sense labels win
+              // there; for content matches (bucket 3) the highlighted snippet
+              // explains why the result matched.
+              r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 && r.senseSummary && r.bucket < 3 ? (
+                r.senseSummary
+              ) : r.snippet ? (
                 renderHeadline(r.snippet)
               ) : r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 && r.senseSummary ? (
                 r.senseSummary

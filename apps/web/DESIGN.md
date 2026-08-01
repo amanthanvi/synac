@@ -152,7 +152,7 @@ Fixed-rem scale, ~1.2 ratio, each size paired with a line-height token: `--text-
 - Content column: most pages wrap in `layoutStyles.pageNarrow` = `--content-max` 768px, centered (`src/app/_styles/Layout.module.css`).
 - Entry layout (`_styles/Entry.module.css`): the 768px column never moves; the sense TOC (`StickySenseToc`, 220px) sits in an absolutely-positioned right margin rail at `calc(100% + 48px)`, sticky at top 76px, hidden below 1280px. Rendered only when an entry has ≥3 senses.
 - Browse pattern (terms/acronyms, `src/app/terms/page.tsx`): `PageHeader` → letter index (`_styles/Browse.module.css` `.letters`) → `BrowseControls` → `EntryRowList` → `Pagination`. Tags/sources/recent/search follow the same header-then-list shape.
-- Spacing: 4/8/12/16/24/32/48/64 (`--space-1..8`). Nav collapses to `MobileNav` ≤920px; row meta hides ≤560px; TOC rail hides ≤1279px.
+- Spacing: 4/8/12/16/24/32/48/64 (`--space-1..8`). Nav collapses to `MobileNav` ≤920px; row meta reflows to its own line under the title ≤560px; TOC rail hides ≤1279px.
 - Theme: inline nonce'd script in `layout.tsx` applies `data-theme` from localStorage `synac-theme` before paint; no attribute = system `prefers-color-scheme`. `ThemeToggle` cycles system/light/dark. Both `html[data-theme=...]` blocks and the media query carry full palettes.
 - Reduced motion: global `prefers-reduced-motion` kill switch in `globals.css` (animations/transitions to 0.01ms, skeleton goes static).
 
