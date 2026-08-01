@@ -787,13 +787,13 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
     -   flat nav links: Terms, Acronyms, Tags, Sources, About.
 
     -   Keyboard:
-        -   `⌘K` / `Ctrl+K` opens a command palette for navigation + “Search for …” actions,
-        -   `/` focuses the header search input (when not already typing in an input).
--   Entry pages:
-    -   stacked layout with entry header (type badge, title, summary),
-    -   metadata block (Updated, Tags, Stands for, Also known as),
-    -   senses as expandable cards with per-sense bibliography,
-    -   sticky floating table of contents (desktop-only when >1 sense),
+        -   `⌘K` / `Ctrl+K` opens the search palette (live entry search + navigation shortcuts),
+        -   `/` also opens the palette (when not already typing in an input).
+-   Entry pages (Reference Canon):
+    -   headword block (title + quiet type marker, stands-for, also-known-as, lede),
+    -   meta line (tags as quiet links, updated date),
+    -   flat numbered senses with a per-sense Sources list,
+    -   margin sense TOC with active tracking (desktop-only, 3+ senses),
     -   Related / See also section with hover preview cards.
 
 ### Content design rules
@@ -1321,11 +1321,11 @@ Warm-tinted neutrals tuned separately per theme (dark is not inverted light), ha
 
 -   Design system primitives: Button, Input, Badge, Pill, Card, Panel, Table, Modal, Toast, Pagination, Divider, EmptyState, KeyValue, Skeleton.
 -   Content components:
-    -   Sense cards (expandable preview cards), CitationPill (inline source reference with hover popup), per-sense bibliography, EntryPreviewLink (hover summary for cross-references), StickySenseToc (floating sidebar table of contents).
+    -   Numbered Sense sections with per-sense Sources lists, EntryRow (shared dictionary-style row), TypeMarker (quiet lowercase entry-type label), EntryPreviewLink (hover summary for cross-references), StickySenseToc (margin sense index with active tracking).
 -   Layout components:
     -   PageShell (unified max-width container + rhythm), ThemeToggle (dark/light/system with localStorage persistence).
 -   Navigation components:
-    -   CommandPalette (search + navigation hub), SearchForm (header search with autocomplete), MobileNav (slide-out drawer).
+    -   SearchPalette (⌘K/`/` live entry search + navigation shortcuts), SearchForm (plain GET search input), MobileNav (slide-out drawer), NavLinks (active-state nav).
 -   Markdown rendering:
     -   render Markdown to HTML with a strict sanitizer and no raw HTML support.
 
