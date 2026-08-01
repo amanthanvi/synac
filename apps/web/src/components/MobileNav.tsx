@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { isCurrentNavPath } from '@/lib/nav';
 import styles from './MobileNav.module.css';
 
 type MobileNavLink = {
@@ -13,6 +15,7 @@ type MobileNavLink = {
 };
 
 export function MobileNav({ links }: { links: MobileNavLink[] }) {
+  const pathname = usePathname() ?? '';
   const [open, setOpen] = useState(false);
   const dialogId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -128,21 +131,22 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
                 </div>
 
                 <nav className={styles.links} aria-label="Mobile">
-                  {links.map((l) => (
-                    <Link
-                      key={l.href}
-                      className={styles.link}
-                      href={l.href}
-                      onClick={() => setOpen(false)}
-                    >
-                      {l.label}
-                    </Link>
-                  ))}
+                  {links.map((l) => {
+                    const current = isCurrentNavPath(pathname, l.href);
+                    return (
+                      <Link
+                        key={l.href}
+                        className={current ? `${styles.link} ${styles.linkCurrent}` : styles.link}
+                        aria-current={current ? 'page' : undefined}
+                        href={l.href}
+                        onClick={() => setOpen(false)}
+                      >
+                        {l.label}
+                      </Link>
+                    );
+                  })}
                 </nav>
 
-                <div className={styles.hint}>
-                  Tip: press <strong>/</strong> to search · <strong>⌘K</strong> for commands.
-                </div>
               </div>
             </div>,
             document.body,

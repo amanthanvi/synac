@@ -1,39 +1,47 @@
 .wrap {
-  margin-top: 10px;
+  display: grid;
+  gap: var(--space-6);
+}
+
+.facts {
+  display: grid;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
 }
 
 .section {
-  margin-top: 18px;
+  display: grid;
+  gap: var(--space-1);
 }
 
 .sectionLabel {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--fg) 62%, transparent);
-  margin-bottom: 6px;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--fg-subtle);
 }
 
 .sectionText {
-  color: color-mix(in srgb, var(--fg) 82%, transparent);
-  line-height: 1.8;
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
 }
 
 .link {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: color-mix(in srgb, var(--accent2) 80%, var(--fg));
+  color: var(--accent);
   text-decoration: underline;
-  text-underline-offset: 2px;
-  word-break: break-word;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  overflow-wrap: break-word;
+  transition: color var(--dur-hover) var(--ease);
 }
 
 .link:hover {
-  color: color-mix(in srgb, var(--accent2) 92%, var(--fg));
+  color: var(--accent-hover);
 }
 
-.actions {
-  margin-top: 22px;
+.cited {
+  display: grid;
+  gap: var(--space-3);
 }
-

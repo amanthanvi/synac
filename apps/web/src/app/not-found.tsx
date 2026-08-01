@@ -1,41 +1,31 @@
+import Link from 'next/link';
+
 import { PageHeader } from '@/components/PageHeader';
-import { FocusSearchButton } from '@/components/FocusSearchButton';
-import { ButtonLink } from '@/components/ui/Button';
-import { Panel } from '@/components/ui/Panel';
 
 import layoutStyles from './_styles/Layout.module.css';
 
 export default function NotFound() {
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader
-        badge="404"
         title="Page not found"
-        subtitle="Try searching, or jump back into browsing."
+        subtitle="This page doesn’t exist — the entry may have been renamed or removed."
       />
-
-      <Panel className={layoutStyles.narrow}>
-        <div className={layoutStyles.stack}>
-          <FocusSearchButton variant="primary">
-            Focus search <span className={layoutStyles.mono}>/</span>
-          </FocusSearchButton>
-
-          <div className={layoutStyles.row}>
-            <ButtonLink href="/" size="sm">
-              Home
-            </ButtonLink>
-            <ButtonLink href="/terms?letter=a" size="sm">
-              Terms
-            </ButtonLink>
-            <ButtonLink href="/acronyms?letter=a" size="sm">
-              Acronyms
-            </ButtonLink>
-            <ButtonLink href="/tags" size="sm">
-              Tags
-            </ButtonLink>
-          </div>
-        </div>
-      </Panel>
-    </>
+      <p className={layoutStyles.bodyText}>
+        Search with <kbd className={layoutStyles.kbd}>⌘K</kbd> or{' '}
+        <kbd className={layoutStyles.kbd}>/</kbd>, or start from the{' '}
+        <Link className={layoutStyles.inlineLink} href="/">
+          home page
+        </Link>
+        , <Link className={layoutStyles.inlineLink} href="/terms">
+          terms
+        </Link>
+        , or{' '}
+        <Link className={layoutStyles.inlineLink} href="/acronyms">
+          acronyms
+        </Link>
+        .
+      </p>
+    </div>
   );
 }

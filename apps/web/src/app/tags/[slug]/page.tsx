@@ -4,11 +4,14 @@ import { permanentRedirect } from 'next/navigation';
 
 import { getPrismaClient, listPublishedEntriesForTag, resolveTagBySlug } from '@synac/db';
 
+import { formatDate } from '@/lib/dates';
+import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 
 import browseStyles from '../../_styles/Browse.module.css';
 import tagStyles from '../../_styles/Tags.module.css';
+import layoutStyles from '../../_styles/Layout.module.css';
 
 export const revalidate = 300;
 
@@ -40,14 +43,6 @@ function parseEntryType(value: string | undefined): 'TERM' | 'ACRONYM' | undefin
   return undefined;
 }
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
-
 export default async function TagPage({ params, searchParams }: TagPageProps) {
   const { slug } = await params;
   const sp = (await searchParams) ?? {};
@@ -61,12 +56,12 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   if (!resolved) {
     return (
-      <>
-        <PageHeader badge="Tag" title="Not found" subtitle="This tag does not exist." />
+      <div className={layoutStyles.pageNarrow}>
+        <PageHeader title="Tag not found" subtitle="This tag does not exist." />
         <div className={tagStyles.empty}>
           Try <Link href="/tags">all tags</Link>.
         </div>
-      </>
+      </div>
     );
   }
 
@@ -94,9 +89,8 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       : undefined;
 
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader
-        badge="Tag"
         title={resolved.tag.name}
         subtitle={resolved.tag.description ?? 'Published entries associated with this tag.'}
       />
@@ -126,44 +120,25 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
         <div className={browseStyles.empty}>No published entries yet for this tag.</div>
       ) : (
         <>
-          <ol className={browseStyles.list}>
+          <EntryRowList>
             {entries.map((entry) => (
-              <li key={entry.id} className={browseStyles.item}>
-                <div className={browseStyles.itemTitleRow}>
-                  <div className={browseStyles.itemTitleLeft}>
-                    <span
-                      className={`${browseStyles.typeBadge} ${
-                        entry.entryType === 'TERM'
-                          ? browseStyles.typeBadgeTerm
-                          : browseStyles.typeBadgeAcronym
-                      }`}
-                    >
-                      {entry.entryType}
-                    </span>
-                    <Link
-                      className={browseStyles.itemTitle}
-                      href={
-                        entry.entryType === 'TERM'
-                          ? `/term/${entry.primarySlug}`
-                          : `/acronym/${entry.primarySlug}`
-                      }
-                    >
-                      {entry.displayTitle}
-                    </Link>
-                  </div>
-                  <span className={browseStyles.itemSlug}>
-                    Updated {formatDate(entry.updatedAt)}
-                  </span>
-                </div>
-                {entry.summaryText ? (
-                  <p className={browseStyles.itemSummary}>{entry.summaryText}</p>
-                ) : null}
-              </li>
+              <EntryRow
+                key={entry.id}
+                href={
+                  entry.entryType === 'TERM'
+                    ? `/term/${entry.primarySlug}`
+                    : `/acronym/${entry.primarySlug}`
+                }
+                title={entry.displayTitle}
+                entryType={entry.entryType}
+                summary={entry.summaryText}
+                meta={`Updated ${formatDate(entry.updatedAt)}`}
+              />
             ))}
-          </ol>
+          </EntryRowList>
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>
       )}
-    </>
+    </div>
   );
 }
