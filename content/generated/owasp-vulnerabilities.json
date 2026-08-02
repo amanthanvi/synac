@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "source": "owasp-vulnerabilities",
+  "generatedAt": "2026-08-02T21:46:57Z",
+  "adapterVersion": "owasp-vulnerabilities/1.0.0",
+  "documents": [
+    {
+      "key": "owasp-vulnerabilities-index",
+      "url": "https://owasp.org/www-community/vulnerabilities",
+      "title": "OWASP Community Vulnerabilities index",
+      "contentType": "text/html",
+      "contentSha256": "35bb79fb7a19b679bbf281ff19bdf61f8b9c1015367312ff11993dad42a54166",
+      "fetchedAt": "2026-08-02T21:46:57Z"
+    },
+    {
+      "key": "vuln-buffer-overflow",
+      "url": "https://owasp.org/www-community/vulnerabilities/Buffer_Overflow",
+      "title": "Buffer Overflow",
+      "contentType": "text/html",
+      "contentSha256": "1bf8321af3edde6ba580b8391b2eb86f31c6f94020898388600b107102b71bbc",
+      "fetchedAt": "2026-08-02T21:46:57Z"
+    },
+    {
+      "key": "vuln-covert-storage-channel",
+      "url": "https://owasp.org/www-community/vulnerabilities/Covert_storage_channel",
+      "title": "Covert storage channel",
+      "contentType": "text/html",
+      "contentSha256": "564be3fa026cd4b5c1d08611170290ebf8dcd3d6524fa5e361ec7b70b87e5f44",
+      "fetchedAt": "2026-08-02T21:46:57Z"
+    },
+    {
+      "key": "vuln-improper-pointer-subtraction",
+      "url": "https://owasp.org/www-community/vulnerabilities/Improper_pointer_subtraction",
+      "title": "Improper pointer subtraction",
+      "contentType": "text/html",
+      "contentSha256": "efec66c42b355bb607502b612de8e62c31253533dc86ad60ec052cb58945cb2e",
+      "fetchedAt": "2026-08-02T21:46:57Z"
+    }
+  ],
+  "entries": [
+    {
+      "entryType": "TERM",
+      "slug": "buffer-overflow",
+      "title": "Buffer Overflow",
+      "aliases": [],
+      "tags": [],
+      "summaryMd": "A buffer overflow condition exists when a program attempts to put more data in a buffer than it can hold or when a program attempts to put data in a memory area past a buffer. In this case, a buffer is a sequential section of memory allocated to contain anything from a character string to an array of integers. Writing outside the bounds of a block of allocated memory can corrupt data, crash the program, or cause the execution of malicious code.",
+      "updatedAt": "2026-08-02",
+      "senses": [
+        {
+          "key": "buffer-overflow",
+          "definitionMd": "A buffer overflow condition exists when a program attempts to put more data in a buffer than it can hold or when a program attempts to put data in a memory area past a buffer. In this case, a buffer is a sequential section of memory allocated to contain anything from a character string to an array of integers. Writing outside the bounds of a block of allocated memory can corrupt data, crash the program, or cause the execution of malicious code.",
+          "examples": [],
+          "citation": {
+            "documentKey": "vuln-buffer-overflow",
+            "citationText": "OWASP Community Pages, \"Buffer Overflow\"",
+            "locator": "#overview"
+          }
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "entryType": "TERM",
+      "slug": "covert-storage-channel",
+      "title": "Covert storage channel",
+      "aliases": [],
+      "tags": [],
+      "summaryMd": "The existence of a covert storage channel in a communications channel may release information which can be of significant use to attackers.",
+      "updatedAt": "2026-08-02",
+      "senses": [
+        {
+          "key": "covert-storage-channel",
+          "definitionMd": "The existence of a covert storage channel in a communications channel may release information which can be of significant use to attackers.",
+          "examples": [],
+          "citation": {
+            "documentKey": "vuln-covert-storage-channel",
+            "citationText": "OWASP Community Pages, \"Covert storage channel\"",
+            "locator": "#overview"
+          }
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "entryType": "TERM",
+      "slug": "improper-pointer-subtraction",
+      "title": "Improper pointer subtraction",
+      "aliases": [],
+      "tags": [],
+      "summaryMd": "The subtraction of one pointer from another in order to determine size is dependant on the assumption that both pointers exist in the same memory chunk.",
+      "updatedAt": "2026-08-02",
+      "senses": [
+        {
+          "key": "improper-pointer-subtraction",
+          "definitionMd": "The subtraction of one pointer from another in order to determine size is dependant on the assumption that both pointers exist in the same memory chunk.",
+          "examples": [],
+          "citation": {
+            "documentKey": "vuln-improper-pointer-subtraction",
+            "citationText": "OWASP Community Pages, \"Improper pointer subtraction\"",
+            "locator": "#overview"
+          }
+        }
+      ],
+      "relationships": []
+    }
+  ]
+}
