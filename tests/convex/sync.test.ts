@@ -69,4 +69,20 @@ describe('sync', () => {
     expect(status?.contentVersion).toBe('v2');
     expect(status?.entryCount).toBe(1);
   });
+
+  test('a superseded prune cannot delete rows from the current sync', async () => {
+    const t = convexTest(schema, modules);
+    await seedDataset(t, 'v1');
+    await runScheduled(t);
+
+    await t.mutation(internal.sync.upsertEntries, { syncVersion: 'v2', rows: [makeEntryRow()] });
+    await t.mutation(internal.sync.finish, { syncVersion: 'v2', entryCount: 1 });
+
+    const result = await t.mutation(internal.sync.pruneBatch, { syncVersion: 'v1' });
+    expect(result).toEqual({ deleted: 0 });
+
+    const rows = await t.run(async (ctx) => await ctx.db.query('entries').collect());
+    expect(rows).toHaveLength(2);
+    expect(rows.find((row) => row.key === 'TERM:back-door')?.syncVersion).toBe('v2');
+  });
 });

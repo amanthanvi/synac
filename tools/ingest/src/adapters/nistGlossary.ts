@@ -132,12 +132,6 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
     throw new Error(`NIST glossary index fetch failed (${indexRes.status}) for ${indexUrl}`);
   }
 
-  // Upstream unchanged: keep the previous bundle byte-identical.
-  const previousIndex = ctx.previous?.documents.find((doc) => doc.key === INDEX_DOCUMENT_KEY);
-  if (ctx.previous && previousIndex?.contentSha256 === indexRes.sha256) {
-    return ctx.previous;
-  }
-
   const termUrls: string[] = [];
   const seen = new Set<string>();
   const collectTermUrls = (html: string) => {

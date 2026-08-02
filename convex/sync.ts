@@ -265,6 +265,14 @@ export const finish = internalMutation({
 export const pruneBatch = internalMutation({
   args: { syncVersion: v.string() },
   handler: async (ctx, args) => {
+    const current = await ctx.db
+      .query("syncMeta")
+      .withIndex("by_key", (q) => q.eq("key", "content"))
+      .unique();
+    if (current?.contentVersion !== args.syncVersion) {
+      return { deleted: 0 };
+    }
+
     let deleted = 0;
     for (const table of PRUNE_TABLES) {
       if (deleted >= PRUNE_BATCH) break;

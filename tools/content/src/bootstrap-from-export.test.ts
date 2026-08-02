@@ -69,7 +69,10 @@ describe('bootstrapFromExport', () => {
         { id: 'sense-1', entryId: 'entry-1', senseOrder: 0, definitionMd: 'An intentional act that attempts to violate the security policy of a system.', status: 'PUBLISHED' },
         { id: 'sense-2', entryId: 'entry-3', senseOrder: 0, definitionMd: 'An editorial definition with no source.', status: 'PUBLISHED', isEditorial: true, editorialRationale: 'House terminology.' },
       ],
-      senseExamples: [{ id: 'ex-1', senseId: 'sense-1', exampleMd: 'A brute-force attack against a password.', exampleOrder: 0 }],
+      senseExamples: [
+        { id: 'ex-1', senseId: 'sense-1', exampleMd: 'A brute-force attack against a password.', exampleOrder: 0 },
+        { id: 'ex-2', senseId: 'sense-2', exampleText: 'An internal house-rules example.', exampleOrder: 0 },
+      ],
       entryVariants: [{ id: 'var-1', entryId: 'entry-1', variantText: 'assault', normalizedVariant: 'assault', variantType: 'SYNONYM' }],
       tags: [{ id: 'tag-1', slug: 'threat-intelligence', name: 'Threat intelligence' }],
       entryTags: [{ id: 'et-1', entryId: 'entry-1', tagId: 'tag-1' }],
@@ -91,6 +94,7 @@ describe('bootstrapFromExport', () => {
     const override = overrideFileSchema.parse(files.get('overrides/term/house-rules.json'));
     expect(override.title).toBe('House Rules');
     expect(override.editorialSenses[0].rationale).toBe('House terminology.');
+    expect(override.editorialSenses[0].examples).toEqual(['An internal house-rules example.']);
 
     const redirects = redirectsFileSchema.parse(files.get('redirects.json'));
     expect(redirects.redirects).toEqual([{ entryType: 'TERM', fromSlug: 'attack-old', toSlug: 'attack' }]);

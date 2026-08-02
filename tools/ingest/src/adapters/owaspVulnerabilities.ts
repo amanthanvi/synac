@@ -83,12 +83,6 @@ export async function runOwaspVulnerabilities(ctx: AdapterContext): Promise<Bund
     throw new Error(`OWASP vulnerabilities index fetch failed (${indexRes.status}) for ${indexUrl}`);
   }
 
-  // Upstream unchanged: keep the previous bundle byte-identical.
-  const previousIndex = ctx.previous?.documents.find((doc) => doc.key === INDEX_DOCUMENT_KEY);
-  if (ctx.previous && previousIndex?.contentSha256 === indexRes.sha256) {
-    return ctx.previous;
-  }
-
   const indexHtml = indexRes.body.toString('utf8');
   const hrefs = extractHrefPaths(indexHtml, '/www-community/vulnerabilities/');
 

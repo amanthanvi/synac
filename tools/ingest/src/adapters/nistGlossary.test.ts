@@ -1,6 +1,26 @@
-import { describe, expect, it } from 'vitest';
+import { sourceFileSchema } from '@synac/content-tools';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { parseNistTermPage, termSlugFromUrl } from './nistGlossary.js';
+vi.mock('../net/safeFetch.js', () => ({ safeFetch: vi.fn() }));
+
+import { safeFetch } from '../net/safeFetch.js';
+import { parseNistTermPage, runNistGlossary, termSlugFromUrl } from './nistGlossary.js';
+
+beforeEach(() => {
+  vi.mocked(safeFetch).mockReset();
+});
+
+function htmlResponse(url: string, body: string, sha256: string) {
+  return {
+    url,
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    etag: null,
+    lastModified: null,
+    body: Buffer.from(body),
+    sha256,
+  };
+}
 
 describe('nist glossary term page parsing', () => {
   it('parses title, first definition, and abbreviation variants', () => {
@@ -47,5 +67,52 @@ describe('nist term url natural ids', () => {
       'advanced-encryption-standard',
     );
     expect(termSlugFromUrl('https://csrc.nist.gov/glossary/term/Zero%20Trust')).toBe('zero-trust');
+  });
+});
+
+describe('nist glossary ingest freshness', () => {
+  it('re-fetches term pages when the index document is unchanged', async () => {
+    const source = sourceFileSchema.parse({
+      slug: 'nist-csrc-glossary',
+      name: 'NIST CSRC Glossary',
+      baseUrl: 'https://csrc.nist.gov/glossary',
+      license: {
+        type: 'US_GOV_PD',
+        allowedUse: 'Reproduce with citation.',
+        attributionRequirements: 'NIST CSRC Glossary',
+      },
+      accessMethod: 'HTML',
+      trustTier: 'TIER1',
+      enabled: true,
+      lastVerifiedAt: '2026-07-01',
+    });
+    const indexUrl = 'https://csrc.nist.gov/glossary';
+    const termUrl = 'https://csrc.nist.gov/glossary/term/zero_trust';
+    const indexHtml = '<a href="/glossary/term/zero_trust">Zero Trust</a>';
+    const termHtml = (definition: string) =>
+      `<h3 id="term-text">Zero Trust</h3><span id="term-def-text-0">${definition}</span>`;
+
+    vi.mocked(safeFetch)
+      .mockResolvedValueOnce(htmlResponse(indexUrl, indexHtml, 'a'.repeat(64)))
+      .mockResolvedValueOnce(htmlResponse(termUrl, termHtml('First definition.'), 'b'.repeat(64)));
+    const previous = await runNistGlossary({
+      source,
+      previous: null,
+      maxItems: 1,
+      now: new Date('2026-07-01T00:00:00Z'),
+    });
+
+    vi.mocked(safeFetch)
+      .mockResolvedValueOnce(htmlResponse(indexUrl, indexHtml, 'a'.repeat(64)))
+      .mockResolvedValueOnce(htmlResponse(termUrl, termHtml('Corrected definition.'), 'c'.repeat(64)));
+    const current = await runNistGlossary({
+      source,
+      previous,
+      maxItems: 1,
+      now: new Date('2026-07-02T00:00:00Z'),
+    });
+
+    expect(current.entries[0]?.senses[0]?.definitionMd).toBe('Corrected definition.');
+    expect(safeFetch).toHaveBeenCalledTimes(4);
   });
 });

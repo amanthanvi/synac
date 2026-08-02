@@ -344,7 +344,10 @@ export async function bootstrapFromExport(snapshotDir: string): Promise<Bootstra
           ...(str(sense, 'senseLabel') ? { label: str(sense, 'senseLabel') } : {}),
           definitionMd: str(sense, 'definitionMd') ?? str(sense, 'definitionText') ?? 'REVIEW REQUIRED',
           rationale: str(sense, 'editorialRationale') ?? 'Carried over from the pre-GitOps database.',
-          examples: [],
+          examples: (examplesBySense.get(str(sense, 'id') as string) ?? [])
+            .sort((a, b) => (num(a, 'exampleOrder') ?? 0) - (num(b, 'exampleOrder') ?? 0))
+            .map((example) => str(example, 'exampleMd') ?? str(example, 'exampleText') ?? '')
+            .filter((text) => text.length > 0),
         })),
     });
   }
