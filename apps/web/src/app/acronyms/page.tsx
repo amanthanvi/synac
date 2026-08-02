@@ -1,6 +1,8 @@
 import Link from 'next/link';
 
+import { formatDate } from '@/lib/dates';
 import { BrowseControls } from '@/components/BrowseControls';
+import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import {
@@ -11,6 +13,7 @@ import {
 } from '@/lib/publicBrowse';
 
 import styles from '../_styles/Browse.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
 
 export const revalidate = 300;
 
@@ -19,14 +22,6 @@ type AcronymsPageProps = {
 };
 
 const letters = getBrowseLetters();
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function AcronymsPage({ searchParams }: AcronymsPageProps) {
   const params = (await searchParams) ?? {};
@@ -71,12 +66,8 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
       : undefined;
 
   return (
-    <>
-      <PageHeader
-        badge="Browse"
-        title="Acronyms"
-        subtitle="Alphabetical index of published acronym entries with tag filters and quick sort."
-      />
+    <div className={layoutStyles.pageNarrow}>
+      <PageHeader title="Acronyms" subtitle="Alphabetical index of published acronym entries." />
 
       <nav className={styles.letters} aria-label="Acronym letters">
         {letters.map((l) => (
@@ -112,38 +103,21 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
         </div>
       ) : (
         <>
-          <ol className={styles.list}>
+          <EntryRowList>
             {entries.map((entry) => (
-              <li key={entry.key} className={styles.item}>
-                <div className={styles.itemTitleRow}>
-                  <div className={styles.itemTitleLeft}>
-                    <span className={`${styles.typeBadge} ${styles.typeBadgeAcronym}`}>
-                      ACRONYM
-                    </span>
-                    <Link className={styles.itemTitle} href={`/acronym/${entry.slug}`}>
-                      {entry.title}
-                    </Link>
-                  </div>
-                  <span className={styles.itemSlug}>Updated {formatDate(new Date(entry.updatedAt))}</span>
-                </div>
-                {entry.summaryText ? (
-                  <p className={styles.itemSummary}>{entry.summaryText}</p>
-                ) : null}
-                {entry.tags.length ? (
-                  <div className={styles.itemTags}>
-                    {entry.tags.map((tag) => (
-                      <Link key={tag.slug} href={`/tags/${tag.slug}`} className={styles.tag}>
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+              <EntryRow
+                key={entry.key}
+                href={`/acronym/${entry.slug}`}
+                title={entry.title}
+                entryType="ACRONYM"
+                summary={entry.summaryText}
+                meta={`Updated ${formatDate(new Date(entry.updatedAt))}`}
+              />
             ))}
-          </ol>
+          </EntryRowList>
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>
       )}
-    </>
+    </div>
   );
 }

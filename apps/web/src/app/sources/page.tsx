@@ -1,27 +1,20 @@
 import Link from 'next/link';
 
 import { api, getConvexClient } from '@/lib/convex';
+import { formatDate } from '@/lib/dates';
 import { PageHeader } from '@/components/PageHeader';
 
-import styles from '../_styles/Browse.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
+import styles from '../_styles/Tags.module.css';
 
 export const revalidate = 900;
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function SourcesPage() {
   const sources = await getConvexClient().query(api.sources.list, {});
 
   return (
-    <>
+    <div className={layoutStyles.pageNarrow}>
       <PageHeader
-        badge="Sources"
         title="Sources"
         subtitle="Registered sources with license notes and attribution requirements."
       />
@@ -60,6 +53,6 @@ export default async function SourcesPage() {
           })}
         </ol>
       )}
-    </>
+    </div>
   );
 }

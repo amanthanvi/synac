@@ -1,12 +1,10 @@
 import Link from 'next/link';
 
-import { CitationPill } from '@/components/CitationPill';
 import { EntryPreviewLink } from '@/components/EntryPreviewLink';
-import { EntrySenseHashSync } from '@/components/EntrySenseHashSync';
 import { Markdown } from '@/components/Markdown';
 import { StickySenseToc } from '@/components/StickySenseToc';
 import { ViewTracker } from '@/components/ViewTracker';
-import { KeyValueList } from '@/components/ui/KeyValue';
+import { TypeMarker } from '@/components/ui/TypeMarker';
 import styles from '@/app/_styles/Entry.module.css';
 import {
   dedupeSenseCitations,
@@ -16,11 +14,26 @@ import {
   type PublicEntryRelation,
   type PublicEntrySense,
 } from '@/lib/publicEntryPage';
+import { markdownToText } from '@/lib/text';
 
 type PublicEntryPageProps = {
   entryType: 'TERM' | 'ACRONYM';
   data: PublicEntryPageData;
 };
+
+function externalHttpUrl(value: string): string | null {
+  const trimmed = value.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : null;
+}
+
+function comparableText(value: string | null): string {
+  if (!value) return '';
+  return markdownToText(value)
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[.\s]+$/, '')
+    .trim();
+}
 
 function RelationList({
   title,
@@ -32,8 +45,8 @@ function RelationList({
   if (relationships.length === 0) return null;
 
   return (
-    <div>
-      <h2 className={styles.sectionTitle}>{title}</h2>
+    <div className={styles.relationGroup}>
+      <h2 className={styles.relationTitle}>{title}</h2>
       <ul className={styles.relationList}>
         {relationships.map((relationship) => {
           const other = relationship.entry;
@@ -54,238 +67,206 @@ function RelationList({
   );
 }
 
-function TagList({ tags }: { tags: Array<{ slug: string; name: string }> }) {
+function SenseSources({ sense }: { sense: PublicEntrySense }) {
+  const citations = dedupeSenseCitations(sense.citations);
+  if (citations.length === 0) return null;
+
   return (
-    <div className={styles.tags}>
-      {tags.map((tag) => (
-        <Link key={tag.slug} href={`/tags/${tag.slug}`} className={styles.tag}>
-          {tag.name}
-        </Link>
-      ))}
+    <div className={styles.sources} aria-label="Sources">
+      <div className={styles.sourcesLabel}>{citations.length === 1 ? 'Source' : 'Sources'}</div>
+      <ul className={styles.sourceList}>
+        {citations.map((citation) => {
+          const url = externalHttpUrl(citation.url);
+          return (
+            <li key={`${citation.sourceSlug}:${citation.url}`} className={styles.sourceItem}>
+              <div className={styles.sourceLine}>
+                {url ? (
+                  <a
+                    className={styles.sourceName}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {citation.sourceName}
+                  </a>
+                ) : (
+                  <span className={styles.sourceName}>{citation.sourceName}</span>
+                )}
+                {citation.documentTitle ? (
+                  <span className={styles.sourceDoc}>{citation.documentTitle}</span>
+                ) : null}
+              </div>
+              <div className={styles.sourceMeta}>
+                accessed {formatEntryDate(new Date(citation.accessedAt))}
+              </div>
+              {citation.licenseNote || citation.attributionText ? (
+                <div className={styles.sourceNote}>
+                  {citation.licenseNote ? <div>{citation.licenseNote}</div> : null}
+                  {citation.attributionText ? <div>{citation.attributionText}</div> : null}
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
 
-function SenseCard({
+function Sense({
   sense,
-  entryType,
-  openByDefault,
+  showNumber,
 }: {
   sense: PublicEntrySense;
-  entryType: 'TERM' | 'ACRONYM';
-  openByDefault: boolean;
+  showNumber: boolean;
 }) {
-  const citations = dedupeSenseCitations(sense.citations);
-  const excerpt = sense.definitionText.replace(/\s+/g, ' ').trim() || 'No definition yet.';
+  const heading = sense.label ?? sense.expandedForm;
+  const headingDetail =
+    sense.label &&
+    sense.expandedForm &&
+    sense.expandedForm.trim().toLowerCase() !== sense.label.trim().toLowerCase()
+      ? sense.expandedForm
+      : null;
 
   return (
-    <details id={senseAnchorId(sense)} className={styles.senseCard} open={openByDefault} data-sense>
-      <summary className={styles.senseSummary}>
-        <div className={styles.senseSummaryTop}>
-          <span className={styles.senseLabel}>{sense.label ?? `Sense ${sense.order + 1}`}</span>
-          {entryType === 'ACRONYM' && sense.expandedForm ? (
-            <span className={styles.senseExpanded}>{sense.expandedForm}</span>
-          ) : null}
-          {sense.isEditorial ? <span className={styles.senseExpanded}>Editorial</span> : null}
-          <span className={styles.senseChevron} aria-hidden="true">
-            ▾
-          </span>
-        </div>
-        <div className={styles.senseExcerpt}>{excerpt}</div>
-      </summary>
+    <li
+      id={senseAnchorId(sense)}
+      className={showNumber ? styles.sense : `${styles.sense} ${styles.senseSolo}`}
+    >
+      {showNumber ? (
+        <span className={styles.senseNumber} aria-hidden="true">
+          {sense.order + 1}
+        </span>
+      ) : null}
+      <div className={styles.senseBody}>
+        {heading ? (
+          <h2 className={styles.senseHeading}>
+            {heading}
+            {headingDetail ? (
+              <span className={styles.senseHeadingDetail}> · {headingDetail}</span>
+            ) : null}
+          </h2>
+        ) : null}
 
-      <div className={styles.senseContent}>
-        <div className={styles.senseContentInner}>
-          <div className={styles.senseBody}>
+        <div className={styles.senseDefinition}>
+          {sense.definitionMd ? (
             <Markdown>{sense.definitionMd}</Markdown>
-          </div>
-
-          {citations.length ? (
-            <div className={styles.inlineSources} aria-label="Sources">
-              {citations.map((citation) => (
-                <CitationPill
-                  key={`${citation.sourceSlug}:${citation.url}`}
-                  sourceName={citation.sourceName}
-                  url={citation.url}
-                  accessedAtLabel={formatEntryDate(new Date(citation.accessedAt))}
-                  documentTitle={citation.documentTitle ?? null}
-                  licenseNote={citation.licenseNote ?? null}
-                  attributionText={citation.attributionText}
-                />
-              ))}
-            </div>
-          ) : null}
-
-          {sense.examples.length ? (
-            <div className={styles.examples}>
-              <div className={styles.sectionTitle}>Examples</div>
-              <ul className={styles.examplesList}>
-                {sense.examples.map((example) => (
-                  <li key={example.md} className={styles.exampleItem}>
-                    <Markdown>{example.md}</Markdown>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          {sense.isEditorial && sense.editorialRationale ? (
-            <div className={styles.bib} aria-label="Editorial note">
-              <div className={styles.sectionTitle}>Editorial note</div>
-              <div className={styles.senseMuted}>{sense.editorialRationale}</div>
-            </div>
-          ) : null}
-
-          <div className={styles.bib} aria-label="Bibliography">
-            <div className={styles.sectionTitle}>Bibliography</div>
-            {citations.length === 0 ? (
-              <div className={styles.senseMuted}>
-                {sense.isEditorial
-                  ? 'Editorial sense — maintained in the SynAc repository.'
-                  : 'No references recorded for this sense yet.'}
-              </div>
-            ) : (
-              <ol className={styles.bibList}>
-                {citations.map((citation) => (
-                  <li key={`${citation.sourceSlug}:${citation.url}`} className={styles.bibItem}>
-                    <div className={styles.bibSource}>{citation.sourceName}</div>
-                    <div className={styles.bibMeta}>
-                      <span>Accessed {formatEntryDate(new Date(citation.accessedAt))}</span>
-                      {citation.citationText ? <span>{citation.citationText}</span> : null}
-                    </div>
-                    {citation.documentTitle ? (
-                      <div className={styles.bibDocTitle}>{citation.documentTitle}</div>
-                    ) : null}
-                    <a
-                      className={styles.bibUrl}
-                      href={citation.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {citation.url}
-                    </a>
-                    {citation.licenseNote || citation.attributionText ? (
-                      <div className={styles.bibNote}>
-                        {citation.licenseNote ? <div>{citation.licenseNote}</div> : null}
-                        {citation.attributionText ? <div>{citation.attributionText}</div> : null}
-                      </div>
-                    ) : null}
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div>
+          ) : sense.definitionText ? (
+            <p>{sense.definitionText}</p>
+          ) : (
+            <p className={styles.muted}>No definition yet.</p>
+          )}
         </div>
+
+        {sense.examples.length ? (
+          <div className={styles.examples}>
+            <div className={styles.examplesLabel}>
+              {sense.examples.length === 1 ? 'Example' : 'Examples'}
+            </div>
+            <ul className={styles.examplesList}>
+              {sense.examples.map((example) => (
+                <li key={example.md} className={styles.exampleItem}>
+                  <Markdown>{example.md}</Markdown>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+
+        {sense.isEditorial && sense.editorialRationale ? (
+          <div className={styles.sourceNote} aria-label="Editorial note">
+            <strong>Editorial note:</strong> {sense.editorialRationale}
+          </div>
+        ) : null}
+
+        <SenseSources sense={sense} />
       </div>
-    </details>
+    </li>
   );
 }
 
 export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
   const { entry } = data;
   const updatedAt = new Date(entry.updatedAt);
+  const senseExpansions = new Set(
+    entry.senses
+      .map((sense) => sense.expandedForm?.trim().toLowerCase())
+      .filter((value): value is string => Boolean(value)),
+  );
+  const standsForValues = [
+    ...(data.standsForPrimary.primary ? [data.standsForPrimary.primary] : []),
+    ...data.standsForPrimary.alternates,
+  ].filter((value) => !senseExpansions.has(value.trim().toLowerCase()));
+
+  const summaryComparable = comparableText(entry.summaryMd ?? entry.summaryText);
+  const firstSenseComparable =
+    entry.senses.length === 1
+      ? comparableText(entry.senses[0]!.definitionMd ?? entry.senses[0]!.definitionText)
+      : '';
+  const summaryDuplicatesSense =
+    Boolean(summaryComparable) &&
+    Boolean(firstSenseComparable) &&
+    (firstSenseComparable.startsWith(summaryComparable) || summaryComparable === firstSenseComparable);
+  const showLede = Boolean(entry.summaryMd || entry.summaryText) && !summaryDuplicatesSense;
+  const showToc = entry.senses.length >= 3;
 
   return (
     <>
       <ViewTracker entryKey={entry.key} />
-      <div className={styles.layout}>
+      <article className={showToc ? styles.layoutWithToc : styles.layout}>
         <div className={styles.main}>
           <header className={styles.header}>
-            <div className={styles.badgeRow}>
-              <span
-                className={`${styles.typeBadge} ${
-                  entryType === 'TERM' ? styles.typeBadgeTerm : styles.typeBadgeAcronym
-                }`}
-              >
-                {entryType}
-              </span>
+            <div className={styles.titleRow}>
+              <h1 className={styles.title}>{entry.title}</h1>
+              <TypeMarker type={entryType} className={styles.typeMarker} />
             </div>
-            <h1 className={styles.title}>{entry.title}</h1>
-            {entry.summaryMd ? (
-              <div className={styles.summary}>
-                <Markdown>{entry.summaryMd}</Markdown>
+
+            {standsForValues.length ? (
+              <p className={styles.standsFor}>{standsForValues.join(' · ')}</p>
+            ) : null}
+
+            {data.alsoKnownAs.length ? (
+              <p className={styles.aka}>
+                <span className={styles.akaLabel}>Also known as </span>
+                {data.alsoKnownAs.join(', ')}
+              </p>
+            ) : null}
+
+            {showLede ? (
+              <div className={styles.lede}>
+                {entry.summaryMd ? <Markdown>{entry.summaryMd}</Markdown> : <p>{entry.summaryText}</p>}
               </div>
-            ) : (
-              <p className={styles.summary}>{entry.summaryText ?? 'No summary yet.'}</p>
-            )}
+            ) : null}
 
             <div className={styles.meta}>
-              <KeyValueList
-                items={[
-                  {
-                    label: 'Updated',
-                    value: (
-                      <time className={styles.updated} dateTime={updatedAt.toISOString()}>
-                        {formatEntryDate(updatedAt)}
-                      </time>
-                    ),
-                  },
-                  ...(data.standsForPrimary.primary
-                    ? [
-                        {
-                          label: 'Stands for',
-                          value: (
-                            <div className={styles.variants}>
-                              <span className={`${styles.variant} ${styles.variantStrong}`}>
-                                {data.standsForPrimary.primary}
-                              </span>
-                              {data.standsForPrimary.alternates.map((value) => (
-                                <span key={value} className={styles.variant}>
-                                  {value}
-                                </span>
-                              ))}
-                            </div>
-                          ),
-                        },
-                      ]
-                    : []),
-                  ...(data.alsoKnownAs.length
-                    ? [
-                        {
-                          label: 'Also known as',
-                          value: (
-                            <div className={styles.variants}>
-                              {data.alsoKnownAs.map((value) => (
-                                <span key={value} className={styles.variant}>
-                                  {value}
-                                </span>
-                              ))}
-                            </div>
-                          ),
-                        },
-                      ]
-                    : []),
-                  ...(entry.tags.length
-                    ? [
-                        {
-                          label: 'Tags',
-                          value: <TagList tags={entry.tags} />,
-                        },
-                      ]
-                    : []),
-                ]}
-              />
+              {entry.tags.length ? (
+                <span className={styles.metaTags}>
+                  {entry.tags.map((tag, index) => (
+                    <span key={tag.slug}>
+                      {index > 0 ? ', ' : ''}
+                      <Link href={`/tags/${tag.slug}`} className={styles.metaTagLink}>
+                        {tag.name}
+                      </Link>
+                    </span>
+                  ))}
+                </span>
+              ) : null}
+              <span className={styles.metaUpdated}>
+                Updated{' '}
+                <time dateTime={updatedAt.toISOString()}>{formatEntryDate(updatedAt)}</time>
+              </span>
             </div>
           </header>
 
-          <section className={styles.section} aria-label="Senses">
-            <h2 className={styles.sectionTitle}>Senses</h2>
+          <section aria-label="Senses">
             {entry.senses.length === 0 ? (
-              <p className={styles.senseMuted}>No published senses yet.</p>
+              <p className={styles.muted}>No published senses yet.</p>
             ) : (
-              <div data-senses>
-                <EntrySenseHashSync collapseOthers={entry.senses.length >= 10} />
-                <div className={styles.senseList}>
-                  {entry.senses.map((sense, index) => (
-                    <SenseCard
-                      key={sense.key}
-                      sense={sense}
-                      entryType={entryType}
-                      openByDefault={entry.senses.length === 1 || index === 0}
-                    />
-                  ))}
-                </div>
-              </div>
+              <ol className={styles.senseList}>
+                {entry.senses.map((sense) => (
+                  <Sense key={sense.key} sense={sense} showNumber={entry.senses.length > 1} />
+                ))}
+              </ol>
             )}
           </section>
 
@@ -297,8 +278,14 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
           ) : null}
         </div>
 
-        <StickySenseToc items={data.tocItems} />
-      </div>
+        {showToc ? (
+          <div className={styles.rail}>
+            <div className={styles.railInner}>
+              <StickySenseToc items={data.tocItems} />
+            </div>
+          </div>
+        ) : null}
+      </article>
     </>
   );
 }

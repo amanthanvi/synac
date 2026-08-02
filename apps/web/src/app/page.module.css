@@ -1,124 +1,88 @@
 .wrap {
-  padding-top: 22px;
+  max-width: var(--content-max);
+  margin: 0 auto;
   display: grid;
-  gap: 34px;
+  gap: var(--space-8);
 }
 
 .hero {
-  max-width: var(--content-max);
-  margin: 0 auto;
+  padding-top: var(--space-8);
   text-align: center;
   display: grid;
-  gap: 14px;
-  padding: 18px 0 0;
-  position: relative;
-  z-index: 2;
+  justify-items: center;
+  gap: var(--space-3);
 }
 
 .title {
-  font-family: var(--font-mono);
-  font-size: clamp(42px, 5vw, 64px);
-  letter-spacing: -0.05em;
-  line-height: 1.05;
-  font-weight: 650;
+  font-size: var(--text-4xl);
+  line-height: var(--text-4xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .subtitle {
-  margin: 0 auto;
-  max-width: 66ch;
+  max-width: 44ch;
   color: var(--fg-muted);
-  line-height: 1.7;
-  font-size: 15px;
+  font-size: var(--text-lg);
+  line-height: var(--text-lg-lh);
+  text-wrap: balance;
 }
 
 .search {
-  margin-top: 10px;
+  margin-top: var(--space-3);
+  width: min(560px, 100%);
 }
 
 .quick {
-  margin-top: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--fg-subtle);
+}
+
+.quick a {
+  color: var(--fg-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+  transition: color var(--dur-hover) var(--ease);
+}
+
+.quick a:hover {
+  color: var(--fg);
 }
 
 .recent {
   display: grid;
-  gap: 12px;
-  position: relative;
-  z-index: 1;
+  gap: var(--space-3);
 }
 
 .sectionHead {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .sectionTitle {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--fg-subtle);
 }
 
 .sectionLink {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: color-mix(in srgb, var(--accent) 84%, var(--fg));
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+  transition: color var(--dur-hover) var(--ease);
 }
 
 .sectionLink:hover {
-  color: color-mix(in srgb, var(--accent) 92%, var(--fg));
+  color: var(--fg);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero {
-    animation: rise 520ms var(--ease-out) both;
-  }
-
-  .recent {
-    animation: rise 520ms var(--ease-out) both;
-    animation-delay: 140ms;
-  }
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .kicker,
-  .title,
-  .lede,
-  .actions,
-  .metaHint,
-  .sidebar,
-  .cards {
-    animation: none;
-  }
-
-  .card {
-    transition: none;
-  }
-
-  .card:hover {
-    transform: none;
-  }
-
-  .hero::before {
-    transform: none;
-  }
+.empty {
+  color: var(--fg-muted);
+  font-size: var(--text-ui);
 }

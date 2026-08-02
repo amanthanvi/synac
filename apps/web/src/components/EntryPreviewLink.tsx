@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { TypeMarker } from './ui/TypeMarker';
 import styles from './EntryPreviewLink.module.css';
 
 export type EntryPreviewLinkProps = {
@@ -16,19 +17,14 @@ export function EntryPreviewLink({ href, title, entryType, summary }: EntryPrevi
         {title}
       </Link>
       <span className={styles.preview} role="tooltip" aria-hidden="true">
-        <div className={styles.header}>
-          <div className={styles.title}>{title}</div>
-          <div
-            className={`${styles.badge} ${
-              entryType === 'ACRONYM' ? styles.badgeAcronym : styles.badgeTerm
-            }`}
-          >
-            {entryType}
-          </div>
-        </div>
-        <div className={styles.summary}>{summary?.trim() ? summary.trim() : 'No summary yet.'}</div>
+        <span className={styles.header}>
+          <span className={styles.title}>{title}</span>
+          <TypeMarker type={entryType} />
+        </span>
+        <span className={styles.summary}>
+          {summary?.trim() ? summary.trim() : 'No summary yet.'}
+        </span>
       </span>
     </span>
   );
 }
-

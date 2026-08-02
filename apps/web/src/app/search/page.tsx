@@ -1,16 +1,13 @@
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 
 import { api, getConvexClient } from '@/lib/convex';
 
+import { renderHeadline } from '@/lib/highlight';
+import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
-import { FocusSearchButton } from '@/components/FocusSearchButton';
-import { ButtonLink } from '@/components/ui/Button';
-import { Panel } from '@/components/ui/Panel';
+import { SearchForm } from '@/components/SearchForm';
 
-import styles from '../_styles/Browse.module.css';
-import layoutStyles from '../_styles/Layout.module.css';
 import pageStyles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -38,80 +35,63 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         ? 'ACRONYM'
         : undefined;
 
-  return (
-    <>
-      <PageHeader
-        badge="Search"
-        title="Search"
-        subtitle="Search published entries by title, aliases, expansions, summaries, and definitions."
-      />
+  const filters: Array<{ label: string; href: string; active: boolean }> = [
+    { label: 'All', href: `/search?q=${encodeURIComponent(query)}`, active: !entryType },
+    {
+      label: 'Terms',
+      href: `/search?q=${encodeURIComponent(query)}&type=TERM`,
+      active: entryType === 'TERM',
+    },
+    {
+      label: 'Acronyms',
+      href: `/search?q=${encodeURIComponent(query)}&type=ACRONYM`,
+      active: entryType === 'ACRONYM',
+    },
+  ];
 
-      <Panel className={layoutStyles.narrow}>
-        <div className={pageStyles.queryPanel}>
-          <div className={pageStyles.queryRow}>
-            <div className={pageStyles.queryLabel}>Query</div>
-            <div className={pageStyles.queryValue}>{query || '—'}</div>
-          </div>
-          <div className={pageStyles.queryActions}>
-            <FocusSearchButton size="sm" variant="primary">
-              Change query <span className={pageStyles.kbdInline}>/</span>
-            </FocusSearchButton>
-            <span className={pageStyles.queryHint}>
-              Tip: <span className={pageStyles.kbdInline}>⌘K</span> for commands.
-            </span>
-          </div>
-        </div>
-      </Panel>
+  return (
+    <div className={pageStyles.wrap}>
+      <PageHeader title="Search" />
+
+      <div className={pageStyles.form}>
+        <SearchForm key={query} defaultValue={query} size="lg" />
+      </div>
 
       {!query || isIgnoredQuery ? (
-        <div className={pageStyles.section}>
+        <div className={pageStyles.guidance}>
           {isIgnoredQuery ? (
-            <p className={styles.itemSummary}>
-              Try a more specific query. Or jump into browsing:
-            </p>
-          ) : null}
-          <div className={layoutStyles.row}>
-            <ButtonLink href="/terms?letter=a" size="sm">
-              Browse terms
-            </ButtonLink>
-            <ButtonLink href="/acronyms?letter=a" size="sm">
-              Browse acronyms
-            </ButtonLink>
-            <ButtonLink href="/tags" size="sm">
-              Browse tags
-            </ButtonLink>
-          </div>
+            <p>Try a more specific query, or browse the index:</p>
+          ) : (
+            <p>Search published entries by title, alias, expansion, summary, or definition.</p>
+          )}
+          <p className={pageStyles.browseLinks}>
+            Browse <Link href="/terms">terms</Link>, <Link href="/acronyms">acronyms</Link>, or{' '}
+            <Link href="/tags">tags</Link>.
+          </p>
         </div>
       ) : (
         <>
-          <div className={pageStyles.filters}>
-            <ButtonLink
-              href={`/search?q=${encodeURIComponent(query)}`}
-              size="sm"
-              variant={!entryType ? 'primary' : 'ghost'}
-            >
-              All
-            </ButtonLink>
-            <ButtonLink
-              href={`/search?q=${encodeURIComponent(query)}&type=TERM`}
-              size="sm"
-              variant={entryType === 'TERM' ? 'primary' : 'ghost'}
-            >
-              Terms
-            </ButtonLink>
-            <ButtonLink
-              href={`/search?q=${encodeURIComponent(query)}&type=ACRONYM`}
-              size="sm"
-              variant={entryType === 'ACRONYM' ? 'primary' : 'ghost'}
-            >
-              Acronyms
-            </ButtonLink>
-          </div>
+          <nav className={pageStyles.filters} aria-label="Filter by entry type">
+            {filters.map((filter) => (
+              <Link
+                key={filter.label}
+                href={filter.href}
+                aria-current={filter.active ? 'true' : undefined}
+                className={
+                  filter.active
+                    ? `${pageStyles.filter} ${pageStyles.filterActive}`
+                    : pageStyles.filter
+                }
+              >
+                {filter.label}
+              </Link>
+            ))}
+          </nav>
 
           <Results query={query} page={page} entryType={entryType} />
         </>
       )}
-    </>
+    </div>
   );
 }
 
@@ -134,9 +114,10 @@ async function Results({
 
   if (results.length === 0) {
     return (
-      <div className={`${styles.empty} ${pageStyles.resultsEmpty}`}>
-        No results for <strong>{query}</strong>. Try a different spelling or browse by letter.
-      </div>
+      <p className={pageStyles.empty}>
+        No results for <strong>{query}</strong>. Try a different spelling, or browse{' '}
+        <Link href="/terms">terms</Link> and <Link href="/acronyms">acronyms</Link> by letter.
+      </p>
     );
   }
 
@@ -144,76 +125,43 @@ async function Results({
     entryType ? `&type=${encodeURIComponent(entryType)}` : ''
   }`;
   const prevHref = page > 1 ? `${baseHref}&page=${page - 1}` : undefined;
+  // page is clamped to 10 upstream — don't link past the cap.
   const nextHref =
-    results.length === pageSize ? `${baseHref}&page=${page + 1}` : undefined;
+    page < 10 && results.length === pageSize ? `${baseHref}&page=${page + 1}` : undefined;
 
   return (
     <>
-      <ol className={`${styles.list} ${pageStyles.resultsList}`}>
+      <EntryRowList>
         {results.map((r) => (
-          <li key={r.key} className={styles.item}>
-            <div className={styles.itemTitleRow}>
-              <div className={styles.itemTitleLeft}>
-                <span
-                  className={`${styles.typeBadge} ${
-                    r.entryType === 'TERM' ? styles.typeBadgeTerm : styles.typeBadgeAcronym
-                  }`}
-                >
-                  {r.entryType}
-                </span>
-                <Link
-                  className={styles.itemTitle}
-                  href={
-                    r.entryType === 'TERM'
-                      ? `/term/${r.slug}`
-                      : `/acronym/${r.slug}`
-                  }
-                >
-                  {r.title}
-                </Link>
-              </div>
-              <span className={styles.itemSlug}>
-                /{r.entryType === 'TERM' ? 'term' : 'acronym'}/{r.slug}
-              </span>
-            </div>
-            {r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 ? (
-              <p className={pageStyles.senseSummary}>
-                <strong>Meanings ({r.senseCount}):</strong>{' '}
-                {r.senseSummary ?? 'Multiple published senses.'}
-              </p>
-            ) : null}
-            {r.snippet ? (
-              <p className={styles.itemSummary}>{renderHeadline(r.snippet)}</p>
-            ) : r.summaryText ? (
-              <p className={styles.itemSummary}>{r.summaryText}</p>
-            ) : null}
-          </li>
+          <EntryRow
+            key={r.key}
+            href={r.entryType === 'TERM' ? `/term/${r.slug}` : `/acronym/${r.slug}`}
+            title={r.title}
+            entryType={r.entryType}
+            meta={
+              r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1
+                ? `${r.senseCount} meanings`
+                : undefined
+            }
+            summary={
+              // Title matches (buckets 1-2) produce a redundant snippet — the
+              // search document starts with the title — so sense labels win
+              // there; for content matches (bucket 3) the highlighted snippet
+              // explains why the result matched.
+              r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 && r.senseSummary && r.bucket < 3 ? (
+                r.senseSummary
+              ) : r.snippet ? (
+                renderHeadline(r.snippet)
+              ) : r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 && r.senseSummary ? (
+                r.senseSummary
+              ) : (
+                (r.summaryText ?? undefined)
+              )
+            }
+          />
         ))}
-      </ol>
+      </EntryRowList>
       <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
     </>
   );
-}
-
-function renderHeadline(headline: string): ReactNode {
-  const pieces: React.ReactNode[] = [];
-  const tokens = headline.split(/(<<|>>)/g);
-  let highlight = false;
-  let key = 0;
-
-  for (const token of tokens) {
-    if (!token) continue;
-    if (token === '<<') {
-      highlight = true;
-      continue;
-    }
-    if (token === '>>') {
-      highlight = false;
-      continue;
-    }
-
-    pieces.push(highlight ? <mark key={key++}>{token}</mark> : <span key={key++}>{token}</span>);
-  }
-
-  return <>{pieces}</>;
 }

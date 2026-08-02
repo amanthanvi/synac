@@ -1,6 +1,8 @@
 import Link from 'next/link';
 
+import { formatDate } from '@/lib/dates';
 import { BrowseControls } from '@/components/BrowseControls';
+import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import {
@@ -11,6 +13,7 @@ import {
 } from '@/lib/publicBrowse';
 
 import styles from '../_styles/Browse.module.css';
+import layoutStyles from '../_styles/Layout.module.css';
 
 export const revalidate = 300;
 
@@ -19,14 +22,6 @@ type TermsPageProps = {
 };
 
 const letters = getBrowseLetters();
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function TermsPage({ searchParams }: TermsPageProps) {
   const params = (await searchParams) ?? {};
@@ -71,12 +66,8 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
       : undefined;
 
   return (
-    <>
-      <PageHeader
-        badge="Browse"
-        title="Terms"
-        subtitle="Alphabetical index of published term entries with tag filters and quick sort."
-      />
+    <div className={layoutStyles.pageNarrow}>
+      <PageHeader title="Terms" subtitle="Alphabetical index of published term entries." />
 
       <nav className={styles.letters} aria-label="Term letters">
         {letters.map((l) => (
@@ -112,36 +103,21 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
         </div>
       ) : (
         <>
-          <ol className={styles.list}>
+          <EntryRowList>
             {entries.map((entry) => (
-              <li key={entry.key} className={styles.item}>
-                <div className={styles.itemTitleRow}>
-                  <div className={styles.itemTitleLeft}>
-                    <span className={`${styles.typeBadge} ${styles.typeBadgeTerm}`}>TERM</span>
-                    <Link className={styles.itemTitle} href={`/term/${entry.slug}`}>
-                      {entry.title}
-                    </Link>
-                  </div>
-                  <span className={styles.itemSlug}>Updated {formatDate(new Date(entry.updatedAt))}</span>
-                </div>
-                {entry.summaryText ? (
-                  <p className={styles.itemSummary}>{entry.summaryText}</p>
-                ) : null}
-                {entry.tags.length ? (
-                  <div className={styles.itemTags}>
-                    {entry.tags.map((tag) => (
-                      <Link key={tag.slug} href={`/tags/${tag.slug}`} className={styles.tag}>
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+              <EntryRow
+                key={entry.key}
+                href={`/term/${entry.slug}`}
+                title={entry.title}
+                entryType="TERM"
+                summary={entry.summaryText}
+                meta={`Updated ${formatDate(new Date(entry.updatedAt))}`}
+              />
             ))}
-          </ol>
+          </EntryRowList>
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>
       )}
-    </>
+    </div>
   );
 }

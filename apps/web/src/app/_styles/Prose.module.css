@@ -1,36 +1,35 @@
 .prose {
-  max-width: 78ch;
-  line-height: 1.8;
-  color: color-mix(in srgb, var(--fg) 80%, transparent);
+  max-width: var(--measure);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
+  color: var(--fg);
 }
 
 .prose h2 {
-  margin-top: 1.4em;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  letter-spacing: -0.01em;
-  font-weight: 650;
-  line-height: 1.25;
-  color: var(--fg);
+  margin-top: 1.6em;
+  margin-bottom: 0.4em;
+  font-size: var(--text-xl);
+  line-height: var(--text-xl-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .prose h3 {
-  margin-top: 1.2em;
-  font-family: var(--font-mono);
-  font-size: 14px;
-  letter-spacing: -0.01em;
-  font-weight: 650;
-  line-height: 1.25;
-  color: var(--fg);
+  margin-top: 1.3em;
+  margin-bottom: 0.3em;
+  font-size: var(--text-lg);
+  line-height: var(--text-lg-lh);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
 }
 
 .prose p + p {
-  margin-top: 0.9em;
+  margin-top: 0.85em;
 }
 
 .prose ul,
 .prose ol {
-  margin: 0.9em 0 0.9em 1.2em;
+  margin: 0.85em 0 0.85em 1.3em;
 }
 
 .prose li + li {
@@ -38,14 +37,22 @@
 }
 
 .prose a {
-  color: color-mix(in srgb, var(--accent2) 85%, var(--fg));
+  color: var(--accent);
   text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-color: color-mix(in srgb, var(--accent2) 55%, transparent);
-  transition: color 160ms var(--ease-out);
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  transition: color var(--dur-hover) var(--ease);
 }
 
 .prose a:hover {
-  color: color-mix(in srgb, var(--accent2) 95%, var(--fg));
-  text-decoration-color: color-mix(in srgb, var(--accent2) 70%, transparent);
+  color: var(--accent-hover);
+  text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 0.1em 0.32em;
+  border-radius: 5px;
+  background: var(--bg-2);
 }
