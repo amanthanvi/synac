@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-
 const SESSION_COOKIE = 'synac_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
@@ -17,17 +15,8 @@ function generateNonce(): string {
 function buildContentSecurityPolicy(nonce: string): string {
   const isDev = process.env.NODE_ENV !== 'production';
 
-  const clerk = [
-    'https://*.clerk.com',
-    'https://*.clerk.dev',
-    'https://*.clerk.accounts.dev',
-    'https://clerk.synac.app',
-    'https://accounts.synac.app',
-  ];
-
-  const scriptSrc = ["'self'", `'nonce-${nonce}'`, ...(isDev ? ["'unsafe-eval'"] : []), ...clerk].join(' ');
-  const connectSrc = ["'self'", ...(isDev ? ['ws:', 'wss:'] : []), ...clerk].join(' ');
-  const frameSrc = ["'self'", ...clerk].join(' ');
+  const scriptSrc = ["'self'", `'nonce-${nonce}'`, ...(isDev ? ["'unsafe-eval'"] : [])].join(' ');
+  const connectSrc = ["'self'", ...(isDev ? ['ws:', 'wss:'] : [])].join(' ');
 
   const directives = [
     "default-src 'self'",
@@ -37,7 +26,7 @@ function buildContentSecurityPolicy(nonce: string): string {
     "font-src 'self' data: https:",
     "worker-src 'self' blob:",
     `connect-src ${connectSrc}`,
-    `frame-src ${frameSrc}`,
+    "frame-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
     "frame-ancestors 'none'",
@@ -94,12 +83,6 @@ function setSecurityHeaders(request: NextRequest, response: NextResponse): NextR
   return next;
 }
 
-const isClerkConfigured = Boolean(
-  process.env.CLERK_SECRET_KEY && process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-);
-
-const isAdminRoute = createRouteMatcher(['/admin(.*)', '/api/v1/admin(.*)']);
-
 function shouldSetSessionCookie(request: NextRequest): boolean {
   if (request.method !== 'GET') return false;
 
@@ -107,8 +90,6 @@ function shouldSetSessionCookie(request: NextRequest): boolean {
   if (pathname === '/robots.txt') return false;
   if (pathname.startsWith('/sitemap')) return false;
   if (pathname.startsWith('/api')) return false;
-  if (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up')) return false;
-  if (pathname.startsWith('/admin')) return false;
 
   return true;
 }
@@ -130,24 +111,10 @@ function maybeSetSessionCookie(request: NextRequest, response: NextResponse): Ne
   return response;
 }
 
-const proxyWithoutAuth = (request: NextRequest) => {
-  if (isAdminRoute(request)) {
-    const response = new NextResponse('Not Found', { status: 404 });
-    response.headers.set('x-synac-proxy-continue', 'false');
-    return setSecurityHeaders(request, response);
-  }
-
+export default function proxy(request: NextRequest) {
   const withCookies = maybeSetSessionCookie(request, NextResponse.next());
   return setSecurityHeaders(request, withCookies);
-};
-
-const proxyWithAuth = clerkMiddleware(async (auth, request) => {
-  if (isAdminRoute(request)) await auth.protect();
-  const withCookies = maybeSetSessionCookie(request, NextResponse.next());
-  return setSecurityHeaders(request, withCookies);
-});
-
-export default isClerkConfigured ? proxyWithAuth : proxyWithoutAuth;
+}
 
 export const config = {
   matcher: [

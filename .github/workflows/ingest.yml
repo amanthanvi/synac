@@ -1,0 +1,65 @@
+name: Ingest
+
+on:
+  schedule:
+    # Weekly, Monday 06:20 UTC.
+    - cron: '20 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source slug to ingest (empty = all enabled sources)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v4
+        with:
+          version: 10.34.4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Regenerate bundles
+        run: |
+          if [ -n "${{ github.event.inputs.source }}" ]; then
+            pnpm --filter @synac/ingest-tools ingest -- --source "${{ github.event.inputs.source }}"
+          else
+            pnpm --filter @synac/ingest-tools ingest -- --all
+          fi
+
+      - name: Validate content
+        run: pnpm content:check
+
+      - name: Open pull request if content changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: ingest/auto-update
+          title: 'content: automated source ingest update'
+          commit-message: 'content: automated source ingest update'
+          labels: automated-ingest
+          body: |
+            Automated ingest run regenerated one or more source bundles under
+            `content/generated/`. Review the diff, then merge to publish — the
+            deploy workflow syncs `main` into the Convex deployment.
+
+            Bundles are machine-owned; to adjust how an entry is presented,
+            edit `content/overrides/` instead of this diff.
+          delete-branch: true

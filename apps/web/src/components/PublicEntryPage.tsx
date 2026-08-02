@@ -7,13 +7,12 @@ import { ViewTracker } from '@/components/ViewTracker';
 import { TypeMarker } from '@/components/ui/TypeMarker';
 import styles from '@/app/_styles/Entry.module.css';
 import {
-  buildSenseCitations,
+  dedupeSenseCitations,
   formatEntryDate,
-  type PublicEntryExample,
+  senseAnchorId,
+  type PublicEntryPageData,
   type PublicEntryRelation,
   type PublicEntrySense,
-  type PublicEntryPageData,
-  type PublicSenseProvenance,
 } from '@/lib/publicEntryPage';
 import { markdownToText } from '@/lib/text';
 
@@ -36,25 +35,12 @@ function comparableText(value: string | null): string {
     .trim();
 }
 
-function senseText(sense: PublicEntrySense): string {
-  // Compare the field the sense actually renders (markdown first).
-  return comparableText(sense.definitionMd ?? sense.definitionText);
-}
-
-function contentModeLabel(mode: PublicSenseProvenance['contentMode']): string {
-  if (mode === 'QUOTED') return 'quoted';
-  if (mode === 'PARAPHRASED') return 'paraphrased';
-  return 'summarized';
-}
-
 function RelationList({
   title,
   relationships,
-  summaryById,
 }: {
   title: string;
   relationships: PublicEntryRelation[];
-  summaryById: Map<string, string | null>;
 }) {
   if (relationships.length === 0) return null;
 
@@ -63,17 +49,15 @@ function RelationList({
       <h2 className={styles.relationTitle}>{title}</h2>
       <ul className={styles.relationList}>
         {relationships.map((relationship) => {
-          const href =
-            relationship.otherEntry.entryType === 'TERM'
-              ? `/term/${relationship.otherEntry.primarySlug}`
-              : `/acronym/${relationship.otherEntry.primarySlug}`;
+          const other = relationship.entry;
+          const href = other.entryType === 'TERM' ? `/term/${other.slug}` : `/acronym/${other.slug}`;
           return (
-            <li key={relationship.otherEntry.id}>
+            <li key={other.key}>
               <EntryPreviewLink
                 href={href}
-                title={relationship.otherEntry.displayTitle}
-                entryType={relationship.otherEntry.entryType}
-                summary={summaryById.get(relationship.otherEntry.id) ?? null}
+                title={other.title}
+                entryType={other.entryType}
+                summary={other.summaryText}
               />
             </li>
           );
@@ -83,47 +67,45 @@ function RelationList({
   );
 }
 
-function SenseSources({ provenanceItems }: { provenanceItems: PublicSenseProvenance[] }) {
-  const citations = buildSenseCitations(provenanceItems);
+function SenseSources({ sense }: { sense: PublicEntrySense }) {
+  const citations = dedupeSenseCitations(sense.citations);
   if (citations.length === 0) return null;
 
   return (
     <div className={styles.sources} aria-label="Sources">
-      <div className={styles.sourcesLabel}>
-        {citations.length === 1 ? 'Source' : 'Sources'}
-      </div>
+      <div className={styles.sourcesLabel}>{citations.length === 1 ? 'Source' : 'Sources'}</div>
       <ul className={styles.sourceList}>
-        {citations.map(({ citation, contentMode }) => {
+        {citations.map((citation) => {
           const url = externalHttpUrl(citation.url);
           return (
-          <li key={citation.id} className={styles.sourceItem}>
-            <div className={styles.sourceLine}>
-              {url ? (
-                <a
-                  className={styles.sourceName}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {citation.source.name}
-                </a>
-              ) : (
-                <span className={styles.sourceDoc}>{citation.source.name}</span>
-              )}
-              {citation.sourceDocument.title ? (
-                <span className={styles.sourceDoc}>{citation.sourceDocument.title}</span>
-              ) : null}
-            </div>
-            <div className={styles.sourceMeta}>
-              {contentModeLabel(contentMode)} · accessed {formatEntryDate(citation.accessedAt)}
-            </div>
-            {citation.licenseNote || citation.attributionText ? (
-              <div className={styles.sourceNote}>
-                {citation.licenseNote ? <div>{citation.licenseNote}</div> : null}
-                {citation.attributionText ? <div>{citation.attributionText}</div> : null}
+            <li key={`${citation.sourceSlug}:${citation.url}`} className={styles.sourceItem}>
+              <div className={styles.sourceLine}>
+                {url ? (
+                  <a
+                    className={styles.sourceName}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {citation.sourceName}
+                  </a>
+                ) : (
+                  <span className={styles.sourceName}>{citation.sourceName}</span>
+                )}
+                {citation.documentTitle ? (
+                  <span className={styles.sourceDoc}>{citation.documentTitle}</span>
+                ) : null}
               </div>
-            ) : null}
-          </li>
+              <div className={styles.sourceMeta}>
+                accessed {formatEntryDate(new Date(citation.accessedAt))}
+              </div>
+              {citation.licenseNote || citation.attributionText ? (
+                <div className={styles.sourceNote}>
+                  {citation.licenseNote ? <div>{citation.licenseNote}</div> : null}
+                  {citation.attributionText ? <div>{citation.attributionText}</div> : null}
+                </div>
+              ) : null}
+            </li>
           );
         })}
       </ul>
@@ -134,33 +116,26 @@ function SenseSources({ provenanceItems }: { provenanceItems: PublicSenseProvena
 function Sense({
   sense,
   showNumber,
-  provenanceItems,
 }: {
   sense: PublicEntrySense;
   showNumber: boolean;
-  provenanceItems: PublicSenseProvenance[];
 }) {
-  // The authored label is the curator's disambiguator — it wins over the
-  // expansion, which several senses of one acronym can share.
-  const heading = sense.senseLabel ?? sense.expandedForm;
+  const heading = sense.label ?? sense.expandedForm;
   const headingDetail =
-    sense.senseLabel &&
+    sense.label &&
     sense.expandedForm &&
-    sense.expandedForm.trim().toLowerCase() !== sense.senseLabel.trim().toLowerCase()
+    sense.expandedForm.trim().toLowerCase() !== sense.label.trim().toLowerCase()
       ? sense.expandedForm
       : null;
-  const examples = sense.examples.filter(
-    (example) => example.exampleMd?.trim() || example.exampleText?.trim(),
-  );
 
   return (
     <li
-      id={`sense-${sense.id}`}
+      id={senseAnchorId(sense)}
       className={showNumber ? styles.sense : `${styles.sense} ${styles.senseSolo}`}
     >
       {showNumber ? (
         <span className={styles.senseNumber} aria-hidden="true">
-          {sense.senseOrder + 1}
+          {sense.order + 1}
         </span>
       ) : null}
       <div className={styles.senseBody}>
@@ -172,6 +147,7 @@ function Sense({
             ) : null}
           </h2>
         ) : null}
+
         <div className={styles.senseDefinition}>
           {sense.definitionMd ? (
             <Markdown>{sense.definitionMd}</Markdown>
@@ -182,26 +158,28 @@ function Sense({
           )}
         </div>
 
-        {examples.length ? (
+        {sense.examples.length ? (
           <div className={styles.examples}>
             <div className={styles.examplesLabel}>
-              {examples.length === 1 ? 'Example' : 'Examples'}
+              {sense.examples.length === 1 ? 'Example' : 'Examples'}
             </div>
             <ul className={styles.examplesList}>
-              {examples.map((example: PublicEntryExample) => (
-                <li key={example.id} className={styles.exampleItem}>
-                  {example.exampleMd?.trim() ? (
-                    <Markdown>{example.exampleMd}</Markdown>
-                  ) : example.exampleText?.trim() ? (
-                    <p>{example.exampleText}</p>
-                  ) : null}
+              {sense.examples.map((example) => (
+                <li key={example.md} className={styles.exampleItem}>
+                  <Markdown>{example.md}</Markdown>
                 </li>
               ))}
             </ul>
           </div>
         ) : null}
 
-        <SenseSources provenanceItems={provenanceItems} />
+        {sense.isEditorial && sense.editorialRationale ? (
+          <div className={styles.sourceNote} aria-label="Editorial note">
+            <strong>Editorial note:</strong> {sense.editorialRationale}
+          </div>
+        ) : null}
+
+        <SenseSources sense={sense} />
       </div>
     </li>
   );
@@ -209,7 +187,7 @@ function Sense({
 
 export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
   const { entry } = data;
-
+  const updatedAt = new Date(entry.updatedAt);
   const senseExpansions = new Set(
     entry.senses
       .map((sense) => sense.expandedForm?.trim().toLowerCase())
@@ -220,30 +198,26 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
     ...data.standsForPrimary.alternates,
   ].filter((value) => !senseExpansions.has(value.trim().toLowerCase()));
 
-  // Hide the lede only when it clearly repeats the sole sense's definition.
   const summaryComparable = comparableText(entry.summaryMd ?? entry.summaryText);
-  const firstSenseComparable = entry.senses.length === 1 ? senseText(entry.senses[0]!) : '';
+  const firstSenseComparable =
+    entry.senses.length === 1
+      ? comparableText(entry.senses[0]!.definitionMd ?? entry.senses[0]!.definitionText)
+      : '';
   const summaryDuplicatesSense =
     Boolean(summaryComparable) &&
     Boolean(firstSenseComparable) &&
-    (firstSenseComparable.startsWith(summaryComparable) ||
-      summaryComparable === firstSenseComparable);
+    (firstSenseComparable.startsWith(summaryComparable) || summaryComparable === firstSenseComparable);
   const showLede = Boolean(entry.summaryMd || entry.summaryText) && !summaryDuplicatesSense;
-
-  const tocItems = entry.senses.map((sense) => ({
-    id: sense.id,
-    label: sense.senseLabel ?? sense.expandedForm ?? `Sense ${sense.senseOrder + 1}`,
-  }));
   const showToc = entry.senses.length >= 3;
 
   return (
     <>
-      <ViewTracker entryId={entry.id} />
+      <ViewTracker entryKey={entry.key} />
       <article className={showToc ? styles.layoutWithToc : styles.layout}>
         <div className={styles.main}>
           <header className={styles.header}>
             <div className={styles.titleRow}>
-              <h1 className={styles.title}>{entry.displayTitle}</h1>
+              <h1 className={styles.title}>{entry.title}</h1>
               <TypeMarker type={entryType} className={styles.typeMarker} />
             </div>
 
@@ -260,19 +234,15 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
 
             {showLede ? (
               <div className={styles.lede}>
-                {entry.summaryMd ? (
-                  <Markdown>{entry.summaryMd}</Markdown>
-                ) : (
-                  <p>{entry.summaryText}</p>
-                )}
+                {entry.summaryMd ? <Markdown>{entry.summaryMd}</Markdown> : <p>{entry.summaryText}</p>}
               </div>
             ) : null}
 
             <div className={styles.meta}>
-              {entry.entryTags.length ? (
+              {entry.tags.length ? (
                 <span className={styles.metaTags}>
-                  {entry.entryTags.map(({ tag }, index) => (
-                    <span key={tag.id}>
+                  {entry.tags.map((tag, index) => (
+                    <span key={tag.slug}>
                       {index > 0 ? ', ' : ''}
                       <Link href={`/tags/${tag.slug}`} className={styles.metaTagLink}>
                         {tag.name}
@@ -283,9 +253,7 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
               ) : null}
               <span className={styles.metaUpdated}>
                 Updated{' '}
-                <time dateTime={entry.updatedAt.toISOString()}>
-                  {formatEntryDate(entry.updatedAt)}
-                </time>
+                <time dateTime={updatedAt.toISOString()}>{formatEntryDate(updatedAt)}</time>
               </span>
             </div>
           </header>
@@ -296,12 +264,7 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
             ) : (
               <ol className={styles.senseList}>
                 {entry.senses.map((sense) => (
-                  <Sense
-                    key={sense.id}
-                    sense={sense}
-                    showNumber={entry.senses.length > 1}
-                    provenanceItems={data.provenanceBySenseId.get(sense.id) ?? []}
-                  />
+                  <Sense key={sense.key} sense={sense} showNumber={entry.senses.length > 1} />
                 ))}
               </ol>
             )}
@@ -309,16 +272,8 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
 
           {data.related.length || data.seeAlso.length ? (
             <section className={styles.relations} aria-label="Related entries">
-              <RelationList
-                title="Related"
-                relationships={data.related}
-                summaryById={data.otherSummaryById}
-              />
-              <RelationList
-                title="See also"
-                relationships={data.seeAlso}
-                summaryById={data.otherSummaryById}
-              />
+              <RelationList title="Related" relationships={data.related} />
+              <RelationList title="See also" relationships={data.seeAlso} />
             </section>
           ) : null}
         </div>
@@ -326,7 +281,7 @@ export function PublicEntryPage({ entryType, data }: PublicEntryPageProps) {
         {showToc ? (
           <div className={styles.rail}>
             <div className={styles.railInner}>
-              <StickySenseToc items={tocItems} />
+              <StickySenseToc items={data.tocItems} />
             </div>
           </div>
         ) : null}

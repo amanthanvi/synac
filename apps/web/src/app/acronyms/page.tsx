@@ -32,7 +32,7 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
   const sort = params.sort === 'updated' ? 'updated' : 'title';
   const query = (params.q ?? '').trim();
   const rawTag = (params.tag ?? '').trim().toLowerCase();
-  const { activeTag, tags, entries } = await loadBrowsePageData({
+  const { activeTag, tags, entries, hasMore } = await loadBrowsePageData({
     entryType: 'ACRONYM',
     letter,
     page,
@@ -54,7 +54,7 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
         })
       : undefined;
   const nextHref =
-    entries.length === pageSize
+    hasMore
       ? buildBrowseHref({
           basePath: '/acronyms',
           letter,
@@ -106,12 +106,12 @@ export default async function AcronymsPage({ searchParams }: AcronymsPageProps) 
           <EntryRowList>
             {entries.map((entry) => (
               <EntryRow
-                key={entry.id}
-                href={`/acronym/${entry.primarySlug}`}
-                title={entry.displayTitle}
+                key={entry.key}
+                href={`/acronym/${entry.slug}`}
+                title={entry.title}
                 entryType="ACRONYM"
                 summary={entry.summaryText}
-                meta={`Updated ${formatDate(entry.updatedAt)}`}
+                meta={`Updated ${formatDate(new Date(entry.updatedAt))}`}
               />
             ))}
           </EntryRowList>

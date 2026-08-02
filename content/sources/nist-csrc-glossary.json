@@ -1,0 +1,17 @@
+{
+  "slug": "nist-csrc-glossary",
+  "name": "NIST CSRC Glossary",
+  "baseUrl": "https://csrc.nist.gov/glossary",
+  "license": {
+    "type": "US_GOV_PD",
+    "url": "https://www.nist.gov/open/copyright-fair-use-and-licensing-statements-srd-data-software-and-technical-series-publications",
+    "notes": "U.S. Government work, public domain in the United States (17 U.S.C. § 105).",
+    "allowedUse": "Reproduce definitions with source citation to the underlying NIST publication.",
+    "attributionRequirements": "NIST Computer Security Resource Center Glossary, with the cited source publication"
+  },
+  "accessMethod": "HTML",
+  "trustTier": "TIER1",
+  "enabled": true,
+  "ingest": { "adapter": "nistGlossary", "schedule": "weekly" },
+  "lastVerifiedAt": "2026-02-10"
+}

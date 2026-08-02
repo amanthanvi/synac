@@ -1,5 +1,15 @@
 # SynAc v0.2.0 — Production Specification (SPEC.md)
 
+> **Note (2026-07, GitOps rework):** This spec predates the content-as-code
+> architecture. The described admin surface, Clerk auth, RBAC, staging-first
+> ingest pipeline, and Postgres/Prisma data layer have been **removed**: all
+> content now lives in `content/` in this repository, changes flow through
+> pull requests, ingest runs as a scheduled GitHub Actions workflow, and the
+> backend is a clean Convex deployment synced from the repo. See
+> `docs/architecture/overview.md` for the current architecture. The product
+> behavior described here (senses, provenance, terms vs. acronyms, curated
+> tags, search) remains accurate.
+
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
 
 > **Note (Unreleased — PR #179):** Public UI/UX redesign. Replaces the “Clinical Reference” aesthetic with “Reference Canon” — a quiet, typography-led reference design (MDN / Vercel Docs / dictionary canon). Geist Sans carries all roles; Geist Mono is demoted to code, slugs, and keyboard hints. Warm-tinted neutral palettes tuned separately for light and dark; one restrained blue accent. Entry pages become dictionary-form: headword block + flat numbered senses with per-sense sources; the sense TOC renders in the margin for entries with 3+ senses. One search surface: a ⌘K / `/` palette with live suggestions. Authoritative design record: `apps/web/DESIGN.md`. Admin UI unchanged (legacy tokens preserved).

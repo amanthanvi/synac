@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { formatDate } from '@/lib/dates';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { SearchForm } from '@/components/SearchForm';
@@ -11,8 +10,10 @@ import styles from './page.module.css';
 export const revalidate = 300;
 
 export default async function Home() {
-  const prisma = getPrismaClient();
-  const recent = await listRecentPublishedEntries(prisma, { page: 1, pageSize: 8 });
+  const { entries: recent } = await getConvexClient().query(api.publicEntries.listRecent, {
+    page: 1,
+    pageSize: 8,
+  });
 
   return (
     <div className={styles.wrap}>
@@ -46,16 +47,16 @@ export default async function Home() {
           <EntryRowList>
             {recent.map((entry) => (
               <EntryRow
-                key={entry.id}
+                key={entry.key}
                 href={
                   entry.entryType === 'TERM'
-                    ? `/term/${entry.primarySlug}`
-                    : `/acronym/${entry.primarySlug}`
+                    ? `/term/${entry.slug}`
+                    : `/acronym/${entry.slug}`
                 }
-                title={entry.displayTitle}
+                title={entry.title}
                 entryType={entry.entryType}
                 summary={entry.summaryText}
-                meta={formatDate(entry.updatedAt)}
+                meta={formatDate(new Date(entry.updatedAt))}
               />
             ))}
           </EntryRowList>

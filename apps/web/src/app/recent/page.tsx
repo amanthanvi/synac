@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { formatDate } from '@/lib/dates';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
@@ -44,13 +43,14 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
   if (requestedPage > maxPage) redirect(`/recent?page=${maxPage}`);
   const page = Math.max(1, requestedPage);
 
-  const prisma = getPrismaClient();
-  const entries = await listRecentPublishedEntries(prisma, { page, pageSize });
+  const { entries, hasMore } = await getConvexClient().query(api.publicEntries.listRecent, {
+    page,
+    pageSize,
+  });
   const now = new Date();
 
   const prevHref = page > 1 ? `/recent?page=${page - 1}` : undefined;
-  const nextHref =
-    page < maxPage && entries.length === pageSize ? `/recent?page=${page + 1}` : undefined;
+  const nextHref = page < maxPage && hasMore ? `/recent?page=${page + 1}` : undefined;
 
   return (
     <div className={layoutStyles.pageNarrow}>
@@ -64,27 +64,30 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
       ) : (
         <>
           <EntryRowList>
-            {entries.map((entry) => (
-              <EntryRow
-                key={entry.id}
-                href={
-                  entry.entryType === 'TERM'
-                    ? `/term/${entry.primarySlug}`
-                    : `/acronym/${entry.primarySlug}`
-                }
-                title={entry.displayTitle}
-                entryType={entry.entryType}
-                summary={entry.summaryText}
-                meta={
+            {entries.map((entry) => {
+              const updatedAt = new Date(entry.updatedAt);
+              return (
+                <EntryRow
+                  key={entry.key}
+                  href={
+                    entry.entryType === 'TERM'
+                      ? `/term/${entry.slug}`
+                      : `/acronym/${entry.slug}`
+                  }
+                  title={entry.title}
+                  entryType={entry.entryType}
+                  summary={entry.summaryText}
+                  meta={
                   <time
-                    dateTime={entry.updatedAt.toISOString()}
-                    title={formatDate(entry.updatedAt)}
+                    dateTime={updatedAt.toISOString()}
+                    title={formatDate(updatedAt)}
                   >
-                    {formatRelativeDate(entry.updatedAt, now)}
+                    {formatRelativeDate(updatedAt, now)}
                   </time>
-                }
-              />
-            ))}
+                  }
+                />
+              );
+            })}
           </EntryRowList>
           <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
         </>

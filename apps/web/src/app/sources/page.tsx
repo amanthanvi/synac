@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
-import { queryPublicConvex } from '@synac/db';
-
+import { api, getConvexClient } from '@/lib/convex';
 import { formatDate } from '@/lib/dates';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -11,20 +10,7 @@ import styles from '../_styles/Tags.module.css';
 export const revalidate = 900;
 
 export default async function SourcesPage() {
-  const sources = await queryPublicConvex<
-    Array<{
-      id: string;
-      name: string;
-      sourceSlug: string;
-      baseUrl: string;
-      licenseType: string;
-      lastVerifiedAt: Date | null;
-      trustTier: string;
-      citationCount: number;
-      citationCountIsApproximate?: boolean;
-      maxAccessedAt: Date | null;
-    }>
-  >('listPublicSourcesWithStats');
+  const sources = await getConvexClient().query(api.sources.list, {});
 
   return (
     <div className={layoutStyles.pageNarrow}>
@@ -34,32 +20,37 @@ export default async function SourcesPage() {
       />
 
       {sources.length === 0 ? (
-        <p className={styles.empty}>
-          No sources yet. Once ingest is configured, this page will list attribution requirements
-          per source.
-        </p>
+        <div className={styles.empty}>
+          No sources yet. The source registry lives in the open-source repository under
+          content/sources.
+        </div>
       ) : (
         <ol className={styles.list}>
-          {sources.map((source) => (
-            <li key={source.id} className={styles.item}>
-              <div className={styles.itemTitleRow}>
-                <Link className={styles.itemTitle} href={`/sources/${source.sourceSlug}`}>
-                  {source.name}
-                </Link>
-                <span className={styles.itemSlug}>
-                  {source.citationCount.toLocaleString()}
-                  {source.citationCountIsApproximate ? '+' : ''} citations
-                </span>
-              </div>
-              <p className={styles.itemDesc}>
-                {source.trustTier.replace(/_/g, ' ').toLowerCase()} · {source.licenseType} ·{' '}
-                {source.lastVerifiedAt
-                  ? `verified ${formatDate(source.lastVerifiedAt)}`
-                  : 'not yet verified'}
-                {source.maxAccessedAt ? ` · latest access ${formatDate(source.maxAccessedAt)}` : ''}
-              </p>
-            </li>
-          ))}
+          {sources.map((source) => {
+            return (
+              <li key={source.slug} className={styles.item}>
+                <div className={styles.itemTitleRow}>
+                  <Link className={styles.itemTitle} href={`/sources/${source.slug}`}>
+                    {source.name}
+                  </Link>
+                  <span className={styles.itemSlug}>
+                    Verified {formatDate(new Date(source.lastVerifiedAt))}
+                  </span>
+                </div>
+                <p className={styles.itemSummary}>
+                  <span className={styles.metaStrong}>{source.baseUrl}</span>
+                  <span className={styles.metaSep}>·</span>
+                  <span className={styles.metaMuted}>{source.licenseType}</span>
+                </p>
+                <div className={styles.itemTags}>
+                  <span className={styles.tag}>{source.trustTier.replace('_', ' ')}</span>
+                  <span className={styles.tag}>
+                    {source.citedEntryCount.toLocaleString()} cited entries
+                  </span>
+                </div>
+              </li>
+            );
+          })}
         </ol>
       )}
     </div>

@@ -1,0 +1,17 @@
+{
+  "slug": "niccs-glossary",
+  "name": "NICCS Cybersecurity Vocabulary (CISA)",
+  "baseUrl": "https://niccs.cisa.gov/cybersecurity-career-resources/vocabulary",
+  "license": {
+    "type": "US_GOV_PD",
+    "url": "https://www.dhs.gov/website-policies",
+    "notes": "U.S. Government work, public domain in the United States (17 U.S.C. § 105).",
+    "allowedUse": "Reproduce definitions with attribution to NICCS/CISA.",
+    "attributionRequirements": "NICCS Cybersecurity Vocabulary, Cybersecurity and Infrastructure Security Agency (CISA)"
+  },
+  "accessMethod": "HTML",
+  "trustTier": "TIER1",
+  "enabled": true,
+  "ingest": { "adapter": "niccsGlossary", "schedule": "weekly" },
+  "lastVerifiedAt": "2026-02-10"
+}

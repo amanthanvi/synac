@@ -1,0 +1,4 @@
+{
+  "editorialNotes": "RFC 4949 lists \"trapdoor\" as a deprecated synonym; prefer \"back door\" in new text.",
+  "addTags": ["incident-response"]
+}

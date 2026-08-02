@@ -32,7 +32,7 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
   const sort = params.sort === 'updated' ? 'updated' : 'title';
   const query = (params.q ?? '').trim();
   const rawTag = (params.tag ?? '').trim().toLowerCase();
-  const { activeTag, tags, entries } = await loadBrowsePageData({
+  const { activeTag, tags, entries, hasMore } = await loadBrowsePageData({
     entryType: 'TERM',
     letter,
     page,
@@ -54,7 +54,7 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
         })
       : undefined;
   const nextHref =
-    entries.length === pageSize
+    hasMore
       ? buildBrowseHref({
           basePath: '/terms',
           letter,
@@ -106,12 +106,12 @@ export default async function TermsPage({ searchParams }: TermsPageProps) {
           <EntryRowList>
             {entries.map((entry) => (
               <EntryRow
-                key={entry.id}
-                href={`/term/${entry.primarySlug}`}
-                title={entry.displayTitle}
+                key={entry.key}
+                href={`/term/${entry.slug}`}
+                title={entry.title}
                 entryType="TERM"
                 summary={entry.summaryText}
-                meta={`Updated ${formatDate(entry.updatedAt)}`}
+                meta={`Updated ${formatDate(new Date(entry.updatedAt))}`}
               />
             ))}
           </EntryRowList>

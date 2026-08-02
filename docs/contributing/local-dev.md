@@ -1,50 +1,54 @@
 # Local development
 
-This is the quickest path to run SynAc locally for docs + public web contributions.
+The quickest path to run SynAc locally.
 
 ## Prereqs
 
-- Node `22.21.1` (see `.node-version`)
-- pnpm `10.27.0` (see `package.json#packageManager`)
-- Local Postgres (any recent version is fine)
+- Node `24` (see `.node-version`)
+- pnpm (see `package.json#packageManager` — `corepack enable` handles it)
+
+No database to install: local development uses a throwaway anonymous Convex
+backend that the Convex CLI downloads and runs for you.
 
 ## Setup
 
-1. Create an env file:
-   - Copy `.env.example` → `.env.local`
-   - Do **not** commit `.env*`
-2. Create a local database (example name: `synac`).
-3. Run migrations + seed:
-   - `pnpm db:migrate`
-   - `pnpm db:seed`
-   - Optional starter content: `pnpm db:seed:content`
-4. Start dev:
-   - `pnpm dev`
+1. `pnpm install`
+2. Start the local backend (keeps running; deploys the functions and writes
+   `.env.local`):
 
-The site should be available at `http://localhost:3000` by default.
+   ```sh
+   CONVEX_AGENT_MODE=anonymous npx convex dev
+   ```
 
-## Clerk (auth) in local dev
+3. Configure the service key on the local deployment (any value):
 
-Clerk is optional locally. If keys are not present, `/admin/*` will 404 and the public site runs without auth.
+   ```sh
+   npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev
+   ```
 
-## Verification
+4. Seed it from the repo content:
 
-Before opening a PR, run:
+   ```sh
+   pnpm --filter @synac/content-tools sync
+   ```
 
-- `pnpm gate`
+5. Run the web app in another terminal:
 
-This runs lint, typecheck, tests, and builds across the workspace.
+   ```sh
+   NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210 \
+   SYNAC_CONVEX_SERVICE_KEY=local-dev \
+   pnpm --filter @synac/web dev
+   ```
 
-## Troubleshooting
+## Everyday commands
 
-### “Database connection” errors
+- `pnpm gate` — full verification (lint, typecheck, tests, content check, build). Run before every PR.
+- `pnpm content:check` — validate + compile `content/` only.
+- `pnpm test:convex` — backend test suite (convex-test; no backend needed).
+- `pnpm ingest -- --source rfc4949` — regenerate one source bundle from upstream.
 
-- Confirm `DATABASE_URL` in `.env.local` points to a running local Postgres instance.
-- Confirm the database exists and is reachable from your shell.
-- Re-run migrations: `pnpm db:migrate`
+## Editing content
 
-### Node/pnpm version mismatch
-
-- Use `.node-version` as the source of truth for Node.
-- Use the pinned pnpm version from `package.json#packageManager`.
-
+See `content/README.md` and the "Contributing content" section of
+`CONTRIBUTING.md`. After editing content, re-run the sync (step 4) to see it
+locally.

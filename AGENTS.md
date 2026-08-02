@@ -1,34 +1,40 @@
 # SynAc (monorepo) — Agent Notes
 
-Source of truth: `SPEC.md` (product/spec) + `PLAN.md` (execution tracker).
+Source of truth: `docs/architecture/overview.md` (architecture) + `SPEC.md` (product background).
 
 ## Stack
 
-- Web: Next.js App Router + TypeScript (`apps/web`)
-- Auth: Clerk (`@clerk/nextjs`)
-- DB: Convex (`convex`, `packages/db` facade)
-- Worker: Convex cron jobs and scheduled functions (`convex/crons.ts`, `convex/ingest.ts`)
+- Web: Next.js App Router + TypeScript (`apps/web`), server-first, no client Convex hooks
+- Backend: Convex (`convex/`) — read-only public queries + service-key-guarded runtime mutations
+- Content: `content/` is the source of truth; compiled + synced by `tools/content`
+- Ingest: `tools/ingest` adapters run in GitHub Actions and open PRs
 - Styling: CSS Modules (`*.module.css`) + global tokens in `apps/web/src/app/globals.css`
 - Package manager: pnpm (see `package.json#packageManager`)
 
 ## Workspace layout
 
-- `apps/web/src/app/*`: routes (public + `admin/*` + `api/*`)
-- `apps/web/src/components/*`: shared UI/components
-- `apps/web/src/components/ui/*`: primitives (Button/Panel/Badge/etc)
-- `packages/*`: shared libs
+- `apps/web/src/app/*`: public routes + `api/v1/*`
+- `apps/web/src/components/*`: shared UI (`components/ui/*` primitives)
+- `convex/*`: schema, public queries, sync mutations, runtime mutations
+- `content/*`: sources, tags, generated bundles, overrides (see `content/README.md`)
+- `tools/content`, `tools/ingest`: content pipeline + ingest adapters
+- `tests/convex`: convex-test suite
 
 ## Guardrails (most common)
 
-- Public UI work: ok. Do **not** edit `apps/web/src/app/admin/*` or `apps/web/src/app/api/*`.
-- Do **not** change data model, Convex queries, ingest pipeline, or schema unless asked.
-- No TS suppression (`as any`, `@ts-ignore`, `@ts-expect-error`).
+- Never hand-edit `content/generated/**` — regenerate via `pnpm ingest` or curate via `content/overrides/**`.
+- Convex code follows `convex/_generated/ai/guidelines.md`: validators on every function, indexed queries only (no `.filter()`), bounded reads, `internal*` for private functions.
+- No TS suppression (`as any`, `@ts-ignore`, `@ts-expect-error`, `as never`).
 - No CSS frameworks (Tailwind/styled-components/etc). CSS Modules only.
+- There is no auth surface; do not add accounts, sessions, or admin routes.
 
 ## Golden commands
 
 - Full verification gate: `pnpm gate`
-- Web-only tests: `pnpm --filter @synac/web test`
+- Content validation: `pnpm content:check`
+- Convex tests: `pnpm test:convex`
+- Local backend: `CONVEX_AGENT_MODE=anonymous npx convex dev`, then `pnpm --filter @synac/content-tools sync`
+- Regenerate a bundle: `pnpm ingest -- --source rfc4949`
 
 ## Design system
 
@@ -38,17 +44,6 @@ Source of truth: `SPEC.md` (product/spec) + `PLAN.md` (execution tracker).
 ## Learned User Preferences
 
 - When CI fails, keep iterating with real fixes until checks pass; do not skip tests or otherwise fake a green pipeline.
-
-## Learned Workspace Facts
-
-- Search index maintenance now lives in Convex. The app calls the public
-  `data:rebuildSearchIndex`, which requires the admin key. From a terminal use
-  `npx convex run data:rebuildSearchIndexFromCli` -- it is internal, so the CLI
-  deploy key authorizes it and no secret goes on the command line.
-
-## Self-Correction Log
-
-- 2026-03-25: For Railway SSH probes, avoid nested shell/backtick quoting; write unique temp scripts under `/app/packages/db` to prevent stray local artifacts and cross-command races.
 
 <!-- convex-ai-start -->
 

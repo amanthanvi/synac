@@ -1,0 +1,12 @@
+{
+  "tags": [
+    { "slug": "access-control", "name": "Access control", "description": "Authentication, authorization, and identity mechanisms." },
+    { "slug": "cryptography", "name": "Cryptography", "description": "Encryption, hashing, signatures, and key management." },
+    { "slug": "network-security", "name": "Network security", "description": "Protocols, segmentation, and traffic protection." },
+    { "slug": "threat-intelligence", "name": "Threat intelligence", "description": "Adversary behavior, TTPs, and attribution." },
+    { "slug": "vulnerability-management", "name": "Vulnerability management", "description": "Weaknesses, exposures, and remediation." },
+    { "slug": "malware", "name": "Malware", "description": "Malicious software and persistence mechanisms." },
+    { "slug": "incident-response", "name": "Incident response", "description": "Detection, containment, and recovery." },
+    { "slug": "protocols", "name": "Protocols", "description": "Standardized communication procedures." }
+  ]
+}

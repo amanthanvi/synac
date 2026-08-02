@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { queryPublicConvex } from '@synac/db';
-
+import { api, getConvexClient, type FunctionReturnType } from '@/lib/convex';
 import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
@@ -9,18 +8,22 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const siteUrl = getSiteUrl();
-  const entries = await queryPublicConvex<Array<{ primarySlug: string; updatedAt: Date }>>('listSitemapEntries', {
-    entryType: 'TERM',
-  });
+  const client = getConvexClient();
 
-  const xml = renderUrlSet(
-    entries.map((e) => ({
-      loc: `${siteUrl}/term/${e.primarySlug}`,
-      lastmod: e.updatedAt,
-    })),
-  );
+  const urls: Array<{ loc: string; lastmod: Date }> = [];
+  let cursor: string | null = null;
+  do {
+    const page: FunctionReturnType<typeof api.sitemap.entrySlugsPage> = await client.query(api.sitemap.entrySlugsPage, {
+      entryType: 'TERM',
+      paginationOpts: { numItems: 500, cursor },
+    });
+    for (const entry of page.page) {
+      urls.push({ loc: `${siteUrl}/term/${entry.slug}`, lastmod: new Date(entry.updatedAt) });
+    }
+    cursor = page.isDone ? null : page.continueCursor;
+  } while (cursor);
 
-  return new NextResponse(xml, {
+  return new NextResponse(renderUrlSet(urls), {
     headers: {
       'content-type': 'application/xml; charset=utf-8',
       'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400',

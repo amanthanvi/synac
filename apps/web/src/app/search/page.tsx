@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { getPrismaClient, searchPublishedEntries } from '@synac/db';
+import { api, getConvexClient } from '@/lib/convex';
 
 import { renderHeadline } from '@/lib/highlight';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
@@ -104,13 +104,12 @@ async function Results({
   page: number;
   entryType?: 'TERM' | 'ACRONYM';
 }) {
-  const prisma = getPrismaClient();
   const pageSize = 20;
-  const results = await searchPublishedEntries(prisma, {
+  const results = await getConvexClient().query(api.search.search, {
     query,
     page,
     pageSize,
-    entryType,
+    entryType: entryType ?? null,
   });
 
   if (results.length === 0) {
@@ -135,9 +134,9 @@ async function Results({
       <EntryRowList>
         {results.map((r) => (
           <EntryRow
-            key={r.id}
-            href={r.entryType === 'TERM' ? `/term/${r.primarySlug}` : `/acronym/${r.primarySlug}`}
-            title={r.displayTitle}
+            key={r.key}
+            href={r.entryType === 'TERM' ? `/term/${r.slug}` : `/acronym/${r.slug}`}
+            title={r.title}
             entryType={r.entryType}
             meta={
               r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1

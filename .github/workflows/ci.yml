@@ -16,8 +16,6 @@ jobs:
     permissions:
       contents: read
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/synac_test?schema=public
-      SYNAC_STAGING_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/synac_staging_test?schema=public
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
     steps:
       - name: Checkout
@@ -37,19 +35,10 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Install and start PostgreSQL
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql
-          sudo service postgresql start
-          sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-          sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'synac_test'" | tr -d '[:space:]' | grep -q 1 || sudo -u postgres createdb synac_test
-          sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'synac_staging_test'" | tr -d '[:space:]' | grep -q 1 || sudo -u postgres createdb synac_staging_test
-
-      - name: Apply migrations
-        run: |
-          pnpm --filter @synac/db db:migrate:deploy
-          DATABASE_URL="$SYNAC_STAGING_DATABASE_URL" pnpm --filter @synac/db db:migrate:deploy
+      # Deploys schema + functions to a throwaway local backend, which also
+      # regenerates convex/_generated and typechecks the functions.
+      - name: Validate Convex functions
+        run: CONVEX_AGENT_MODE=anonymous npx convex dev --once
 
       # Equivalent to `pnpm gate`; split for clearer logs.
       - name: Lint
@@ -60,6 +49,9 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Content check
+        run: pnpm content:check
 
       - name: Build
         run: pnpm build

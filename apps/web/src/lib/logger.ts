@@ -8,7 +8,6 @@ const REDACT_KEYS = [
   'secret',
   'password',
   'session',
-  'clerk_secret_key',
 ];
 
 function shouldRedactKey(key: string): boolean {

@@ -27,36 +27,45 @@ SynAc is trying to be the thing you open when you want to answer:
 - **Provenance is built in.** Definitions carry citations, source metadata, and license notes.
 - **Terms and acronyms are treated differently.** `/term/*` and `/acronym/*` have canonical routing with redirects.
 - **Curated taxonomy.** Tags are a maintained classification system (not a free-for-all).
+- **Content is code.** Every entry the site serves lives in this repository under `content/` — changes flow through pull requests, automated ingest proposes updates as reviewable diffs, and git history is the audit trail. There are no accounts and no private admin surface.
 
 <p align="center">
   <img src="docs/assets/readme-entry.png" alt="SynAc entry page" width="900" />
 </p>
 
+## How it works
+
+- `content/` — the source of truth: source registry, tag taxonomy, machine-generated per-source bundles, and human-curated overrides (see `content/README.md`).
+- `tools/content` — validates and compiles `content/` into normalized rows (`pnpm content:check`), and syncs them into the Convex deployment.
+- `tools/ingest` — fetches upstream sources (NIST, RFC 4949, NICCS, OWASP, MITRE ATT&CK) and regenerates bundles; a scheduled workflow opens a PR when upstream content changes.
+- `convex/` — the serving backend: read-only public queries plus anonymous view-count/rate-limit mutations guarded by a server-held service key.
+- `apps/web` — the Next.js public site.
+
+Architecture details: `docs/architecture/overview.md`.
+
 ## Quickstart (local dev)
 
 Prereqs:
-- Node `22.21.1` (see `.node-version`)
-- pnpm `10.27.0` (see `package.json#packageManager`)
-- A local Postgres database
-
-Docs: `docs/contributing/local-dev.md`
+- Node `24` (see `.node-version`)
+- pnpm (see `package.json#packageManager` — `corepack enable` handles it)
 
 Fast path:
-1. Copy `.env.example` → `.env.local` (do not commit `.env*`).
-2. Migrate + seed:
-   - `pnpm db:migrate`
-   - `pnpm db:seed`
-3. Run:
-   - `pnpm dev`
+1. `pnpm install`
+2. `CONVEX_AGENT_MODE=anonymous npx convex dev` — starts a throwaway local Convex backend and deploys the functions (writes `.env.local`).
+3. `npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev`
+4. `pnpm --filter @synac/content-tools sync` — compiles `content/` and seeds the local backend.
+5. In another terminal: `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210 SYNAC_CONVEX_SERVICE_KEY=local-dev pnpm --filter @synac/web dev`
+
+Docs: `docs/contributing/local-dev.md`.
 
 Verification gate (before PRs): `pnpm gate`.
 
 ## Contributing
 
 If you want to help, the highest-leverage contributions are usually:
+- Content: propose terms or sources (issue templates), or edit `content/overrides/**` directly
 - Fixing unclear or incorrect docs
 - UI/UX + accessibility polish on the public site
-- Content corrections *with sources* (open an issue; see templates)
 
 Start here:
 - `CONTRIBUTING.md`
@@ -64,12 +73,9 @@ Start here:
 - `GOVERNANCE.md`
 - `SUPPORT.md`
 
-Contribution boundary (by design): **docs + public web only**. Changes to ingest/DB/worker/admin/API require maintainer approval.
-
 ## Project docs
 
 - Product/spec: `SPEC.md`
-- Execution tracker: `PLAN.md`
 - Ops + runbooks: `docs/` (index: `docs/README.md`)
 
 ## Content & licensing
