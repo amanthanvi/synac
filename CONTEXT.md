@@ -28,6 +28,38 @@ _Avoid_: Prediction, suggestion
 Human resolution of a disputed or ambiguous Tag assignment against the governing Tag contract.
 _Avoid_: Model review
 
+**Gold label**:
+The binary, independently human-annotated and human-adjudicated decision for one Entry and one Tag under a frozen taxonomy and annotation generation.
+_Avoid_: Ground truth, model label
+
+**Concept family**:
+One or more Entries human-confirmed as semantic duplicates or near-duplicates and therefore kept within one evidence split.
+_Avoid_: Topic cluster, alias group
+
+**Development set**:
+The adjudicated Entries whose labels a classifier campaign may use for training, feature development, and grouped out-of-fold evaluation.
+_Avoid_: Training set
+
+**Calibration set**:
+The sealed adjudicated Entries used once after candidate freeze to fit per-Tag calibrators and confidence-lane thresholds.
+_Avoid_: Validation set
+
+**Population-test set**:
+The sealed, uniformly sampled adjudicated Entries used once to estimate performance on the eligible production corpus.
+_Avoid_: Test set
+
+**Challenge set**:
+The sealed, deliberately difficult adjudicated Entries used once to test known ambiguity, overlap, and hard-negative failure modes rather than population prevalence.
+_Avoid_: Edge cases
+
+**Sealed evidence**:
+Calibration, population-test, challenge, or certification labels whose plaintext is inaccessible to autonomous classifier development and whose authorized evaluator reveals only preregistered aggregate results.
+_Avoid_: Hidden test data
+
+**Annotation generation**:
+An immutable, content-addressed Gold-label snapshot bound to one taxonomy, corpus, guideline, concept-family, sampling, and split manifest.
+_Avoid_: Dataset version
+
 **Expected co-occurrence**:
 A representative known-valid pairing of Tags, not a whitelist or constraint on other independently valid pairings.
 _Avoid_: Allowed co-occurrence
