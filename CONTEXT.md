@@ -21,19 +21,31 @@ A topic central to an Entry's meaning or necessary to understand the concept, ra
 _Avoid_: Keyword match
 
 **Accepted Tag assignment**:
-A human-adjudicated positive association between one Entry and one Tag.
+A positive association between one Entry and one Tag accepted through the governing reference-label protocol or an authoritative manual override.
 _Avoid_: Prediction, suggestion
 
 **Adjudication**:
-Human resolution of a disputed or ambiguous Tag assignment against the governing Tag contract.
-_Avoid_: Model review
+Independent resolution of disputed Tag decisions after blind annotations and adversarial objections have been recorded against the governing Tag contract.
+_Avoid_: Majority vote
 
-**Gold label**:
-The binary, independently human-annotated and human-adjudicated decision for one Entry and one Tag under a frozen taxonomy and annotation generation.
-_Avoid_: Ground truth, model label
+**Synthetic reference label**:
+A contract-grounded Entry/Tag decision produced by independent model annotation, adversarial review, and model adjudication under a frozen reference generation.
+_Avoid_: Gold label, ground truth, human label
+
+**Annotation agent**:
+An isolated model role that decides Entry/Tag pairs without access to peer decisions, classifier predictions, split identity, or sealed evaluation results.
+_Avoid_: Annotator
+
+**Adversarial review**:
+A separate attempt to falsify a proposed Synthetic reference label using the Tag's exclusions, hard negatives, competing senses, and strongest counterargument.
+_Avoid_: Quality check
+
+**Reference abstention**:
+The outcome when independent annotation and adversarial adjudication cannot support a stable binary Synthetic reference label.
+_Avoid_: Tie, unknown label
 
 **Concept family**:
-One or more Entries human-confirmed as semantic duplicates or near-duplicates and therefore kept within one evidence split.
+One or more Entries independently confirmed by a semantic-review panel as duplicates or near-duplicates and therefore kept within one evidence split.
 _Avoid_: Topic cluster, alias group
 
 **Development set**:
@@ -56,9 +68,17 @@ _Avoid_: Edge cases
 Calibration, population-test, challenge, or certification labels whose plaintext is inaccessible to autonomous classifier development and whose authorized evaluator reveals only preregistered aggregate results.
 _Avoid_: Hidden test data
 
-**Annotation generation**:
-An immutable, content-addressed Gold-label snapshot bound to one taxonomy, corpus, guideline, concept-family, sampling, and split manifest.
-_Avoid_: Dataset version
+**Reference generation**:
+An immutable, content-addressed Synthetic-reference-label snapshot bound to one taxonomy, corpus, guideline, agent panel, concept-family, sampling, and split manifest.
+_Avoid_: Annotation generation, dataset version
+
+**Reference precision**:
+The precision of classifier decisions measured against a frozen Synthetic reference label set, not independently established semantic correctness.
+_Avoid_: Ground-truth precision, certified accuracy
+
+**Protocol-conformance assessment**:
+Evidence that a classifier and its Synthetic reference labels passed the frozen multi-agent review, sealing, stability, and statistical gates.
+_Avoid_: Independent certification, expert validation
 
 **Expected co-occurrence**:
 A representative known-valid pairing of Tags, not a whitelist or constraint on other independently valid pairings.
@@ -101,7 +121,7 @@ A fully specified Tag that may be annotated and evaluated but is not visible to 
 _Avoid_: Draft Tag
 
 **Published Tag**:
-A fully specified Tag with at least 25 human-accepted Entries that is visible in SynAc's public taxonomy.
+A fully specified Tag with at least 25 accepted Entry assignments that is visible in SynAc's public taxonomy.
 _Avoid_: Active Tag
 
 **Retired Tag**:
