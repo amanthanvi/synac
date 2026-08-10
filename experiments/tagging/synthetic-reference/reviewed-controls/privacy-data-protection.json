@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T09",
+  "tagSlug": "privacy-data-protection",
+  "rows": [
+    {
+      "entryKey": "TERM:privacy-control",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:privacy-control",
+      "quote": "The administrative, technical, and physical safeguards employed within an agency to ensure compliance with applicable privacy requirements and manage privacy risks.",
+      "rationale": "The definition directly identifies safeguards used to meet privacy requirements and manage privacy risk.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:privacy-risk-management",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:privacy-risk-management",
+      "quote": "set of processes for identifying, assessing, and responding to privacy risks.",
+      "rationale": "The quoted source directly defines organizational processes for managing privacy risk.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:systems-privacy-engineering",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:systems-privacy-engineering",
+      "quote": "Process that captures and refines privacy requirements and ensures their integration into information technology component products and information systems through purposeful privacy design or configuration.",
+      "rationale": "The definition directly describes integrating privacy requirements through deliberate system design and configuration.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:breach",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:breach",
+      "quote": "The loss of control, compromise, unauthorized disclosure, unauthorized acquisition, or any similar occurrence where: a person other than an authorized user accesses or potentially accesses personally identifiable information; or an authorized user accesses personally identifiable information for another than authorized purpose.",
+      "rationale": "The definition expressly concerns unauthorized access to personally identifiable information.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:clipping-parameter",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:clipping-parameter",
+      "quote": "The utility of a differentially private algorithm is often dependent on choosing good clipping parameters.",
+      "rationale": "The quote directly places the parameter within differential privacy.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "ACRONYM:dpia",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "niccs-glossary:dpia",
+      "quote": "A Data Protection Impact Assessment (DPIA) describes a process designed to identify risks arising out of the processing of personal data and to minimize these risks as far and as early as possible",
+      "rationale": "The definition directly addresses identifying and minimizing privacy risks from personal-data processing.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:anonymization",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:anonymization",
+      "quote": "A process that removes the association between the identifying dataset and the data subject.",
+      "rationale": "The definition directly describes anonymization by breaking the identifying-data-to-subject association.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:data-reconstruction",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:data-reconstruction",
+      "quote": "Privacy attacks that reconstruct sensitive data in a model’s training data from aggregate information.",
+      "rationale": "The definition identifies reconstruction of sensitive training data as a privacy attack.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:doxxing",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "niccs-glossary:doxxing",
+      "quote": "The act is often considered a crime when it involves sharing personal information with the intent to cause harm, threats, or incite illegal actions.",
+      "rationale": "The quote directly concerns harmful disclosure of personal information.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:fair-information-practice-principles",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:fair-information-practice-principles",
+      "quote": "a set of principles that have been developed world wide since the 1970s that provide guidance to organizations in the handling of personal data",
+      "rationale": "The definition states that these principles guide organizational handling of personal data.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:gaussian-mechanism",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:gaussian-mechanism",
+      "quote": "An algorithmic primitive for differential privacy that adds random noise sampled from the Gaussian distribution to the output of a query.",
+      "rationale": "The source defines an algorithmic primitive for differential privacy.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:govern-p-function",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:govern-pf",
+      "quote": "Develop and implement the organizational governance structure to enable an ongoing understanding of the organization’s risk management priorities that are informed by privacy risk.",
+      "rationale": "The function explicitly organizes governance priorities around privacy risk.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:personally-identifiable-information-processing-permissions",
+      "polarity": "positive",
+      "ruleId": "T09-I04",
+      "senseKey": "nist-csrc-glossary:personally-identifiable-information-processing-permissions",
+      "quote": "The requirements for how personally identifiable information can be processed or the conditions under which personally identifiable information can be processed.",
+      "rationale": "The definition directly governs permitted processing conditions for personally identifiable information.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:onion-routing",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "A system that can be used to provide both (a) data confidentiality and (b) traffic flow confidentiality for network packets, and also provide (c) anonymity for the source of the packets.",
+      "rationale": "The source expressly identifies source anonymity, a privacy-preserving property.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:pairwise-pseudonymous-identifier",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:pairwise-pseudonymous-identifier",
+      "quote": "A pseudonymous identifier generated by an IdP for use at a specific RP.",
+      "rationale": "The source defines a relying-party-specific pseudonymous identifier.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:privacy-architecture",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:privacy-architecture",
+      "quote": "An embedded, integral part of the enterprise architecture that describes the structure and behavior for an enterprise’s privacy protection processes, technical measures, personnel and organizational sub units, showing their alignment with the enterprise’s mission and strategic plans.",
+      "rationale": "The definition directly describes privacy protection processes and technical measures.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:privacy-domain",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:privacy-domain",
+      "quote": "A domain that implements a privacy policy.",
+      "rationale": "The definition directly identifies a domain implementing a privacy policy.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:privacy-parameter",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:privacy-parameter",
+      "quote": "A parameter of a differential privacy definition that partly or wholly determines privacy loss.",
+      "rationale": "The parameter directly governs privacy loss in differential privacy.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:privacy-plan",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:privacy-plan",
+      "quote": "A formal document that details the privacy controls selected for an information system or environment of operation that are in place or planned for meeting applicable privacy requirements and managing privacy risks, details how the controls have been implemented, and describes the methodologies and metrics that will be used to assess the controls.",
+      "rationale": "The plan specifies privacy controls, requirements, implementation, assessment methods, and risk management.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:privacy-posture",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:privacy-posture",
+      "quote": "The privacy posture represents the status of the information systems and information resources (e.g., personnel, equipment, funds, and information technology) within an organization based on information assurance resources (e.g., people, hardware, software, policies, procedures) and the capabilities in place to comply with applicable privacy requirements and manage privacy risks and to react as the situation changes.",
+      "rationale": "The definition concerns capabilities for complying with privacy requirements and managing privacy risks.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:privacy-risk-assessment-methodology-pram",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:privacy-risk-assessment-methodology",
+      "quote": "The PRAM is a tool that applies the risk model from NISTIR 8062 and helps organizations analyze, assess, and prioritize privacy risks to determine how to respond and select appropriate solutions. The PRAM can help drive collaboration and communication between various components of an organization, including privacy, cybersecurity, business, and IT personnel.",
+      "rationale": "The methodology explicitly analyzes, assesses, prioritizes, and responds to privacy risks.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:re-identification-risk",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:re-identification-risk",
+      "quote": "The likelihood that a third party can re identify data subjects in a de identified dataset.",
+      "rationale": "The definition directly measures re-identification risk for de-identified data.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:reconstruction-attack",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:reconstruction-attack",
+      "quote": "A privacy attack that uses published statistics to reconstruct individual data points from the original private dataset.",
+      "rationale": "The definition explicitly identifies a privacy attack reconstructing individual data points.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:system-of-records-notice",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:system-of-records-notice",
+      "quote": "The Privacy Act requires each agency to publish a notice of its systems of records in the Federal Register. This is called a System of Record Notice (SORN).",
+      "rationale": "The definition describes a Privacy Act notice governing systems of records.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:system-privacy-requirement",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:system-privacy-requirement",
+      "quote": "System requirements that have privacy relevance. System privacy requirements define the protection capabilities provided by the system, the performance and behavioral characteristics exhibited by the system, and the evidence used to determine that the system privacy requirements have been satisfied. Note: Each system privacy requirement is expressed in a manner that makes verification possible via analysis, observation, test, inspection, measurement, or other defined and achievable means.",
+      "rationale": "The definition specifies verifiable system capabilities for satisfying privacy requirements.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:derived-credential",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:derived-credential",
+      "quote": "A credential issued based on proof of possession and control of a token associated with a previously issued credential, so as not to duplicate the identity proofing process.",
+      "rationale": "The definition directly concerns an identity credential and proofing process, which T09-E03 excludes.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:identity-proofing",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:identity-proofing",
+      "quote": "The process of providing sufficient information (e.g., identity history, credentials, documents) to establish an identity.",
+      "rationale": "The definition directly concerns establishing identity through credentials and documents, which T09-E03 excludes.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "ACRONYM:dato",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:dato",
+      "quote": "Denial of Authorization to Operate; issued by a DAO to an issuer that is not authorized as being reliable for the issuance of PIV Cards or Derived PIV Credentials.",
+      "rationale": "The source concerns authorization for PIV Card and derived-credential issuance.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:authenticator-assurance-level-aal",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:authenticator-assurance-level",
+      "quote": "A measure of the strength of an authentication mechanism and, therefore, the confidence in it",
+      "rationale": "The definition concerns authentication-mechanism assurance, not privacy or personal-data processing.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:claimant",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:claimant",
+      "quote": "A subject whose identity is to be verified using one or more authentication protocols.",
+      "rationale": "The definition concerns identity verification through authentication protocols, not privacy-data protection.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "ACRONYM:rpc",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:rpc",
+      "quote": "An entity that relies upon the subscriber’s authenticator(s) and credentials or a verifier’s assertion of a claimant’s identity, typically to process a transaction or grant access to information or a system.",
+      "rationale": "The definition concerns reliance on authenticators, credentials, and identity assertions.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:activation-data",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:activation-data",
+      "quote": "A pass phrase, personal identification number (PIN), biometric data, or other mechanisms of equivalent authentication robustness used to protect access to any use of a private key, except for private keys associated with System or Device certificates.",
+      "rationale": "The source defines PIN and authentication data protecting private-key use.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:enrollment",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:enrollment",
+      "quote": "The process of making a person’s identity known to the PIV system, associating a unique identifier with that identity, and collecting and recording the person’s relevant attributes into the system.",
+      "rationale": "The definition concerns PIV identity enrollment and identifiers, not privacy-data safeguards.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:applicant",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:applicant",
+      "quote": "An individual applying for a PIV Card or derived PIV credential. The applicant may be a current or prospective federal hire, a federal employee, or a contractor.",
+      "rationale": "The source defines an applicant for a PIV identity credential.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:identity-assurance-level-ial",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:identity-assurance-level",
+      "quote": "A category that conveys the degree of confidence that a person’s claimed identity is their real identity",
+      "rationale": "The definition concerns assurance in a claimed identity, not privacy or personal-data processing.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:authenticate",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:authenticate",
+      "quote": "The process of establishing confidence of authenticity; in this case, the validity of a person’s identity and an authenticator (e.g., PIV Card or derived PIV credential).",
+      "rationale": "The source concerns validation of identity and a PIV or derived credential.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:authenticator",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:authenticator",
+      "quote": "Something the cardholder possesses and controls (e.g., PIV Card or derived PIV credential) that is used to authenticate the cardholder’s identity.",
+      "rationale": "The source defines a PIV or derived identity credential used for authentication.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:authority-to-operate",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:authority-to-operate",
+      "quote": "Authorization to Operate; One of three possible decisions concerning an issuer made by a Designated Authorizing Official after all assessment activities have been performed stating that the issuer is authorized to perform specific PIV Card and/or Derived Credential issuance services.",
+      "rationale": "The source concerns authorization of PIV Card and derived-credential issuance.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:credential",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:credential",
+      "quote": "Evidence attesting to one’s right to credit or authority. In this Standard, it is the PIV Card or derived PIV credential associated with an individual that authoritatively binds an identity (and, optionally, additional attributes) to that individual.",
+      "rationale": "The definition directly concerns a PIV identity credential binding an identity to an individual.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:credential-service-provider-csp",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:credential-service-provider",
+      "quote": "A trusted entity that issues or registers subscriber tokens and issues electronic credentials to subscribers. The CSP may encompass registration authorities (RAs) and verifiers that it operates. A CSP may be an independent third party, or may issue credentials for its own use.",
+      "rationale": "The source defines an issuer of subscriber identity credentials.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:identity-resolution",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:identity-resolution",
+      "quote": "The process of collecting information about an applicant to uniquely distinguish an individual within the context of the population that the CSP serves.",
+      "rationale": "The definition concerns resolving an applicant’s identity for a credential service provider.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:identity-verification",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:identity-verification",
+      "quote": "The process of confirming or denying that a claimed identity is correct by comparing the credentials of a person requesting access with those previously proven and associated with the PIV Card or a derived PIV credential associated with the identity being claimed.",
+      "rationale": "The definition directly concerns verifying identity credentials for access, which T09-E03 excludes.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:subscriber-account",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:subscriber-account",
+      "quote": "An account established by the CSP for each subscriber enrolled in its identity service that contains information about the subscriber and a record of any authenticators registered to the subscriber.",
+      "rationale": "The definition concerns an identity-service account and its registered authenticators.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:invalidate",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:invalidate",
+      "quote": "To render a credential or authenticator incapable of being used for authentication by causing its authenticator output to no longer be accepted by relying parties.",
+      "rationale": "The source concerns invalidation of an authentication credential or authenticator.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:issuing-facility",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:issuing-facility",
+      "quote": "A physical site or location—including all equipment, staff, and documentation—that is responsible for carrying out one or more of the following PIV functions: identity proofing and registration; card and token production; activation and issuance; post issuance binding of derived PIV credentials; and maintenance.",
+      "rationale": "The facility's subject is identity proofing and PIV credential production and issuance.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:lifecycle-management",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:lifecycle-management",
+      "quote": "The operations that are performed to manufacture, configure, secure, use, update, and otherwise manage IoT devices and their credentials through all phases of the devices’ existence.",
+      "rationale": "The source concerns management of device credentials throughout an IoT lifecycle.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:onboarding",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:onboarding",
+      "quote": "The process by which a device obtains the credentials (e.g., network SSID and password) that it needs in order to gain access to a wired or wireless network.",
+      "rationale": "The source concerns device network credentials, not personal-data processing.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:authenticator-binding",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:authenticator-binding",
+      "quote": "The establishment of an association between a specific authenticator and a subscriber account that allows the authenticator to authenticate the subscriber associated with the account, possibly in conjunction with other authenticators.",
+      "rationale": "The definition concerns binding identity authenticators to subscriber accounts, which is excluded credential scope.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:sponsor",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:sponsor",
+      "quote": "Submits a Derived PIV Credential request on behalf of the applicant.",
+      "rationale": "The source concerns requesting a derived PIV identity credential.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:electronic-credentials",
+      "polarity": "negative",
+      "ruleId": "T09-E03",
+      "senseKey": "nist-csrc-glossary:electronic-credentials",
+      "quote": "Digital documents used in authentication that bind an identity or an attribute to a subscriber's authenticator.",
+      "rationale": "The definition directly concerns identity credentials used for authentication, which T09-E03 excludes.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    }
+  ]
+}

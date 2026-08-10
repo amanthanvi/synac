@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "synac-runtime-config-v1",
+  "runId": "synac-reference-v1-20260810",
+  "frozenAt": "2026-08-10T01:15:00-04:00",
+  "temperature": 0,
+  "seed": 189,
+  "tokenLimit": 8192,
+  "tools": false,
+  "candidates": 1
+}

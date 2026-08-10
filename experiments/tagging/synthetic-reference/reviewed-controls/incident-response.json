@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T07",
+  "tagSlug": "incident-response",
+  "rows": [
+    {
+      "entryKey": "TERM:incident-response-plan",
+      "polarity": "positive",
+      "ruleId": "T07-I01",
+      "senseKey": "niccs-glossary:incident-response-plan",
+      "quote": "A set of predetermined and documented procedures to detect and respond to a cyber incident.",
+      "rationale": "The source defines documented cyber-incident detection and response procedures, directly satisfying incident planning rule T07-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:incident-management",
+      "polarity": "positive",
+      "ruleId": "T07-I01",
+      "senseKey": "niccs-glossary:incident-management",
+      "quote": "The management and coordination of activities associated with an actual or potential occurrence of an event that may result in adverse consequences to information or information systems.",
+      "rationale": "The source makes coordinated management of actual or potential information-system incidents the central subject, directly satisfying T07-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "ACRONYM:soc",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "niccs-glossary:soc",
+      "quote": "an intelligence hub for the company, gathering data from across the organization's networks, servers, endpoints and other digital assets and using intelligent automation to identify, prioritize and respond to potential cybersecurity threats",
+      "rationale": "The quoted source ties SoC to detecting, prioritizing, or evaluating cybersecurity incidents, directly satisfying T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:timestomping",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "niccs-glossary:timestomping",
+      "quote": "a technique used in cybersecurity and digital forensics, where attackers modify the timestamps of files and directories on a computer system to hide their actions or impede investigations",
+      "rationale": "The source explicitly ties attacker timestamp manipulation to cybersecurity, digital forensics, and impeded investigations, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:indicator-of-compromise",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:indicator-of-compromise",
+      "quote": "Technical artifacts or observables that suggest that an attack is imminent or is currently underway or that a compromise may have already occurred.",
+      "rationale": "The source defines technical evidence used to recognize an imminent, active, or completed compromise, directly satisfying incident detection and triage rule T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:collection",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "nist-csrc-glossary:collection",
+      "quote": "The first phase of the computer and network forensics process, which involves identifying, labeling, recording, and acquiring data from the possible sources of relevant data, while following guidelines and procedures that preserve the integrity of the data.",
+      "rationale": "The quoted source ties Collection to digital evidence or cybersecurity forensic investigation, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:alert",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "niccs-glossary:alert",
+      "quote": "A notification that a specific attack has been detected or directed at an organization’s information systems.",
+      "rationale": "The source defines an alert as notification of a detected or directed attack on information systems, directly satisfying incident detection and triage rule T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:attack-sensing-warning-and-response",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A set of security services that cooperate with audit service to detect and react to indications of threat actions, including both inside and outside attacks. (See: indicator.)",
+      "rationale": "The source defines cooperating security services that detect and react to indications of attacks, directly satisfying incident detection and triage rule T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:clear-command-history",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "mitre-attack-cti:T1070.003",
+      "quote": "In addition to clearing system logs, an adversary may clear the command history of a compromised account to conceal the actions undertaken during an intrusion.",
+      "rationale": "The source ties destruction of command-history evidence to concealing actions during an intrusion, directly satisfying cybersecurity investigation rule T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:intrusion-detection",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:intrusion-detection",
+      "quote": "The process of monitoring the events occurring in a computer system or network and analyzing them for signs of possible incidents.",
+      "rationale": "The source makes analysis for signs of possible computer or network incidents central, directly satisfying incident detection and triage rule T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:compromise-recovery",
+      "polarity": "positive",
+      "ruleId": "T07-I03",
+      "senseKey": "nist-csrc-glossary:compromise-recovery",
+      "quote": "The procedures and processes of restoring a system, device or process that has been compromised back to a secure or trusted state, including destroying compromised keys, replacing compromised keys (as needed), and verifying the secure state of the recovered system.",
+      "rationale": "The quoted source makes Compromise recovery containment, mitigation, recovery, or automated cyber-incident response, directly satisfying T07-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:cyber-investigations",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "niccs-glossary:cyber-investigations",
+      "quote": "The systematic process of identifying, collecting, preserving, analyzing, and presenting digital evidence to detect, understand, and prosecute crimes or security incidents conducted via the internet, computers, or networks.",
+      "rationale": "The quoted source ties Cyber Investigations to digital evidence or cybersecurity forensic investigation, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:cyberforensic",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "niccs-glossary:cyberforensic",
+      "quote": "the process of collecting, analyzing, and preserving digital evidence to investigate cybercrimes and other incidents",
+      "rationale": "The quoted source ties cyberforensic to digital evidence or cybersecurity forensic investigation, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:data-provenance",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "nist-csrc-glossary:data-provenance",
+      "quote": "In the context of computers and law enforcement use, it is an equivalent term to chain of custody. It involves the method of generation, transmission and storage of information that may be used to trace the origin of a piece of information processed by community resources.",
+      "rationale": "The quoted source ties data provenance to digital evidence or cybersecurity forensic investigation, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:delete-cloud-instance",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "mitre-attack-cti:T1578.003",
+      "quote": "An adversary may delete a cloud instance after they have performed malicious activities in an attempt to evade detection and remove evidence of their presence. Deleting an instance or virtual machine can remove valuable forensic artifacts and other evidence of suspicious behavior if the instance is not recoverable.",
+      "rationale": "The source explicitly ties a malicious cloud action to removal of forensic artifacts and suspicious-behavior evidence, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:forensic-examiner",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "nist-csrc-glossary:forensic-examiner",
+      "quote": "A person who is an expert in acquiring, preserving, analyzing, and presenting digital evidence from computers and other digital media. This evidence may be related to computer based and non cyber crimes, including security threats, cyber attacks, and other illegal activities.",
+      "rationale": "The quoted source ties Forensic examiner to digital evidence or cybersecurity forensic investigation, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:indicator-removal",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "mitre-attack-cti:T1070",
+      "quote": "Adversaries may selectively delete or modify artifacts generated to reduce indications of their presence and blend in with legitimate activity. Rather than broadly removing evidence, adversaries may target specific artifacts that appear anomalous or are likely to draw scrutiny, while leaving sufficient data intact to maintain the appearance of normal system behavior.",
+      "rationale": "The source describes adversarial alteration of artifacts and evidence to obstruct recognition of malicious activity, directly satisfying cyber-investigation rule T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "ACRONYM:openioc",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "niccs-glossary:openioc",
+      "quote": "An extensible XML schema that enables you to describe the technical characteristics that identify a known threat, an attacker's methodology, or other evidence of compromise.",
+      "rationale": "The source defines a schema for technical characteristics and evidence that identify threats or compromise, directly satisfying incident detection and triage rule T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:forum-of-incident-response-and-security-teams",
+      "polarity": "positive",
+      "ruleId": "T07-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "An international consortium of CSIRTs (e.g., CIAC) that work together to handle computer security incidents and promote preventive activities. (See: CSIRT, security incident.) Tutorial: FIRST was founded in 1990 and, as of July 2004, had more than 100 members spanning the globe. Its mission includes: Provide members with technical information, tools,",
+      "rationale": "The quoted source makes Forum of Incident Response and Security Teams incident planning, readiness, testing, or response-team coordination, directly satisfying T07-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:investigate",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "niccs-glossary:investigate",
+      "quote": "a NICE Framework category consisting of specialty areas responsible for the investigation of cyber events and/or crimes of IT systems, networks, and digital evidence",
+      "rationale": "The quoted source ties investigate to digital evidence or cybersecurity forensic investigation, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:investigation",
+      "polarity": "positive",
+      "ruleId": "T07-I05",
+      "senseKey": "niccs-glossary:investigation",
+      "quote": "A systematic and formal inquiry into a qualified threat or incident using digital forensics and perhaps other traditional criminal inquiry techniques to determine the events that transpired and to collect evidence. In the NICE Framework, cybersecurity work where a person: Applies tactics, techniques, and procedures for a full range of investigative tools",
+      "rationale": "The quoted source ties investigation to digital evidence or cybersecurity forensic investigation, directly satisfying T07-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:intrusion-prevention",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:intrusion-prevention",
+      "quote": "The process of monitoring the events occurring in a computer system or network, analyzing them for signs of possible incidents, and attempting to stop detected possible incidents.",
+      "rationale": "The quoted source ties intrusion prevention to detecting, prioritizing, or evaluating cybersecurity incidents, directly satisfying T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:misuse-detection",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "An intrusion detection method that is based on rules that specify system events, sequences of events, or observable properties of a system that are believed to be symptomatic of security incidents. (See: IDS, misuse. Compare: anomaly detection.)",
+      "rationale": "The quoted source ties misuse detection to detecting, prioritizing, or evaluating cybersecurity incidents, directly satisfying T07-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:reporting",
+      "polarity": "positive",
+      "ruleId": "T07-I04",
+      "senseKey": "nist-csrc-glossary:reporting",
+      "quote": "The final phase of the computer and network forensic process, which involves reporting the results of the analysis; this may include describing the actions used, explaining how tools and procedures were selected, determining what other actions need to be performed (e.g., forensic examination of additional data sources, securing identified vulnerabilities,",
+      "rationale": "The quoted source makes Reporting post-investigation reporting and improvement, directly satisfying T07-I04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:security-automation",
+      "polarity": "positive",
+      "ruleId": "T07-I03",
+      "senseKey": "niccs-glossary:security-automation",
+      "quote": "The use of information technology in place of manual processes for cyber incident response and management.",
+      "rationale": "The quoted source makes security automation containment, mitigation, recovery, or automated cyber-incident response, directly satisfying T07-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:audit-log",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:audit-log",
+      "quote": "A chronological record of system activities. Includes records of system accesses and operations performed in a given period.",
+      "rationale": "The quoted source defines audit log as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:keystroke-monitoring",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:keystroke-monitoring",
+      "quote": "The process used to view or record both the keystrokes entered by a computer user and the computer’s response during an interactive session. Keystroke monitoring is usually considered a special case of audit trails.",
+      "rationale": "The source defines routine interactive-session recording and an audit-trail special case without incident-response context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:behavior-monitoring",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "niccs-glossary:behavior-monitoring",
+      "quote": "Behavioral monitoring is the systematic tracking, recording, and analysis of actions—ranging from user activity in cybersecurity to student behavior in classrooms or habits in personal development—to establish a baseline, detect deviations, and measure progress. It enables proactive threat detection in IT systems, informs targeted interventions for",
+      "rationale": "The quoted source defines Behavior Monitoring as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:comsec-monitoring",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:comsec-monitoring",
+      "quote": "The act of listening to, copying, or recording transmissions of one's own official telecommunications to provide material for analysis in order to determine the degree of security being provided to those transmissions.",
+      "rationale": "The quoted source defines COMSEC monitoring as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:user-activity-monitoring",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:user-activity-monitoring",
+      "quote": "The technical capability to observe and record the actions and activities of an individual, at any time, on any device accessing U.S. Government information in order to detect insider threat and to support authorized investigations.",
+      "rationale": "The source defines a standing observation-and-recording capability rather than incident response, directly satisfying generic-monitoring exclusion T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:continuous-monitoring-as-a-service-cmaas",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "niccs-glossary:continuous-monitoring-as-a-service-cmaas",
+      "quote": "Continuous Monitoring as a Service (CMaaS) is a cloud based, outsourced cybersecurity solution that provides real time, automated oversight of an organization's IT infrastructure, security controls, and compliance status.",
+      "rationale": "The quoted source defines Continuous Monitoring as a Service (CMaaS) as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:information-security-continuous-monitoring-iscm",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:information-security-continuous-monitoring",
+      "quote": "Maintaining ongoing awareness of information security, vulnerabilities, and threats to support organizational risk management decisions. Note: The terms “continuous” and “ongoing” in this context mean that security controls and organizational risks are assessed and analyzed at a frequency sufficient to support risk based security decisions to adequately",
+      "rationale": "The quoted source defines information security continuous monitoring (ISCM) as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:log-reporting",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:log-reporting",
+      "quote": "Displaying the results of log analysis.",
+      "rationale": "The quoted source defines Log Reporting as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:log-retention",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:log-retention",
+      "quote": "Archiving logs on a regular basis as part of standard operational activities.",
+      "rationale": "The quoted source defines Log Retention as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:monitoring",
+      "polarity": "negative",
+      "ruleId": "T07-E01",
+      "senseKey": "nist-csrc-glossary:monitoring",
+      "quote": "Continual checking, supervising, critically observing or determining the status in order to identify change from the performance level required or expected.",
+      "rationale": "The quoted source defines monitoring as routine monitoring or log operation without incident context, directly satisfying T07-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:key-metadata-recovery",
+      "polarity": "negative",
+      "ruleId": "T07-E02",
+      "senseKey": "nist-csrc-glossary:key-metadata-recovery",
+      "quote": "The process of retrieving or reconstructing a key or metadata from backup or archive storage.",
+      "rationale": "The quoted source defines Key/metadata recovery as ordinary key or metadata recovery rather than incident recovery, directly satisfying T07-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:key-recovery-agent",
+      "polarity": "negative",
+      "ruleId": "T07-E02",
+      "senseKey": "nist-csrc-glossary:key-recovery-agent",
+      "quote": "An FCKMS role that assists in the key recovery/metadata recovery process.",
+      "rationale": "The quoted source defines Key-recovery agent as ordinary key or metadata recovery rather than incident recovery, directly satisfying T07-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:business-continuity-plan-bcp",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "nist-csrc-glossary:business-continuity-plan",
+      "quote": "The documentation of a predetermined set of instructions or procedures that describe how an organization’s mission/business processes will be sustained during and after a significant disruption.",
+      "rationale": "The quoted source makes business continuity plan (BCP) continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:continuity-of-government-cog",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "nist-csrc-glossary:continuity-of-government",
+      "quote": "A coordinated effort within the Federal Government's executive branch to ensure that national essential functions continue to be performed during a catastrophic emergency.",
+      "rationale": "The quoted source makes continuity of government (COG) continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:continuity-of-operations-plan",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "niccs-glossary:continuity-of-operations-plan",
+      "quote": "A document that sets forth procedures for the continued performance of core capabilities and critical operations during any disruption or potential disruption.",
+      "rationale": "The quoted source makes continuity of operations plan continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:business-impact-analysis-bia",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "nist-csrc-glossary:business-impact-analysis",
+      "quote": "Process of analyzing operational functions and the effect that a disruption might have on them.",
+      "rationale": "The source defines operational disruption analysis without cybersecurity-incident response context, directly satisfying business-continuity exclusion T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:information-system-resilience",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "niccs-glossary:information-system-resilience",
+      "quote": "The ability of an information system to: (1) continue to operate under adverse conditions or stress, even if in a degraded or debilitated state, while maintaining essential operational capabilities; and (2) recover effectively in a timely manner.",
+      "rationale": "The quoted source makes information system resilience continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:network-resilience",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "niccs-glossary:network-resilience",
+      "quote": "The ability of a network to: (1) provide continuous operation (i.e., highly resistant to disruption and able to operate in a degraded mode if damaged); (2) recover effectively if failure does occur; and (3) scale to meet rapid or unpredictable demands.",
+      "rationale": "The quoted source makes network resilience continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:operational-resilience",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "nist-csrc-glossary:operational-resilience",
+      "quote": "The ability of systems to resist, absorb, and recover from or adapt to an adverse occurrence during operation that may cause harm, destruction, or loss of ability to perform mission related functions.",
+      "rationale": "The quoted source makes operational resilience continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:recovery-point-objective",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "nist-csrc-glossary:recovery-point-objective",
+      "quote": "The point in time to which data must be recovered after an outage.",
+      "rationale": "The quoted source makes Recovery Point Objective continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:recovery-time-objective",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "nist-csrc-glossary:recovery-time-objective",
+      "quote": "The overall length of time an information system’s components can be in the recovery phase before negatively impacting the organization’s mission or mission/business processes.",
+      "rationale": "The quoted source makes Recovery Time Objective continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:resilience-requirements",
+      "polarity": "negative",
+      "ruleId": "T07-E03",
+      "senseKey": "nist-csrc-glossary:resilience-requirements",
+      "quote": "The business driven availability and reliability characteristics for the manufacturing system that specify recovery tolerances from disruptions and major incidents.",
+      "rationale": "The quoted source makes Resilience Requirements continuity or disaster recovery without cybersecurity incident context, directly satisfying T07-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:mean-time-to-recovery",
+      "polarity": "negative",
+      "ruleId": "T07-E04",
+      "senseKey": "nist-csrc-glossary:mean-time-to-recovery",
+      "quote": "A metric that tracks the average amount of time that it takes to recover from a product or system failure.",
+      "rationale": "The quoted source makes mean time to recovery routine system-failure recovery rather than incident response, directly satisfying T07-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:recovery-procedures",
+      "polarity": "negative",
+      "ruleId": "T07-E04",
+      "senseKey": "nist-csrc-glossary:recovery-procedures",
+      "quote": "The actions necessary to restore a system's computational capability and data files after a system failure.",
+      "rationale": "The quoted source makes recovery procedures routine system-failure recovery rather than incident response, directly satisfying T07-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:trusted-recovery",
+      "polarity": "negative",
+      "ruleId": "T07-E04",
+      "senseKey": "nist-csrc-glossary:trusted-recovery",
+      "quote": "Ability to ensure recovery without compromise after a system failure.",
+      "rationale": "The quoted source makes trusted recovery routine system-failure recovery rather than incident response, directly satisfying T07-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    }
+  ]
+}

@@ -25,6 +25,33 @@ history check uses the merge base with `origin/main` when available. Set
 `SYNAC_ASSIGNMENTS_BASE_REF=<trusted-base-sha>` only when reproducing a specific
 CI comparison locally.
 
+## Tag taxonomy and assignment releases
+
+Tag classification is an offline, one-off GitOps operation. It has no schedule
+and no request-time model dependency. Transport request/response files and raw
+review events stay ignored or in the external sealed store; only reviewed
+assignments, manifests, hashes, and aggregate reports enter Git.
+
+1. Prepare and run the pinned classifier generation under
+   `experiments/tagging/production-backfill/`.
+2. Collect only matching, evidence-valid proposals from both order-reversed
+   passes.
+3. Run the independent local adversarial reviewers. Any disagreement, invalid
+   evidence, prompt-injection signal, unavailable model, or incomplete output
+   abstains.
+4. Emit `content/tag-assignments.json` and its deterministic report with
+   `emit-assignments.ts`. Never edit the artifact by hand.
+5. Review added/removed pairs, per-Tag counts, corpus coverage, provenance
+   hashes, and any explicit removal records; then run `pnpm gate`.
+6. Merge through the normal content PR. Deployment stages and verifies the
+   complete generation before the atomic activation described above.
+
+Taxonomy v2 fails closed without a release assignment artifact. Changed Entry
+text invalidates its assignment hash. Removing a prior accepted pair requires
+a reviewed removal record. If inference or review fails, commit nothing; the
+previous content generation remains production-active. Rollback is a reviewed
+revert of the taxonomy/assignment commit followed by the normal sync.
+
 ## Required configuration
 
 GitHub repository secrets:

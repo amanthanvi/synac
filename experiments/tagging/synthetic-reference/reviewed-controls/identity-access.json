@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T01",
+  "tagSlug": "identity-access",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:2fa",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:2fa",
+      "quote": "An authentication system that requires more than one distinct authentication factor for successful authentication. Multifactor authentication can be performed using a multifactor authenticator or by a combination of authenticators that provide different factors. The three authentication factors are something you know, something you have, and something you",
+      "rationale": "The quoted source definition makes 2FA directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:aal",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:aal",
+      "quote": "A category describing the strength of the authentication process.",
+      "rationale": "The quoted source definition makes AAL directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:acm",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:acm",
+      "quote": "Implementations of formal AC policy such as AC model. Access control mechanisms can be designed to adhere to the properties of the model by machine implementation using protocols, architecture, or formal languages such as program code.",
+      "rationale": "The quoted source definition makes ACM directly about access-control models and mechanisms, satisfying T01-I04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:csp",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:csp",
+      "quote": "A trusted entity that issues or registers subscriber authenticators and issues electronic credentials to subscribers. A CSP may be an independent third party or issue credentials for its own use.",
+      "rationale": "The quoted source definition makes CSP directly about account and credential management, satisfying T01-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:mfa",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:mfa",
+      "quote": "An authentication system that requires more than one distinct authentication factor for successful authentication. Multifactor authentication can be performed using a multifactor authenticator or by a combination of authenticators that provide different factors. The three authentication factors are something you know, something you have, and something you",
+      "rationale": "The quoted source definition makes MFA directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:oauth",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "niccs-glossary:oauth",
+      "quote": "an open standard authorization protocol or framework that provides applications the ability for secure designated access",
+      "rationale": "The quoted source definition makes OAuth directly about logical authorization policy, satisfying T01-I06.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:otp",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "See: One Time Password.",
+      "rationale": "The quoted source definition makes OTP directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:rbac",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:rbac",
+      "quote": "Access control based on user roles (i.e., a collection of access authorizations a user receives based on an explicit or implicit assumption of a given role). Role permissions may be inherited through a role hierarchy and typically reflect the permissions needed to perform defined functions within an organization. A given role may apply to a single",
+      "rationale": "The quoted source definition makes RBAC directly about access-control models and mechanisms, satisfying T01-I04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:rp",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:rp",
+      "quote": "An entity that relies upon the subscriber’s authenticator(s) and credentials or a verifier’s assertion of a claimant’s identity, typically to process a transaction or grant access to information or a system.",
+      "rationale": "The quoted source definition makes RP directly about federation and single sign-on, satisfying T01-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:access-control-center",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A computer that maintains a database (possibly in the form of an access control matrix) defining the security policy for an access control service, and that acts as a server for clients requesting access control decisions. Tutorial: An ACC is sometimes used in conjunction with a key center to implement access control in a key distribution system for",
+      "rationale": "The quoted source definition makes access control center directly about access-control models and mechanisms, satisfying T01-I04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:account-recovery",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:account-recovery",
+      "quote": "The ability to regain ownership of a subscriber account and its associated information and privileges.",
+      "rationale": "The quoted source definition makes account recovery directly about account and credential management, satisfying T01-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:account-resolution",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:account-resolution",
+      "quote": "The association of an RP subscriber account with information that is already held by the RP prior to the federation transaction and outside of a trust agreement.",
+      "rationale": "The quoted source definition makes account resolution directly about federation and single sign-on, satisfying T01-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:attribute-based-authorization",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:attribute-based-authorization",
+      "quote": "A structured process that determines when a user is authorized to access information, systems, or services based on attributes of the user and of the information, system, or service.",
+      "rationale": "The quoted source definition makes attribute-based authorization directly about logical authorization policy, satisfying T01-I06.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:attribute-provider",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:attribute-provider",
+      "quote": "The provider of an identity API that provides access to a subscriber’s attributes without necessarily asserting that the subscriber is present to the RP.",
+      "rationale": "The quoted source definition makes attribute provider directly about federation and single sign-on, satisfying T01-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticate",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "niccs-glossary:authenticate",
+      "quote": "Authenticate is the critical process of verifying the identity of a user, device, or system before granting access to resources. It acts as the first line of defense against unauthorized access by requiring proof—such as passwords, biometric scans, or tokens—ensuring that only legitimate users enter",
+      "rationale": "The quoted source definition makes Authenticate directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication-assurance-level",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authentication-assurance-level",
+      "quote": "A category that describes the strength of the authentication process.",
+      "rationale": "The quoted source definition makes authentication assurance level directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication-exchange",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:1-i",
+      "quote": "A mechanism to verify the identity of an entity by means of information exchange.",
+      "rationale": "The quoted source definition makes authentication exchange directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication-period",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authentication-period",
+      "quote": "The period between any initial authentication process and subsequent re authentication processes during a single terminal session or during the period data is being accessed.",
+      "rationale": "The quoted source definition makes authentication period directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication-protocol",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authentication-protocol",
+      "quote": "2. A defined sequence of messages between a Claimant and a Verifier that demonstrates that the Claimant has possession and control of a valid token to establish his/her identity, and optionally, demonstrates to the Claimant that he or she is communicating with the intended Verifier.",
+      "rationale": "The quoted source definition makes authentication protocol directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication-service",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A security service that verifies an identity claimed by or for an entity. (See: authentication.) Tutorial: In a network, there are two general forms of authentication service: data origin authentication service and peer entity authentication service.",
+      "rationale": "The quoted source definition makes authentication service directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticator",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authenticator",
+      "quote": "Something the cardholder possesses and controls (e.g., PIV Card or derived PIV credential) that is used to authenticate the cardholder’s identity.",
+      "rationale": "The quoted source definition makes authenticator directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticator-assurance-level-aal",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authenticator-assurance-level",
+      "quote": "A measure of the strength of an authentication mechanism and, therefore, the confidence in it, as defined in [NIST SP 800 63 3] in terms of three levels: AAL1 (Some confidence), AAL2 (High confidence), AAL3 (Very high confidence).",
+      "rationale": "The quoted source definition makes Authenticator Assurance Level (AAL) directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:bidirectional-authentication",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:bidirectional-authentication",
+      "quote": "The process of both entities involved in a transaction verifying each other.",
+      "rationale": "The quoted source definition makes bidirectional authentication directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:challenge-and-reply-authentication",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:challenge-and-reply-authentication",
+      "quote": "Prearranged procedure in which a subject requests authentication of another and the latter establishes validity with a correct reply.",
+      "rationale": "The quoted source definition makes challenge and reply authentication directly about authenticators and factors, satisfying T01-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:electronic-credentials",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:electronic-credentials",
+      "quote": "Digital documents used in authentication that bind an identity or an attribute to a subscriber's authenticator.",
+      "rationale": "The quoted source definition makes electronic credentials directly about account and credential management, satisfying T01-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ato",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:ato",
+      "quote": "Authorization to Operate; One of three possible decisions concerning an issuer made by a Designated Authorizing Official after all assessment activities have been performed stating that the issuer is authorized to perform specific PIV Card and/or Derived Credential issuance services.",
+      "rationale": "The quoted source definition makes ATO a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:dato",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:dato",
+      "quote": "Denial of Authorization to Operate; issued by a DAO to an issuer that is not authorized as being reliable for the issuance of PIV Cards or Derived PIV Credentials.",
+      "rationale": "The quoted source definition makes DATO a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:accreditation",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:accreditation",
+      "quote": "The official management decision given by a senior agency official to authorize operation of an information system and to explicitly accept the risk to agency operations (including mission, functions, image, or reputation), agency assets, or individuals, based on the implementation of an agreed upon set of security controls.",
+      "rationale": "The quoted source definition makes accreditation a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:air-traffic-organization",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:air-traffic-organization",
+      "quote": "Authorization to Operate; One of three possible decisions concerning an issuer made by a Designated Authorizing Official after all assessment activities have been performed stating that the issuer is authorized to perform specific PIV Card and/or Derived Credential issuance services.",
+      "rationale": "The quoted source definition makes Air Traffic Organization a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:approval-to-operate",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:approval-to-operate",
+      "quote": "Authorization to Operate; One of three possible decisions concerning an issuer made by a Designated Authorizing Official after all assessment activities have been performed stating that the issuer is authorized to perform specific PIV Card and/or Derived Credential issuance services.",
+      "rationale": "The quoted source definition makes approval to operate a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authority-to-operate",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:authority-to-operate",
+      "quote": "Authorization to Operate; One of three possible decisions concerning an issuer made by a Designated Authorizing Official after all assessment activities have been performed stating that the issuer is authorized to perform specific PIV Card and/or Derived Credential issuance services.",
+      "rationale": "The quoted source definition makes Authority to Operate a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authorize-processing",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:authorize-processing",
+      "quote": "The official management decision given by a senior agency official to authorize operation of an information system and to explicitly accept the risk to agency operations (including mission, functions, image, or reputation), agency assets, or individuals, based on the implementation of an agreed upon set of security controls.",
+      "rationale": "The quoted source definition makes authorize processing a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:certification-analyst",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:certification-analyst",
+      "quote": "The independent technical liaison for all stakeholders involved in the certification and accreditation (C&A) process responsible for objectively and independently evaluating a system as part of the risk management process. Based on the security requirements documented in the security plan, performs a technical and non technical review of potential",
+      "rationale": "The quoted source definition makes certification analyst a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:limit-specification",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:limit-specification",
+      "quote": "A condition indicating that risk has exceeded acceptable levels and that immediate action is needed to reduce the risk, or the system/assessment object may need to be removed from production (lose authority to operate).",
+      "rationale": "The quoted source definition makes Limit, Specification a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:mission-assurance-category",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:mission-assurance-category",
+      "quote": "A Department of Defense (DoD) Information Assurance Certification and Accreditation Process (DIACAP) term primarily used to determine the requirements for availability and integrity.",
+      "rationale": "The quoted source definition makes mission assurance category a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:security-authorization-to-operate",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:security-authorization-to-operate",
+      "quote": "See authorization to operate (ATO).",
+      "rationale": "The quoted source definition makes security authorization (to operate) a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:specification-limit",
+      "polarity": "negative",
+      "ruleId": "T01-E02",
+      "senseKey": "nist-csrc-glossary:specification-limit",
+      "quote": "A condition indicating that risk has exceeded acceptable levels and that immediate action is needed to reduce the risk, or the system/assessment object may need to be removed from production (lose authority to operate).",
+      "rationale": "The quoted source definition makes Specification Limit a direct example of authorization-to-operate governance, so identity-access does not apply under T01-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:fasc-n",
+      "polarity": "negative",
+      "ruleId": "T01-E01",
+      "senseKey": "nist-csrc-glossary:fasc-n",
+      "quote": "One of the primary identifiers on the PIV Card for physical access control, as required by FIPS 201. The FASC N is a fixed length (25 byte) data object that is specified in [NIST SP 800 73 4] and included in several data objects on a PIV Card.",
+      "rationale": "The quoted source definition makes FASC-N a direct example of facility access by itself, so identity-access does not apply under T01-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:federal-agency-smart-credential-number",
+      "polarity": "negative",
+      "ruleId": "T01-E01",
+      "senseKey": "nist-csrc-glossary:federal-agency-smart-credential-number",
+      "quote": "One of the primary identifiers on the PIV Card for physical access control, as required by FIPS 201. The FASC N is a fixed length (25 byte) data object that is specified in [NIST SP 800 73 4] and included in several data objects on a PIV Card.",
+      "rationale": "The quoted source definition makes Federal Agency Smart Credential Number a direct example of facility access by itself, so identity-access does not apply under T01-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:physical-access-control-system",
+      "polarity": "negative",
+      "ruleId": "T01-E01",
+      "senseKey": "nist-csrc-glossary:physical-access-control-system",
+      "quote": "An electronic system that controls the ability of people or vehicles to enter a protected area by means of authentication and authorization at access control points.",
+      "rationale": "The quoted source definition makes physical access control system a direct example of facility access by itself, so identity-access does not apply under T01-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:u-s-controlled-space",
+      "polarity": "negative",
+      "ruleId": "T01-E01",
+      "senseKey": "nist-csrc-glossary:us-controlled-space",
+      "quote": "A space (e.g., room or floor) within a facility other than a U.S. controlled facility, access to which is physically controlled by U.S. citizens or resident aliens who are authorized U.S. Government or U.S. Government contractor employees. Keys or combinations to locks controlling entrance to the U.S. controlled space must be under the exclusive control of",
+      "rationale": "The quoted source definition makes U.S.-controlled space a direct example of facility access by itself, so identity-access does not apply under T01-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ae",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:ae",
+      "quote": "The function of GCM in which the plaintext is encrypted into the ciphertext, and an authentication tag is generated on the AAD and the ciphertext.",
+      "rationale": "The quoted source definition makes AE a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:icv",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:icv",
+      "quote": "A fixed string that is prepended to the plaintext within the authenticated encryption function of a key wrap algorithm, in order to enable the verification of the integrity of the plaintext within the authenticated decryption function.",
+      "rationale": "The quoted source definition makes ICV a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticated-decryption",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:authenticated-decryption",
+      "quote": "The function of GCM in which the ciphertext is decrypted into the plaintext, and the authenticity of the ciphertext and the AAD is verified.",
+      "rationale": "The quoted source definition makes Authenticated Decryption a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticated-encryption",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:authenticated-encryption",
+      "quote": "The function of GCM in which the plaintext is encrypted into the ciphertext, and an authentication tag is generated on the AAD and the ciphertext.",
+      "rationale": "The quoted source definition makes Authenticated Encryption a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication-code",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:authentication-code",
+      "quote": "A keyed cryptographic checksum based on an approved security function; also known as a Message Authentication Code.",
+      "rationale": "The quoted source definition makes Authentication code a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:integrity-check-value",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:integrity-check-value",
+      "quote": "A fixed string that is prepended to the plaintext within the authenticated encryption function of a key wrap algorithm, in order to enable the verification of the integrity of the plaintext within the authenticated decryption function.",
+      "rationale": "The quoted source definition makes integrity check value a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:key-wrap-algorithm",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:key-wrap-algorithm",
+      "quote": "A deterministic, symmetric key authenticated encryption algorithm that is intended for the protection of cryptographic keys. Consists of two functions: authenticated encryption and authenticated decryption.",
+      "rationale": "The quoted source definition makes key-wrap algorithm a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:keyed-hash-algorithm",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:keyed-hash-algorithm",
+      "quote": "An algorithm that creates a message authentication code based on both a message and a secret key shared by two endpoints. Also known as a hash message authentication code algorithm.",
+      "rationale": "The quoted source definition makes Keyed Hash Algorithm a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:message-authentication-code-mac",
+      "polarity": "negative",
+      "ruleId": "T01-E03",
+      "senseKey": "nist-csrc-glossary:message-authentication-code",
+      "quote": "A cryptographic checksum on data that uses a symmetric key to detect both accidental and intentional modifications of the data. See checksum.",
+      "rationale": "The quoted source definition makes message authentication code (MAC) a direct example of cryptographic authentication tags or codes whose subject is the primitive, so identity-access does not apply under T01-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    }
+  ]
+}

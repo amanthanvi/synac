@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T05",
+  "tagSlug": "vulnerabilities-remediation",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:nvd",
+      "polarity": "positive",
+      "ruleId": "T05-I02",
+      "senseKey": "nist-csrc-glossary:nvd",
+      "quote": "The U.S. Government repository of standards based vulnerability management data, enabling automation of vulnerability management, security measurement, and compliance (e.g., FISMA).",
+      "rationale": "The quoted source places NVD in vulnerability identification, cataloging, or standardized nomenclature, directly satisfying T05-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "ACRONYM:offsec",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "niccs-glossary:offsec",
+      "quote": "the proactive approach to securing networks and systems from attacks by actively seeking out vulnerabilities and weaknesses",
+      "rationale": "The quoted source defines OffSec as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:technical-vulnerability-information",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "nist-csrc-glossary:technical-vulnerability-information",
+      "quote": "Detailed description of a weakness to include the implementable steps (such as code) necessary to exploit that weakness.",
+      "rationale": "The quoted source defines technical vulnerability information as a software or system weakness, directly satisfying T05-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "ACRONYM:ptaas",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "niccs-glossary:ptaas",
+      "quote": "a hybrid solution that combines the breadth of automation with the depth of human assessment, while integrated with advanced vulnerability management and analytics",
+      "rationale": "The quoted source defines PTaaS as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:local-remediation-level",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:local-remediation-level",
+      "quote": "measures the level of protection against a misuse vulnerability within the local IT environment and captures both how widespread mitigation implementation is and how effective such mitigation is.",
+      "rationale": "The source measures implementation and effectiveness of mitigation against a misuse vulnerability, directly satisfying remediation rule T05-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:active-security-testing",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:active-security-testing",
+      "quote": "Security testing that involves direct interaction with a target, such as sending packets to a target.",
+      "rationale": "The quoted source defines Active Security Testing as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:artificial-intelligence-red-teaming",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:artificial-intelligence-red-teaming",
+      "quote": "A structured testing effort to find flaws and vulnerabilities in an AI system, often in a controlled environment and in collaboration with developers of AI.",
+      "rationale": "The quoted source defines artificial intelligence red-teaming as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:common-vulnerabilities-and-exposures-identifiers",
+      "polarity": "positive",
+      "ruleId": "T05-I02",
+      "senseKey": "nist-csrc-glossary:common-vulnerabilities-and-exposures-identifiers",
+      "quote": "An identifier for a specific software flaw defined within the official CVE Dictionary and that conforms to the CVE specification.",
+      "rationale": "The quoted source places Common Vulnerabilities and Exposures identifiers in vulnerability identification, cataloging, or standardized nomenclature, directly satisfying T05-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:common-vulnerability-scoring-system-cvss",
+      "polarity": "positive",
+      "ruleId": "T05-I04",
+      "senseKey": "nist-csrc-glossary:common-vulnerability-scoring-system",
+      "quote": "A system for measuring the relative severity of software flaw vulnerabilities.",
+      "rationale": "The quoted source makes common vulnerability scoring system (CVSS) vulnerability scoring or prioritization data, directly satisfying T05-I04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:common-weakness-enumeration-cwe",
+      "polarity": "positive",
+      "ruleId": "T05-I02",
+      "senseKey": "nist-csrc-glossary:common-weakness-enumeration",
+      "quote": "A taxonomy for identifying the common sources of software flaws (e.g., buffer overflows, failure to check input data).",
+      "rationale": "The quoted source places common weakness enumeration (CWE) in vulnerability identification, cataloging, or standardized nomenclature, directly satisfying T05-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:cve-equivalent",
+      "polarity": "positive",
+      "ruleId": "T05-I02",
+      "senseKey": "nist-csrc-glossary:cve-equivalent",
+      "quote": "A vulnerability—known by someone—that has been found in specific software—irrespective of whether that vulnerability is publicly known. CVEs are a subset of CVE equivalents.",
+      "rationale": "The quoted source places CVE equivalent in vulnerability identification, cataloging, or standardized nomenclature, directly satisfying T05-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:information-assurance-vulnerability-alert-iava",
+      "polarity": "positive",
+      "ruleId": "T05-I04",
+      "senseKey": "nist-csrc-glossary:information-assurance-vulnerability-alert",
+      "quote": "Notification that is generated when an Information Assurance vulnerability may result in an immediate and potentially severe threat to DoD systems and information; this alert requires corrective action because of the severity of the vulnerability risk.",
+      "rationale": "The source prioritizes a severe cybersecurity vulnerability and requires corrective action, directly satisfying vulnerability prioritization rule T05-I04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:cve-record-metadata",
+      "polarity": "positive",
+      "ruleId": "T05-I02",
+      "senseKey": "nist-csrc-glossary:cve-record-metadata",
+      "quote": "Information attached to the CVE by the NVD Analyst and/or CNA. Comprised of CVSS v3.1, CVSS v2, CWE, Reference Link Tags, and Configurations.",
+      "rationale": "The quoted source places CVE Record Metadata in vulnerability identification, cataloging, or standardized nomenclature, directly satisfying T05-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:enterprise-patch-management",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:enterprise-patch-management",
+      "quote": "The process of identifying, prioritizing, acquiring, installing, and verifying the installation of patches, updates, and upgrades throughout an organization.",
+      "rationale": "The quoted source makes enterprise patch management patching, updating, mitigation, or remediation, directly satisfying T05-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:fuzzer",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "niccs-glossary:fuzzer",
+      "quote": "an automated software testing method that injects invalid, malformed, or unexpected inputs into a system to reveal software defects and vulnerabilities",
+      "rationale": "The quoted source defines Fuzzer as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:hardening",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:hardening",
+      "quote": "A process intended to eliminate a means of attack by patching vulnerabilities and turning off nonessential services.",
+      "rationale": "The source makes vulnerability patching the means by which hardening eliminates an attack path, directly satisfying remediation rule T05-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:remediation",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:remediation",
+      "quote": "The act of mitigating a vulnerability or a threat.",
+      "rationale": "The quoted source makes remediation patching, updating, mitigation, or remediation, directly satisfying T05-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:review-techniques",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:review-techniques",
+      "quote": "Passive information security testing techniques, generally conducted manually, that are used to evaluate systems, applications, networks, policies, and procedures to discover vulnerabilities. They include documentation, log, ruleset, and system configuration review; network sniffing; and file integrity checking.",
+      "rationale": "The quoted source defines Review Techniques as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:security-content-automation-protocol-scap",
+      "polarity": "positive",
+      "ruleId": "T05-I02",
+      "senseKey": "nist-csrc-glossary:security-content-automation-protocol",
+      "quote": "A suite of specifications that standardize the format and nomenclature by which software flaw and security configuration information is communicated, both to machines and humans. Note: There are six individual specifications incorporated into SCAP: CVE (common vulnerabilities and exposures); CCE (common configuration enumeration); CPE (common platform",
+      "rationale": "The quoted source places security content automation protocol (SCAP) in vulnerability identification, cataloging, or standardized nomenclature, directly satisfying T05-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:static-code-analyzer",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:static-code-analyzer",
+      "quote": "A tool that analyzes source code without executing the code. Static code analyzers are designed to review bodies of source code (at the programming language level) or compiled code (at the machine language level) to identify poor coding practices. Static code analyzers provide feedback to developers during the code development phase on security flaws that",
+      "rationale": "The quoted source defines static code analyzer as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:target-identification-and-analysis-techniques",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:target-identification-and-analysis-techniques",
+      "quote": "Information security testing techniques, mostly active and generally conducted using automated tools, that are used to identify systems, ports, services, and potential vulnerabilities. Target identification and analysis techniques include network discovery, network port and service identification, vulnerability scanning, wireless scanning, and application",
+      "rationale": "The quoted source defines Target Identification and Analysis Techniques as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:target-vulnerability-validation-techniques",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:target-vulnerability-validation-techniques",
+      "quote": "Active information security testing techniques that corroborate the existence of vulnerabilities. They include password cracking, remote access testing, penetration testing, social engineering, and physical security testing.",
+      "rationale": "The quoted source defines Target Vulnerability Validation Techniques as vulnerability-focused testing, assessment, or scanning, directly satisfying T05-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:general-remediation-level",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:general-remediation-level",
+      "quote": "measures the availability of remediation measures that can mitigate the vulnerability other than rendering the misused software feature useless (e.g., disabling the affected feature, removing the software).",
+      "rationale": "The source directly measures available actions for mitigating a vulnerability, satisfying patching and remediation rule T05-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:vulnerability-advisory-report",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:vulnerability-advisory-report",
+      "quote": "Publication by a technology developer and/or provider to customers or the general public that describes a vulnerability with a focus on remediation and mitigation.",
+      "rationale": "The quoted source makes vulnerability advisory report patching, updating, mitigation, or remediation, directly satisfying T05-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:weakness",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "niccs-glossary:weakness",
+      "quote": "A shortcoming or imperfection in software code, design, architecture, or deployment that, under proper conditions, could become a vulnerability or contribute to the introduction of vulnerabilities.",
+      "rationale": "The quoted source defines weakness as a software or system weakness, directly satisfying T05-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:anti-spyware-software",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:anti-spyware-software",
+      "quote": "Anti spyware software is a specialized security tool designed to detect, block, and remove malicious software that secretly monitors user activity, steals data, or hijacks devices.",
+      "rationale": "The quoted source makes Anti-spyware Software malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:antivirus-software",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:antivirus-software",
+      "quote": "Antivirus software is a security program designed to detect, prevent, and remove malicious software (malware)—including viruses, ransomware, spyware, and Trojans—from computers, laptops, and mobile devices.",
+      "rationale": "The quoted source makes Antivirus Software malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:antivirus-tools",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "nist-csrc-glossary:antivirus-tools",
+      "quote": "Software products and technology used to detect malicious code, prevent it from infecting a system, and remove malicious code that has infected the system.",
+      "rationale": "The quoted source makes antivirus tools malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:behavior-analysis",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "nist-csrc-glossary:behavior-analysis",
+      "quote": "The act of examining malware interactions within its operating environment including file systems, the registry (if on Windows), the network, as well as other processes and Operating System components.",
+      "rationale": "The quoted source makes behavior analysis malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:binary-padding",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "mitre-attack-cti:T1027.001",
+      "quote": "Adversaries may use binary padding to add junk data and change the on disk representation of malware. This can be done without affecting the functionality or behavior of a binary, but can increase the size of the binary beyond what some security tools are capable of handling due to file size limitations. Binary padding effectively changes the checksum of",
+      "rationale": "The quoted source makes Binary Padding malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:bootkit",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "mitre-attack-cti:T1542.003",
+      "quote": "Adversaries may use bootkits to persist on systems. A bootkit is a malware variant that modifies the boot sectors of a hard drive, allowing malicious code to execute before a computer's operating system has loaded. Bootkits reside at a layer below the operating system and may make it difficult to perform full remediation unless an organization suspects one",
+      "rationale": "The quoted source makes Bootkit malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:phishing",
+      "polarity": "negative",
+      "ruleId": "T05-E01",
+      "senseKey": "niccs-glossary:phishing",
+      "quote": "A digital form of social engineering to deceive individuals into providing sensitive information.",
+      "rationale": "The source defines adversarial social engineering behavior and does not make an underlying weakness substantive, directly satisfying exclusion T05-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:botnet",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:botnet",
+      "quote": "A botnet is a network of hijacked, internet connected devices (computers, smartphones, IoT) infected with malware and controlled by a \"bot herder\" to perform malicious tasks remotely. Used for DDoS attacks, spam, and data theft, they operate silently, often causing slow performance",
+      "rationale": "The quoted source makes Botnet malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:cryptomalware",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:cryptomalware",
+      "quote": "is malware that encrypts data on the targets device and demands a ransom to restore it",
+      "rationale": "The quoted source makes cryptomalware malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:keylogger",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:keylogger",
+      "quote": "a tool that record what a person types on a device While there are legitimate and legal uses for keyloggers, many uses for keyloggers are malicious",
+      "rationale": "The quoted source makes keylogger malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:logic-bomb",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "nist-csrc-glossary:logic-bomb",
+      "quote": "A piece of code intentionally inserted into a software system that will set off a malicious function when specified conditions are met.",
+      "rationale": "The quoted source makes logic bomb malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:macro-virus",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:macro-virus",
+      "quote": "A type of malicious code that attaches itself to documents and uses the macro programming capabilities of the document’s application to execute, replicate, and spread or propagate itself.",
+      "rationale": "The quoted source makes macro virus malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:audio-capture",
+      "polarity": "negative",
+      "ruleId": "T05-E01",
+      "senseKey": "mitre-attack-cti:T1123",
+      "quote": "An adversary can leverage a computer's peripheral devices (e.g., microphones and webcams) or applications (e.g., voice and video call services) to capture audio recordings for the purpose of listening into sensitive conversations to gather information.",
+      "rationale": "The source describes adversary collection behavior without making a vulnerability or weakness substantive, directly satisfying exclusion T05-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:data-destruction",
+      "polarity": "negative",
+      "ruleId": "T05-E01",
+      "senseKey": "mitre-attack-cti:T1485",
+      "quote": "Adversaries may destroy data and files on specific systems or in large numbers on a network to interrupt availability to systems, services, and network resources.",
+      "rationale": "The source defines adversary impact behavior rather than a weakness in design, implementation, or configuration, directly satisfying exclusion T05-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:domain-generation-algorithms",
+      "polarity": "negative",
+      "ruleId": "T05-E01",
+      "senseKey": "mitre-attack-cti:T1568.002",
+      "quote": "Adversaries may make use of Domain Generation Algorithms (DGAs) to dynamically identify a destination domain for command and control traffic rather than relying on a list of static IP addresses or domains.",
+      "rationale": "The source defines adversary command-and-control behavior and does not substantively identify an underlying weakness, directly satisfying exclusion T05-E01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:morris-worm",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "rfc4949:i",
+      "quote": "A worm program that flooded the ARPANET in November 1988, causing problems for thousands of hosts. [R1135] (See: community risk, worm)",
+      "rationale": "The quoted source makes Morris Worm malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:relocate-malware",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "mitre-attack-cti:T1070.010",
+      "quote": "Once a payload is delivered, adversaries may reproduce copies of the same malware on the victim system to remove evidence of their presence and/or avoid defenses. Copying malware payloads to new locations may also be combined with File Deletion to cleanup older artifacts. Relocating malware may be a part of many actions intended to evade defenses. For",
+      "rationale": "The quoted source makes Relocate Malware malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:spyware",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:spyware",
+      "quote": "Software that is secretly or surreptitiously installed into an information system without the knowledge of the system user or owner.",
+      "rationale": "The quoted source makes spyware malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:threatware",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:threatware",
+      "quote": "a general term encompassing all types of malicious software on computers and electronic devices",
+      "rationale": "The quoted source makes Threatware malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:time-bomb",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "nist-csrc-glossary:time-bomb",
+      "quote": "Resident computer program that triggers an unauthorized act at a predefined time.",
+      "rationale": "The quoted source makes time bomb malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:trojan-horse",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:trojan-horse",
+      "quote": "A computer program that appears to have a useful function, but also has a hidden and potentially malicious function that evades security mechanisms, sometimes by exploiting legitimate authorizations of a system entity that invokes the program.",
+      "rationale": "The quoted source makes trojan horse malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:upload-malware",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "mitre-attack-cti:T1608.001",
+      "quote": "Adversaries may upload malware to third party or adversary controlled infrastructure to make it accessible during targeting. Malicious software can include payloads, droppers, post compromise tools, backdoors, and a variety of other malicious content. Adversaries may upload malware to support their operations, such as making a payload available to a victim",
+      "rationale": "The quoted source makes Upload Malware malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:virus",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "niccs-glossary:virus",
+      "quote": "A computer program that can replicate itself, infect a computer without permission or knowledge of the user, and then spread or propagate to another computer.",
+      "rationale": "The quoted source makes virus malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:watering-hole",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "nist-csrc-glossary:watering-hole",
+      "quote": "Watering hole attacks involve attackers compromising one or more legitimate Web sites with malware in an attempt to target and infect visitors to those sites.",
+      "rationale": "The quoted source makes Watering Hole malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:web-shell",
+      "polarity": "negative",
+      "ruleId": "T05-E04",
+      "senseKey": "mitre-attack-cti:T1505.003",
+      "quote": "Adversaries may backdoor web servers with web shells to establish persistent access to systems. A Web shell is a Web script that is placed on an openly accessible Web server to allow an adversary to access the Web server as a gateway into a network. A Web shell may provide a set of functions to execute or a command line interface on the system that hosts",
+      "rationale": "The quoted source makes Web Shell malware, malicious code, or malware-specific handling rather than an underlying weakness, directly satisfying T05-E04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    }
+  ]
+}

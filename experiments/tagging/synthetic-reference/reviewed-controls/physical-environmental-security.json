@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T11",
+  "tagSlug": "physical-environmental-security",
+  "rows": [
+    {
+      "entryKey": "TERM:environmental-support",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:environmental-support",
+      "quote": "This could include factors such as power, air conditioning, humidity control, fire protection, lighting, etc.",
+      "rationale": "The quote directly identifies environmental protections supporting facilities and systems.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:controlled-access-area",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "nist-csrc-glossary:controlled-access-area",
+      "quote": "The complete building or facility area under direct physical control within which unauthorized persons are denied unrestricted access and are either escorted by authorized personnel or are under continuous physical or electronic surveillance.",
+      "rationale": "The definition directly describes controlled physical access within a building or facility.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "ACRONYM:tempest",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:tempest",
+      "quote": "A name referring to the investigation, study, and control of unintentional compromising emanations from telecommunications and automated information systems equipment.",
+      "rationale": "The definition directly concerns control of compromising equipment emanations.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:access-control",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "nist-csrc-glossary:access-control",
+      "quote": "The process of granting or denying specific requests to 1) obtain and use information and related information processing services and 2) enter specific physical facilities (e.g., federal buildings, military establishments, border crossing entrances).",
+      "rationale": "The definition explicitly includes granting or denying entry to physical facilities.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:access-control-mechanism",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "niccs-glossary:access-control-mechanism",
+      "quote": "Security measures designed to detect and deny unauthorized access and permit authorized access to an information system or a physical facility.",
+      "rationale": "The source defines security measures controlling unauthorized access to a physical facility.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:benign-environment",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:benign-environment",
+      "quote": "A non hostile location protected from external hostile elements by physical, personnel, and procedural security countermeasures.",
+      "rationale": "The location is explicitly protected by physical, personnel, and procedural security countermeasures.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:common-access-card-cac",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "niccs-glossary:common-access-card-cac",
+      "quote": "Common Access Card (CAC) is the standard, credit card sized smart card identification. It uses an embedded chip for two factor authentication, physical access to facilities, and digital access to secure computer networks.",
+      "rationale": "The source explicitly identifies smart-card authentication for physical facility access.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:communications-security",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:communications-security",
+      "quote": "A component of CS that deals with measures and controls taken to deny unauthorized persons information derived from telecommunications and to ensure the authenticity of such telecommunications. COMSEC includes cryptographic security, transmission security, emissions security, and physical security of COMSEC material and information.",
+      "rationale": "The definition includes emissions security and physical security of COMSEC material.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:physical-safeguards",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:physical-safeguards",
+      "quote": "Physical measures, policies, and procedures to protect a covered entity's or business associate’s electronic information systems and related buildings and equipment from natural and environmental hazards, and unauthorized intrusion.",
+      "rationale": "The definition directly protects buildings and equipment from environmental hazards and intrusion.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:control-zone",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "rfc4949:o",
+      "quote": "\"The space, expressed in feet of radius, surrounding equipment processing sensitive information, that is under sufficient physical and technical control to preclude an unauthorized entry or compromise.\" [NCSSG] (Compare: inspectable space, TEMPEST zone.)",
+      "rationale": "The source defines a physically controlled zone preventing unauthorized entry or compromise.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:purge",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:purge",
+      "quote": "A method of sanitization that applies physical or logical techniques that render Target Data recovery infeasible using state of the art laboratory techniques.",
+      "rationale": "The definition directly describes media sanitization that prevents laboratory recovery of target data.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:emergency-action-plan-eap",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:emergency-action-plan",
+      "quote": "A plan developed to prevent loss of national intelligence; protect personnel, facilities, and communications; and recover operations damaged by terrorist attack, natural disaster, or similar events.",
+      "rationale": "The plan protects facilities and recovers operations after attack or natural disaster.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:emergency-response",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "rfc4949:o",
+      "quote": "An urgent response to a fire, flood, civil commotion, natural disaster, bomb threat, or other serious situation, with the intent of protecting lives, limiting damage to property, and minimizing disruption of system operations. [FP087] (See: availability, CERT, emergency plan.)",
+      "rationale": "The response explicitly covers fire, flood, natural disaster, property protection, and system continuity.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:federal-agency-smart-credential-number",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "nist-csrc-glossary:federal-agency-smart-credential-number",
+      "quote": "One of the primary identifiers on the PIV Card for physical access control, as required by FIPS 201. The FASC N is a fixed length (25 byte) data object that is specified in [NIST SP 800 73 4] and included in several data objects on a PIV Card.",
+      "rationale": "The source identifies a PIV-card identifier required for physical access control.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:quadrant",
+      "polarity": "positive",
+      "ruleId": "T11-I06",
+      "senseKey": "nist-csrc-glossary:quadrant",
+      "quote": "Short name referring to technology that provides tamper resistant protection to cryptographic equipment.",
+      "rationale": "The definition directly identifies tamper-resistant physical protection for cryptographic equipment.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:emanations-security",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "Physical security measures to protect against data compromise that could occur because of emanations that might be received and read by an unauthorized party.",
+      "rationale": "The definition directly describes physical protection against compromising emanations.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:shielded-enclosure",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:shielded-enclosure",
+      "quote": "Room or container designed to attenuate electromagnetic radiation, acoustic signals, or emanations.",
+      "rationale": "The definition directly describes a physical enclosure for attenuating exploitable emanations.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:physically-protected-space-pps",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:physically-protected-space",
+      "quote": "The space inside one physically protected perimeter. Separate spaces of equal protection may be considered to be part of the same PPS if the communication links between them are provided sufficient physical protection.",
+      "rationale": "The source defines space and communication links protected by a physical perimeter.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:suppression-measure",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:suppression-measure",
+      "quote": "Action, procedure, modification, or device that reduces the level of, or inhibits the generation of, compromising emanations in an information system.",
+      "rationale": "The definition directly describes suppression of compromising information-system emanations.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:inspectable-space",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:inspectable-space",
+      "quote": "Three dimensional space surrounding equipment that processes classified and/or sensitive information within which TEMPEST exploitation is not considered practical or where legal authority to identify and remove a potential TEMPEST exploitation exists.",
+      "rationale": "The definition directly establishes a physical zone intended to prevent practical TEMPEST exploitation.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:residue",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:residue",
+      "quote": "Data left in storage after information processing operations are complete, but before degaussing or overwriting has taken place.",
+      "rationale": "The source concerns residual storage data before degaussing or overwriting sanitization.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:security-doctrine",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "Security doctrine is often understood to refer mainly to administrative security, personnel security, and physical security.",
+      "rationale": "The source explicitly identifies physical security as a core security-doctrine concern.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:special-access-program-facility",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:special-access-program-facility",
+      "quote": "A specific physical space that has been formally accredited in writing by the cognizant program security officer (PSO) that satisfies the criteria for generating, safeguarding, handling, discussing, and storing classified or unclassified program information, hardware, and materials.",
+      "rationale": "The definition identifies an accredited physical space safeguarding sensitive information and materials.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:degauss",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "rfc4949:1a-n",
+      "quote": "Apply a magnetic field to permanently remove data from a magnetic storage medium, such as a tape or disk",
+      "rationale": "The definition directly describes permanent data removal from magnetic storage media, satisfying media sanitization.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:u-s-controlled-space",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "nist-csrc-glossary:us-controlled-space",
+      "quote": "A space (e.g., room or floor) within a facility other than a U.S. controlled facility, access to which is physically controlled by U.S. citizens or resident aliens who are authorized U.S. Government or U.S. Government contractor employees. Keys or combinations to locks controlling entrance to the U.S. controlled space must be under the exclusive control of U.S. citizens or resident aliens who are U.S. Government or U.S. Government contractor employees.",
+      "rationale": "The space, entrances, locks, and keys are explicitly under authorized physical control.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:field-device",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "nist-csrc-glossary:field-device",
+      "quote": "Equipment that is connected to the field side on an ICS. Types of field devices include RTUs, PLCs, actuators, sensors, HMIs, and associated communications.",
+      "rationale": "The definition concerns an industrial-control platform component, not a physical safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:human-machine-interface",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "nist-csrc-glossary:human-machine-interface",
+      "quote": "The hardware or software through which an operator interacts with a controller. An HMI can range from a physical control panel with buttons and indicator lights to an industrial PC with a color graphics display running dedicated HMI software.",
+      "rationale": "The definition concerns an industrial controller interface, not a physical-security safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:safety-instrumented-system",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "nist-csrc-glossary:safety-instrumented-system",
+      "quote": "A system that is composed of sensors, logic solvers, and final control elements whose purpose is to take the process to a safe state when predetermined conditions are violated.",
+      "rationale": "The definition concerns an operational process-control platform, not a physical-security safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "ACRONYM:red",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "rfc4949:1-n",
+      "quote": "Designation for data that consists only of clear text, and for information system equipment items and facilities that handle clear text. Example: \"RED key\". (See: BCR, color change, RED/BLACK separation. Compare: BLACK.) Derivation: From the practice of marking equipment with colors to prevent operational errors.",
+      "rationale": "The source merely designates clear-text equipment and facilities, without a physical safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:boundary",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:boundary",
+      "quote": "Physical or logical perimeter of a system.",
+      "rationale": "The source generically defines a physical or logical system perimeter without a safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:ckms-component",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:ckms-component",
+      "quote": "Any hardware, software, or firmware that is used to implement a CKMS. In this Recommendation, the major CKMS components discussed are the Central Oversight Authority, Key Processing Facilities, Service Agents, Client Nodes and Tokens.",
+      "rationale": "The source generically enumerates hardware, software, and firmware implementing key management.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:command-and-control",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:command-and-control",
+      "quote": "Command and Control' is the exercise of authority and direction by a properly designated commander over assigned and attached forces in the accomplishment of the mission. Command and control functions are performed through an arrangement of personnel, equipment, communications, facilities, and procedures employed by a commander in planning, directing, coordinating, and controlling forces and operations in the accomplishment of the mission.",
+      "rationale": "Facilities are generic command-and-control resources rather than physical safeguards.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:cryptographic-component",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:cryptographic-component",
+      "quote": "The hardware or firmware embodiment of the cryptographic logic in a secure telecommunications or automated information processing system. A cryptographic component may be a modular assembly, a printed wiring assembly (PWA), a microcircuit, or a combination of these items.",
+      "rationale": "The source defines generic hardware or firmware embodying cryptographic logic.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:cryptographic-token",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "rfc4949:1-i",
+      "quote": "A portable, user controlled, physical device (e.g., smart card or PCMCIA card) used to store cryptographic information and possibly also perform cryptographic functions. (See: cryptographic card, token.) Tutorial: A smart token might implement some set of cryptographic algorithms and might incorporate related key management functions, such as a random number generator. A smart cryptographic token may contain a cryptographic module or may not be explicitly designed that way.",
+      "rationale": "The source defines a portable cryptographic device, not physical or environmental protection.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:supervisory-control-and-data-acquisition",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "niccs-glossary:supervisory-control-and-data-acquisition",
+      "quote": "A generic name for a computerized system that is capable of gathering and processing data and applying operational controls to geographically dispersed assets over long distances.",
+      "rationale": "The definition describes an operational control platform, not a physical or environmental safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:master-terminal-unit-mtu",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "nist-csrc-glossary:master-terminal-unit",
+      "quote": "over an OT network. In a SCADA system, this is often called a SCADA server, MTU, or supervisory controller.",
+      "rationale": "The quote identifies an OT/SCADA controller platform rather than a physical safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:gypsy-verification-environment",
+      "polarity": "negative",
+      "ruleId": "T11-E05",
+      "senseKey": "rfc4949:o",
+      "quote": "A methodology, language, and integrated set of software tools developed at the University of Texas for specifying, coding, and verifying software to produce correct and reliable programs. [Cheh]",
+      "rationale": "The environment is a software-verification toolset, not environmental security.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:hardware-random-number-generator",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "niccs-glossary:hardware-random-number-generator",
+      "quote": "A hardware random number generator (HRNG), true random number generator (TRNG), non deterministic random bit generator (NRBG),[1] or physical random number generator[2][3] is a device that generates random numbers from a physical process capable of producing entropy, unlike a pseudorandom number generator (PRNG) that utilizes a deterministic algorithm[2] and non physical nondeterministic random bit generators that do not include hardware dedicated to generation of entropy.",
+      "rationale": "The source defines a random-number hardware device, not a physical-security safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:hardware-security-module-hsm",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:hardware-security-module-hsm",
+      "quote": "A physical computing device that safeguards and manages cryptographic keys and provides cryptographic processing. An HSM is or contains a cryptographic module.",
+      "rationale": "The source defines cryptographic processing hardware without physical or environmental protection evidence.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:industrial-control-system-ics",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "nist-csrc-glossary:industrial-control-system",
+      "quote": "An information system used to control industrial processes such as manufacturing, product handling, production, and distribution. Industrial control systems include supervisory control and data acquisition systems used to control geographically dispersed assets, as well as distributed control systems and smaller control systems using programmable logic controllers to control localized processes.",
+      "rationale": "The source defines an industrial-control platform, excluded by platform type alone.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:information-assurance-component-iac",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:information-assurance-component",
+      "quote": "An application (hardware and/or software) that provides one or more Information Assurance capabilities in support of the overall security and operational objectives of a system. Note: DoDI 8500.01 has transitioned from the term information assurance (IA) to the term cybersecurity. This could potentially impact IA related terms.",
+      "rationale": "The source generically defines a hardware or software assurance component.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:integrated-cci-controlled-cryptographic-items-component",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:integrated-cci-component",
+      "quote": "A CCI component that is designed to be incorporated into an otherwise unclassified communication or information processing equipment or system to form a CCI equipment or CCI system. Note: The integrated CCI component cannot perform any function by itself. It obtains power from the host equipment. An integrated CCI component may take a variety of forms (see paragraph 8 of the basic Instruction regarding the terminology for CCI component).",
+      "rationale": "The source defines a generic integrated cryptographic equipment component.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:link",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "rfc4949:1a-i",
+      "quote": "A communication facility or physical medium that can sustain data communications between multiple network nodes, in the protocol layer immediately below IP. (RFC 3753)",
+      "rationale": "The physical medium is only a generic communications link, not a protected medium.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:programmable-logic-controller",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "nist-csrc-glossary:programmable-logic-controller",
+      "quote": "A solid state control system that has a user programmable memory for storing instructions for the purpose of implementing specific functions such as I/O control, logic, timing, counting, three mode (PID) control, communication, arithmetic, and data and file processing.",
+      "rationale": "The definition describes an operational control platform, not a physical or environmental security control.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:operational-technology",
+      "polarity": "negative",
+      "ruleId": "T11-E02",
+      "senseKey": "nist-csrc-glossary:operational-technology",
+      "quote": "Programmable systems or devices that interact with the physical environment (or manage devices that interact with the physical environment). These systems/devices detect or cause a direct change through the monitoring and/or control of devices, processes, and events. Examples include industrial control systems, building management systems, fire control systems, and physical access control mechanisms.",
+      "rationale": "The source defines operational-technology platforms interacting with the physical environment.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:remote-access-hardware",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "mitre-attack-cti:T1219.003",
+      "quote": "An adversary may use legitimate remote access hardware to establish an interactive command and control channel to target systems within networks.",
+      "rationale": "The source's subject is adversary use of hardware for C2, not physical protection.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:system-firmware",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "mitre-attack-cti:T1542.001",
+      "quote": "System firmware like BIOS and (U)EFI underly the functionality of a computer and may be modified by an adversary to perform or assist in malicious activity.",
+      "rationale": "The subject is adversarial modification of generic firmware, not physical protection.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:target-operational-environment",
+      "polarity": "negative",
+      "ruleId": "T11-E05",
+      "senseKey": "nist-csrc-glossary:target-operational-environment",
+      "quote": "The IT product’s operational environment, such as Standalone, Managed, or Custom (with description, such as Specialized Security Limited Functionality, Legacy, or United States Government). Generally only applicable for security compliance/vulnerability checklists.",
+      "rationale": "The source defines a product checklist environment, not environmental security controls.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:type-0-product",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "rfc4949:o-cryptography-u-s-government",
+      "quote": "Classified cryptographic equipment endorsed by NSA for use (when appropriately keyed) in electronically distributing bulk keying material.",
+      "rationale": "The source defines cryptographic equipment, not a physical or environmental safeguard.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:unified-extensible-firmware-interface-uefi",
+      "polarity": "negative",
+      "ruleId": "T11-E01",
+      "senseKey": "nist-csrc-glossary:unified-extensible-firmware-interface",
+      "quote": "A possible replacement for the conventional BIOS that is becoming widely deployed in new x86 based computer systems. The UEFI specifications were preceded by the EFI specifications.",
+      "rationale": "The source defines a firmware interface platform, not physical-security hardware.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    }
+  ]
+}

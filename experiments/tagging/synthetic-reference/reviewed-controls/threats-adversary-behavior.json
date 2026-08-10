@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T04",
+  "tagSlug": "threats-adversary-behavior",
+  "rows": [
+    {
+      "entryKey": "TERM:abuse-elevation-control-mechanism",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1548",
+      "quote": "Adversaries may circumvent mechanisms designed to control privilege elevation to gain higher level permissions. Most modern systems contain native elevation control mechanisms that are intended to limit privileges that a user can perform on a machine. Authorization has to be granted to specific users in order to perform tasks that can be considered of",
+      "rationale": "The quoted source definition makes Abuse Elevation Control Mechanism directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:active-setup",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1547.014",
+      "quote": "Adversaries may achieve persistence by adding a Registry key to the Active Setup of the local machine. Active Setup is a Windows mechanism that is used to execute programs when a user logs in. The value stored in the Registry key will be executed after a user logs into the computer.(Citation: Klein Active Setup 2010) These programs will be executed under",
+      "rationale": "The quoted source definition makes Active Setup directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:active-scanning",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1595",
+      "quote": "Adversaries may execute active reconnaissance scans to gather information that can be used during targeting. Active scans are those where the adversary probes victim infrastructure via network traffic, as opposed to other forms of reconnaissance that do not involve direct interaction. Adversaries may perform different forms of active scanning depending on",
+      "rationale": "The quoted source definition makes Active Scanning directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:appcert-dlls",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1546.009",
+      "quote": "Adversaries may establish persistence and/or elevate privileges by executing malicious content triggered by AppCert DLLs loaded into processes. Dynamic link libraries (DLLs) that are specified in the <code AppCertDLLs</code Registry key under <code HKEY LOCAL MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\</code are loaded into every process that",
+      "rationale": "The quoted source definition makes AppCert DLLs directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:arp-cache-poisoning",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1557.002",
+      "quote": "Adversaries may poison Address Resolution Protocol (ARP) caches to position themselves between the communication of two or more networked devices. This activity may be used to enable follow on behaviors such as Network Sniffing or Transmitted Data Manipulation. The ARP protocol is used to resolve IPv4 addresses to link layer addresses, such as a media",
+      "rationale": "The quoted source definition makes ARP Cache Poisoning directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:browser-session-hijacking",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1185",
+      "quote": "Adversaries may take advantage of security vulnerabilities and inherent functionality in browser software to change content, modify user behaviors, and intercept information as part of various browser session hijacking techniques.(Citation: Wikipedia Man in the Browser) A specific example is when an adversary injects software into a browser that allows them",
+      "rationale": "The quoted source definition makes Browser Session Hijacking directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:cloud-accounts",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1586.003",
+      "quote": "Adversaries may compromise cloud accounts that can be used during targeting. Adversaries can use compromised cloud accounts to further their operations, including leveraging cloud storage services such as Dropbox, Microsoft OneDrive, or AWS S3 buckets for Exfiltration to Cloud Storage or to Upload Tools. Cloud accounts can also be used in the acquisition of",
+      "rationale": "The quoted source definition makes Cloud Accounts directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:compromise-accounts",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1586",
+      "quote": "Adversaries may compromise accounts with services that can be used during targeting. For operations incorporating social engineering, the utilization of an online persona may be important. Rather than creating and cultivating accounts (i.e. Establish Accounts), adversaries may compromise existing accounts. Utilizing an existing persona may engender a level",
+      "rationale": "The quoted source definition makes Compromise Accounts directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:content-injection",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1659",
+      "quote": "Adversaries may gain access and continuously communicate with victims by injecting malicious content into systems through online network traffic. Rather than luring victims to malicious payloads hosted on a compromised website (i.e., Drive by Target followed by Drive by Compromise), adversaries may initially access victims through compromised data transfer",
+      "rationale": "The quoted source definition makes Content Injection directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:credential-stuffing",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1110.004",
+      "quote": "Adversaries may use credentials obtained from breach dumps of unrelated accounts to gain access to target accounts through credential overlap. Occasionally, large numbers of username and password pairs are dumped online when a website or service is compromised and the user account credentials accessed. The information may be useful to an adversary",
+      "rationale": "The quoted source definition makes Credential Stuffing directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:data-encoding",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1132",
+      "quote": "Adversaries may encode data to make the content of command and control traffic more difficult to detect. Command and control (C2) information can be encoded using a standard data encoding system. Use of data encoding may adhere to existing protocol specifications and includes use of ASCII, Unicode, Base64, MIME, or other binary to text and character",
+      "rationale": "The quoted source definition makes Data Encoding directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:default-accounts",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1078.001",
+      "quote": "Adversaries may obtain and abuse credentials of a default account as a means of gaining Initial Access, Persistence, Privilege Escalation, or Defense Evasion. Default accounts are those that are built into an OS, such as the Guest or Administrator accounts on Windows systems. Default accounts also include default factory/provider set accounts on other types",
+      "rationale": "The quoted source definition makes Default Accounts directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:domain-controller-authentication",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1556.001",
+      "quote": "Adversaries may patch the authentication process on a domain controller to bypass the typical authentication mechanisms and enable access to accounts. Malware may be used to inject false credentials into the authentication process on a domain controller with the intent of creating a backdoor used to access any user’s account and/or credentials (ex: Skeleton",
+      "rationale": "The quoted source definition makes Domain Controller Authentication directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:domain-or-tenant-policy-modification",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1484",
+      "quote": "Adversaries may modify the configuration settings of a domain or identity tenant to evade defenses and/or escalate privileges in centrally managed environments. Such services provide a centralized means of managing identity resources such as devices and accounts, and often include configuration settings that may apply between domains or tenants such as",
+      "rationale": "The quoted source definition makes Domain or Tenant Policy Modification directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:domain-trust-discovery",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1482",
+      "quote": "Adversaries may attempt to gather information on domain trust relationships that may be used to identify lateral movement opportunities in Windows multi domain/forest environments. Domain trusts provide a mechanism for a domain to allow access to resources based on the authentication procedures of another domain.(Citation: Microsoft Trusts) Domain trusts",
+      "rationale": "The quoted source definition makes Domain Trust Discovery directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:email-accounts",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1586.002",
+      "quote": "Adversaries may compromise email accounts that can be used during targeting. Adversaries can use compromised email accounts to further their operations, such as leveraging them to conduct Phishing for Information, Phishing, or large scale spam email campaigns. Utilizing an existing persona with a compromised email account may engender a level of trust in a",
+      "rationale": "The quoted source definition makes Email Accounts directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:email-forwarding-rule",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1114.003",
+      "quote": "Adversaries may setup email forwarding rules to collect sensitive information. Adversaries may abuse email forwarding rules to monitor the activities of a victim, steal information, and further gain intelligence on the victim or the victim’s organization to use as part of further exploits or operations.(Citation: US CERT TA18 068A 2018) Furthermore, email",
+      "rationale": "The quoted source definition makes Email Forwarding Rule directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:environmental-keying",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1480.001",
+      "quote": "Adversaries may environmentally key payloads or other features of malware to evade defenses and constraint execution to a specific target environment. Environmental keying uses cryptography to constrain execution or actions based on adversary supplied environment specific conditions that are expected to be present on the target. Environmental keying is an",
+      "rationale": "The quoted source definition makes Environmental Keying directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:file-deletion",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1070.004",
+      "quote": "Adversaries may delete files left behind by the actions of their intrusion activity. Malware, tools, or other non native files dropped or created on a system by an adversary (ex: Ingress Tool Transfer) may leave traces to indicate to what was done within a network and how. Removal of these files can occur during an intrusion, or as part of a post intrusion",
+      "rationale": "The quoted source definition makes File Deletion directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:golden-ticket",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1558.001",
+      "quote": "Adversaries who have the KRBTGT account password hash may forge Kerberos ticket granting tickets (TGT), also known as a golden ticket.(Citation: AdSecurity Kerberos GT Aug 2015) Golden tickets enable adversaries to generate authentication material for any account in Active Directory.(Citation: CERT EU Golden Ticket Protection) Using a golden ticket,",
+      "rationale": "The quoted source definition makes Golden Ticket directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:invalid-code-signature",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1036.001",
+      "quote": "Adversaries may attempt to mimic features of valid code signatures to increase the chance of deceiving a user, analyst, or tool. Code signing provides a level of authenticity on a binary from the developer and a guarantee that the binary has not been tampered with. Adversaries can copy the metadata and signature information from a signed program, then use",
+      "rationale": "The quoted source definition makes Invalid Code Signature directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:name-resolution-poisoning-and-smb-relay",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1557.001",
+      "quote": "By responding to LLMNR/NBT NS/mDNS network traffic, adversaries may spoof an authoritative source for name resolution to force communication with an adversary controlled system.(Citation: BlackCat ransomware) This activity may be used to collect or relay authentication materials. Link Local Multicast Name Resolution (LLMNR) and NetBIOS Name Service (NBT NS)",
+      "rationale": "The quoted source definition makes Name Resolution Poisoning and SMB Relay directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:network-boundary-bridging",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1599",
+      "quote": "Adversaries may bridge network boundaries by compromising perimeter network devices or internal devices responsible for network segmentation. Breaching these devices may enable an adversary to bypass restrictions on traffic routing that otherwise separate trusted and untrusted networks. Devices such as routers and firewalls can be used to create boundaries",
+      "rationale": "The quoted source definition makes Network Boundary Bridging directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:os-credential-dumping",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1003",
+      "quote": "Adversaries may attempt to dump credentials to obtain account login and credential material, normally in the form of a hash or a clear text password. Credentials can be obtained from OS caches, memory, or structures.(Citation: Brining MimiKatz to Unix) Credentials can then be used to perform Lateral Movement and access restricted information. Several of the",
+      "rationale": "The quoted source definition makes OS Credential Dumping directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:pass-the-hash",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1550.002",
+      "quote": "Adversaries may “pass the hash” using stolen password hashes to move laterally within an environment, bypassing normal system access controls. Pass the hash (PtH) is a method of authenticating as a user without having access to the user's cleartext password. This method bypasses standard authentication steps that require a cleartext password, moving",
+      "rationale": "The quoted source definition makes Pass the Hash directly about attack behavior and ttps, satisfying T04-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:c2",
+      "polarity": "negative",
+      "ruleId": "T04-E04",
+      "senseKey": "nist-csrc-glossary:c2",
+      "quote": "Command and Control' is the exercise of authority and direction by a properly designated commander over assigned and attached forces in the accomplishment of the mission. Command and control functions are performed through an arrangement of personnel, equipment, communications, facilities, and procedures employed by a commander in planning, directing,",
+      "rationale": "The quoted source definition makes C2 a direct example of command-and-control terminology unrelated to adversaries, so threats-adversary-behavior does not apply under T04-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:command-and-control",
+      "polarity": "negative",
+      "ruleId": "T04-E04",
+      "senseKey": "nist-csrc-glossary:command-and-control",
+      "quote": "Command and Control' is the exercise of authority and direction by a properly designated commander over assigned and attached forces in the accomplishment of the mission. Command and control functions are performed through an arrangement of personnel, equipment, communications, facilities, and procedures employed by a commander in planning, directing,",
+      "rationale": "The quoted source definition makes Command and Control a direct example of command-and-control terminology unrelated to adversaries, so threats-adversary-behavior does not apply under T04-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ra",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:ra",
+      "quote": "The process of identifying risks to organizational operations (including mission, functions, image, reputation), organizational assets, individuals, other organizations, and the Nation, resulting from the operation of an information system. Part of risk management, incorporates threat and vulnerability analyses, and considers mitigations provided by",
+      "rationale": "The quoted source definition makes RA a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:defect",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:defect",
+      "quote": "An occurrence of a defect check that failed on an assessment object. It indicates a weakened state of security that increases risk.",
+      "rationale": "The quoted source definition makes Defect a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "niccs-glossary:risk",
+      "quote": "The potential for an unwanted or adverse outcome resulting from an incident, event, or occurrence, as determined by the likelihood that a particular threat will exploit a particular vulnerability, with the associated consequences.",
+      "rationale": "The quoted source definition makes risk a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-aggregation",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:risk-aggregation",
+      "quote": "The combination of several risks into one risk to develop a more complete understanding of the overall risk.",
+      "rationale": "The quoted source definition makes risk aggregation a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-analysis",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "niccs-glossary:risk-analysis",
+      "quote": "The systematic examination of the components and characteristics of risk.",
+      "rationale": "The quoted source definition makes risk analysis a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-appetite",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:risk-appetite",
+      "quote": "The types and amount of risk, on a broad level, [an organization] is willing to accept in its pursuit of value.",
+      "rationale": "The quoted source definition makes Risk Appetite a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-assessment",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "niccs-glossary:risk-assessment",
+      "quote": "The product or process which collects information and assigns values to risks for the purpose of informing priorities, developing or comparing courses of action, and informing decision making. The appraisal of the risks facing an entity, asset, system, or network, organizational operations, individuals, geographic area, other organizations, or society, and",
+      "rationale": "The quoted source definition makes risk assessment a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-assessment-methodology",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:risk-assessment-methodology",
+      "quote": "A risk assessment process, together with a risk model, assessment approach, and analysis approach.",
+      "rationale": "The quoted source definition makes Risk Assessment Methodology a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-governance",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:risk-governance",
+      "quote": "The process by which risk management evaluation, decisions, and actions are connected to enterprise strategy and objectives. Risk governance provides the transparency, responsibility, and accountability that enables managers to acceptably manage risk.",
+      "rationale": "The quoted source definition makes risk governance a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-identification",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:risk-identification",
+      "quote": "Process of finding, recognizing, and describing risks.",
+      "rationale": "The quoted source definition makes risk identification a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:risk-management",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "niccs-glossary:risk-management",
+      "quote": "The process of identifying, analyzing, assessing, and communicating risk and accepting, avoiding, transferring or controlling it to an acceptable level considering associated costs and benefits of any actions taken. Includes: 1) conducting a risk assessment; 2) implementing strategies to mitigate risks; 3) continuous monitoring of risk over time; and 4)",
+      "rationale": "The quoted source definition makes risk management a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:system-related-security-risk",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:system-related-security-risk",
+      "quote": "Risk that arises through the loss of confidentiality, integrity, or availability of information or systems and that considers impacts to the organization (including assets, mission, functions, image, or reputation), individuals, other organizations, and the Nation. See risk.",
+      "rationale": "The quoted source definition makes system-related security risk a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:vulnerability-analysis",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:vulnerability-analysis",
+      "quote": "Formal description and evaluation of the vulnerabilities in an information system.",
+      "rationale": "The quoted source definition makes vulnerability analysis a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:vulnerability-assessment",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "nist-csrc-glossary:vulnerability-assessment",
+      "quote": "Formal description and evaluation of the vulnerabilities in an information system.",
+      "rationale": "The quoted source definition makes vulnerability assessment a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:weakness",
+      "polarity": "negative",
+      "ruleId": "T04-E02",
+      "senseKey": "niccs-glossary:weakness",
+      "quote": "A shortcoming or imperfection in software code, design, architecture, or deployment that, under proper conditions, could become a vulnerability or contribute to the introduction of vulnerabilities.",
+      "rationale": "The quoted source definition makes weakness a direct example of general risk or weakness without a specific threat subject, so threats-adversary-behavior does not apply under T04-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:2fa",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "nist-csrc-glossary:2fa",
+      "quote": "An authentication system that requires more than one distinct authentication factor for successful authentication. Multifactor authentication can be performed using a multifactor authenticator or by a combination of authenticators that provide different factors. The three authentication factors are something you know, something you have, and something you",
+      "rationale": "The quoted source definition makes 2FA a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:mfa",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "nist-csrc-glossary:mfa",
+      "quote": "An authentication system that requires more than one distinct authentication factor for successful authentication. Multifactor authentication can be performed using a multifactor authenticator or by a combination of authenticators that provide different factors. The three authentication factors are something you know, something you have, and something you",
+      "rationale": "The quoted source definition makes MFA a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:antispoofing",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "niccs-glossary:antispoofing",
+      "quote": "Antispoofing refers to techniques, technologies, and policies designed to detect and prevent attackers from masquerading as trusted entities to steal data, bypass security, or gain unauthorized access. In a spoofing attack, the source address of an incoming packet is changed to make it appear as if it is coming from a known, trusted source. Spoofed packets",
+      "rationale": "The quoted source definition makes Antispoofing a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:firewall",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "niccs-glossary:firewall",
+      "quote": "A capability to limit network traffic between networks and/or information systems. A hardware/software device or a software program that limits network traffic according to a set of rules of what access is and is not allowed or authorized.",
+      "rationale": "The quoted source definition makes firewall a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:host-based-firewall",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "nist-csrc-glossary:host-based-firewall",
+      "quote": "A software based firewall installed on a server to monitor and control its incoming and outgoing network traffic.",
+      "rationale": "The quoted source definition makes Host-Based Firewall a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:network-intrusion-detection-system",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "nist-csrc-glossary:network-intrusion-detection-system",
+      "quote": "Software that performs packet sniffing and network traffic analysis to identify suspicious activity and record relevant information.",
+      "rationale": "The quoted source definition makes Network Intrusion Detection System a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:secure-communication-protocol",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "nist-csrc-glossary:secure-communication-protocol",
+      "quote": "A communication protocol that provides the appropriate confidentiality, authentication, and content integrity protection.",
+      "rationale": "The quoted source definition makes secure communication protocol a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:transmission-security",
+      "polarity": "negative",
+      "ruleId": "T04-E03",
+      "senseKey": "nist-csrc-glossary:transmission-security",
+      "quote": "Measures (security controls) applied to transmissions in order to prevent interception, disruption of reception, communications deception, and/or derivation of intelligence by analysis of transmission characteristics such as signal parameters or message externals. Note: TRANSEC is that field of COMSEC which deals with the security of communication",
+      "rationale": "The quoted source definition makes transmission security a direct example of defenses whose primary subject belongs elsewhere, so threats-adversary-behavior does not apply under T04-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    }
+  ]
+}

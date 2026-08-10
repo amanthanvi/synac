@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T02",
+  "tagSlug": "cryptography",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:acme",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:acme",
+      "quote": "A protocol defined in IETF RFC 8555 that provides for the automated enrollment of certificates.",
+      "rationale": "The quoted source definition makes ACME directly about certificates and trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:cryptographic-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:cryptographic-key",
+      "quote": "A parameter used in conjunction with a cryptographic algorithm that determines its operation.",
+      "rationale": "The quoted source definition makes cryptographic key directly about key material and lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:aes",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "See: Advanced Encryption Standard.",
+      "rationale": "The quoted source definition makes AES directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ca",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:ca",
+      "quote": "A trusted entity that issues and revokes public key certificates.",
+      "rationale": "The quoted source definition makes CA directly about certificates and trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:cfb",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "See: cipher feedback.",
+      "rationale": "The quoted source definition makes CFB directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:cik",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:n",
+      "quote": "See: cryptographic ignition key.",
+      "rationale": "The quoted source definition makes CIK directly about key material and lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ckms",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:ckms",
+      "quote": "A Cryptographic Key Management System that conforms to the requirements of [NIST SP 800 130].",
+      "rationale": "The quoted source definition makes CKMS directly about key material and lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:cvc",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:cvc",
+      "quote": "A certificate stored on the PIV Card that includes a public key, the signature of a certification authority, and further information needed to verify the certificate.",
+      "rationale": "The quoted source definition makes CVC directly about certificates and trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:dsa",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:dsa",
+      "quote": "A Federal Information Processing Standard for digital signatures, based on the mathematical concept of modular exponentiations and the discrete logarithm problem.",
+      "rationale": "The quoted source definition makes DSA directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:dsig",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:dsig",
+      "quote": "The result of a cryptographic transformation of data which, when properly implemented, provides the services of: 1. origin authentication, 2. data integrity, and 3. signer non repudiation.",
+      "rationale": "The quoted source definition makes DSIG directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:icv",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:icv",
+      "quote": "A fixed string that is prepended to the plaintext within the authenticated encryption function of a key wrap algorithm, in order to enable the verification of the integrity of the plaintext within the authenticated decryption function.",
+      "rationale": "The quoted source definition makes ICV directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:kek",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:kek",
+      "quote": "The key for the underlying block cipher of KW, KWP, or TKW. May be called a key wrapping key in other documents.",
+      "rationale": "The quoted source definition makes KEK directly about key material and lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:mqv",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "rfc4949:n",
+      "quote": "A key agreement protocol [Mene] that was proposed by A.J. Menezes, M. Qu, and S.A. Vanstone in 1995 and is based on the Diffie Hellman Merkle algorithm.",
+      "rationale": "The quoted source definition makes MQV directly about cryptographic protocols when cryptography is substantive, satisfying T02-I04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:pkc",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:pkc",
+      "quote": "Encryption system that uses a public private key pair for encryption and/or digital signature.",
+      "rationale": "The quoted source definition makes PKC directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:pkinit",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "Abbreviation for \"Public Key Cryptography for Initial Authentication in Kerberos\" (RFC 4556). (See: Tutorial under \"Kerberos\".)",
+      "rationale": "The quoted source definition makes PKINIT directly about cryptographic protocols when cryptography is substantive, satisfying T02-I04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:skipjack",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A type 2, 64 bit block cipher [SKIP, R2773] with a key size of 80 bits. (See: CAPSTONE, CLIPPER, FORTEZZA, Key Exchange Algorithm.) Tutorial: SKIPJACK was developed by NSA and formerly classified at the U.S. DoD \"Secret\" level. On 23 June 1998, NSA announced that SKIPJACK had been declassified.",
+      "rationale": "The quoted source definition makes SKIPJACK directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:asymmetric-key-cryptography",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:asymmetric-key-cryptography",
+      "quote": "A cryptographic system where users have a private key that is kept secret and used to generate a public key (which is freely provided to others). Users can digitally sign data with their private key and the resulting signature can be verified by anyone using the corresponding public key. Also known as a Public key cryptography.",
+      "rationale": "The quoted source definition makes Asymmetric-key cryptography directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticated-decryption",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:authenticated-decryption",
+      "quote": "The function of GCM in which the ciphertext is decrypted into the plaintext, and the authenticity of the ciphertext and the AAD is verified.",
+      "rationale": "The quoted source definition makes Authenticated Decryption directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication-code",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:authentication-code",
+      "quote": "A keyed cryptographic checksum based on an approved security function; also known as a Message Authentication Code.",
+      "rationale": "The quoted source definition makes Authentication code directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:automated-certificate",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:automated-certificate",
+      "quote": "A protocol defined in IETF RFC 8555 that provides for the automated enrollment of certificates.",
+      "rationale": "The quoted source definition makes Automated Certificate directly about certificates and trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:break",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:i-cryptography",
+      "quote": "To successfully perform cryptanalysis and thus succeed in decrypting data or performing some other cryptographic function, without initially having knowledge of the key that the function requires. (See: penetrate, strength, work factor.) Usage: This term applies to encrypted data or, more generally, to a cryptographic algorithm or cryptographic system.",
+      "rationale": "The quoted source definition makes break directly about implementation, analysis, and failure concepts, satisfying T02-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:caesar-cipher",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:i",
+      "quote": "A cipher that is defined for an alphabet of N characters, A(1), A(2), ..., A(N), and creates cipher text by replacing each plaintext character A(i) by A(i+K, mod N) for some 0<K<N+1. [Schn] Examples: (a) During the Gallic wars, Julius Caesar used a cipher with K=3. In a Caesar cipher with K=3 for the English alphabet, A is replaced by D, B by E, C by F,",
+      "rationale": "The quoted source definition makes Caesar cipher directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:card-verifiable-certificate",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:card-verifiable-certificate",
+      "quote": "A certificate stored on the PIV Card that includes a public key, the signature of a certification authority, and further information needed to verify the certificate.",
+      "rationale": "The quoted source definition makes Card Verifiable Certificate directly about certificates and trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:chosen-ciphertext-attack",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "A cryptanalysis technique in which the analyst tries to determine the key from knowledge of plain text that corresponds to cipher text selected (i.e., dictated) by the analyst.",
+      "rationale": "The quoted source definition makes chosen-ciphertext attack directly about implementation, analysis, and failure concepts, satisfying T02-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:cipher-feedback",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A block cipher mode that enhances ECB mode by chaining together the blocks of cipher text it produces and operating on plaintext segments of variable length less than or equal to the block length. [FP081] (See: block cipher, [SP38A].) Tutorial: This mode operates by using the previously generated ciphertext segment as the algorithm's input (i.e., by",
+      "rationale": "The quoted source definition makes cipher feedback directly about algorithms and primitives, satisfying T02-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:csp",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:csp",
+      "quote": "A trusted entity that issues or registers subscriber authenticators and issues electronic credentials to subscribers. A CSP may be an independent third party or issue credentials for its own use.",
+      "rationale": "The quoted source definition makes CSP a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:otp",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "rfc4949:i",
+      "quote": "See: One Time Password.",
+      "rationale": "The quoted source definition makes OTP a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:rp",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:rp",
+      "quote": "An entity that relies upon the subscriber’s authenticator(s) and credentials or a verifier’s assertion of a claimant’s identity, typically to process a transaction or grant access to information or a system.",
+      "rationale": "The quoted source definition makes RP a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:rpc",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:rpc",
+      "quote": "An entity that relies upon the subscriber’s authenticator(s) and credentials or a verifier’s assertion of a claimant’s identity, typically to process a transaction or grant access to information or a system.",
+      "rationale": "The quoted source definition makes RPC a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticate",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "niccs-glossary:authenticate",
+      "quote": "Authenticate is the critical process of verifying the identity of a user, device, or system before granting access to resources. It acts as the first line of defense against unauthorized access by requiring proof—such as passwords, biometric scans, or tokens—ensuring that only legitimate users enter",
+      "rationale": "The quoted source definition makes Authenticate a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authentication",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "niccs-glossary:authentication",
+      "quote": "Authentication in cybersecurity is the critical process of verifying the identity of a user, device, or system before granting access to resources. It acts as the first line of defense against unauthorized access by requiring proof—such as passwords, biometric scans, or tokens—ensuring that only legitimate users enter Also the process of verifying the",
+      "rationale": "The quoted source definition makes Authentication a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:authenticator",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:authenticator",
+      "quote": "Something the cardholder possesses and controls (e.g., PIV Card or derived PIV credential) that is used to authenticate the cardholder’s identity.",
+      "rationale": "The quoted source definition makes authenticator a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:credential",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:credential",
+      "quote": "Evidence attesting to one’s right to credit or authority. In this Standard, it is the PIV Card or derived PIV credential associated with an individual that authoritatively binds an identity (and, optionally, additional attributes) to that individual.",
+      "rationale": "The quoted source definition makes credential a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:credential-service-provider-csp",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:credential-service-provider",
+      "quote": "A trusted entity that issues or registers subscriber tokens and issues electronic credentials to subscribers. The CSP may encompass registration authorities (RAs) and verifiers that it operates. A CSP may be an independent third party, or may issue credentials for its own use.",
+      "rationale": "The quoted source definition makes credential service provider (CSP) a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:default-account",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "rfc4949:i",
+      "quote": "A system login account (usually accessed with a user identifier and password) that has been predefined in a manufactured system to permit initial access when the system is first put into service. (See: harden.) Tutorial: A default account becomes a serious vulnerability if not properly administered. Sometimes, the default identifier and password are well",
+      "rationale": "The quoted source definition makes default account a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:electronic-credentials",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:electronic-credentials",
+      "quote": "Digital documents used in authentication that bind an identity or an attribute to a subscriber's authenticator.",
+      "rationale": "The quoted source definition makes electronic credentials a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:one-time-password-one-time-password",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "rfc4949:1-i-not-capitalized",
+      "quote": "A \"one time password\" is a simple authentication technique in which each password is used only once as authentication information that verifies an identity. This technique counters the threat of a replay attack that uses passwords captured by wiretapping.",
+      "rationale": "The quoted source definition makes one-time password, One-Time Password a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:passphrase",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:passphrase",
+      "quote": "A passphrase is a memorized secret consisting of a sequence of words or other text that a claimant uses to authenticate their identity. A passphrase is similar to a password in usage, but is generally longer for added security.",
+      "rationale": "The quoted source definition makes Passphrase a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:personal-identification-number",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "rfc4949:1a-i",
+      "quote": "A character string used as a password to gain access to a system resource.",
+      "rationale": "The quoted source definition makes personal identification number a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:token",
+      "polarity": "negative",
+      "ruleId": "T02-E02",
+      "senseKey": "nist-csrc-glossary:token",
+      "quote": "Something the cardholder possesses and controls (e.g., PIV Card or derived PIV credential) that is used to authenticate the cardholder’s identity.",
+      "rationale": "The quoted source definition makes token a direct example of credentials without cryptographic substance, so cryptography does not apply under T02-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:data-encoding",
+      "polarity": "negative",
+      "ruleId": "T02-E01",
+      "senseKey": "mitre-attack-cti:T1132",
+      "quote": "Adversaries may encode data to make the content of command and control traffic more difficult to detect. Command and control (C2) information can be encoded using a standard data encoding system. Use of data encoding may adhere to existing protocol specifications and includes use of ASCII, Unicode, Base64, MIME, or other binary to text and character",
+      "rationale": "The quoted source definition makes Data Encoding a direct example of generic encoding and non-security checksums, so cryptography does not apply under T02-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:non-standard-encoding",
+      "polarity": "negative",
+      "ruleId": "T02-E01",
+      "senseKey": "mitre-attack-cti:T1132.002",
+      "quote": "Adversaries may encode data with a non standard data encoding system to make the content of command and control traffic more difficult to detect. Command and control (C2) information can be encoded using a non standard data encoding system that diverges from existing protocol specifications. Non standard data encoding schemes may be based on or related to",
+      "rationale": "The quoted source definition makes Non-Standard Encoding a direct example of generic encoding and non-security checksums, so cryptography does not apply under T02-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:digitized-signature",
+      "polarity": "negative",
+      "ruleId": "T02-E03",
+      "senseKey": "rfc4949:d",
+      "quote": "Denotes various forms of digitized images of handwritten signatures. (Compare: digital signature). Deprecated Term: IDOCs SHOULD NOT use this term without including this definition. This term suggests careless use of \"digital signature\", which is the term standardized by [I7498 2]. (See: electronic signature.)",
+      "rationale": "The quoted source definition makes digitized signature a direct example of lexical uses of key or signature, so cryptography does not apply under T02-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:electronic-signature",
+      "polarity": "negative",
+      "ruleId": "T02-E03",
+      "senseKey": "niccs-glossary:electronic-signature",
+      "quote": "Any mark in electronic form associated with an electronic document, applied with the intent to sign the document.",
+      "rationale": "The quoted source definition makes electronic signature a direct example of lexical uses of key or signature, so cryptography does not apply under T02-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ip",
+      "polarity": "negative",
+      "ruleId": "T02-E04",
+      "senseKey": "nist-csrc-glossary:ip",
+      "quote": "The Internet Protocol, as defined in IETF RFC 6864, which is the principal communications protocol in the IETF Internet protocol suite for specifying system address information when relaying datagrams across network boundaries.",
+      "rationale": "The quoted source definition makes IP a direct example of ordinary protocols where cryptography is incidental, so cryptography does not apply under T02-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:tcp-ip",
+      "polarity": "negative",
+      "ruleId": "T02-E04",
+      "senseKey": "rfc4949:i",
+      "quote": "Synonym for \"Internet Protocol Suite\".",
+      "rationale": "The quoted source definition makes TCP/IP a direct example of ordinary protocols where cryptography is incidental, so cryptography does not apply under T02-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:udp",
+      "polarity": "negative",
+      "ruleId": "T02-E04",
+      "senseKey": "rfc4949:i",
+      "quote": "See: User Datagram Protocol.",
+      "rationale": "The quoted source definition makes UDP a direct example of ordinary protocols where cryptography is incidental, so cryptography does not apply under T02-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:address-resolution-protocol-arp",
+      "polarity": "negative",
+      "ruleId": "T02-E04",
+      "senseKey": "nist-csrc-glossary:address-resolution-protocol",
+      "quote": "A protocol used to obtain a node’s physical address. A client station broadcasts an ARP request onto the network with the Internet Protocol (IP) address of the target node with which it wishes to communicate, and with that address the node responds by sending back its physical address so that packets can be transmitted to it.",
+      "rationale": "The quoted source definition makes Address Resolution Protocol (ARP) a direct example of ordinary protocols where cryptography is incidental, so cryptography does not apply under T02-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:application-protocol-data-unit",
+      "polarity": "negative",
+      "ruleId": "T02-E04",
+      "senseKey": "nist-csrc-glossary:application-protocol-data-unit",
+      "quote": "A part of the application layer in the Open Systems Interconnection Reference model that is used for communication between two separate device's applications. In the context of smart cards, an APDU is the communication unit between a smart card reader and a smart card. The structure of the APDU is defined by [ISO 7816 4].",
+      "rationale": "The quoted source definition makes Application Protocol Data Unit a direct example of ordinary protocols where cryptography is incidental, so cryptography does not apply under T02-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:protocol-suite",
+      "polarity": "negative",
+      "ruleId": "T02-E04",
+      "senseKey": "rfc4949:i",
+      "quote": "A complementary collection of communication protocols used in a computer network. (See: IPS, OSI.)",
+      "rationale": "The quoted source definition makes protocol suite a direct example of ordinary protocols where cryptography is incidental, so cryptography does not apply under T02-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    }
+  ]
+}

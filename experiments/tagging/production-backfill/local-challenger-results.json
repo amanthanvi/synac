@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "synac-local-challenger-screen-v1",
+  "measuredAt": "2026-08-10T01:07:00-04:00",
+  "benchmarkHash": "28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465b",
+  "runner": {
+    "ollamaVersion": "0.32.6",
+    "gpu": "NVIDIA GeForce RTX 5070 Ti",
+    "options": {
+      "temperature": 0,
+      "seed": 20260810,
+      "numCtx": 8192,
+      "think": false,
+      "chunkSize": 10
+    }
+  },
+  "candidates": [
+    {
+      "model": "granite3.3:8b",
+      "ollamaDigest": "fd429f23b909",
+      "organization": "IBM",
+      "attempts": 2,
+      "status": "CONTRACT_FAIL",
+      "failure": "The first 10-case chunk violated exact case order; an identical rerun then returned missing, duplicate, or foreign case IDs. No production candidates or semantic score were emitted."
+    },
+    {
+      "model": "gemma3:12b",
+      "ollamaDigest": "f4031aab637d",
+      "organization": "Google",
+      "attempts": 1,
+      "status": "CONTRACT_FAIL",
+      "failure": "The first 10-case chunk returned missing, duplicate, or foreign case IDs; no production candidates or semantic score were emitted."
+    }
+  ],
+  "decision": {
+    "selected": "gpt-5.6-terra:max",
+    "reason": "Neither installed local challenger can safely preserve opaque Entry/case identity in an unattended run. Terra max remains the measured contract-valid accuracy ceiling. Local candidates may be reconsidered only after a new frozen contract-valid generation."
+  },
+  "claimLimits": "This screen measures output-contract feasibility on public anchors. It is not ground truth, a semantic accuracy certification, or evidence that every open-source architecture is inferior."
+}

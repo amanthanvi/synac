@@ -17,7 +17,7 @@
   },
   "scripts": {
     "dev": "corepack pnpm -r --parallel --if-present dev",
-    "gate": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm content:check && corepack pnpm content:history && corepack pnpm build",
+    "gate": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm tagging:check && corepack pnpm content:check && corepack pnpm content:history && corepack pnpm build",
     "content:check": "corepack pnpm --filter @synac/content-tools check",
     "content:history": "corepack pnpm --filter @synac/content-tools check:history",
     "content:compile": "corepack pnpm --filter @synac/content-tools compile",
@@ -27,6 +27,7 @@
     "typecheck": "corepack pnpm -r typecheck",
     "test": "corepack pnpm -r --workspace-concurrency=1 test && corepack pnpm test:convex",
     "test:convex": "vitest run -c vitest.convex.config.ts",
+    "tagging:check": "corepack pnpm --dir experiments/tagging/synthetic-reference run check && corepack pnpm --dir experiments/tagging/production-backfill run check",
     "format": "corepack pnpm -r format",
     "convex:dev": "convex dev",
     "convex:validate": "convex dev --once",
