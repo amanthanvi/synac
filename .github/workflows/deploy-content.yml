@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      assignments_base_ref:
+        description: Previous deployed Git SHA for assignment-history validation
+        required: true
+        type: string
 
 concurrency:
   group: deploy-content
@@ -38,7 +43,7 @@ jobs:
       - name: Validate repository
         run: pnpm gate
         env:
-          SYNAC_ASSIGNMENTS_BASE_REF: ${{ github.event.before }}
+          SYNAC_ASSIGNMENTS_BASE_REF: ${{ github.event_name == 'push' && github.event.before || inputs.assignments_base_ref }}
 
       - name: Deploy Convex functions
         run: npx convex deploy

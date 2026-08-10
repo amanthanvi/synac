@@ -15,6 +15,10 @@ unacknowledged batch. To abandon a stale pending generation, run
 and wait until `sync:status` no longer reports `pending` before deploying a
 different generation.
 
+Manual `Deploy` dispatches require `assignments_base_ref`, the Git SHA of the
+previous deployed revision. The history gate fails if that predecessor cannot
+be fetched or if accepted assignments disappear without reviewed removals.
+
 ## Required configuration
 
 GitHub repository secrets:
