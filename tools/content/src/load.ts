@@ -30,11 +30,19 @@ async function listJsonFiles(dir: string): Promise<string[]> {
   }
 }
 
-async function parseJsonFile<T>(filePath: string, schema: ZodType<T>, errors: string[]): Promise<T | undefined> {
+async function parseJsonFile<T>(
+  filePath: string,
+  schema: ZodType<T>,
+  errors: string[],
+  optional = false,
+): Promise<T | undefined> {
   let raw: string;
   try {
     raw = await readFile(filePath, 'utf8');
-  } catch {
+  } catch (error) {
+    if (optional && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return undefined;
+    }
     errors.push(`${filePath}: cannot read file`);
     return undefined;
   }
@@ -48,7 +56,9 @@ async function parseJsonFile<T>(filePath: string, schema: ZodType<T>, errors: st
   const parsed = schema.safeParse(value);
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
-      errors.push(`${filePath}: ${issue.path.join('.') || '(root)'} — ${issue.message}`);
+      errors.push(
+        `${filePath}: ${issue.path.join('.') || '(root)'} — ${issue.message}`,
+      );
     }
     return undefined;
   }
@@ -71,17 +81,23 @@ export async function loadContentDir(contentDir: string): Promise<LoadResult> {
     sources.push(parsed);
   }
 
-  const tags = (await parseJsonFile(path.join(contentDir, 'tags.json'), tagsFileSchema, errors)) ?? { tags: [] };
-  const redirects =
-    (await parseJsonFile(path.join(contentDir, 'redirects.json'), redirectsFileSchema, errors)) ?? { redirects: [] };
+  const tags = (await parseJsonFile(
+    path.join(contentDir, 'tags.json'),
+    tagsFileSchema,
+    errors,
+  )) ?? { tags: [] };
+  const redirects = (await parseJsonFile(
+    path.join(contentDir, 'redirects.json'),
+    redirectsFileSchema,
+    errors,
+  )) ?? { redirects: [] };
   const tagAssignmentsPath = path.join(contentDir, 'tag-assignments.json');
-  let tagAssignments;
-  try {
-    await readFile(tagAssignmentsPath, 'utf8');
-    tagAssignments = await parseJsonFile(tagAssignmentsPath, tagAssignmentsFileSchema, errors);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-  }
+  const tagAssignments = await parseJsonFile(
+    tagAssignmentsPath,
+    tagAssignmentsFileSchema,
+    errors,
+    true,
+  );
 
   const bundles = [];
   for (const name of await listJsonFiles(path.join(contentDir, 'generated'))) {
@@ -89,7 +105,9 @@ export async function loadContentDir(contentDir: string): Promise<LoadResult> {
     const parsed = await parseJsonFile(filePath, bundleFileSchema, errors);
     if (!parsed) continue;
     if (`${parsed.source}.json` !== name) {
-      errors.push(`${filePath}: source ${parsed.source} does not match file name`);
+      errors.push(
+        `${filePath}: source ${parsed.source} does not match file name`,
+      );
       continue;
     }
     bundles.push(parsed);
@@ -98,7 +116,9 @@ export async function loadContentDir(contentDir: string): Promise<LoadResult> {
   const overrides = new Map<string, OverrideFile>();
   for (const entryType of ['TERM', 'ACRONYM'] as EntryType[]) {
     const dirName = entryType === 'TERM' ? 'term' : 'acronym';
-    for (const name of await listJsonFiles(path.join(contentDir, 'overrides', dirName))) {
+    for (const name of await listJsonFiles(
+      path.join(contentDir, 'overrides', dirName),
+    )) {
       const filePath = path.join(contentDir, 'overrides', dirName, name);
       const parsed = await parseJsonFile(filePath, overrideFileSchema, errors);
       if (!parsed) continue;
@@ -107,5 +127,8 @@ export async function loadContentDir(contentDir: string): Promise<LoadResult> {
   }
 
   if (errors.length > 0) return { ok: false, errors };
-  return { ok: true, input: { sources, tags, tagAssignments, redirects, bundles, overrides } };
+  return {
+    ok: true,
+    input: { sources, tags, tagAssignments, redirects, bundles, overrides },
+  };
 }

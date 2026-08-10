@@ -2,7 +2,7 @@
   "benchmarkHash": "28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465b",
   "results": [
     {
-      "file": "terra-max.json",
+      "file": "api-raw/terra-max.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "max",
       "contractValid": true,
@@ -95,7 +95,7 @@
       }
     },
     {
-      "file": "terra-xhigh.json",
+      "file": "api-raw/terra-xhigh.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "xhigh",
       "contractValid": true,
@@ -188,7 +188,7 @@
       }
     },
     {
-      "file": "terra-low.json",
+      "file": "api-raw/terra-low.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "low",
       "contractValid": true,
@@ -281,7 +281,7 @@
       }
     },
     {
-      "file": "luna-max.json",
+      "file": "api-raw/luna-max.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "max",
       "contractValid": false,
@@ -377,7 +377,7 @@
       }
     },
     {
-      "file": "luna-low.json",
+      "file": "api-raw/luna-low.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "low",
       "contractValid": false,
@@ -495,7 +495,7 @@
       }
     },
     {
-      "file": "terra-high.json",
+      "file": "api-raw/terra-high.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "high",
       "contractValid": false,
@@ -592,7 +592,7 @@
       }
     },
     {
-      "file": "terra-medium.json",
+      "file": "api-raw/terra-medium.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "medium",
       "contractValid": false,
@@ -734,7 +734,7 @@
       }
     },
     {
-      "file": "luna-high.json",
+      "file": "api-raw/luna-high.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "high",
       "contractValid": false,
@@ -830,7 +830,7 @@
       }
     },
     {
-      "file": "luna-xhigh.json",
+      "file": "api-raw/luna-xhigh.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "xhigh",
       "contractValid": false,
@@ -925,7 +925,7 @@
       }
     },
     {
-      "file": "luna-medium.json",
+      "file": "api-raw/luna-medium.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "medium",
       "contractValid": false,

@@ -8,6 +8,7 @@ import {
   citationValidator,
   entryType,
   exampleValidator,
+  generationCountsValidator,
   relationshipType,
 } from './schema';
 
@@ -81,18 +82,6 @@ const redirectRow = v.object({
 const tagRedirectRow = v.object({
   fromSlug: v.string(),
   toSlug: v.optional(v.string()),
-});
-
-const generationCountsValidator = v.object({
-  sources: v.number(),
-  tags: v.number(),
-  entries: v.number(),
-  senses: v.number(),
-  entryTags: v.number(),
-  entrySources: v.number(),
-  relationships: v.number(),
-  redirects: v.number(),
-  tagRedirects: v.number(),
 });
 
 type GenerationCounts = Infer<typeof generationCountsValidator>;
@@ -255,6 +244,7 @@ export const begin = internalMutation({
 
     const pending: PendingGeneration = {
       state: 'STAGING',
+      startedAt: Date.now(),
       syncVersion: args.syncVersion,
       manifestHash: args.manifestHash,
       batchHashes: args.batchHashes,
@@ -460,6 +450,11 @@ export const upsertEntries = internalMutation({
     const tagAdditions: Record<string, number> = {};
     const sourceAdditions: Record<string, number> = {};
     for (const row of args.rows) {
+      if (row.senseCount !== row.senses.length) {
+        throw new Error(
+          `staged entry ${row.key} declares ${row.senseCount} senses; received ${row.senses.length}`,
+        );
+      }
       const existing = await ctx.db
         .query('entries')
         .withIndex('by_syncVersion_and_key', (q) =>

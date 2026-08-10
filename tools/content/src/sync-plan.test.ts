@@ -2,7 +2,16 @@ import { describe, expect, test } from 'vitest';
 
 import type { CompiledDataset } from './model.js';
 import {
+  ENTRY_SYNC_CHUNK,
+  MAX_SYNC_BATCHES,
+  REDIRECT_SYNC_CHUNK,
+  RELATIONSHIP_SYNC_CHUNK,
+  SOURCE_SYNC_CHUNK,
+  TAG_REDIRECT_SYNC_CHUNK,
+  TAG_SYNC_CHUNK,
+  assertSyncBatchLimit,
   createSyncPlan,
+  isSyncCommitApplied,
   isSyncConverged,
   syncPayloadHash,
 } from './sync-plan.js';
@@ -122,6 +131,75 @@ describe('createSyncPlan', () => {
     );
     expect(changed.manifestHash).not.toBe(original.manifestHash);
   });
+
+  test('chunks every batch kind at its bounded transport size', () => {
+    const value = dataset();
+    const source = value.sources[0];
+    const tag = value.tags[0];
+    const entry = value.entries[0];
+    if (!source || !tag || !entry) throw new Error('fixture rows missing');
+    value.sources = Array.from(
+      { length: SOURCE_SYNC_CHUNK + 1 },
+      (_unused, index) => ({ ...source, slug: `source-${index}` }),
+    );
+    value.tags = Array.from(
+      { length: TAG_SYNC_CHUNK + 1 },
+      (_unused, index) => ({ ...tag, slug: `tag-${index}` }),
+    );
+    value.entries = Array.from(
+      { length: ENTRY_SYNC_CHUNK + 1 },
+      (_unused, index) => ({ ...entry, key: `TERM:test-${index}` }),
+    );
+    value.senses = [];
+    value.relationships = Array.from(
+      { length: RELATIONSHIP_SYNC_CHUNK + 1 },
+      (_unused, index) => ({
+        fromKey: `TERM:from-${index}`,
+        toKey: `TERM:to-${index}`,
+        type: 'RELATED' as const,
+      }),
+    );
+    value.redirects = Array.from(
+      { length: REDIRECT_SYNC_CHUNK + 1 },
+      (_unused, index) => ({
+        entryType: 'TERM' as const,
+        fromSlug: `from-${index}`,
+        toSlug: `to-${index}`,
+      }),
+    );
+    value.tagRedirects = Array.from(
+      { length: TAG_REDIRECT_SYNC_CHUNK + 1 },
+      (_unused, index) => ({
+        fromSlug: `old-${index}`,
+        toSlug: `new-${index}`,
+      }),
+    );
+
+    const plan = createSyncPlan(value);
+    const limits = {
+      sources: SOURCE_SYNC_CHUNK,
+      tags: TAG_SYNC_CHUNK,
+      entries: ENTRY_SYNC_CHUNK,
+      relationships: RELATIONSHIP_SYNC_CHUNK,
+      redirects: REDIRECT_SYNC_CHUNK,
+      tagRedirects: TAG_REDIRECT_SYNC_CHUNK,
+    };
+    for (const batch of plan.batches) {
+      expect(batch.rows.length).toBeLessThanOrEqual(limits[batch.kind]);
+    }
+    for (const kind of Object.keys(limits)) {
+      expect(plan.batches.filter((batch) => batch.kind === kind)).toHaveLength(
+        2,
+      );
+    }
+  });
+
+  test('mirrors the server batch-count safety limit', () => {
+    expect(() => assertSyncBatchLimit(MAX_SYNC_BATCHES)).not.toThrow();
+    expect(() => assertSyncBatchLimit(MAX_SYNC_BATCHES + 1)).toThrow(
+      /1000-batch safety limit/,
+    );
+  });
 });
 
 describe('isSyncConverged', () => {
@@ -129,5 +207,11 @@ describe('isSyncConverged', () => {
     expect(isSyncConverged({})).toBe(true);
     expect(isSyncConverged({ prunePending: false })).toBe(true);
     expect(isSyncConverged({ prunePending: true })).toBe(false);
+  });
+
+  test('recognizes a commit that succeeded despite a failed client response', () => {
+    expect(isSyncCommitApplied({ contentVersion: 'v2' }, 'v2')).toBe(true);
+    expect(isSyncCommitApplied({ contentVersion: 'v1' }, 'v2')).toBe(false);
+    expect(isSyncCommitApplied({}, 'v2')).toBe(false);
   });
 });

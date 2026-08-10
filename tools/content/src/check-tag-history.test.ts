@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { TagAssignmentsFile } from './model.js';
 import { stableJsonHash } from './tagging.js';
 import {
+  EMPTY_TREE_SHA,
   resolveBaseRef,
   validateAssignmentHistory,
 } from './check-tag-history.js';
@@ -97,20 +98,58 @@ describe('validateAssignmentHistory', () => {
       'spurious removal: TERM:beta -> malware',
     );
   });
+
+  it('rejects duplicate removals and foreign removal run IDs', () => {
+    const previous = artifact('previous', [['TERM:alpha', 'malware']]);
+    const current = artifact('current', []);
+    current.run.previousAssignmentsHash = stableJsonHash(previous);
+    const removal = {
+      entryKey: 'TERM:alpha' as const,
+      tagSlug: 'malware',
+      previousEntryContentHash: '2'.repeat(64),
+      reason: 'Reviewed removal.',
+      runId: 'foreign',
+    };
+    current.removals = [removal, { ...removal }];
+    expect(validateAssignmentHistory(current, previous)).toEqual(
+      expect.arrayContaining([
+        'duplicate removal: TERM:alpha -> malware',
+        'removal foreign run ID: TERM:alpha -> malware',
+      ]),
+    );
+  });
 });
 
 describe('resolveBaseRef', () => {
-  it('falls back to HEAD when workflow_dispatch provides an empty value', () => {
-    expect(resolveBaseRef(['node', 'script'], '')).toBe('HEAD');
-    expect(resolveBaseRef(['node', 'script'], '   ')).toBe('HEAD');
+  it('uses the local origin/main merge base when available, then HEAD', () => {
+    expect(resolveBaseRef(['node', 'script'], '', 'merge-base')).toBe(
+      'merge-base',
+    );
+    expect(resolveBaseRef(['node', 'script'], '   ', undefined)).toBe('HEAD');
   });
 
-  it('prefers an explicit base and rejects a missing explicit value', () => {
-    expect(resolveBaseRef(['node', 'script', '--base', 'main'], 'other')).toBe(
-      'main',
+  it('keeps configured CI and explicit bases authoritative', () => {
+    expect(resolveBaseRef(['node', 'script'], 'ci-base', 'merge-base')).toBe(
+      'ci-base',
     );
+    expect(
+      resolveBaseRef(
+        ['node', 'script', '--base', 'explicit'],
+        'ci-base',
+        'merge-base',
+      ),
+    ).toBe('explicit');
     expect(() => resolveBaseRef(['node', 'script', '--base'], 'main')).toThrow(
       /requires a Git ref/,
     );
+  });
+
+  it('maps all-zero push bases to the Git empty tree', () => {
+    expect(resolveBaseRef(['node', 'script'], '0'.repeat(40))).toBe(
+      EMPTY_TREE_SHA,
+    );
+    expect(
+      resolveBaseRef(['node', 'script', '--base', '0'.repeat(64)], 'ignored'),
+    ).toBe(EMPTY_TREE_SHA);
   });
 });

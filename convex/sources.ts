@@ -70,14 +70,13 @@ export const citedEntries = query({
   handler: async (ctx, args) => {
     const generation = await activeGeneration(ctx);
     if (!generation) return { entries: [], hasMore: false };
+    const sourceSlug = args.sourceSlug.trim().toLowerCase();
     const page = Math.max(1, Math.min(10, Math.floor(args.page)));
     const pageSize = Math.max(1, Math.min(100, Math.floor(args.pageSize)));
     const links = await ctx.db
       .query('entrySources')
       .withIndex('by_syncVersion_and_sourceSlug_and_normalizedTitle', (q) =>
-        q
-          .eq('syncVersion', generation.version)
-          .eq('sourceSlug', args.sourceSlug),
+        q.eq('syncVersion', generation.version).eq('sourceSlug', sourceSlug),
       )
       .take(page * pageSize + 1);
     const pageLinks = links.slice((page - 1) * pageSize, page * pageSize);

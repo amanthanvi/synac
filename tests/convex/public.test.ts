@@ -68,7 +68,7 @@ describe('publicEntries', () => {
     const t = await seeded();
     const page = await t.query(api.publicEntries.getEntryPage, {
       entryType: 'TERM',
-      slug: 'back-door',
+      slug: ' BACK-DOOR ',
     });
     expect(page?.entry).toMatchObject({
       key: 'TERM:back-door',
@@ -181,7 +181,7 @@ describe('tags and sources', () => {
     ]);
 
     const tagEntries = await t.query(api.tags.entriesForTag, {
-      tagSlug: 'malware',
+      tagSlug: ' MALWARE ',
       page: 1,
       pageSize: 20,
     });
@@ -205,7 +205,7 @@ describe('tags and sources', () => {
     expect(source).toMatchObject({ slug: 'rfc4949', citedEntryCount: 2 });
 
     const cited = await t.query(api.sources.citedEntries, {
-      sourceSlug: 'rfc4949',
+      sourceSlug: ' RFC4949 ',
       page: 1,
       pageSize: 20,
     });

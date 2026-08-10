@@ -3,6 +3,10 @@ import { query } from './_generated/server';
 import { tagNames, type EntrySummary } from './publicEntries';
 import { activeGeneration } from './lib/contentGeneration';
 
+// Format 1 links lack entryType. Bound their transitional point reads; every
+// format 2 generation uses the exact compound index below instead.
+const LEGACY_TYPED_LINK_SCAN_LIMIT = 1_000;
+
 export const directory = query({
   args: {},
   handler: async (ctx) => {
@@ -61,6 +65,7 @@ export const entriesForTag = query({
     const page = Math.max(1, Math.floor(args.page));
     const pageSize = Math.max(1, Math.min(100, Math.floor(args.pageSize)));
     if (page > 100) return { entries: [], hasMore: false };
+    const tagSlug = args.tagSlug.trim().toLowerCase();
     const linkLimit = page * pageSize + 1;
     const activeLinks =
       args.entryType && generation.formatVersion >= 2
@@ -71,7 +76,7 @@ export const entriesForTag = query({
               (q) =>
                 q
                   .eq('syncVersion', generation.version)
-                  .eq('tagSlug', args.tagSlug)
+                  .eq('tagSlug', tagSlug)
                   .eq('entryType', args.entryType ?? undefined),
             )
             .order('desc')
@@ -79,12 +84,10 @@ export const entriesForTag = query({
         : await ctx.db
             .query('entryTags')
             .withIndex('by_syncVersion_and_tagSlug_and_updatedAt', (q) =>
-              q
-                .eq('syncVersion', generation.version)
-                .eq('tagSlug', args.tagSlug),
+              q.eq('syncVersion', generation.version).eq('tagSlug', tagSlug),
             )
             .order('desc')
-            .take(args.entryType ? 5_001 : linkLimit);
+            .take(args.entryType ? LEGACY_TYPED_LINK_SCAN_LIMIT : linkLimit);
     const links: typeof activeLinks = [];
     if (args.entryType && generation.formatVersion < 2) {
       for (const link of activeLinks) {
@@ -94,6 +97,7 @@ export const entriesForTag = query({
           entry.entryType === args.entryType
         ) {
           links.push(link);
+          if (links.length >= linkLimit) break;
         }
       }
     } else {

@@ -2,8 +2,14 @@ import { createHash } from 'node:crypto';
 
 import type { CompiledDataset, CompiledSense } from './model.js';
 
+export const SOURCE_SYNC_CHUNK = 100;
+export const TAG_SYNC_CHUNK = 100;
 export const ENTRY_SYNC_CHUNK = 25;
 export const RELATIONSHIP_SYNC_CHUNK = 200;
+export const REDIRECT_SYNC_CHUNK = 200;
+export const TAG_REDIRECT_SYNC_CHUNK = 200;
+/** Mirrors Convex sync.ts MAX_BATCHES so oversized plans fail before upload. */
+export const MAX_SYNC_BATCHES = 1_000;
 
 export type GenerationCounts = {
   sources: number;
@@ -77,6 +83,13 @@ export function isSyncConverged(status: { prunePending?: boolean }): boolean {
   return status.prunePending !== true;
 }
 
+export function isSyncCommitApplied(
+  status: { contentVersion?: string },
+  expectedVersion: string,
+): boolean {
+  return status.contentVersion === expectedVersion;
+}
+
 function makeBatch(kind: SyncBatchKind, rows: unknown[]): SyncBatch {
   const cleanRows = stripUndefined(rows);
   return {
@@ -84,6 +97,25 @@ function makeBatch(kind: SyncBatchKind, rows: unknown[]): SyncBatch {
     rows: cleanRows,
     hash: syncPayloadHash({ kind, rows: cleanRows }),
   };
+}
+
+function makeBatches(
+  kind: SyncBatchKind,
+  rows: unknown[],
+  size: number,
+  preserveEmptyBatch: boolean,
+): SyncBatch[] {
+  const chunks = chunk(rows, size);
+  if (chunks.length === 0 && preserveEmptyBatch) return [makeBatch(kind, [])];
+  return chunks.map((values) => makeBatch(kind, values));
+}
+
+export function assertSyncBatchLimit(batchCount: number): void {
+  if (batchCount > MAX_SYNC_BATCHES) {
+    throw new Error(
+      `sync plan exceeds the ${MAX_SYNC_BATCHES}-batch safety limit`,
+    );
+  }
 }
 
 export function createSyncPlan(dataset: CompiledDataset): SyncPlan {
@@ -101,17 +133,24 @@ export function createSyncPlan(dataset: CompiledDataset): SyncPlan {
   }));
 
   const batches: SyncBatch[] = [
-    makeBatch('sources', dataset.sources),
-    makeBatch('tags', dataset.tags),
-    ...chunk(entryRows, ENTRY_SYNC_CHUNK).map((rows) =>
-      makeBatch('entries', rows),
+    ...makeBatches('sources', dataset.sources, SOURCE_SYNC_CHUNK, true),
+    ...makeBatches('tags', dataset.tags, TAG_SYNC_CHUNK, true),
+    ...makeBatches('entries', entryRows, ENTRY_SYNC_CHUNK, false),
+    ...makeBatches(
+      'relationships',
+      dataset.relationships,
+      RELATIONSHIP_SYNC_CHUNK,
+      false,
     ),
-    ...chunk(dataset.relationships, RELATIONSHIP_SYNC_CHUNK).map((rows) =>
-      makeBatch('relationships', rows),
+    ...makeBatches('redirects', dataset.redirects, REDIRECT_SYNC_CHUNK, true),
+    ...makeBatches(
+      'tagRedirects',
+      dataset.tagRedirects,
+      TAG_REDIRECT_SYNC_CHUNK,
+      true,
     ),
-    makeBatch('redirects', dataset.redirects),
-    makeBatch('tagRedirects', dataset.tagRedirects),
   ];
+  assertSyncBatchLimit(batches.length);
 
   const expectedCounts: GenerationCounts = {
     sources: dataset.sources.length,

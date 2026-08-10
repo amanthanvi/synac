@@ -2,7 +2,7 @@
   "benchmarkHash": "28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465b",
   "results": [
     {
-      "file": "luna-high.json",
+      "file": "raw/luna-high.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "high",
       "contractValid": true,
@@ -87,7 +87,7 @@
       }
     },
     {
-      "file": "terra-xhigh.json",
+      "file": "raw/terra-xhigh.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "xhigh",
       "contractValid": true,
@@ -172,7 +172,7 @@
       }
     },
     {
-      "file": "luna-max.json",
+      "file": "raw/luna-max.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "max",
       "contractValid": true,
@@ -257,7 +257,7 @@
       }
     },
     {
-      "file": "luna-xhigh.json",
+      "file": "raw/luna-xhigh.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "xhigh",
       "contractValid": true,
@@ -342,92 +342,7 @@
       }
     },
     {
-      "file": "terra-low.json",
-      "model": "gpt-5.6-terra",
-      "reasoningEffort": "low",
-      "contractValid": true,
-      "validationErrors": [],
-      "cases": 110,
-      "elapsedSeconds": 40.723,
-      "passAAccuracy": 0.990909090909091,
-      "passBAccuracy": 0.990909090909091,
-      "accuracy": 0.990909090909091,
-      "balancedAccuracy": 0.990909090909091,
-      "macroF1": 0.9909083395321927,
-      "abstentionRate": 0,
-      "mirrorFlipRate": 0,
-      "minimumTagBalancedAccuracy": 0.9,
-      "perTag": {
-        "cryptography": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "identity-access": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "incident-response": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "malware": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "network-security": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "physical-environmental-security": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "privacy-data-protection": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "risk-governance": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "supply-chain-security": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "threats-adversary-behavior": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "vulnerabilities-remediation": {
-          "accuracy": 0.9,
-          "balancedAccuracy": 0.9,
-          "macroF1": 0.898989898989899,
-          "abstentionRate": 0
-        }
-      }
-    },
-    {
-      "file": "terra-high.json",
+      "file": "raw/terra-high.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "high",
       "contractValid": true,
@@ -512,7 +427,7 @@
       }
     },
     {
-      "file": "terra-max.json",
+      "file": "raw/terra-max.json",
       "model": "gpt-5.6-terra",
       "reasoningEffort": "max",
       "contractValid": true,
@@ -597,92 +512,7 @@
       }
     },
     {
-      "file": "terra-medium.json",
-      "model": "gpt-5.6-terra",
-      "reasoningEffort": "medium",
-      "contractValid": true,
-      "validationErrors": [],
-      "cases": 110,
-      "elapsedSeconds": 85.402,
-      "passAAccuracy": 0.9727272727272728,
-      "passBAccuracy": 0.9727272727272728,
-      "accuracy": 0.9727272727272728,
-      "balancedAccuracy": 0.9727272727272727,
-      "macroF1": 0.972706972128029,
-      "abstentionRate": 0,
-      "mirrorFlipRate": 0,
-      "minimumTagBalancedAccuracy": 0.9,
-      "perTag": {
-        "cryptography": {
-          "accuracy": 0.9,
-          "balancedAccuracy": 0.9,
-          "macroF1": 0.898989898989899,
-          "abstentionRate": 0
-        },
-        "identity-access": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "incident-response": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "malware": {
-          "accuracy": 0.9,
-          "balancedAccuracy": 0.9,
-          "macroF1": 0.898989898989899,
-          "abstentionRate": 0
-        },
-        "network-security": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "physical-environmental-security": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "privacy-data-protection": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "risk-governance": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "supply-chain-security": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "threats-adversary-behavior": {
-          "accuracy": 1,
-          "balancedAccuracy": 1,
-          "macroF1": 1,
-          "abstentionRate": 0
-        },
-        "vulnerabilities-remediation": {
-          "accuracy": 0.9,
-          "balancedAccuracy": 0.9,
-          "macroF1": 0.898989898989899,
-          "abstentionRate": 0
-        }
-      }
-    },
-    {
-      "file": "luna-medium.json",
+      "file": "raw/luna-medium.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "medium",
       "contractValid": true,
@@ -767,13 +597,189 @@
       }
     },
     {
-      "file": "luna-low.json",
+      "file": "raw/terra-low.json",
+      "model": "gpt-5.6-terra",
+      "reasoningEffort": "low",
+      "contractValid": false,
+      "validationErrors": [
+        "terra-low.json: degenerate rule citations use only the first inclusion/exclusion rule"
+      ],
+      "cases": 110,
+      "elapsedSeconds": 40.723,
+      "passAAccuracy": 0.990909090909091,
+      "passBAccuracy": 0.990909090909091,
+      "accuracy": 0.990909090909091,
+      "balancedAccuracy": 0.990909090909091,
+      "macroF1": 0.9909083395321927,
+      "abstentionRate": 0,
+      "mirrorFlipRate": 0,
+      "minimumTagBalancedAccuracy": 0.9,
+      "perTag": {
+        "cryptography": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "identity-access": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "incident-response": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "malware": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "network-security": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "physical-environmental-security": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "privacy-data-protection": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "risk-governance": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "supply-chain-security": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "threats-adversary-behavior": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "vulnerabilities-remediation": {
+          "accuracy": 0.9,
+          "balancedAccuracy": 0.9,
+          "macroF1": 0.898989898989899,
+          "abstentionRate": 0
+        }
+      }
+    },
+    {
+      "file": "raw/terra-medium.json",
+      "model": "gpt-5.6-terra",
+      "reasoningEffort": "medium",
+      "contractValid": false,
+      "validationErrors": [
+        "terra-medium.json: degenerate rule citations use only the first inclusion/exclusion rule"
+      ],
+      "cases": 110,
+      "elapsedSeconds": 85.402,
+      "passAAccuracy": 0.9727272727272728,
+      "passBAccuracy": 0.9727272727272728,
+      "accuracy": 0.9727272727272728,
+      "balancedAccuracy": 0.9727272727272727,
+      "macroF1": 0.972706972128029,
+      "abstentionRate": 0,
+      "mirrorFlipRate": 0,
+      "minimumTagBalancedAccuracy": 0.9,
+      "perTag": {
+        "cryptography": {
+          "accuracy": 0.9,
+          "balancedAccuracy": 0.9,
+          "macroF1": 0.898989898989899,
+          "abstentionRate": 0
+        },
+        "identity-access": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "incident-response": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "malware": {
+          "accuracy": 0.9,
+          "balancedAccuracy": 0.9,
+          "macroF1": 0.898989898989899,
+          "abstentionRate": 0
+        },
+        "network-security": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "physical-environmental-security": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "privacy-data-protection": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "risk-governance": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "supply-chain-security": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "threats-adversary-behavior": {
+          "accuracy": 1,
+          "balancedAccuracy": 1,
+          "macroF1": 1,
+          "abstentionRate": 0
+        },
+        "vulnerabilities-remediation": {
+          "accuracy": 0.9,
+          "balancedAccuracy": 0.9,
+          "macroF1": 0.898989898989899,
+          "abstentionRate": 0
+        }
+      }
+    },
+    {
+      "file": "raw/luna-low.json",
       "model": "gpt-5.6-luna",
       "reasoningEffort": "low",
-      "contractValid": true,
-      "validationErrors": [],
+      "contractValid": false,
+      "validationErrors": [
+        "luna-low.json: degenerate rule citations use only the first inclusion/exclusion rule"
+      ],
       "cases": 110,
-      "elapsedSeconds": 0.032,
+      "elapsedSeconds": null,
       "passAAccuracy": 0.8090909090909091,
       "passBAccuracy": 0.8090909090909091,
       "accuracy": 0.8090909090909091,

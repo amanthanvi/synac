@@ -94,13 +94,14 @@ export const getEntryPage = query({
   handler: async (ctx, args) => {
     const generation = await activeGeneration(ctx);
     if (!generation) return null;
+    const slug = args.slug.trim().toLowerCase();
     const entry = await ctx.db
       .query('entries')
       .withIndex('by_syncVersion_and_entryType_and_slug', (q) =>
         q
           .eq('syncVersion', generation.version)
           .eq('entryType', args.entryType)
-          .eq('slug', args.slug),
+          .eq('slug', slug),
       )
       .unique();
     if (!entry) return null;

@@ -215,6 +215,23 @@ for (const file of rawFiles) {
       ),
     );
   }
+  const citedContractRules = new Set(
+    raw.predictions.flatMap((prediction) =>
+      [prediction.passA, prediction.passB].flatMap((pass) =>
+        pass.ruleIds.filter((rule) => rule !== 'global:substantive-topic'),
+      ),
+    ),
+  );
+  if (
+    citedContractRules.size > 0 &&
+    [...citedContractRules].every(
+      (rule) => rule === 'include:1' || rule === 'exclude:1',
+    )
+  ) {
+    validationErrors.push(
+      `${file}: degenerate rule citations use only the first inclusion/exclusion rule`,
+    );
+  }
 
   const overall = metricsFor(raw.predictions, ids);
   const tags = [
@@ -249,14 +266,20 @@ for (const file of rawFiles) {
     throw new Error(`${file}: invalid timestamps`);
   }
 
+  const elapsedMilliseconds = completed - started;
   results.push({
-    file,
+    file: `${apiMode ? 'api-raw' : 'raw'}/${file}`,
     model: raw.model,
     reasoningEffort: raw.reasoningEffort,
     contractValid: validationErrors.length === 0,
     validationErrors,
     cases: raw.predictions.length,
-    elapsedSeconds: (completed - started) / 1_000,
+    // Collaboration-run timestamps below one second are session bookkeeping,
+    // not a credible latency measurement for 110 cases.
+    elapsedSeconds:
+      !apiMode && elapsedMilliseconds < 1_000
+        ? null
+        : elapsedMilliseconds / 1_000,
     passAAccuracy: passACorrect / raw.predictions.length,
     passBAccuracy: passBCorrect / raw.predictions.length,
     ...overall,
@@ -277,12 +300,17 @@ results.sort(
     b.minimumTagBalancedAccuracy - a.minimumTagBalancedAccuracy ||
     a.abstentionRate - b.abstentionRate ||
     a.mirrorFlipRate - b.mirrorFlipRate ||
-    a.elapsedSeconds - b.elapsedSeconds,
+    (a.elapsedSeconds ?? Number.POSITIVE_INFINITY) -
+      (b.elapsedSeconds ?? Number.POSITIVE_INFINITY),
 );
 
 const percent = (value: number): string => `${(value * 100).toFixed(1)}%`;
 const rows = results.map((result, index) => {
-  const base = `| ${index + 1} | ${result.model} | ${result.reasoningEffort} | ${result.contractValid ? 'PASS' : 'FAIL'} | ${percent(result.balancedAccuracy)} | ${percent(result.macroF1)} | ${percent(result.minimumTagBalancedAccuracy)} | ${percent(result.abstentionRate)} | ${percent(result.mirrorFlipRate)} | ${result.elapsedSeconds.toFixed(1)}s`;
+  const elapsed =
+    result.elapsedSeconds === null
+      ? 'unavailable'
+      : `${result.elapsedSeconds.toFixed(1)}s`;
+  const base = `| ${index + 1} | ${result.model} | ${result.reasoningEffort} | ${result.contractValid ? 'PASS' : 'FAIL'} | ${percent(result.balancedAccuracy)} | ${percent(result.macroF1)} | ${percent(result.minimumTagBalancedAccuracy)} | ${percent(result.abstentionRate)} | ${percent(result.mirrorFlipRate)} | ${elapsed}`;
   return apiMode
     ? `${base} | ${result.usage?.inputTokens ?? 0} | ${result.usage?.cachedInputTokens ?? 0} | ${result.usage?.outputTokens ?? 0} | ${result.usage?.reasoningTokens ?? 0} | $${(result.usage?.batchCostUsd ?? 0).toFixed(6)} |`
     : `${base} |`;
@@ -306,30 +334,20 @@ reruns followed an invalid v1 run in the same agent/file lanes. The
 collaboration agents could choose scripts or reuse their owned artifact, so the
 perfect scores, zero flips, and timestamps do not measure independent raw-model
 accuracy, stability, or latency.`;
-const apiFollowup = `Advance Terra \`max\`, Terra \`xhigh\`, and Luna \`max\` to the
-fresh sealed comparison. Terra \`max\` is the measured accuracy ceiling; Terra
-\`xhigh\` is within one absolute percentage point at roughly half the measured
-cost; Luna \`max\` is the economic challenger but requires a deliberately
-verdict-only contract or a fresh generation that fixes its two invalid rule
-citations. Retain Terra \`low\` only as the fully contract-valid served floor if
-budget permits.
+const apiFollowup = `Use Terra \`max\` for the fresh sealed comparison, per the
+explicit production-candidate decision. Terra \`xhigh\` and Luna \`max\` remain
+archived sensitivity checks, not co-equal release candidates. Terra \`low\` is
+not promoted from a public-anchor screen.
 
 Every candidate produced zero abstentions and the remaining verdict errors
 cluster on hard negatives. No direct-LLM configuration is eligible for AUTO
 from this public fixture. The next comparison must use fresh sealed synthetic
 reference cases, per-Tag calibration, selective abstention, exact usage, and
 the independent local encoder/head controls.`;
-const pilotFollowup = `Advance only three served configurations to a fresh,
-uniform Batch evaluation after the staged synthetic reference exists:
-
-- Luna \`high\`: economical family candidate and best valid aggregate screen;
-- Terra \`low\`: cheapest Terra effort and near-ceiling screen; and
-- Terra \`xhigh\`: Terra quality ceiling for the hard/disagreement stratum.
-
-Luna \`low\` and \`medium\` do not advance. Luna \`xhigh\`/\`max\` add no screen
-quality over \`high\`; Terra \`medium\`/\`high\`/\`max\` add no screen quality over
-the retained Terra pair. This is a Pareto-pruning decision for the next
-experiment, not a production-model choice.`;
+const pilotFollowup = `Do not select a production model from this collaboration
+pilot. Any fresh comparison must reject degenerate rule citations and use the
+sealed synthetic-reference generation. The later raw Batch evidence and the
+explicit production-candidate decision supersede this screen.`;
 const contractNote = apiMode
   ? `All collected OpenAI Batch responses satisfied the requested strict JSON
 schema; a Contract failure means an ancillary provenance citation was invalid,

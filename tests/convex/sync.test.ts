@@ -196,6 +196,29 @@ describe('atomic content sync', () => {
     );
   });
 
+  test('resuming a pending manifest preserves its staging start time', async () => {
+    const t = convexTest(schema, modules);
+    vi.setSystemTime(new Date('2026-08-10T00:00:00Z'));
+    await stageDataset(t, 'v1', { stageBatchCount: 0, commit: false });
+    const startedAt = (await t.query(internal.sync.status, {}))?.pending
+      ?.startedAt;
+    expect(startedAt).toBe(Date.parse('2026-08-10T00:00:00Z'));
+
+    vi.setSystemTime(new Date('2026-08-10T01:00:00Z'));
+    await stageDataset(t, 'v1', { stageBatchCount: 0, commit: false });
+    expect((await t.query(internal.sync.status, {}))?.pending?.startedAt).toBe(
+      startedAt,
+    );
+  });
+
+  test('fixture staging rejects an invalid batch count before beginning', async () => {
+    const t = convexTest(schema, modules);
+    await expect(
+      stageDataset(t, 'v1', { stageBatchCount: 7, commit: false }),
+    ).rejects.toThrow(/stageBatchCount must be an integer from 0 through 6/);
+    expect(await t.query(internal.sync.status, {})).toBeNull();
+  });
+
   test('partial staging leaves the complete active generation visible', async () => {
     const t = convexTest(schema, modules);
     await seedDataset(t, 'v1');
@@ -365,6 +388,46 @@ describe('atomic content sync', () => {
     expect(stagedEntries).toHaveLength(1);
   });
 
+  test('entry batches bind the declared sense count to staged senses', async () => {
+    const t = convexTest(schema, modules);
+    const entry = makeEntryRow({ senseCount: 2 });
+    const plan = await stageDataset(t, 'v1', {
+      entries: [entry],
+      sources: [
+        {
+          slug: 'rfc4949',
+          name: 'RFC 4949',
+          baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+          licenseType: 'OTHER',
+          allowedUse: 'Reproduce with attribution',
+          attributionRequirements: 'RFC 4949, IETF',
+          trustTier: 'TIER1',
+          enabled: true,
+          lastVerifiedAt: Date.parse('2026-01-15T00:00:00Z'),
+          citedEntryCount: 1,
+        },
+      ],
+      relationships: [],
+      redirects: [],
+      tagRedirects: [],
+      stageBatchCount: 2,
+      commit: false,
+    });
+
+    await expect(
+      t.mutation(internal.sync.upsertEntries, {
+        syncVersion: 'v1',
+        manifestHash: plan.manifestHash,
+        ordinal: 2,
+        batchHash: plan.batchHashes[2] ?? '',
+        rows: [entry],
+      }),
+    ).rejects.toThrow(/declares 2 senses; received 1/);
+    expect(
+      (await t.query(internal.sync.status, {}))?.pending?.nextBatchOrdinal,
+    ).toBe(2);
+  });
+
   test('table, tag, and source count mismatches block activation', async () => {
     const t = convexTest(schema, modules);
     await seedDataset(t, 'v1');
@@ -513,6 +576,41 @@ describe('atomic content sync', () => {
         manifestHash: plan.manifestHash,
       }),
     ).rejects.toThrow(/no staging generation/);
+    expect((await t.query(internal.sync.status, {}))?.contentVersion).toBe(
+      'v1',
+    );
+  });
+
+  test('abort rejects a mismatched version without changing pending state', async () => {
+    const t = convexTest(schema, modules);
+    await seedDataset(t, 'v1');
+    await stageDataset(t, 'v2', { stageBatchCount: 3, commit: false });
+
+    await expect(
+      t.mutation(internal.sync.abortPending, { syncVersion: 'v3' }),
+    ).rejects.toThrow(/abort version does not match/);
+    expect((await t.query(internal.sync.status, {}))?.pending).toMatchObject({
+      state: 'STAGING',
+      syncVersion: 'v2',
+      nextBatchOrdinal: 3,
+    });
+  });
+
+  test('a new generation cannot begin while pruning is pending', async () => {
+    const t = convexTest(schema, modules);
+    await seedDataset(t, 'v1');
+    await t.run(async (ctx) => {
+      const meta = await ctx.db
+        .query('syncMeta')
+        .withIndex('by_key', (q) => q.eq('key', 'content'))
+        .unique();
+      if (!meta) throw new Error('sync metadata missing');
+      await ctx.db.patch(meta._id, { prunePending: true });
+    });
+
+    await expect(
+      stageDataset(t, 'v2', { stageBatchCount: 0, commit: false }),
+    ).rejects.toThrow(/pruning is pending/);
     expect((await t.query(internal.sync.status, {}))?.contentVersion).toBe(
       'v1',
     );

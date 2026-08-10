@@ -1,7 +1,11 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test';
 import { internal } from '../../convex/_generated/api';
-import { syncPayloadHash } from '../../tools/content/src/sync-plan';
+import type { CompiledDataset } from '../../tools/content/src/model';
+import {
+  createSyncPlan,
+  syncPayloadHash,
+} from '../../tools/content/src/sync-plan';
 
 export const modules = import.meta.glob('../../convex/**/*.ts');
 
@@ -144,29 +148,6 @@ export async function stageDataset(
     { fromSlug: 'old-malware', toSlug: 'malware' },
     { fromSlug: 'protocols' },
   ];
-  const expectedCounts = {
-    sources: sources.length,
-    tags: tags.length,
-    entries: entries.length,
-    senses: entries.reduce((total, entry) => total + entry.senses.length, 0),
-    entryTags: entries.reduce(
-      (total, entry) => total + entry.tagSlugs.length,
-      0,
-    ),
-    entrySources: entries.reduce(
-      (total, entry) => total + entry.citedSourceSlugs.length,
-      0,
-    ),
-    relationships: relationships.length,
-    redirects: redirects.length,
-    tagRedirects: tagRedirects.length,
-  };
-  const expectedTagCounts = Object.fromEntries(
-    tags.map((tag) => [tag.slug, tag.entryCount]),
-  );
-  const expectedSourceCounts = Object.fromEntries(
-    sources.map((source) => [source.slug, source.citedEntryCount]),
-  );
   type BatchIdentity = {
     syncVersion: string;
     manifestHash: string;
@@ -189,24 +170,32 @@ export async function stageDataset(
       run: async (identity: BatchIdentity) =>
         await t.mutation(internal.sync.upsertTags, { ...identity, rows: tags }),
     },
-    {
-      kind: 'entries',
-      rows: entries,
-      run: async (identity: BatchIdentity) =>
-        await t.mutation(internal.sync.upsertEntries, {
-          ...identity,
-          rows: entries,
-        }),
-    },
-    {
-      kind: 'relationships',
-      rows: relationships,
-      run: async (identity: BatchIdentity) =>
-        await t.mutation(internal.sync.upsertRelationships, {
-          ...identity,
-          rows: relationships,
-        }),
-    },
+    ...(entries.length > 0
+      ? [
+          {
+            kind: 'entries',
+            rows: entries,
+            run: async (identity: BatchIdentity) =>
+              await t.mutation(internal.sync.upsertEntries, {
+                ...identity,
+                rows: entries,
+              }),
+          },
+        ]
+      : []),
+    ...(relationships.length > 0
+      ? [
+          {
+            kind: 'relationships',
+            rows: relationships,
+            run: async (identity: BatchIdentity) =>
+              await t.mutation(internal.sync.upsertRelationships, {
+                ...identity,
+                rows: relationships,
+              }),
+          },
+        ]
+      : []),
     {
       kind: 'redirects',
       rows: redirects,
@@ -226,28 +215,56 @@ export async function stageDataset(
         }),
     },
   ];
-  const batchHashes = batches.map((batch) =>
-    syncPayloadHash({ kind: batch.kind, rows: batch.rows }),
-  );
-  const manifestHash = syncPayloadHash({
-    syncVersion,
-    batchHashes,
-    expectedCounts,
-    expectedTagCounts,
-    expectedSourceCounts,
-  });
+  const plan = createSyncPlan({
+    contentVersion: syncVersion,
+    sources: sources.map((source) => ({
+      ...source,
+      licenseUrl: undefined,
+      licenseNotes: undefined,
+    })),
+    tags: tags.map((tag) => ({ ...tag, description: undefined })),
+    entries: entries.map(({ senses: _senses, ...entry }) => entry),
+    senses: entries.flatMap((entry) =>
+      entry.senses.map((sense) => ({ ...sense, entryKey: entry.key })),
+    ),
+    relationships,
+    redirects,
+    tagRedirects: tagRedirects.map((redirect) => ({
+      ...redirect,
+      toSlug: redirect.toSlug,
+    })),
+  } as CompiledDataset);
+  if (plan.batches.length !== batches.length) {
+    throw new Error(
+      `fixture runner supports one batch per kind; production plan produced ${plan.batches.length} batches`,
+    );
+  }
+  for (const [ordinal, batch] of batches.entries()) {
+    const planned = plan.batches[ordinal];
+    const localHash = syncPayloadHash({ kind: batch.kind, rows: batch.rows });
+    if (!planned || planned.kind !== batch.kind || planned.hash !== localHash) {
+      throw new Error(`fixture batch ${ordinal} diverges from createSyncPlan`);
+    }
+  }
+  const requestedBatchCount = options.stageBatchCount ?? batches.length;
+  if (
+    !Number.isSafeInteger(requestedBatchCount) ||
+    requestedBatchCount < 0 ||
+    requestedBatchCount > batches.length
+  ) {
+    throw new Error(
+      `stageBatchCount must be an integer from 0 through ${batches.length}`,
+    );
+  }
   const begin = await t.mutation(internal.sync.begin, {
     syncVersion,
-    manifestHash,
-    batchHashes,
-    expectedCounts,
-    expectedTagCounts,
-    expectedSourceCounts,
+    manifestHash: plan.manifestHash,
+    batchHashes: plan.batchHashes,
+    expectedCounts: plan.expectedCounts,
+    expectedTagCounts: plan.expectedTagCounts,
+    expectedSourceCounts: plan.expectedSourceCounts,
   });
-  const batchLimit = Math.min(
-    options.stageBatchCount ?? batches.length,
-    batches.length,
-  );
+  const batchLimit = requestedBatchCount;
   for (
     let ordinal = begin.nextBatchOrdinal;
     ordinal < batchLimit;
@@ -257,9 +274,9 @@ export async function stageDataset(
     if (!batch) throw new Error(`missing fixture batch ${ordinal}`);
     await batch.run({
       syncVersion,
-      manifestHash,
+      manifestHash: plan.manifestHash,
       ordinal,
-      batchHash: batchHashes[ordinal] ?? '',
+      batchHash: plan.batchHashes[ordinal] ?? '',
     });
   }
   if (
@@ -267,15 +284,12 @@ export async function stageDataset(
     batchLimit === batches.length &&
     !begin.alreadyCurrent
   ) {
-    await t.mutation(internal.sync.commit, { syncVersion, manifestHash });
+    await t.mutation(internal.sync.commit, {
+      syncVersion,
+      manifestHash: plan.manifestHash,
+    });
   }
-  return {
-    manifestHash,
-    batchHashes,
-    expectedCounts,
-    expectedTagCounts,
-    expectedSourceCounts,
-  };
+  return plan;
 }
 
 export async function seedDataset(

@@ -7,6 +7,8 @@ import { tagAssignmentsFileSchema, type TagAssignmentsFile } from './model.js';
 import { stableJsonHash } from './tagging.js';
 
 const artifactPath = 'content/tag-assignments.json';
+const repoRoot = path.resolve(import.meta.dirname, '../../..');
+export const EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
 
 function pair(row: { entryKey: string; tagSlug: string }): string {
   return `${row.entryKey}\0${row.tagSlug}`;
@@ -41,6 +43,21 @@ export function validateAssignmentHistory(
   const removalsByPair = new Map(
     current.removals.map((row) => [pair(row), row]),
   );
+  const seenRemovals = new Set<string>();
+  for (const removal of current.removals) {
+    const identity = pair(removal);
+    if (seenRemovals.has(identity)) {
+      errors.push(
+        `duplicate removal: ${removal.entryKey} -> ${removal.tagSlug}`,
+      );
+    }
+    seenRemovals.add(identity);
+    if (removal.runId !== current.run.runId) {
+      errors.push(
+        `removal foreign run ID: ${removal.entryKey} -> ${removal.tagSlug}`,
+      );
+    }
+  }
   for (const [identity, prior] of previousByPair) {
     if (currentPairs.has(identity)) continue;
     const removal = removalsByPair.get(identity);
@@ -53,11 +70,6 @@ export function validateAssignmentHistory(
     if (removal.previousEntryContentHash !== prior.entryContentHash) {
       errors.push(
         `removal prior hash mismatch: ${prior.entryKey} -> ${prior.tagSlug}`,
-      );
-    }
-    if (removal.runId !== current.run.runId) {
-      errors.push(
-        `removal foreign run ID: ${prior.entryKey} -> ${prior.tagSlug}`,
       );
     }
   }
@@ -98,23 +110,31 @@ function parseArtifact(raw: string, label: string): TagAssignmentsFile {
   return parsed.data;
 }
 
-const repoRoot = path.resolve(import.meta.dirname, '../../..');
+function normalizeBaseRef(base: string): string {
+  return /^0{40,64}$/.test(base) ? EMPTY_TREE_SHA : base;
+}
 
 export function resolveBaseRef(
   argv: string[],
   configuredBase: string | undefined,
+  localMergeBase?: string,
 ): string {
   const baseIndex = argv.indexOf('--base');
   const baseArg = baseIndex >= 0 ? argv[baseIndex + 1]?.trim() : undefined;
   if (baseIndex >= 0 && !baseArg) throw new Error('--base requires a Git ref');
-  return (baseArg ?? configuredBase?.trim()) || 'HEAD';
+  const selected =
+    baseArg ?? (configuredBase?.trim() || localMergeBase?.trim() || 'HEAD');
+  return normalizeBaseRef(selected);
 }
 
 async function main(): Promise<void> {
-  const base = resolveBaseRef(
-    process.argv,
-    process.env.SYNAC_ASSIGNMENTS_BASE_REF,
-  );
+  const configuredBase = process.env.SYNAC_ASSIGNMENTS_BASE_REF;
+  const hasExplicitBase = process.argv.includes('--base');
+  const localMergeBase =
+    !hasExplicitBase && !configuredBase?.trim()
+      ? git(['merge-base', 'HEAD', 'origin/main'], true)
+      : undefined;
+  const base = resolveBaseRef(process.argv, configuredBase, localMergeBase);
   const changed = git(['diff', '--name-only', base, '--', artifactPath]);
   if (!changed) {
     console.log(

@@ -15,6 +15,7 @@ import { loadContentDir } from './load.js';
 import type { CompiledDataset } from './model.js';
 import {
   createSyncPlan,
+  isSyncCommitApplied,
   isSyncConverged,
   stripUndefined,
   type SyncBatchKind,
@@ -23,7 +24,11 @@ import {
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
 const prod = process.argv.includes('--prod');
 
-function runConvex(fn: string, args: unknown): string {
+function runConvex(
+  fn: string,
+  args: unknown,
+  options: { reconcile?: () => boolean } = {},
+): string {
   const cliArgs = [
     'convex',
     'run',
@@ -39,6 +44,13 @@ function runConvex(fn: string, args: unknown): string {
     });
     if (result.status === 0) return result.stdout?.toString().trim() ?? '';
     lastError = result.stderr?.toString() ?? '';
+    if (options.reconcile) {
+      try {
+        if (options.reconcile()) return '';
+      } catch (error) {
+        lastError += `\nreconciliation failed: ${error instanceof Error ? error.message : String(error)}`;
+      }
+    }
     if (attempt < 3)
       Atomics.wait(
         new Int32Array(new SharedArrayBuffer(4)),
@@ -107,10 +119,20 @@ function pushDataset(dataset: CompiledDataset): void {
       );
     }
   }
-  runConvex('sync:commit', {
-    syncVersion: plan.syncVersion,
-    manifestHash: plan.manifestHash,
-  });
+  runConvex(
+    'sync:commit',
+    {
+      syncVersion: plan.syncVersion,
+      manifestHash: plan.manifestHash,
+    },
+    {
+      reconcile: () =>
+        isSyncCommitApplied(
+          convexJson<{ contentVersion?: string }>('sync:status', {}),
+          plan.syncVersion,
+        ),
+    },
+  );
 }
 
 function waitForConvergence(expectedVersion: string): string {

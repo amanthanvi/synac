@@ -15,7 +15,7 @@ The minimum defensible design is:
 - calibrated `yes | no | abstain` outputs under a strict JSON Schema; and
 - deterministic aggregation over archived raw responses.
 
-This can replace the *workflow* of human double annotation and adjudication.
+This can replace the _workflow_ of human double annotation and adjudication.
 It cannot replace the epistemic evidence that humans supplied the labels.
 Agreement among models is reliability evidence, not proof of semantic truth.
 
@@ -26,19 +26,19 @@ silently map an 11-tag study onto the current eight-tag production taxonomy.
 
 ## What the evidence says
 
-| Risk | Primary-source finding | Protocol response |
-| --- | --- | --- |
-| Correlated errors | A study of more than 350 LLMs found substantial error correlation; on one leaderboard, models agreed 60% of the time when both were wrong, with shared architecture and provider among the drivers ([Kim et al., 2025](https://proceedings.mlr.press/v267/kim25e.html)). | One vote per base-model lineage, measure error correlation on controls, and never interpret a majority as independent Bernoulli evidence. |
-| Single-judge and family bias | A panel drawn from disjoint model families outperformed a single large judge in the studied settings and reduced intra-model bias ([Verga et al., 2024](https://arxiv.org/abs/2404.18796)). | Four cross-family primaries; no provider/model aliases counted as extra voters. |
-| Position and order bias | Changing response order can reverse LLM evaluation outcomes; balanced-position aggregation mitigated the effect ([Wang et al., 2023](https://arxiv.org/abs/2305.17926)). | Mirror every primary pass with the 11 tags in inverse order. Applying this pairwise-evaluation result to a multi-label list is a precautionary inference. |
-| Self-preference | Evaluators can recognize and favor their own generations relative to human judgments ([Panickssery et al., 2024](https://arxiv.org/abs/2404.13076)). | Hide model identity and never let a model family judge text or arguments produced by that family. |
-| Prompt sensitivity | The diverse-panel study also found high variance from small prompt changes in some judge settings ([Verga et al., 2024](https://arxiv.org/abs/2404.18796)). | Freeze and hash prompts; test a held-out prompt renderer during audit. |
-| Prompt injection | Short adversarial phrases appended to assessed text transferred to unseen judges and could force maximum scores ([Raina et al., 2024](https://arxiv.org/html/2402.14016v2)). | Treat entry text as untrusted data, run injection controls, expose no tools, and arbitrate every injection flag. |
-| Confidence | Model self-evaluation can be calibrated in suitable formats, but calibration degrades on new tasks ([Kadavath et al., 2022](https://arxiv.org/abs/2207.05221)). | Calibrate reported probabilities on SynAc-specific controls and abstain in the middle band. Never use raw verbal confidence. |
-| Adversarial discussion | Multi-agent debate improved results on the paper's reasoning and factuality tasks, but sometimes still converged to the wrong answer ([Du et al., 2023](https://arxiv.org/abs/2305.14325)). | Preserve blind primary votes first; use opposed critics only afterward to expose counterevidence, not to manufacture consensus. |
-| Format versus meaning | Strict structured output can constrain syntax ([OpenAI](https://openai.com/index/introducing-structured-outputs-in-the-api/)), but schema-valid values can still be semantically wrong ([Google](https://ai.google.dev/gemini-api/docs/generate-content/structured-output)). | Require strict schema plus semantic validators, evidence offsets, aggregation gates, and audit. |
-| Reproducibility | Even fixed seeds and identical backend fingerprints provide only mostly identical model outputs; determinism is not guaranteed ([OpenAI Cookbook](https://developers.openai.com/cookbook/examples/reproducible_outputs_with_the_seed_parameter)). | Archive raw responses. Make normalization and aggregation deterministic; do not claim the model calls themselves are deterministic. |
-| Test leakage | Public benchmarks can enter training data and memorization can masquerade as capability ([Oren et al., 2023](https://arxiv.org/abs/2310.17623)). | Keep target labels and peer outputs sealed during the run, record provider data controls, and treat later reuse after publication as potentially contaminated. |
+| Risk                         | Primary-source finding                                                                                                                                                                                                                                                       | Protocol response                                                                                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Correlated errors            | A study of more than 350 LLMs found substantial error correlation; on one leaderboard, models agreed 60% of the time when both were wrong, with shared architecture and provider among the drivers ([Kim et al., 2025](https://proceedings.mlr.press/v267/kim25e.html)).     | One vote per base-model lineage, measure error correlation on controls, and never interpret a majority as independent Bernoulli evidence.                      |
+| Single-judge and family bias | A panel drawn from disjoint model families outperformed a single large judge in the studied settings and reduced intra-model bias ([Verga et al., 2024](https://arxiv.org/abs/2404.18796)).                                                                                  | Four cross-family primaries; no provider/model aliases counted as extra voters.                                                                                |
+| Position and order bias      | Changing response order can reverse LLM evaluation outcomes; balanced-position aggregation mitigated the effect ([Wang et al., 2023](https://arxiv.org/abs/2305.17926)).                                                                                                     | Mirror every primary pass with the 11 tags in inverse order. Applying this pairwise-evaluation result to a multi-label list is a precautionary inference.      |
+| Self-preference              | Evaluators can recognize and favor their own generations relative to human judgments ([Panickssery et al., 2024](https://arxiv.org/abs/2404.13076)).                                                                                                                         | Hide model identity and never let a model family judge text or arguments produced by that family.                                                              |
+| Prompt sensitivity           | The diverse-panel study also found high variance from small prompt changes in some judge settings ([Verga et al., 2024](https://arxiv.org/abs/2404.18796)).                                                                                                                  | Freeze and hash prompts; test a held-out prompt renderer during audit.                                                                                         |
+| Prompt injection             | Short adversarial phrases appended to assessed text transferred to unseen judges and could force maximum scores ([Raina et al., 2024](https://arxiv.org/html/2402.14016v2)).                                                                                                 | Treat entry text as untrusted data, run injection controls, expose no tools, and arbitrate every injection flag.                                               |
+| Confidence                   | Model self-evaluation can be calibrated in suitable formats, but calibration degrades on new tasks ([Kadavath et al., 2022](https://arxiv.org/abs/2207.05221)).                                                                                                              | Calibrate reported probabilities on SynAc-specific controls and abstain in the middle band. Never use raw verbal confidence.                                   |
+| Adversarial discussion       | Multi-agent debate improved results on the paper's reasoning and factuality tasks, but sometimes still converged to the wrong answer ([Du et al., 2023](https://arxiv.org/abs/2305.14325)).                                                                                  | Preserve blind primary votes first; use opposed critics only afterward to expose counterevidence, not to manufacture consensus.                                |
+| Format versus meaning        | Strict structured output can constrain syntax ([OpenAI](https://openai.com/index/introducing-structured-outputs-in-the-api/)), but schema-valid values can still be semantically wrong ([Google](https://ai.google.dev/gemini-api/docs/generate-content/structured-output)). | Require strict schema plus semantic validators, evidence offsets, aggregation gates, and audit.                                                                |
+| Reproducibility              | Even fixed seeds and identical backend fingerprints provide only mostly identical model outputs; determinism is not guaranteed ([OpenAI Cookbook](https://developers.openai.com/cookbook/examples/reproducible_outputs_with_the_seed_parameter)).                            | Archive raw responses. Make normalization and aggregation deterministic; do not claim the model calls themselves are deterministic.                            |
+| Test leakage                 | Public benchmarks can enter training data and memorization can masquerade as capability ([Oren et al., 2023](https://arxiv.org/abs/2310.17623)).                                                                                                                             | Keep target labels and peer outputs sealed during the run, record provider data controls, and treat later reuse after publication as potentially contaminated. |
 
 ## Concrete protocol
 
@@ -299,16 +299,16 @@ abstention and known validity limits.
 
 ## Practical scale
 
-Batch all 11 tag decisions for one entry into each call. The target run then
-requires:
+Batch all 11 tag decisions for one entry into each primary or critic call. The
+target run then requires 12,000 primary calls (`1,500 x 4 families x 2
+mirrors`) and 3,000 critic calls (`1,500 x 2 opposed critics`). Arbiters judge
+cells, with two arbiters and two opposed-order passes per cell: a 150-entry
+all-cell audit therefore adds 6,600 calls (`150 x 11 x 2 x 2`), while an
+all-cell full-corpus upper bound is 66,000 (`1,500 x 11 x 2 x 2`).
 
-- 12,000 primary calls: `1,500 entries x 4 families x 2 mirrors`;
-- 3,000 critic calls: `1,500 x 2 opposed critics`;
-- at least 300 held-out audit calls: `150 x 2 arbiters`; and
-- up to 3,000 additional arbiter calls if every entry has a triggered cell.
-
-Base target cost is therefore 15,300 calls, or at most 18,000 when every entry
-requires arbitration, excluding control qualification and transport retries.
+Base primary-plus-critic cost is 15,000 calls. Total cost is that base plus the
+preregistered audited/triggered-cell arbitration set, control qualification,
+and at most one identical transport retry per failed call.
 This is expensive but auditable; reducing the number of independent families,
 unsealing primary outputs early, or converting abstentions into majority votes
 would remove the core safeguards rather than merely optimize cost.

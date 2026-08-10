@@ -297,14 +297,28 @@ async function smoke() {
 }
 
 async function submit() {
+  let safeBatches: Array<{
+    family: Family;
+    id: unknown;
+    status: unknown;
+    input_file_id: unknown;
+    output_file_id: unknown;
+    error_file_id: unknown;
+    created_at: unknown;
+    completion_window: unknown;
+    request_counts: unknown;
+  }> = [];
   try {
     const existing = JSON.parse(await readFile(batchesPath, 'utf8')) as {
-      batches?: unknown[];
+      batches?: typeof safeBatches;
     };
-    if ((existing.batches?.length ?? 0) > 0) {
-      throw new Error(
-        'batches.json already contains submitted Batches; refusing duplicate spend',
-      );
+    safeBatches = existing.batches ?? [];
+    if (
+      new Set(safeBatches.map((batch) => batch.family)).size !==
+        safeBatches.length ||
+      safeBatches.some((batch) => !families.includes(batch.family))
+    ) {
+      throw new Error('batches.json has duplicate or unknown model families');
     }
   } catch (error) {
     if (
@@ -318,12 +332,12 @@ async function submit() {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as {
     requestFiles: Record<Family, { sha256: string }>;
   };
-  const safeBatches = [];
   for (const family of families) {
     const requestJsonl = await readFile(requestPath(family), 'utf8');
     if (sha256(requestJsonl) !== manifest.requestFiles[family].sha256) {
       throw new Error(`${family} request file hash does not match manifest`);
     }
+    if (safeBatches.some((batch) => batch.family === family)) continue;
     const form = new FormData();
     form.append('purpose', 'batch');
     form.append(
@@ -487,6 +501,14 @@ async function collect() {
     if (!batch || !responseJsonl) {
       throw new Error(`${family}: missing Batch artifact`);
     }
+    if (
+      typeof batch.created_at !== 'number' ||
+      typeof batch.completed_at !== 'number' ||
+      batch.created_at <= 0 ||
+      batch.completed_at < batch.created_at
+    ) {
+      throw new Error(`${family}: missing or invalid Batch timestamps`);
+    }
     const decisionsByPass = new Map<'a' | 'b', Map<string, Decision>>();
     let inputTokens = 0;
     let cachedInputTokens = 0;
@@ -596,10 +618,8 @@ async function collect() {
       requestIds,
       responseIds,
       responseFileSha256: sha256(responseJsonl),
-      startedAtUtc: new Date((batch.created_at ?? 0) * 1_000).toISOString(),
-      completedAtUtc: new Date(
-        (batch.completed_at ?? batch.created_at ?? 0) * 1_000,
-      ).toISOString(),
+      startedAtUtc: new Date(batch.created_at * 1_000).toISOString(),
+      completedAtUtc: new Date(batch.completed_at * 1_000).toISOString(),
       usage: {
         inputTokens,
         cachedInputTokens,

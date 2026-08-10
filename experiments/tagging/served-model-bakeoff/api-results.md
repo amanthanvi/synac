@@ -17,89 +17,89 @@ Benchmark hash: `28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465
 
 ## Contract validation failures
 
-- `luna-max.json`: luna-max.json/af6646e7182baa88/passB: unknown rule ID exclude:5
-- `luna-max.json`: luna-max.json/dd4c5284947aee8d/passB: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/793d8fb657ac10a7/passB: unknown rule ID include:6
-- `luna-low.json`: luna-low.json/72323594222f6184/passA: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/af6646e7182baa88/passA: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/af6646e7182baa88/passB: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/2af877c49183d750/passA: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/dd4c5284947aee8d/passA: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/dd4c5284947aee8d/passB: unknown rule ID exclude:6
-- `luna-low.json`: luna-low.json/f2cc17cafc8dcae7/passB: unknown rule ID include:6
-- `luna-low.json`: luna-low.json/c3c2cd462ba35765/passB: unknown rule ID exclude:7
-- `luna-low.json`: luna-low.json/087ec89322ef0b27/passA: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/681cbb7d12581e7c/passB: unknown rule ID exclude:7
-- `luna-low.json`: luna-low.json/00cec21e8611d73f/passB: unknown rule ID exclude:4
-- `luna-low.json`: luna-low.json/7f7187f58b68ec99/passB: unknown rule ID exclude:6
-- `luna-low.json`: luna-low.json/d063f3b55e546d06/passA: unknown rule ID exclude:6
-- `luna-low.json`: luna-low.json/d063f3b55e546d06/passB: unknown rule ID exclude:6
-- `luna-low.json`: luna-low.json/60d5c58fe1406239/passA: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/60d5c58fe1406239/passB: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/9c58663a01e53b84/passA: unknown rule ID include:6
-- `luna-low.json`: luna-low.json/9c58663a01e53b84/passB: unknown rule ID include:6
-- `luna-low.json`: luna-low.json/6c7f42e4c5659567/passB: unknown rule ID include:6
-- `luna-low.json`: luna-low.json/cb9ca3a7b085ac48/passA: unknown rule ID include:6
-- `luna-low.json`: luna-low.json/cb9ca3a7b085ac48/passB: unknown rule ID include:6
-- `luna-low.json`: luna-low.json/2dad51d4353fe772/passA: unknown rule ID exclude:5
-- `luna-low.json`: luna-low.json/799de5c76c650257/passB: unknown rule ID exclude:7
-- `terra-high.json`: terra-high.json/681cbb7d12581e7c/passA: unknown rule ID exclude:5
-- `terra-high.json`: terra-high.json/215bb0ed1a199018/passA: unknown rule ID exclude:6
-- `terra-high.json`: terra-high.json/7f7187f58b68ec99/passA: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/ee3c6111b01b7d0e/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/f8660ad3bd8b0062/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/72323594222f6184/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/fbd50f6abb412c5a/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/af6646e7182baa88/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/2af877c49183d750/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/dd4c5284947aee8d/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/fa90ed2c1b676acc/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/24ea25d320f51857/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/af16d71fbd0b8391/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/0ef8b644adac2bfa/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/550a943aad0771bb/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/d6fc38f63dd3f2c9/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/c3c2cd462ba35765/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/561a7623ae518539/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/ec34df4a0dd3ed0b/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/67a547e392a81f86/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/3345b7ff6c849b6c/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/807c1dc13df208ef/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/087ec89322ef0b27/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/681cbb7d12581e7c/passA: unknown rule ID exclude:5
-- `terra-medium.json`: terra-medium.json/681cbb7d12581e7c/passB: unknown rule ID exclude:10
-- `terra-medium.json`: terra-medium.json/00cec21e8611d73f/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/215bb0ed1a199018/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/4c25e3dd3533efb5/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/de39e4a3a97ef3e3/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/7f7187f58b68ec99/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/d063f3b55e546d06/passB: unknown rule ID exclude:10
-- `terra-medium.json`: terra-medium.json/99cd129bf47a8d6e/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/e253e71a95e4e435/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/c32f4f8817e0aba2/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/60d5c58fe1406239/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/0dcd0c896119e8cd/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/c353d0588d5ac9bf/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/784cd2613713f2a3/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/6abf48a1da72eec7/passB: unknown rule ID exclude:9
-- `terra-medium.json`: terra-medium.json/1a5d4800f79d1b63/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/cb53007cf3f0e6fc/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/f2616249b3519460/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/e13396b0609ef6b5/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/76d2ae86da26a622/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/49e8e10ea072b88b/passB: unknown rule ID exclude:7
-- `terra-medium.json`: terra-medium.json/40a00bae923aa426/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/c613af7b9caf3f5c/passB: unknown rule ID exclude:8
-- `terra-medium.json`: terra-medium.json/03ede5cd1267da57/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/2290b413ae110649/passB: unknown rule ID exclude:6
-- `terra-medium.json`: terra-medium.json/2dad51d4353fe772/passB: unknown rule ID exclude:10
-- `terra-medium.json`: terra-medium.json/799de5c76c650257/passB: unknown rule ID exclude:8
-- `luna-high.json`: luna-high.json/7f7187f58b68ec99/passB: unknown rule ID exclude:6
-- `luna-high.json`: luna-high.json/2dad51d4353fe772/passB: unknown rule ID exclude:5
-- `luna-xhigh.json`: luna-xhigh.json/b3c6586c33ce2526/passB: unknown rule ID exclude:4
-- `luna-medium.json`: luna-medium.json/7f7187f58b68ec99/passA: unknown rule ID exclude:6
-- `luna-medium.json`: luna-medium.json/7f7187f58b68ec99/passB: unknown rule ID exclude:6
-- `luna-medium.json`: luna-medium.json/2dad51d4353fe772/passB: unknown rule ID exclude:5
+- `api-raw/luna-max.json`: luna-max.json/af6646e7182baa88/passB: unknown rule ID exclude:5
+- `api-raw/luna-max.json`: luna-max.json/dd4c5284947aee8d/passB: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/793d8fb657ac10a7/passB: unknown rule ID include:6
+- `api-raw/luna-low.json`: luna-low.json/72323594222f6184/passA: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/af6646e7182baa88/passA: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/af6646e7182baa88/passB: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/2af877c49183d750/passA: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/dd4c5284947aee8d/passA: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/dd4c5284947aee8d/passB: unknown rule ID exclude:6
+- `api-raw/luna-low.json`: luna-low.json/f2cc17cafc8dcae7/passB: unknown rule ID include:6
+- `api-raw/luna-low.json`: luna-low.json/c3c2cd462ba35765/passB: unknown rule ID exclude:7
+- `api-raw/luna-low.json`: luna-low.json/087ec89322ef0b27/passA: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/681cbb7d12581e7c/passB: unknown rule ID exclude:7
+- `api-raw/luna-low.json`: luna-low.json/00cec21e8611d73f/passB: unknown rule ID exclude:4
+- `api-raw/luna-low.json`: luna-low.json/7f7187f58b68ec99/passB: unknown rule ID exclude:6
+- `api-raw/luna-low.json`: luna-low.json/d063f3b55e546d06/passA: unknown rule ID exclude:6
+- `api-raw/luna-low.json`: luna-low.json/d063f3b55e546d06/passB: unknown rule ID exclude:6
+- `api-raw/luna-low.json`: luna-low.json/60d5c58fe1406239/passA: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/60d5c58fe1406239/passB: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/9c58663a01e53b84/passA: unknown rule ID include:6
+- `api-raw/luna-low.json`: luna-low.json/9c58663a01e53b84/passB: unknown rule ID include:6
+- `api-raw/luna-low.json`: luna-low.json/6c7f42e4c5659567/passB: unknown rule ID include:6
+- `api-raw/luna-low.json`: luna-low.json/cb9ca3a7b085ac48/passA: unknown rule ID include:6
+- `api-raw/luna-low.json`: luna-low.json/cb9ca3a7b085ac48/passB: unknown rule ID include:6
+- `api-raw/luna-low.json`: luna-low.json/2dad51d4353fe772/passA: unknown rule ID exclude:5
+- `api-raw/luna-low.json`: luna-low.json/799de5c76c650257/passB: unknown rule ID exclude:7
+- `api-raw/terra-high.json`: terra-high.json/681cbb7d12581e7c/passA: unknown rule ID exclude:5
+- `api-raw/terra-high.json`: terra-high.json/215bb0ed1a199018/passA: unknown rule ID exclude:6
+- `api-raw/terra-high.json`: terra-high.json/7f7187f58b68ec99/passA: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/ee3c6111b01b7d0e/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/f8660ad3bd8b0062/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/72323594222f6184/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/fbd50f6abb412c5a/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/af6646e7182baa88/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/2af877c49183d750/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/dd4c5284947aee8d/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/fa90ed2c1b676acc/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/24ea25d320f51857/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/af16d71fbd0b8391/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/0ef8b644adac2bfa/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/550a943aad0771bb/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/d6fc38f63dd3f2c9/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/c3c2cd462ba35765/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/561a7623ae518539/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/ec34df4a0dd3ed0b/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/67a547e392a81f86/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/3345b7ff6c849b6c/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/807c1dc13df208ef/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/087ec89322ef0b27/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/681cbb7d12581e7c/passA: unknown rule ID exclude:5
+- `api-raw/terra-medium.json`: terra-medium.json/681cbb7d12581e7c/passB: unknown rule ID exclude:10
+- `api-raw/terra-medium.json`: terra-medium.json/00cec21e8611d73f/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/215bb0ed1a199018/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/4c25e3dd3533efb5/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/de39e4a3a97ef3e3/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/7f7187f58b68ec99/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/d063f3b55e546d06/passB: unknown rule ID exclude:10
+- `api-raw/terra-medium.json`: terra-medium.json/99cd129bf47a8d6e/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/e253e71a95e4e435/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/c32f4f8817e0aba2/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/60d5c58fe1406239/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/0dcd0c896119e8cd/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/c353d0588d5ac9bf/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/784cd2613713f2a3/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/6abf48a1da72eec7/passB: unknown rule ID exclude:9
+- `api-raw/terra-medium.json`: terra-medium.json/1a5d4800f79d1b63/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/cb53007cf3f0e6fc/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/f2616249b3519460/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/e13396b0609ef6b5/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/76d2ae86da26a622/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/49e8e10ea072b88b/passB: unknown rule ID exclude:7
+- `api-raw/terra-medium.json`: terra-medium.json/40a00bae923aa426/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/c613af7b9caf3f5c/passB: unknown rule ID exclude:8
+- `api-raw/terra-medium.json`: terra-medium.json/03ede5cd1267da57/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/2290b413ae110649/passB: unknown rule ID exclude:6
+- `api-raw/terra-medium.json`: terra-medium.json/2dad51d4353fe772/passB: unknown rule ID exclude:10
+- `api-raw/terra-medium.json`: terra-medium.json/799de5c76c650257/passB: unknown rule ID exclude:8
+- `api-raw/luna-high.json`: luna-high.json/7f7187f58b68ec99/passB: unknown rule ID exclude:6
+- `api-raw/luna-high.json`: luna-high.json/2dad51d4353fe772/passB: unknown rule ID exclude:5
+- `api-raw/luna-xhigh.json`: luna-xhigh.json/b3c6586c33ce2526/passB: unknown rule ID exclude:4
+- `api-raw/luna-medium.json`: luna-medium.json/7f7187f58b68ec99/passA: unknown rule ID exclude:6
+- `api-raw/luna-medium.json`: luna-medium.json/7f7187f58b68ec99/passB: unknown rule ID exclude:6
+- `api-raw/luna-medium.json`: luna-medium.json/2dad51d4353fe772/passB: unknown rule ID exclude:5
 
 
 Abstentions count as errors. Each metric pools the original-order and
@@ -118,13 +118,10 @@ contract anchors. It measures structured-output validity, anchor classification,
 mirror-order stability, API token use, and Batch cost. It remains ineligible for
 release certification because the anchors and their balanced labels are public.
 
-Advance Terra `max`, Terra `xhigh`, and Luna `max` to the
-fresh sealed comparison. Terra `max` is the measured accuracy ceiling; Terra
-`xhigh` is within one absolute percentage point at roughly half the measured
-cost; Luna `max` is the economic challenger but requires a deliberately
-verdict-only contract or a fresh generation that fixes its two invalid rule
-citations. Retain Terra `low` only as the fully contract-valid served floor if
-budget permits.
+Use Terra `max` for the fresh sealed comparison, per the
+explicit production-candidate decision. Terra `xhigh` and Luna `max` remain
+archived sensitivity checks, not co-equal release candidates. Terra `low` is
+not promoted from a public-anchor screen.
 
 Every candidate produced zero abstentions and the remaining verdict errors
 cluster on hard negatives. No direct-LLM configuration is eligible for AUTO

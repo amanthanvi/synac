@@ -25,7 +25,7 @@ export const exampleValidator = v.object({
   text: v.string(),
 });
 
-const generationCountsValidator = v.object({
+export const generationCountsValidator = v.object({
   sources: v.number(),
   tags: v.number(),
   entries: v.number(),
@@ -253,6 +253,7 @@ export default defineSchema({
     pending: v.optional(
       v.object({
         state: v.union(v.literal('STAGING'), v.literal('ABORTING')),
+        startedAt: v.number(),
         syncVersion: v.string(),
         manifestHash: v.string(),
         batchHashes: v.array(v.string()),

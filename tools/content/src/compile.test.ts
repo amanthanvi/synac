@@ -367,6 +367,51 @@ describe('compileContent', () => {
         removals: [],
       }).success,
     ).toBe(false);
+
+    const completeTags: TagsFile = {
+      taxonomyVersion: '2',
+      tags: [
+        {
+          slug: 'malware',
+          name: 'Malware',
+          description: 'Malicious software.',
+          definition: 'Malicious software and its behavior.',
+          inclusionRules: ['Malware is substantive.'],
+          exclusionRules: ['Incidental malware mentions.'],
+          positiveExamples: ['one', 'two', 'three', 'four', 'five'],
+          hardNegatives: ['six', 'seven', 'eight', 'nine', 'ten'],
+          allowedCooccurrences: [],
+          lifecycle: 'PUBLISHED',
+        },
+      ],
+      retiredTags: [],
+    };
+    expect(tagsFileSchema.safeParse(completeTags).success).toBe(true);
+    const thresholds = { malware: 0.98 };
+    expect(
+      tagAssignmentsFileSchema.safeParse({
+        schemaVersion: 1,
+        taxonomyVersion: '2',
+        taxonomyHash: tagTaxonomyHash(completeTags),
+        run: {
+          runId: 'released',
+          corpusHash: 'a'.repeat(64),
+          model: 'test',
+          modelHash: 'a'.repeat(64),
+          promptHash: 'a'.repeat(64),
+          configHash: 'a'.repeat(64),
+          calibrationHash: 'a'.repeat(64),
+          certificationHash: 'a'.repeat(64),
+          thresholds,
+          thresholdsHash: stableJsonHash(thresholds),
+          labelOrigin: 'synthetic_ai_panel',
+          createdAt: '2026-08-10T00:00:00Z',
+          release: true,
+        },
+        assignments: [],
+        removals: [],
+      }).success,
+    ).toBe(true);
   });
 
   it('fails closed when taxonomy v2 publishes tags without an assignment artifact', () => {
@@ -585,6 +630,95 @@ describe('compileContent', () => {
         'override TERM:back-door: removeTags references non-published tag retired-tag',
       );
     }
+  });
+
+  it('validates retired replacements and reviewed removal integrity', () => {
+    const tags: TagsFile = {
+      taxonomyVersion: '2',
+      tags: [
+        { slug: 'malware', name: 'Malware', lifecycle: 'PUBLISHED' },
+        { slug: 'future-tag', name: 'Future', lifecycle: 'CANDIDATE' },
+      ],
+      retiredTags: [
+        {
+          slug: 'old-tag',
+          name: 'Old',
+          replacedBy: 'future-tag',
+          reason: 'Candidate replacement is not serving-ready.',
+        },
+      ],
+    };
+    const thresholds = { malware: 0.98 };
+    const tagAssignments: TagAssignmentsFile = {
+      schemaVersion: 1,
+      taxonomyVersion: '2',
+      taxonomyHash: tagTaxonomyHash(tags),
+      run: {
+        runId: 'removal-test',
+        corpusHash: classificationCorpusHash([], []),
+        model: 'test-model',
+        modelHash: 'a'.repeat(64),
+        promptHash: 'b'.repeat(64),
+        configHash: 'c'.repeat(64),
+        calibrationHash: 'd'.repeat(64),
+        certificationHash: 'e'.repeat(64),
+        thresholds,
+        thresholdsHash: stableJsonHash(thresholds),
+        labelOrigin: 'synthetic_ai_panel',
+        createdAt: '2026-08-10T00:00:00Z',
+        release: true,
+      },
+      assignments: [],
+      removals: [
+        {
+          entryKey: 'TERM:alpha',
+          tagSlug: 'old-tag',
+          previousEntryContentHash: 'f'.repeat(64),
+          reason: 'Reviewed retirement.',
+          runId: 'removal-test',
+        },
+        {
+          entryKey: 'TERM:alpha',
+          tagSlug: 'old-tag',
+          previousEntryContentHash: 'f'.repeat(64),
+          reason: 'Duplicate reviewed retirement.',
+          runId: 'removal-test',
+        },
+        {
+          entryKey: 'TERM:beta',
+          tagSlug: 'unknown-tag',
+          previousEntryContentHash: 'f'.repeat(64),
+          reason: 'Unknown tag.',
+          runId: 'foreign',
+        },
+      ],
+    };
+    const result = compileContent(
+      makeInput({ tags, bundles: [], tagAssignments }),
+      { allowUnreleasedTagging: true },
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors).toContain(
+      'retired tag old-tag: replacement future-tag is not published',
+    );
+    expect(result.errors).toContain(
+      'tag assignments: duplicate removal TERM:alpha -> old-tag',
+    );
+    expect(result.errors).toContain(
+      'tag assignments: removal TERM:beta -> unknown-tag has a foreign run ID',
+    );
+    expect(result.errors).toContain(
+      'tag assignments: removal TERM:beta references unknown tag unknown-tag',
+    );
+    expect(result.errors).toContain(
+      'tag assignments: removals require previousAssignmentsHash',
+    );
+    expect(
+      result.errors.some((error) =>
+        error.includes('removal TERM:alpha references unknown tag old-tag'),
+      ),
+    ).toBe(false);
   });
 
   it('hard-fails stale, duplicate, foreign-run, unknown-entry, and non-published assignments', () => {

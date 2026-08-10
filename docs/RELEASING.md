@@ -15,9 +15,15 @@ unacknowledged batch. To abandon a stale pending generation, run
 and wait until `sync:status` no longer reports `pending` before deploying a
 different generation.
 
-Manual `Deploy` dispatches require `assignments_base_ref`, the Git SHA of the
-previous deployed revision. The history gate fails if that predecessor cannot
-be fetched or if accepted assignments disappear without reviewed removals.
+Deploy is push-only. The assignment-history gate receives the trusted previous
+`main` SHA from GitHub and fails if accepted assignments disappear without
+reviewed removals. Recovery uses a reviewed `main` commit; there is no
+operator-supplied history baseline.
+
+`pnpm gate` runs the compiler first, then assignment history. Outside CI, the
+history check uses the merge base with `origin/main` when available. Set
+`SYNAC_ASSIGNMENTS_BASE_REF=<trusted-base-sha>` only when reproducing a specific
+CI comparison locally.
 
 ## Required configuration
 

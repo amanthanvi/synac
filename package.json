@@ -17,7 +17,7 @@
   },
   "scripts": {
     "dev": "corepack pnpm -r --parallel --if-present dev",
-    "gate": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm content:history && corepack pnpm content:check && corepack pnpm build",
+    "gate": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm content:check && corepack pnpm content:history && corepack pnpm build",
     "content:check": "corepack pnpm --filter @synac/content-tools check",
     "content:history": "corepack pnpm --filter @synac/content-tools check:history",
     "content:compile": "corepack pnpm --filter @synac/content-tools compile",

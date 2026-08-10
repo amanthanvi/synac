@@ -8,13 +8,18 @@ Benchmark hash: `28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465
 | 2 | gpt-5.6-terra | xhigh | PASS | 100.0% | 100.0% | 100.0% | 0.0% | 0.0% | 90.0s |
 | 3 | gpt-5.6-luna | max | PASS | 100.0% | 100.0% | 100.0% | 0.0% | 0.0% | 189.2s |
 | 4 | gpt-5.6-luna | xhigh | PASS | 100.0% | 100.0% | 100.0% | 0.0% | 0.0% | 266.8s |
-| 5 | gpt-5.6-terra | low | PASS | 99.1% | 99.1% | 90.0% | 0.0% | 0.0% | 40.7s |
-| 6 | gpt-5.6-terra | high | PASS | 98.2% | 98.2% | 90.0% | 0.0% | 0.0% | 19.2s |
-| 7 | gpt-5.6-terra | max | PASS | 98.2% | 98.2% | 90.0% | 0.0% | 0.0% | 242.5s |
-| 8 | gpt-5.6-terra | medium | PASS | 97.3% | 97.3% | 90.0% | 0.0% | 0.0% | 85.4s |
-| 9 | gpt-5.6-luna | medium | PASS | 89.1% | 89.1% | 60.0% | 0.0% | 0.0% | 179.9s |
-| 10 | gpt-5.6-luna | low | PASS | 80.9% | 80.8% | 50.0% | 0.0% | 0.0% | 0.0s |
+| 5 | gpt-5.6-terra | high | PASS | 98.2% | 98.2% | 90.0% | 0.0% | 0.0% | 19.2s |
+| 6 | gpt-5.6-terra | max | PASS | 98.2% | 98.2% | 90.0% | 0.0% | 0.0% | 242.5s |
+| 7 | gpt-5.6-luna | medium | PASS | 89.1% | 89.1% | 60.0% | 0.0% | 0.0% | 179.9s |
+| 8 | gpt-5.6-terra | low | FAIL | 99.1% | 99.1% | 90.0% | 0.0% | 0.0% | 40.7s |
+| 9 | gpt-5.6-terra | medium | FAIL | 97.3% | 97.3% | 90.0% | 0.0% | 0.0% | 85.4s |
+| 10 | gpt-5.6-luna | low | FAIL | 80.9% | 80.8% | 50.0% | 0.0% | 0.0% | unavailable |
 
+## Contract validation failures
+
+- `raw/terra-low.json`: terra-low.json: degenerate rule citations use only the first inclusion/exclusion rule
+- `raw/terra-medium.json`: terra-medium.json: degenerate rule citations use only the first inclusion/exclusion rule
+- `raw/luna-low.json`: luna-low.json: degenerate rule citations use only the first inclusion/exclusion rule
 
 
 Abstentions count as errors. Each metric pools the original-order and
@@ -34,17 +39,10 @@ collaboration agents could choose scripts or reuse their owned artifact, so the
 perfect scores, zero flips, and timestamps do not measure independent raw-model
 accuracy, stability, or latency.
 
-Advance only three served configurations to a fresh,
-uniform Batch evaluation after the staged synthetic reference exists:
-
-- Luna `high`: economical family candidate and best valid aggregate screen;
-- Terra `low`: cheapest Terra effort and near-ceiling screen; and
-- Terra `xhigh`: Terra quality ceiling for the hard/disagreement stratum.
-
-Luna `low` and `medium` do not advance. Luna `xhigh`/`max` add no screen
-quality over `high`; Terra `medium`/`high`/`max` add no screen quality over
-the retained Terra pair. This is a Pareto-pruning decision for the next
-experiment, not a production-model choice.
+Do not select a production model from this collaboration
+pilot. Any fresh comparison must reject degenerate rule citations and use the
+sealed synthetic-reference generation. The later raw Batch evidence and the
+explicit production-candidate decision supersede this screen.
 
 This public-anchor pilot is a contract-comprehension screen, not unseen-corpus
 accuracy or release certification. The collaboration runner does not expose billable input, cached-input,
