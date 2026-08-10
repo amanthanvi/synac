@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T08",
+  "tagSlug": "risk-governance",
+  "rows": [
+    {
+      "entryKey": "TERM:accreditation",
+      "polarity": "positive",
+      "ruleId": "T08-I04",
+      "senseKey": "nist-csrc-glossary:accreditation",
+      "quote": "The official management decision given by a senior agency official to authorize operation of an information system and to explicitly accept the risk to agency operations (including mission, functions, image, or reputation), agency assets, or individuals, based on the implementation of an agreed upon set of security controls.",
+      "rationale": "The quoted source makes accreditation authorization, accreditation, or certification governance, directly satisfying T08-I04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-register",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-register",
+      "quote": "A repository of risk information including the data understood about risks over time.",
+      "rationale": "The source defines a repository that records risk information over time, directly satisfying risk identification and management rule T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:assurance-case",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assurance-case",
+      "quote": "A reasoned, auditable artifact created that supports the contention that its top level claim (or set of claims), is satisfied, including systematic argumentation and its underlying evidence and explicit assumptions that support the claim(s).",
+      "rationale": "The quoted source makes assurance case security assessment, audit, or program assurance, directly satisfying T08-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:assurance-evidence",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assurance-evidence",
+      "quote": "The information upon which decisions regarding assurance, trustworthiness, and risk of the solution are substantiated.",
+      "rationale": "The quoted source makes assurance evidence security assessment, audit, or program assurance, directly satisfying T08-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:authorization-package",
+      "polarity": "positive",
+      "ruleId": "T08-I04",
+      "senseKey": "nist-csrc-glossary:authorization-package",
+      "quote": "Documents the results of the security control assessment and provides the authorizing official with essential information needed to make a risk based decision on whether to authorize operation of an information system or a designated set of common controls.",
+      "rationale": "The source makes a security-control assessment package the basis for a risk-based authorization decision, directly satisfying T08-I04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-response",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-response",
+      "quote": "Accepting, avoiding, mitigating, sharing, or transferring risk to organizational operations (mission, functions, image, or reputation), organizational assets, individuals, other organizations, and the Nation.",
+      "rationale": "The source enumerates organizational risk-treatment choices, directly satisfying risk response and treatment rule T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:type-certification",
+      "polarity": "positive",
+      "ruleId": "T08-I04",
+      "senseKey": "nist-csrc-glossary:type-certification",
+      "quote": "The certification acceptance of replica information systems based on the comprehensive evaluation of the technical and non technical security features of an information system and other safeguards, made as part of and in support of the formal approval process, to establish the extent to which a particular design and implementation meet a specified set of security requirements.",
+      "rationale": "The quoted source makes type certification authorization, accreditation, or certification governance, directly satisfying T08-I04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:chinese-wall-policy",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A security policy to prevent conflict of interest caused by an entity (e.g., a consultant) interacting with competing firms. (See: Brewer Nash model.) Tutorial: All information is categorized into mutually exclusive conflict of interest classes I(1), I(2), ..., I(M), and each firm F(1), F(2), ..., F(N) belongs to exactly one class. The policy states that if",
+      "rationale": "The quoted source defines Chinese wall policy as organizational security policy or compliance direction, directly satisfying T08-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:security-inspection",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:security-inspection",
+      "quote": "Examination of an information system to determine compliance with security policy, procedures, and practices.",
+      "rationale": "The source defines examination for compliance with security policy and practice, directly satisfying security-audit and assurance rule T08-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:enterprise-risk",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:enterprise-risk",
+      "quote": "The effect of uncertainty on enterprise mission and objectives.",
+      "rationale": "The quoted source makes Enterprise Risk risk identification, assessment, appetite, aggregation, or treatment, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:enterprise-risk-management",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "niccs-glossary:enterprise-risk-management",
+      "quote": "A comprehensive approach to risk management that engages people, processes, and systems across an organization to improve the quality of decision making for managing risks that may hinder an organization’s ability to achieve its objectives. Involves identifying mission dependencies on enterprise capabilities, identifying and prioritizing risks due to",
+      "rationale": "The quoted source makes enterprise risk management risk identification, assessment, appetite, aggregation, or treatment, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-executive-function",
+      "polarity": "positive",
+      "ruleId": "T08-I02",
+      "senseKey": "nist-csrc-glossary:risk-executive",
+      "quote": "security risk related considerations for individual information systems, to include the authorization decisions for those systems, are viewed from an organization wide perspective",
+      "rationale": "The source places information-system security risk and authorization decisions in an organization-wide governance perspective, directly satisfying T08-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:ongoing-assessment-and-authorization",
+      "polarity": "positive",
+      "ruleId": "T08-I04",
+      "senseKey": "nist-csrc-glossary:ongoing-assessment-and-authorization",
+      "quote": "Maintaining ongoing awareness of information security, vulnerabilities, and threats to support organizational risk management decisions. Note: The terms “continuous” and “ongoing” in this context mean that security controls and organizational risks are assessed and analyzed at a frequency sufficient to support risk based security decisions to adequately protect organization information.",
+      "rationale": "The source defines ongoing security-control assessment supporting risk-based authorization decisions, directly satisfying authorization governance rule T08-I04.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-framing",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-framing",
+      "quote": "The set of assumptions, constraints, risk tolerances, and priorities/trade offs that shape an organization’s approach for managing risk",
+      "rationale": "The source defines organizational assumptions, tolerances, and priorities that frame risk management, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:inherent-risk",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:inherent-risk",
+      "quote": "The risk to an entity in the absence of any direct or focused actions by management to alter its severity.",
+      "rationale": "The quoted source makes Inherent Risk risk identification, assessment, appetite, aggregation, or treatment, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-aggregation",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-aggregation",
+      "quote": "The combination of several risks into one risk to develop a more complete understanding of the overall risk.",
+      "rationale": "The quoted source makes risk aggregation risk identification, assessment, appetite, aggregation, or treatment, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-elevation",
+      "polarity": "positive",
+      "ruleId": "T08-I02",
+      "senseKey": "nist-csrc-glossary:risk-elevation",
+      "quote": "The process of transferring the decisions on risk response to a more senior stakeholder when the factors involved (e.g., a regulatory compliance risk) are particularly sensitive or critical.",
+      "rationale": "The source defines escalation of sensitive risk-response decisions to senior governance, directly satisfying cybersecurity governance rule T08-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-appetite",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-appetite",
+      "quote": "The types and amount of risk, on a broad level, [an organization] is willing to accept in its pursuit of value.",
+      "rationale": "The quoted source makes Risk Appetite risk identification, assessment, appetite, aggregation, or treatment, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-assessment-methodology",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-assessment-methodology",
+      "quote": "A risk assessment process, together with a risk model, assessment approach, and analysis approach.",
+      "rationale": "The quoted source makes Risk Assessment Methodology risk identification, assessment, appetite, aggregation, or treatment, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:risk-identification",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-identification",
+      "quote": "Process of finding, recognizing, and describing risks.",
+      "rationale": "The quoted source makes risk identification risk identification, assessment, appetite, aggregation, or treatment, directly satisfying T08-I01.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:organizational-information-security-continuous-monitoring",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:organizational-information-security-continuous-monitoring",
+      "quote": "Ongoing monitoring sufficient to ensure and assure effectiveness of security controls related to systems, networks, and cyberspace, by assessing security control implementation and organizational security status in accordance with organizational risk tolerance – and within a reporting structure designed to make real time, data driven risk management decisions.",
+      "rationale": "The source makes assurance of security-control effectiveness and organizational status the basis for risk decisions, directly satisfying program assurance rule T08-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:security-control-effectiveness",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:security-control-effectiveness",
+      "quote": "The measure of correctness of implementation (i.e., how consistently the control implementation complies with the security plan) and how well the security plan meets organizational needs in accordance with current risk tolerance.",
+      "rationale": "The quoted source makes Security Control Effectiveness security assessment, audit, or program assurance, directly satisfying T08-I05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:security-policy",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "niccs-glossary:security-policy",
+      "quote": "A rule or set of rules that govern the acceptable use of an organization's information and services to a level of acceptable risk and the means for protecting the organization's information assets. A rule or set of rules applied to an information system to provide security services.",
+      "rationale": "The quoted source defines security policy as organizational security policy or compliance direction, directly satisfying T08-I03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:security-program-management",
+      "polarity": "positive",
+      "ruleId": "T08-I02",
+      "senseKey": "niccs-glossary:security-program-management",
+      "quote": "In the NICE Framework, cybersecurity work where a person: Manages information security (e.g., information security) implications within the organization, specific program, or other area of responsibility, to include strategic, personnel, infrastructure, policy enforcement, emergency planning, security awareness, and other resources (e.g., the role of a",
+      "rationale": "The quoted source makes security program management cybersecurity governance or security-program management, directly satisfying T08-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:security-program-plan",
+      "polarity": "positive",
+      "ruleId": "T08-I02",
+      "senseKey": "nist-csrc-glossary:security-program-plan",
+      "quote": "Formal document that provides an overview of the security requirements for an organization wide information security program and describes the program management security controls and common security controls in place or planned for meeting those requirements.",
+      "rationale": "The quoted source makes security program plan cybersecurity governance or security-program management, directly satisfying T08-I02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:audit-log",
+      "polarity": "negative",
+      "ruleId": "T08-E02",
+      "senseKey": "nist-csrc-glossary:audit-log",
+      "quote": "A chronological record of system activities. Includes records of system accesses and operations performed in a given period.",
+      "rationale": "The quoted source defines audit log as an operational audit-log artifact or operation, directly satisfying T08-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:collecting-and-communicating-audit-trails",
+      "polarity": "negative",
+      "ruleId": "T08-E02",
+      "senseKey": "nist-csrc-glossary:collecting-and-communicating-audit-trails",
+      "quote": "To define and identify security relevant events and the data to be collected and communicated as determined by policy, regulation, or risk analysis to support identification of those security relevant events.",
+      "rationale": "The quoted source defines Collecting and Communicating Audit Trails as an operational audit-log artifact or operation, directly satisfying T08-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:disable-or-modify-linux-audit-system-log",
+      "polarity": "negative",
+      "ruleId": "T08-E02",
+      "senseKey": "mitre-attack-cti:T1685.004",
+      "quote": "Adversaries may disable or modify the Linux Audit system to hide malicious activity and avoid detection. Linux admins use the Linux Audit system to track security relevant information on a system. The Linux Audit system operates at the kernel level and maintains event logs on application and system activity such as process, network, file, and login events",
+      "rationale": "The quoted source defines Disable or Modify Linux Audit System Log as an operational audit-log artifact or operation, directly satisfying T08-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:log-preservation",
+      "polarity": "negative",
+      "ruleId": "T08-E02",
+      "senseKey": "nist-csrc-glossary:log-preservation",
+      "quote": "Keeping logs that normally would be discarded, because they contain records of activity of particular interest.",
+      "rationale": "The quoted source defines Log Preservation as an operational audit-log artifact or operation, directly satisfying T08-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:log-reporting",
+      "polarity": "negative",
+      "ruleId": "T08-E02",
+      "senseKey": "nist-csrc-glossary:log-reporting",
+      "quote": "Displaying the results of log analysis.",
+      "rationale": "The quoted source defines Log Reporting as an operational audit-log artifact or operation, directly satisfying T08-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:log-retention",
+      "polarity": "negative",
+      "ruleId": "T08-E02",
+      "senseKey": "nist-csrc-glossary:log-retention",
+      "quote": "Archiving logs on a regular basis as part of standard operational activities.",
+      "rationale": "The quoted source defines Log Retention as an operational audit-log artifact or operation, directly satisfying T08-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:syslog",
+      "polarity": "negative",
+      "ruleId": "T08-E02",
+      "senseKey": "nist-csrc-glossary:syslog",
+      "quote": "A protocol that specifies a general log entry format and a log entry transport mechanism.",
+      "rationale": "The quoted source defines Syslog as an operational audit-log artifact or operation, directly satisfying T08-E02.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "ACRONYM:kmps",
+      "polarity": "negative",
+      "ruleId": "T08-E03",
+      "senseKey": "nist-csrc-glossary:kmps",
+      "quote": "A document or set of documentation that describes (in detail) the organizational structure, responsible roles, and organization rules for the functions identified in the associated cryptographic Key Management Policy (see [IETF RFC 3647]).",
+      "rationale": "The quoted source makes KMPS PKI or cryptographic key-management policy rather than cyber governance, directly satisfying T08-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:ckms-designer",
+      "polarity": "negative",
+      "ruleId": "T08-E03",
+      "senseKey": "nist-csrc-glossary:ckms-designer",
+      "quote": "The entity that selects the capabilities to be included in a CKMS, documents the design in accordance with the requirements specified in [NIST SP 800 130], and specifies a CKMS Security Policy that defines the rules that are to be enforced in the CKMS.",
+      "rationale": "The quoted source makes CKMS designer PKI or cryptographic key-management policy rather than cyber governance, directly satisfying T08-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:fckms-security-policy",
+      "polarity": "negative",
+      "ruleId": "T08-E03",
+      "senseKey": "nist-csrc-glossary:fckms-security-policy",
+      "quote": "A security policy specific to an FCKMS.",
+      "rationale": "The quoted source makes FCKMS Security Policy PKI or cryptographic key-management policy rather than cyber governance, directly satisfying T08-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:fckms-service-provider-fckms-service-providing-organization",
+      "polarity": "negative",
+      "ruleId": "T08-E03",
+      "senseKey": "nist-csrc-glossary:fckms-service-provider",
+      "quote": "An entity that provides FCKMS key management services to one or more FCKMS service using organizations in accordance with their respective FCKMS Security Policies.",
+      "rationale": "The quoted source makes FCKMS service provider (FCKMS service-providing organization) PKI or cryptographic key-management policy rather than cyber governance, directly satisfying T08-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:policy-authority",
+      "polarity": "negative",
+      "ruleId": "T08-E03",
+      "senseKey": "rfc4949:d-pki",
+      "quote": "Synonym for \"policy management authority\". [PAG] Deprecated Term: IDOCs SHOULD NOT use this term as synonym for \"policy management authority\". The term is unnecessarily vague and thus may be confused with other PKI entities, such as CAs and RAs, that enforce of apply various aspects of PKI policy.",
+      "rationale": "The quoted source makes policy authority PKI or cryptographic key-management policy rather than cyber governance, directly satisfying T08-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:policy-certification-authority-internet-pca",
+      "polarity": "negative",
+      "ruleId": "T08-E03",
+      "senseKey": "rfc4949:i",
+      "quote": "An X.509 compliant CA at the second level of the Internet certification hierarchy, under the IPRA. Each PCA operates under its published security policy (see: certificate policy, CPS) and within constraints established by the IPRA for all PCAs. [R1422]. (See: policy creation authority.)",
+      "rationale": "The quoted source makes policy certification authority (Internet PCA) PKI or cryptographic key-management policy rather than cyber governance, directly satisfying T08-E03.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:chief-privacy-officer",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:chief-privacy-officer",
+      "quote": "See Senior Agency Official for Privacy.",
+      "rationale": "The quoted source makes Chief Privacy Officer a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:checklist-developer",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:checklist-developer",
+      "quote": "An individual or organization that develops and owns a checklist and submits it to the National Checklist Program.",
+      "rationale": "The quoted source makes Checklist Developer a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:cybersecurity-and-or-privacy-learning-program-manager",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:cplp-manager",
+      "quote": "The person or people in the organization responsible for the development, procurement, integration, modification, operation, maintenance, or final disposition of the elements of the cybersecurity and/or privacy (CPLP) learning programs. In some organizations, there will be multiple iterations of learning programs in which cybersecurity and privacy are",
+      "rationale": "The quoted source makes Cybersecurity and/or Privacy Learning Program manager a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:device-registration-manager",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:device-registration-manager",
+      "quote": "The management role that is responsible for performing activities related to registering users that are devices.",
+      "rationale": "The quoted source makes device registration manager a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:forensic-specialist",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:forensic-specialist",
+      "quote": "Locates, identifies, collects, analyzes, and examines data, while preserving the integrity and maintaining a strict chain of custody of information discovered.",
+      "rationale": "The quoted source makes Forensic Specialist a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:privacy-architect",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:privacy-architect",
+      "quote": "Individual, group, or organization responsible for ensuring that the system privacy requirements necessary to protect individuals’ privacy are adequately addressed in all aspects of enterprise architecture including reference models, segment and solution architectures, and information systems processing PII.",
+      "rationale": "The quoted source makes privacy architect a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:system-administrator-sa",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:system-administrator",
+      "quote": "Individual responsible for the installation and maintenance of an information system, providing effective information system utilization, adequate security parameters, and sound implementation of established Information Assurance policy and procedures.",
+      "rationale": "The quoted source makes system administrator (SA) a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:system-developer",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:system-developer",
+      "quote": "An individual group, or organization that develops hardware/software for distribution or sale.",
+      "rationale": "The quoted source makes System Developer a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:system-owner-or-program-manager",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:system-owner-or-program-manager",
+      "quote": "An organizational official responsible for the procurement, development, integration, modification, operation, maintenance, and disposal of a system.",
+      "rationale": "The quoted source makes system owner (or program manager) a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:system-privacy-officer",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:system-privacy-officer",
+      "quote": "Individual with assigned responsibility for maintaining the appropriate operational privacy posture for a system or program.",
+      "rationale": "The quoted source makes system privacy officer a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:systems-privacy-engineer",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:systems-privacy-engineer",
+      "quote": "Individual assigned responsibility for conducting systems privacy engineering activities.",
+      "rationale": "The quoted source makes systems privacy engineer a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    },
+    {
+      "entryKey": "TERM:ckms-developer",
+      "polarity": "negative",
+      "ruleId": "T08-E05",
+      "senseKey": "nist-csrc-glossary:ckms-developer",
+      "quote": "The entity that assembles a CKMS as designed by the CKMS designer.",
+      "rationale": "The quoted source makes CKMS developer a role or job title rather than a governance concept, directly satisfying T08-E05.",
+      "primaryReviewer": "primary-lane-b",
+      "secondaryReviewer": "secondary-lane-a"
+    }
+  ]
+}

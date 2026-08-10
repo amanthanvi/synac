@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T03",
+  "tagSlug": "network-security",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:blacker",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:o",
+      "quote": "An end to end encryption system for computer data networks that was developed by the U.S. DoD in the 1980s to provide host to host data confidentiality service for datagrams at OSIRM Layer 3. [Weis] (Compare: CANEWARE, IPsec.) Tutorial: Each user host connects to its own bump in the wire encryption device called a BLACKER Front End (BFE, TSEC/KI 111),",
+      "rationale": "The quoted source definition makes BLACKER directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ipsec",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "niccs-glossary:ipsec",
+      "quote": "a set of communication rules or protocols for setting up secure connections over a network Internet Protocol (IP) is the common standard that determines how data travels over the internet. IPSec adds encryption and authentication to make the protocol more secure.",
+      "rationale": "The quoted source definition makes IPSec directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:nids",
+      "polarity": "positive",
+      "ruleId": "T03-I04",
+      "senseKey": "nist-csrc-glossary:nids",
+      "quote": "Software that performs packet sniffing and network traffic analysis to identify suspicious activity and record relevant information.",
+      "rationale": "The quoted source definition makes NIDS directly about network-specific monitoring and intrusion detection, satisfying T03-I04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:active-scanning",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1595",
+      "quote": "Adversaries may execute active reconnaissance scans to gather information that can be used during targeting. Active scans are those where the adversary probes victim infrastructure via network traffic, as opposed to other forms of reconnaissance that do not involve direct interaction. Adversaries may perform different forms of active scanning depending on",
+      "rationale": "The quoted source definition makes Active Scanning directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:adversary-in-the-middle",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1557",
+      "quote": "Adversaries may attempt to position themselves between two or more networked devices using an adversary in the middle (AiTM) technique to support follow on behaviors such as Network Sniffing, Transmitted Data Manipulation, or replay attacks (Exploitation for Credential Access). By abusing features of common networking protocols that can determine the flow",
+      "rationale": "The quoted source definition makes Adversary-in-the-Middle directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:antispoofing",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "niccs-glossary:antispoofing",
+      "quote": "Antispoofing refers to techniques, technologies, and policies designed to detect and prevent attackers from masquerading as trusted entities to steal data, bypass security, or gain unauthorized access. In a spoofing attack, the source address of an incoming packet is changed to make it appear as if it is coming from a known, trusted source. Spoofed packets",
+      "rationale": "The quoted source definition makes Antispoofing directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:arp-cache-poisoning",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1557.002",
+      "quote": "Adversaries may poison Address Resolution Protocol (ARP) caches to position themselves between the communication of two or more networked devices. This activity may be used to enable follow on behaviors such as Network Sniffing or Transmitted Data Manipulation. The ARP protocol is used to resolve IPv4 addresses to link layer addresses, such as a media",
+      "rationale": "The quoted source definition makes ARP Cache Poisoning directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:bump-in-the-wire",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "An implementation approach that places a network security mechanism outside of the system that is to be protected. (Compare: bump in the stack.) Example: IPsec can be implemented outboard, in a physically separate device, so that the system that receives the IPsec protection does not need to be modified at all [R4301]. Military grade link encryption has",
+      "rationale": "The quoted source definition makes bump-in-the-wire directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:high-assurance-internet-protocol-encryptor-haipe",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:high-assurance-internet-protocol-encryptor",
+      "quote": "Device that provides networking, traffic protection, and management features that provide CS services in an IPv4/IPv6 network.",
+      "rationale": "The quoted source definition makes high assurance internet protocol encryptor (HAIPE) directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:content-injection",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1659",
+      "quote": "Adversaries may gain access and continuously communicate with victims by injecting malicious content into systems through online network traffic. Rather than luring victims to malicious payloads hosted on a compromised website (i.e., Drive by Target followed by Drive by Compromise), adversaries may initially access victims through compromised data transfer",
+      "rationale": "The quoted source definition makes Content Injection directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:windows-host-firewall",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "mitre-attack-cti:T1686.003",
+      "quote": "Adversaries may disable or modify the Windows host firewall to bypass controls limiting network usage.",
+      "rationale": "The quoted source definition makes Windows Host Firewall directly about firewalls and packet filtering, satisfying T03-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:encrypted-channel",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "mitre-attack-cti:T1573",
+      "quote": "Adversaries may employ an encryption algorithm to conceal command and control traffic rather than relying on any inherent protections provided by a communication protocol. Despite the use of a secure algorithm, these implementations may be vulnerable to reverse engineering if secret keys are encoded and/or generated within malware samples/configuration",
+      "rationale": "The quoted source definition makes Encrypted Channel directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:host-based-firewall",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:host-based-firewall",
+      "quote": "A software based firewall installed on a server to monitor and control its incoming and outgoing network traffic.",
+      "rationale": "The quoted source definition makes Host-Based Firewall directly about firewalls and packet filtering, satisfying T03-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:ip-security",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:ip-security",
+      "quote": "Provide(s) interoperable, high quality, cryptographically based security for IPv4 and IPv6. The set of security services offered includes access control, connectionless integrity, data origin authentication, detection and rejection of replays (a form of partial sequence integrity), confidentiality (via encryption), and limited traffic flow confidentiality.",
+      "rationale": "The quoted source definition makes IP Security directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:name-resolution-poisoning-and-smb-relay",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1557.001",
+      "quote": "By responding to LLMNR/NBT NS/mDNS network traffic, adversaries may spoof an authoritative source for name resolution to force communication with an adversary controlled system.(Citation: BlackCat ransomware) This activity may be used to collect or relay authentication materials. Link Local Multicast Name Resolution (LLMNR) and NetBIOS Name Service (NBT NS)",
+      "rationale": "The quoted source definition makes Name Resolution Poisoning and SMB Relay directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:network-boundary-bridging",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "mitre-attack-cti:T1599",
+      "quote": "Adversaries may bridge network boundaries by compromising perimeter network devices or internal devices responsible for network segmentation. Breaching these devices may enable an adversary to bypass restrictions on traffic routing that otherwise separate trusted and untrusted networks. Devices such as routers and firewalls can be used to create boundaries",
+      "rationale": "The quoted source definition makes Network Boundary Bridging directly about network segmentation, satisfying T03-I02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:network-device-firewall",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "mitre-attack-cti:T1686.002",
+      "quote": "Adversaries may disable network device based firewall mechanisms entirely or add, delete, or modify particular rules in order to bypass controls limiting network usage. Adversaries may obtain access to devices such as routers, switches, or other perimeter/network devices and change access control lists (ACLs), security zones, or policy rules to permit",
+      "rationale": "The quoted source definition makes Network Device Firewall directly about firewalls and packet filtering, satisfying T03-I01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:onion-routing",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A system that can be used to provide both (a) data confidentiality and (b) traffic flow confidentiality for network packets, and also provide (c) anonymity for the source of the packets. Tutorial: The source, instead of sending a packet directly to the intended destination, sends it to an \"onion routing proxy\" that builds an anonymous connection through",
+      "rationale": "The quoted source definition makes onion routing directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:packet-monkey",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:d-slang",
+      "quote": "Someone who floods a system with packets, creating a denial of service condition for the system's users. (See: cracker.) Deprecated Term: It is likely that other cultures use different metaphors for this concept. Therefore, to avoid international misunderstanding, IDOCs SHOULD NOT use this term. (See: Deprecated Usage under \"Green Book\".)",
+      "rationale": "The quoted source definition makes packet monkey directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:ping-of-death",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:d",
+      "quote": "A denial of service attack that sends an improperly large ICMP echo request packet (a \"ping\") with the intent of causing the destination system to fail. (See: ping sweep, teardrop.) Deprecated Term: IDOCs SHOULD NOT use this term; instead, use \"ping packet overflow attack\" or some other term that is specific with regard to the attack mechanism. Tutorial:",
+      "rationale": "The quoted source definition makes ping of death directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:portal-vpn",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:portal-vpn",
+      "quote": "A single standard SSL connection to a Web site (the portal) that allows a remote user to securely access multiple network services via a standard Web browser.",
+      "rationale": "The quoted source definition makes Portal VPN directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:secure-communication-protocol",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:secure-communication-protocol",
+      "quote": "A communication protocol that provides the appropriate confidentiality, authentication, and content integrity protection.",
+      "rationale": "The quoted source definition makes secure communication protocol directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:smurf-attack",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:d-slang",
+      "quote": "A denial of service attack that uses IP broadcast addressing to send ICMP ping packets with the intent of flooding a system. (See: fraggle attack, ICMP flood.) Deprecated Term: It is likely that other cultures use different metaphors for this concept. Therefore, to avoid international misunderstanding, IDOCs SHOULD NOT use this term. Derivation: The Smurfs",
+      "rationale": "The quoted source definition makes smurf attack directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:sniffing",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:d-slang",
+      "quote": "Synonym for \"passive wiretapping\"; most often refers to capturing and examining the data packets carried on a LAN. (See: password sniffing.) Deprecated Term: IDOCs SHOULD NOT use this term; it unnecessarily duplicates the meaning of a term that is better established. (See: Deprecated Usage under \"Green Book\".",
+      "rationale": "The quoted source definition makes sniffing directly about attacks or weaknesses whose network mechanism is substantive, satisfying T03-I05.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:split-tunneling",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:split-tunneling",
+      "quote": "A method that routes organization specific traffic through the SSL VPN tunnel, but routes other traffic through the remote user's default gateway.",
+      "rationale": "The quoted source definition makes split tunneling directly about secure transport and communications, satisfying T03-I03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:bgp",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:bgp",
+      "quote": "The Border Gateway Protocol is a protocol designed by the Internet Engineering Task Force (IETF) to exchange routing information between autonomous systems.",
+      "rationale": "The quoted source definition makes BGP a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:ip",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:ip",
+      "quote": "The Internet Protocol, as defined in IETF RFC 6864, which is the principal communications protocol in the IETF Internet protocol suite for specifying system address information when relaying datagrams across network boundaries.",
+      "rationale": "The quoted source definition makes IP a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:tcp",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:tcp",
+      "quote": "TCP is one of the main protocols in TCP/IP networks. Whereas the IP protocol deals only with packets, TCP enables two hosts to establish a connection and exchange streams of data. TCP guarantees the delivery of data and also guarantees that packets will be delivered in the same order in which they were sent.",
+      "rationale": "The quoted source definition makes TCP a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:tcp-ip",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "Synonym for \"Internet Protocol Suite\".",
+      "rationale": "The quoted source definition makes TCP/IP a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "ACRONYM:udp",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "See: User Datagram Protocol.",
+      "rationale": "The quoted source definition makes UDP a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:address-resolution-protocol-arp",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:address-resolution-protocol",
+      "quote": "A protocol used to obtain a node’s physical address. A client station broadcasts an ARP request onto the network with the Internet Protocol (IP) address of the target node with which it wishes to communicate, and with that address the node responds by sending back its physical address so that packets can be transmitted to it.",
+      "rationale": "The quoted source definition makes Address Resolution Protocol (ARP) a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:application-protocol-data-unit",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:application-protocol-data-unit",
+      "quote": "A part of the application layer in the Open Systems Interconnection Reference model that is used for communication between two separate device's applications. In the context of smart cards, an APDU is the communication unit between a smart card reader and a smart card. The structure of the APDU is defined by [ISO 7816 4].",
+      "rationale": "The quoted source definition makes Application Protocol Data Unit a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:border-gateway-protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:border-gateway-protocol",
+      "quote": "The Border Gateway Protocol is a protocol designed by the Internet Engineering Task Force (IETF) to exchange routing information between autonomous systems.",
+      "rationale": "The quoted source definition makes Border Gateway Protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:directory-access-protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:n",
+      "quote": "An OSI protocol [X519] for communication between a Directory User Agent (a type of X.500 client) and a Directory System Agent (a type of X.500 server). (See: LDAP.)",
+      "rationale": "The quoted source definition makes Directory Access Protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:hypertext-transfer-protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "A TCP based, Application Layer, client server, Internet protocol (RFC 2616) that is used to carry data requests and responses in the World Wide Web. (See: hypertext.)",
+      "rationale": "The quoted source definition makes Hypertext Transfer Protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:internet-message-access-protocol-imap",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:internet-message-access-protocol",
+      "quote": "A mailbox access protocol defined by IETF RFC 3501. IMAP is one of the most commonly used mailbox access protocols. IMAP offers a much wider command set than POP.",
+      "rationale": "The quoted source definition makes Internet Message Access Protocol (IMAP) a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:internet-protocol-ip-addresses",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:internet-protocol-ip-addresses",
+      "quote": "Standard protocol for transmission of data from source to destinations in packet switched communications networks and interconnected systems of such networks.",
+      "rationale": "The quoted source definition makes Internet Protocol (IP) addresses a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:layer-2-tunneling-protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:n",
+      "quote": "An Internet client server protocol that combines aspects of PPTP and L2F and supports tunneling of PPP over an IP network or over frame relay or other switched network. (See: VPN.) Tutorial: PPP can in turn encapsulate any OSIRM Layer 3 protocol. Thus, L2TP does not specify security services; it depends on protocols layered above and below it to provide any",
+      "rationale": "The quoted source definition makes Layer 2 Tunneling Protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:lightweight-directory-access-protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet client server protocol (RFC 3377) that supports basic use of the X.500 Directory (or other directory servers) without incurring the resource requirements of the full Directory Access Protocol (DAP). Tutorial: Designed for simple management and browser applications that provide simple read/write interactive directory service. Supports both simple",
+      "rationale": "The quoted source definition makes Lightweight Directory Access Protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:point-to-point-protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet Standard protocol (RFC 1661) for encapsulation and full duplex transportation of protocol data packets in OSIRM Layer 3 over an OSIRM Layer 2 link between two peers, and for multiplexing different Layer 3 protocols over the same link. Includes optional negotiation to select and use a peer entity authentication protocol to authenticate the peers",
+      "rationale": "The quoted source definition makes Point-to-Point Protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:point-to-point-tunneling-protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet client server protocol (RFC 2637) (originally developed by Ascend and Microsoft) that enables a dial up user to create a virtual extension of the dial up link across a network by tunneling PPP over IP. (See: L2TP.) Tutorial: PPP can encapsulate any IPS Network Interface Layer protocol or OSIRM Layer 3 protocol. Therefore, PPTP does not specify",
+      "rationale": "The quoted source definition makes Point-to-Point Tunneling Protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:protocol",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:protocol",
+      "quote": "A set of rules (i.e., formats and procedures) to implement and control some type of association (e.g., communication) between systems.",
+      "rationale": "The quoted source definition makes protocol a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:protocol-suite",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "A complementary collection of communication protocols used in a computer network. (See: IPS, OSI.)",
+      "rationale": "The quoted source definition makes protocol suite a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:hypertext-transfer-protocol-http",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "nist-csrc-glossary:hypertext-transfer-protocol",
+      "quote": "A standard method for communication between clients and Web servers.",
+      "rationale": "The quoted source definition makes Hypertext Transfer Protocol (HTTP) a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:internet-message-access-protocol-version-4",
+      "polarity": "negative",
+      "ruleId": "T03-E01",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet protocol (RFC 2060) by which a client workstation can dynamically access a mailbox on a server host to manipulate and retrieve mail messages that the server has received and is holding for the client. (See: POP3.) Tutorial: IMAP4 has mechanisms for optionally authenticating a client to a server and providing other security services. (See: IMAP4",
+      "rationale": "The quoted source definition makes Internet Message Access Protocol, version 4 a direct example of generic networking, routing, addressing, sockets, and protocol definitions, so network-security does not apply under T03-E01.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:community-of-interest-coi",
+      "polarity": "negative",
+      "ruleId": "T03-E02",
+      "senseKey": "nist-csrc-glossary:community-of-interest",
+      "quote": "A collaborative group of users (working at the appropriate security level or levels) who exchange information in pursuit of their shared goals, interests, missions, or business processes, and must have a shared vocabulary for the information exchanged. The group exchanges information within and between systems.",
+      "rationale": "The quoted source definition makes community of interest (COI) a direct example of information-sharing conventions, so network-security does not apply under T03-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:enterprise-cross-domain-services-ecds-provider",
+      "polarity": "negative",
+      "ruleId": "T03-E02",
+      "senseKey": "nist-csrc-glossary:enterprise-cross-domain-services-provider",
+      "quote": "An organization that establishes, manages and maintains the overall infrastructure and security posture offering automated capabilities to users and applications within an enterprise environment for information sharing across and among security domains.",
+      "rationale": "The quoted source definition makes enterprise cross domain services (ECDS) provider a direct example of information-sharing conventions, so network-security does not apply under T03-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:information-domain",
+      "polarity": "negative",
+      "ruleId": "T03-E02",
+      "senseKey": "nist-csrc-glossary:information-domain",
+      "quote": "A three part concept for information sharing, independent of, and across information systems and security domains that 1) identifies information sharing participants as individual members, 2) contains shared information objects, and 3) provides a security policy that identifies the roles and privileges of the members and the protections required for the",
+      "rationale": "The quoted source definition makes information domain a direct example of information-sharing conventions, so network-security does not apply under T03-E02.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:fingerprint-segmentation",
+      "polarity": "negative",
+      "ruleId": "T03-E03",
+      "senseKey": "nist-csrc-glossary:fingerprint-segmentation",
+      "quote": "Segmentation is the automated (and often manually reviewed) separation of an image of N fingers into N images of individual fingers. N is usually four, for the index through little finger, and two for a capture of two thumbs.",
+      "rationale": "The quoted source definition makes Fingerprint segmentation a direct example of biometric segmentation, so network-security does not apply under T03-E03.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    },
+    {
+      "entryKey": "TERM:network-traffic",
+      "polarity": "negative",
+      "ruleId": "T03-E04",
+      "senseKey": "nist-csrc-glossary:network-traffic",
+      "quote": "Computer network communications that are carried over wired or wireless networks between hosts.",
+      "rationale": "The quoted source definition makes Network Traffic a direct example of non-security traffic concepts, so network-security does not apply under T03-E04.",
+      "primaryReviewer": "primary-lane-a",
+      "secondaryReviewer": "secondary-lane-c"
+    }
+  ]
+}

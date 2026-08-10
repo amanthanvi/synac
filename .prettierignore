@@ -6,3 +6,5 @@ build
 pnpm-lock.yaml
 apps/web/next-env.d.ts
 packages/db/src/generated
+experiments/tagging/production-backfill/entry-index.json
+experiments/tagging/production-backfill/manifest.json

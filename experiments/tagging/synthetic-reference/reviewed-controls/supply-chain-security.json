@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T10",
+  "tagSlug": "supply-chain-security",
+  "rows": [
+    {
+      "entryKey": "TERM:ict-supply-chain-risk-management",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:ict-supply-chain-risk-management",
+      "quote": "The process of identifying, assessing, and mitigating the risks associated with the global and distributed nature of ICT product and service supply chains.",
+      "rationale": "The definition expressly describes identification, assessment, and mitigation of ICT supply-chain risks.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:supply-chain-compromise",
+      "polarity": "positive",
+      "ruleId": "T10-I05",
+      "senseKey": "mitre-attack-cti:T1195",
+      "quote": "Adversaries may manipulate products or product delivery mechanisms prior to receipt by a final consumer for the purpose of data or system compromise.",
+      "rationale": "The quote directly defines compromise of products or their delivery mechanisms before receipt.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:supply-chain-risk-information",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:supply-chain-risk-information",
+      "quote": "(10) Security, authenticity, and integrity of covered articles and their supply and compilation chain;",
+      "rationale": "The cited source explicitly concerns security and integrity evidence for articles and their supply chain.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:poisoned-pipeline-execution",
+      "polarity": "positive",
+      "ruleId": "T10-I05",
+      "senseKey": "mitre-attack-cti:T1677",
+      "quote": "By poisoning CI/CD pipelines, threat actors may be able to gain access to credentials, laterally move to additional hosts, or input malicious components to be shipped further down the pipeline (i.e., Supply Chain Compromise).",
+      "rationale": "The source explicitly links malicious pipeline components to supply-chain compromise.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:trusted-relationship",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "mitre-attack-cti:T1199",
+      "quote": "Access through trusted third party relationship abuses an existing connection that may not be protected or receives less scrutiny than standard mechanisms of gaining access to a network.",
+      "rationale": "The quote directly describes a security weakness in trusted third-party service relationships.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:code-signing",
+      "polarity": "positive",
+      "ruleId": "T10-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A security mechanism that uses a digital signature to provide data integrity and data origin authentication for software that is being distributed for use.",
+      "rationale": "The quote directly establishes integrity and origin provenance for distributed software.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:invalid-code-signature",
+      "polarity": "positive",
+      "ruleId": "T10-I03",
+      "senseKey": "mitre-attack-cti:T1036.001",
+      "quote": "Code signing provides a level of authenticity on a binary from the developer and a guarantee that the binary has not been tampered with.",
+      "rationale": "The quote concerns developer provenance, binary authenticity, and tamper evidence.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:software-identification",
+      "polarity": "positive",
+      "ruleId": "T10-I03",
+      "senseKey": "nist-csrc-glossary:software-identification",
+      "quote": "A SWID tag is an ISO 19770 2 compliant XML file describing a software product. It is typically digitally signed by the software manufacturer to verify its validity. Ideally, for purposes of software asset management, the SWID tag will contain the digests (digital fingerprints) of each software file installed or placed on the device with the product.",
+      "rationale": "The source defines manufacturer-signed software identification containing file digests for a product.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:supply-chain-attack",
+      "polarity": "positive",
+      "ruleId": "T10-I05",
+      "senseKey": "nist-csrc-glossary:supply-chain-attack",
+      "quote": "Attacks that allow the adversary to utilize implants or other vulnerabilities inserted prior to installation in order to infiltrate data, or manipulate information technology hardware, software, operating systems, peripherals (information technology products) or services at any point during the life cycle.",
+      "rationale": "The definition directly describes pre-installation compromise of technology products and services.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:supply-chain-risk",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:supply-chain-risk",
+      "quote": "The risk that an adversary may sabotage, maliciously introduce unwanted function, or otherwise subvert the design, integrity, manufacturing, production, distribution, installation, operation, or maintenance of an item of supply or a system",
+      "rationale": "The definition directly identifies adversarial risk across supply-item design, manufacture, distribution, and operation.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:defense-in-breadth",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:defense-in-breadth",
+      "quote": "A planned, systematic set of multidisciplinary activities that seek to identify, manage, and reduce risk of exploitable vulnerabilities at every stage of the system, network, or subcomponent life cycle (system, network, or product design and development; manufacturing; packaging; assembly; system integration; distribution; operations; maintenance; and retirement).",
+      "rationale": "The definition directly spans vulnerability reduction through manufacturing, packaging, integration, distribution, operation, and retirement.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:security-criteria",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "nist-csrc-glossary:security-criteria",
+      "quote": "a supplier’s ability to deliver the requested product or service in satisfaction of the stated security requirements and in conformance with secure business practices",
+      "rationale": "The quote directly defines security criteria for supplier delivery of products and services.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:pedigree",
+      "polarity": "positive",
+      "ruleId": "T10-I03",
+      "senseKey": "nist-csrc-glossary:pedigree",
+      "quote": "Pedigrees increase the assurance that the claims suppliers assert about the internal composition and provenance of the products, services, and technologies they provide are valid.",
+      "rationale": "The definition directly links supplier claims to verified product composition and provenance.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:term-of-support",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "nist-csrc-glossary:term-of-support",
+      "quote": "The length of time for which the device will be supported by the manufacturer or supporting parties for such actions and materials as part replacements, software updates, vulnerability notices, technical support questions, etc.",
+      "rationale": "The definition directly ties manufacturer support to product updates and vulnerability notices.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:c-scrm-control",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:c-scrm-control",
+      "quote": "Safeguard or countermeasures prescribed for the purpose of reducing or eliminating the likelihood and/or impact/consequences of cybersecurity risks throughout the supply chain.",
+      "rationale": "The source defines a safeguard specifically reducing cybersecurity risk throughout the supply chain.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:compromise-hardware-supply-chain",
+      "polarity": "positive",
+      "ruleId": "T10-I05",
+      "senseKey": "mitre-attack-cti:T1195.003",
+      "quote": "Adversaries may manipulate hardware components in products prior to receipt by a final consumer for the purpose of data or system compromise.",
+      "rationale": "The source directly defines compromise of hardware components before consumer receipt.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:compromise-software-dependencies-and-development-tools",
+      "polarity": "positive",
+      "ruleId": "T10-I05",
+      "senseKey": "mitre-attack-cti:T1195.001",
+      "quote": "Adversaries may manipulate software dependencies and development tools prior to receipt by a final consumer for the purpose of data or system compromise.",
+      "rationale": "The source directly defines malicious compromise of software dependencies and development tools before receipt.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:cybersecurity-risks-throughout-the-supply-chain",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:cybersecurity-risks-throughout-the-supply-chain",
+      "quote": "The potential for harm or compromise arising from suppliers, their supply chains, their products, or their services.",
+      "rationale": "The source expressly defines cybersecurity harm arising across suppliers, products, services, and their chains.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:cybersecurity-supply-chain-risk-assessment",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:cybersecurity-supply-chain-risk-assessment",
+      "quote": "Systematic examination of cybersecurity risks throughout the supply chain, likelihoods of their occurrence, and potential impacts.",
+      "rationale": "The source directly defines assessment of cybersecurity supply-chain risks and impacts.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:cybersecurity-supply-chain-risk-management-plan",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:cybersecurity-supply-chain-risk-management-plan",
+      "quote": "A formal document that describes the implementations, requirements, constraints, and implications of cybersecurity supply chain risk management (C‑SCRM) controls selected for an information system or environment of operation that work in collaboration with the C‑SCRM strategy, policies, and implementation plan to provide a systematic and holistic approach to cybersecurity supply chain risk management across an enterprise.",
+      "rationale": "The source defines an enterprise plan implementing cybersecurity supply-chain risk controls.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:defensive-design",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:defensive-design",
+      "quote": "Design techniques which explicitly protect supply chain elements from future attacks or adverse events.",
+      "rationale": "The source directly defines defensive protection of supply-chain elements against attack.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:ict-supply-chain-threat",
+      "polarity": "positive",
+      "ruleId": "T10-I05",
+      "senseKey": "niccs-glossary:ict-supply-chain-threat",
+      "quote": "A man made threat achieved through exploitation of the information and communications technology (ICT) system’s supply chain, including acquisition processes.",
+      "rationale": "The source directly identifies exploitation of an ICT supply chain and acquisition process.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:transparency",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:transparency",
+      "quote": "Amount of information that can be gathered about a supplier, product, or service and how far through the supply chain this information can be obtained.",
+      "rationale": "The definition directly describes supplier, product, and service transparency across the supply chain, supporting supply-chain assurance.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:supply-chain-risk-assessment",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:supply-chain-risk-assessment",
+      "quote": "A systematic examination of supply chain risks, likelihoods of their occurrence, and potential impacts.",
+      "rationale": "The source directly defines supply-chain risk assessment.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:supply-chain-risk-management-scrm",
+      "polarity": "positive",
+      "ruleId": "T10-I01",
+      "senseKey": "nist-csrc-glossary:supply-chain-risk-management",
+      "quote": "A systematic process for managing supply chain risk by identifying susceptibilities, vulnerabilities, and threats throughout the supply chain and developing mitigation strategies to combat those threats whether presented by the supplier, the supplies product and its subcomponents, or the supply chain (e.g., initial production, packaging, handling, storage, transport, mission operation, and disposal).",
+      "rationale": "The source directly defines risk management across suppliers, subcomponents, production, transport, and disposal.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:digital-notary",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:i",
+      "quote": "Provides a trusted timestamp for a digital document, so that someone can later prove that the document existed at that point in time; verifies the signature(s) on a signed document before applying the stamp.",
+      "rationale": "The definition concerns a trusted timestamp and signature-verification function, not supply-chain security.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:brand-certification-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:o-set",
+      "quote": "A CA owned by a payment card brand, such as MasterCard, Visa, or American Express. [SET2] (See: certification hierarchy, SET.)",
+      "rationale": "The source defines a payment-card certification authority, a cryptographic trusted-party concept.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:certificate-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:d",
+      "quote": "Synonym for \"certification authority\". Deprecated Term: IDOCs SHOULD NOT use this term; it suggests careless use of the term \"certification authority\", which is preferred in PKI standards (e.g., [X509, R3280]).",
+      "rationale": "The source is solely a PKI certification-authority synonym.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:certificate-authority-authorization",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:certificate-authority-authorization",
+      "quote": "A record associated with a Domain Name Server (DNS) entry that specifies the CAs that are authorized to issue certificates for that domain.",
+      "rationale": "The record authorizes certificate authorities for a domain, a PKI trust concept.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:ict-ot-related-service-providers",
+      "polarity": "negative",
+      "ruleId": "T10-E01",
+      "senseKey": "nist-csrc-glossary:ict-ot-related-service-providers",
+      "quote": "Any organization or individual providing services which may include authorized access to an ICT or OT system.",
+      "rationale": "The definition identifies a generic technology service provider without supplier-security controls.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:service-provider",
+      "polarity": "negative",
+      "ruleId": "T10-E01",
+      "senseKey": "nist-csrc-glossary:service-provider",
+      "quote": "A provider of basic services or value added services for operation of a network; generally refers to public carriers and other commercial enterprises.",
+      "rationale": "The definition identifies a generic commercial service provider without supply-chain security context.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:credential-service-provider-csp",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:credential-service-provider",
+      "quote": "A trusted entity that issues or registers subscriber tokens and issues electronic credentials to subscribers. The CSP may encompass registration authorities (RAs) and verifiers that it operates. A CSP may be an independent third party, or may issue credentials for its own use.",
+      "rationale": "The source defines a trusted credential issuer and its registration and verification authorities.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:federal-bridge-certification-authority-fbca",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:federal-bridge-certification-authority",
+      "quote": "The Federal Bridge certification authority (CA) consists of a collection of public key infrastructure (PKI) components (Certificate Authorities, Directories, Certificate Policies and Certificate Practice Statements) that are used to provide peer to peer interoperability among Agency Principal Certification Authorities.",
+      "rationale": "The source concerns PKI certification-authority interoperability, not a product supply chain.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:federation-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:federation-authority",
+      "quote": "A party that facilitates the establishment and management of one or more trust agreements between federated parties.",
+      "rationale": "The definition concerns identity-federation trust agreements, not suppliers or supply-chain risk.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:key-recovery-agent",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:key-recovery-agent",
+      "quote": "An FCKMS role that assists in the key recovery/metadata recovery process.",
+      "rationale": "The definition concerns a cryptographic key-recovery role, not supply-chain security.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:cloud-provider",
+      "polarity": "negative",
+      "ruleId": "T10-E01",
+      "senseKey": "nist-csrc-glossary:cloud-provider",
+      "quote": "The entity (a person or an organization) responsible for making a service available to interested parties",
+      "rationale": "The definition identifies a generic service provider without supplier-security or supply-chain controls.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:organizational-registration-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:1-i-pki",
+      "quote": "An RA for an organization.",
+      "rationale": "The source defines a PKI registration authority for an organization.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:certificate-status-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:d-u-s-dod",
+      "quote": "A trusted entity that provides on line verification to a Relying Party of a subject certificate's trustworthiness",
+      "rationale": "The quote defines a trusted certificate-validation entity, a cryptographic third-party concept.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:policy-certification-authority-internet-pca",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:i",
+      "quote": "An X.509 compliant CA at the second level of the Internet certification hierarchy, under the IPRA. Each PCA operates under its published security policy (see: certificate policy, CPS) and within constraints established by the IPRA for all PCAs. [R1422]. (See: policy creation authority.)",
+      "rationale": "The source defines an X.509 certification authority in an Internet trust hierarchy.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:registration-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:1-i",
+      "quote": "An optional PKI entity (separate from the CAs) that does not sign either digital certificates or CRLs but has responsibility for recording or verifying some or all of the information (particularly the identities of subjects) needed by a CA to issue certificates and CRLs and to perform other certificate management functions. (See: ORA, registration.)",
+      "rationale": "The source defines a PKI entity supporting certificate issuance and revocation.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:attribute-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:1-n",
+      "quote": "A CA that issues attribute certificates.",
+      "rationale": "The definition concerns a certificate-issuing cryptographic authority, not supply-chain security.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:relying-party",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:relying-party",
+      "quote": "An entity that relies on the validity of the binding of the Subscriber's name to a public key to verify or establish the identity and status of an individual, role, or system or device; the integrity of a digitally signed message; the identity of the creator of a message; or confidential communications with the Subscriber.",
+      "rationale": "The source defines reliance on public-key identity bindings and digital signatures.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:root-certificate-authority-ca",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:root-certificate-authority",
+      "quote": "In a hierarchical public key infrastructure (PKI), the certification authority (CA) whose public key serves as the most trusted datum (i.e., the beginning of trust paths) for a security domain.",
+      "rationale": "The source defines a root CA serving as a PKI trust anchor.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:external-information-system-service-provider",
+      "polarity": "negative",
+      "ruleId": "T10-E01",
+      "senseKey": "nist-csrc-glossary:external-information-system-service-provider",
+      "quote": "A provider of external information system services to an organization through a variety of consumer producer relationships, including but not limited to: joint ventures; business partnerships; outsourcing arrangements",
+      "rationale": "The definition identifies a generic external service provider relationship without supplier-security evaluation or controls.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:subordinate-certificate-authority",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:subordinate-certificate-authority",
+      "quote": "In a hierarchical public key infrastructure (PKI), a certificate authority (CA) whose certificate signing key is certified by another CA, and whose activities are constrained by that other CA. See superior certification authority.",
+      "rationale": "The source defines a subordinate authority in a PKI certification hierarchy.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:trusted-agent-ta",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:trusted-agent",
+      "quote": "1. An individual explicitly aligned with one or more registration authority (RA) officers who has been delegated the authority to perform a portion of the RA functions. A trusted agent (TA) does not have privileged access to certification authority system (CAS) components to authorize certificate issuance, certificate revocation, or key recovery.",
+      "rationale": "The source defines a delegated registration-authority agent supporting certificate issuance.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:trusted-ca",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "rfc4949:i",
+      "quote": "A CA upon which a certificate user relies as issuing valid certificates; especially a CA that is used as a trust anchor CA.",
+      "rationale": "The quote explicitly defines a trusted certification authority in PKI.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:trusted-timestamp",
+      "polarity": "negative",
+      "ruleId": "T10-E04",
+      "senseKey": "nist-csrc-glossary:trusted-timestamp",
+      "quote": "A digitally signed assertion by a trusted authority that a specific digital object existed at a particular time.",
+      "rationale": "The source defines a digitally signed assertion by a trusted authority.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:intermediary-service",
+      "polarity": "negative",
+      "ruleId": "T10-E01",
+      "senseKey": "nist-csrc-glossary:intermediary-service",
+      "quote": "A component that lies between the Service Client (subscriber) and the Service Provider (publisher). It intercepts the request from the Service Client, provides the service (functionality), and forwards the request to the Service Provider. Similarly, it intercepts the response from the Service Provider and forwards it to the Service Client.",
+      "rationale": "The source generically defines an intermediary between service client and provider without supply-chain security.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    },
+    {
+      "entryKey": "TERM:mobile-device-management-mdm",
+      "polarity": "negative",
+      "ruleId": "T10-E01",
+      "senseKey": "nist-csrc-glossary:mobile-device-management",
+      "quote": "The administration of mobile devices such as smartphones, tablets, computers, laptops, and desktop computers. MDM is usually implemented through a third party product that has management features for particular vendors of mobile devices.",
+      "rationale": "The source mentions third-party products and vendors only as generic implementation context.",
+      "primaryReviewer": "primary-lane-c",
+      "secondaryReviewer": "secondary-lane-b"
+    }
+  ]
+}

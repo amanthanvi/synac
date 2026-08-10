@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "synac-model-lineages-v1",
+  "lanes": [
+    {
+      "lane": "P1",
+      "trainingOrganization": "Alibaba/Qwen",
+      "baseModelFamily": "Qwen3-8B",
+      "ancestry": "Qwen3 8B Ollama artifact bound by FROM blob",
+      "provider": "ollama",
+      "immutableModelId": "ollama:qwen3:8b@500a1f067a9f",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f"
+    },
+    {
+      "lane": "P2",
+      "trainingOrganization": "Google",
+      "baseModelFamily": "Gemma-3-12B",
+      "ancestry": "Gemma 3 12B IT Ollama artifact bound by FROM blob",
+      "provider": "ollama",
+      "immutableModelId": "ollama:gemma3:12b@f4031aab637d",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:e8ad13eff07a78d89926e9e8b882317d082ef5bf9768ad7b50fcdbbcd63748de"
+    },
+    {
+      "lane": "P3",
+      "trainingOrganization": "Meta",
+      "baseModelFamily": "Llama-3.1-8B",
+      "ancestry": "Llama 3.1 8B Instruct Ollama artifact bound by FROM blob",
+      "provider": "ollama",
+      "immutableModelId": "ollama:llama3.1:8b@46e0c10c039e",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:667b0c1932bc6ffc593ed1d03f895bf2dc8dc6df21db3042284a6f4416b06a29"
+    },
+    {
+      "lane": "P4",
+      "trainingOrganization": "IBM",
+      "baseModelFamily": "Granite-3.3-8B",
+      "ancestry": "Granite 3.3 8B Instruct Ollama artifact bound by FROM blob",
+      "provider": "ollama",
+      "immutableModelId": "ollama:granite3.3:8b@fd429f23b909",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:77bcee066a76dcdd10d0d123c87e32c8ec2c74e31b6ffd87ebee49c9ac215dca"
+    },
+    {
+      "lane": "A1",
+      "trainingOrganization": "Microsoft",
+      "baseModelFamily": "Phi-4-mini-3.8B",
+      "ancestry": "Phi-4 Mini Instruct Ollama artifact bound by FROM blob",
+      "provider": "ollama",
+      "immutableModelId": "ollama:phi4-mini:3.8b@78fad5d182a7",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:3c168af1dea0a414299c7d9077e100ac763370e5a98b3c53801a958a47f0a5db"
+    },
+    {
+      "lane": "A2",
+      "trainingOrganization": "Mistral AI",
+      "baseModelFamily": "Mistral-7B-v0.3",
+      "ancestry": "Mistral 7B Instruct v0.3 Ollama artifact bound by FROM blob",
+      "provider": "ollama",
+      "immutableModelId": "ollama:mistral:7b@6577803aa9a0",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:f5074b1221da0f5a2910d33b642efa5b9eb58cfdddca1c79e16d7ad28aa2b31f"
+    },
+    {
+      "lane": "C+",
+      "trainingOrganization": "Alibaba/Qwen",
+      "baseModelFamily": "Qwen3-8B",
+      "ancestry": "Fresh no-tool inclusion critic using the pinned P1 artifact; critic output is not a vote",
+      "provider": "ollama",
+      "immutableModelId": "ollama:qwen3:8b@500a1f067a9f",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:a3de86cd1c132c822487ededd47a324c50491393e6565cd14bafa40d0b8e686f"
+    },
+    {
+      "lane": "C-",
+      "trainingOrganization": "IBM",
+      "baseModelFamily": "Granite-3.3-8B",
+      "ancestry": "Fresh no-tool exclusion critic using the pinned P4 artifact; critic output is not a vote",
+      "provider": "ollama",
+      "immutableModelId": "ollama:granite3.3:8b@fd429f23b909",
+      "backendFingerprint": "ollama-0.32.6/windows/rtx-5070-ti",
+      "openWeights": true,
+      "weightsHash": "sha256:77bcee066a76dcdd10d0d123c87e32c8ec2c74e31b6ffd87ebee49c9ac215dca"
+    }
+  ]
+}

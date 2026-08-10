@@ -1,0 +1,14 @@
+{
+  "name": "@synac/synthetic-reference-harness",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:reference": "corepack pnpm --dir ../../../tools/content exec tsx ../../experiments/tagging/synthetic-reference/build.ts",
+    "typecheck": "corepack pnpm --dir ../../../tools/content exec tsc -p ../../experiments/tagging/synthetic-reference/tsconfig.json",
+    "test": "corepack pnpm --dir ../../../tools/content exec tsx --test ../../experiments/tagging/synthetic-reference/canonical.test.ts ../../experiments/tagging/synthetic-reference/families.test.ts ../../experiments/tagging/synthetic-reference/reviewed-controls.test.ts ../../experiments/tagging/synthetic-reference/validators.test.ts ../../experiments/tagging/synthetic-reference/sealed-store.test.ts ../../experiments/tagging/synthetic-reference/ollama-model.test.ts ../../experiments/tagging/synthetic-reference/local-panel.test.ts ../../experiments/tagging/synthetic-reference/target-panel.test.ts ../../experiments/tagging/synthetic-reference/build.test.ts",
+    "panel": "corepack pnpm --dir ../../../tools/content exec tsx ../../experiments/tagging/synthetic-reference/local-panel.ts",
+    "target": "corepack pnpm --dir ../../../tools/content exec tsx ../../experiments/tagging/synthetic-reference/target-panel.ts",
+    "format": "corepack pnpm --dir ../../../tools/content exec prettier ../../experiments/tagging/synthetic-reference --check --ignore-path ../../.prettierignore",
+    "check": "corepack pnpm run format && corepack pnpm run typecheck && corepack pnpm run test"
+  }
+}

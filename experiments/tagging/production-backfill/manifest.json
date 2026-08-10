@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "synac-production-backfill-manifest-v1",
+  "model": "gpt-5.6-terra",
+  "reasoningEffort": "max",
+  "passes": [
+    "a",
+    "b"
+  ],
+  "chunkSize": 20,
+  "maxOutputTokens": 16000,
+  "entryCount": 6701,
+  "requestCount": 672,
+  "contentVersion": "31bd468da507ed63247b0e6e46839ed4b0fb76a4f7cd5a038f439af38ee0e97f",
+  "corpusHash": "3d6cdcb9026c82dc36e12fee79f5840a3442bd054b62b555f45c641666d44c35",
+  "entryIndexHash": "46ee505b2666dc7ea5a250e4221bf4dc83bc221c2635a44078be21b9e66fa490",
+  "rubricHash": "b658efc9f29325c70b69df476730551898b2bb78bafe26f2e839db138c695075",
+  "promptHash": "58fe3b4d9e6d0fbcc069ba7fd3902cb93f8fecab7aa9b5a97e798ba6d91f6aa0",
+  "configHash": "c5b523ff674341dc692f5fa53476c7f29a61be1f6822359a446d165266dfb7ef",
+  "requestFileHash": "e7b1955b84a5eb654b1907f0e5d877c1c057e47054ddabfade57684dbb6dc79d"
+}
