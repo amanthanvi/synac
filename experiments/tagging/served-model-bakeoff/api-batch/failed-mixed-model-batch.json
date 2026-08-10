@@ -1,0 +1,23 @@
+{
+  "id": "batch_6a791384a30c8190ba4c031a6ed807f6",
+  "status": "failed",
+  "input_file_id": "file-RtG41E7SF8M6V2zVBuujwU",
+  "output_file_id": null,
+  "error_file_id": null,
+  "created_at": 1786319748,
+  "in_progress_at": null,
+  "completed_at": null,
+  "failed_at": 1786319810,
+  "expires_at": 1786406148,
+  "completion_window": "24h",
+  "request_counts": {
+    "total": 0,
+    "completed": 0,
+    "failed": 0
+  },
+  "validation_failure": {
+    "code": "mismatched_model",
+    "message": "OpenAI Batch requires every request in a Batch to use the same model; Luna and Terra are now submitted separately.",
+    "billable_requests": 0
+  }
+}

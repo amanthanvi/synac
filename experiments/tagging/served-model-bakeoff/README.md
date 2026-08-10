@@ -47,11 +47,12 @@ boundary rather than tamper-proof secrecy.
 
 The top-level result `schemaVersion` is `synac-served-model-result-v2`.
 
-Ranking is lexicographic: schema validity, balanced accuracy, macro-F1,
-minimum per-Tag balanced accuracy, abstention rate, mirror flip rate, then
-elapsed time. A more expensive effort is retained only for a measured quality
-or stability gain. Actual API token usage is required for dollar-cost results;
-agent-session wall time is only a pilot latency signal.
+Ranking is lexicographic: full contract validity (including semantic rule and
+evidence citations), balanced accuracy, macro-F1, minimum per-Tag balanced
+accuracy, abstention rate, mirror flip rate, then elapsed time. A more expensive
+effort is retained only for a measured quality or stability gain. Actual API
+token usage is required for dollar-cost results; agent-session wall time is only
+a pilot latency signal.
 
 ## Operating cadence
 
@@ -73,3 +74,25 @@ and evaluation workloads, costs 50% less than synchronous requests, and has a
 corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/build-benchmark.ts
 corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/score-results.ts
 ```
+
+## Raw OpenAI Batch run
+
+The Batch harness reads `OPENAI_API_KEY` only from its process environment. Do
+not persist the key in this directory or include it in generated artifacts.
+
+```powershell
+corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/openai-batch.ts prepare
+corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/openai-batch.ts smoke
+corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/openai-batch.ts submit
+corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/openai-batch.ts status
+corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/openai-batch.ts collect
+corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/served-model-bakeoff/score-results.ts --api
+```
+
+`prepare` is deterministic and requires no credential. `smoke`, `submit`, and
+`status` require a process-scoped credential. Two 10-line Batches evaluate every
+Luna/Terra effort twice: once in benchmark order and once in reverse order.
+OpenAI Batch requires one model per Batch, so Luna and Terra have separate
+transport files and Batch IDs. `collect` refuses incomplete batches and
+preserves response/request IDs, exact usage, Batch cost, and raw-response hashes
+without storing the credential.

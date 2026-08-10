@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "synac-openai-batches-v1",
+  "batches": [
+    {
+      "family": "luna",
+      "id": "batch_6a79187b03488190b5bb047ea135aa43",
+      "status": "completed",
+      "input_file_id": "file-42DSFrMnpuUwbJbmbpqCW7",
+      "output_file_id": "file-HWnEgPyXZMLL4dvYDkroZr",
+      "error_file_id": null,
+      "errors": null,
+      "created_at": 1786321019,
+      "in_progress_at": 1786321020,
+      "completed_at": 1786321392,
+      "failed_at": null,
+      "expires_at": 1786407419,
+      "completion_window": "24h",
+      "request_counts": {
+        "total": 10,
+        "completed": 10,
+        "failed": 0
+      }
+    },
+    {
+      "family": "terra",
+      "id": "batch_6a79187c91088190ba17e94c2ca4bca3",
+      "status": "completed",
+      "input_file_id": "file-HFNjJZD8SHMLU3VJiDjWUf",
+      "output_file_id": "file-XTgEHehN2KB6RMFRGdLXn7",
+      "error_file_id": null,
+      "errors": null,
+      "created_at": 1786321020,
+      "in_progress_at": 1786321022,
+      "completed_at": 1786321531,
+      "failed_at": null,
+      "expires_at": 1786407420,
+      "completion_window": "24h",
+      "request_counts": {
+        "total": 10,
+        "completed": 10,
+        "failed": 0
+      }
+    }
+  ]
+}
