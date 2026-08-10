@@ -244,6 +244,8 @@ SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook th
 -   `/tags/{tag}` lists entries with pagination and filters by entry type.
 -   Admin can create/rename/merge tags with slug history and redirects.
 -   Some tags may be auto-applied via deterministic heuristics from entry text (reviewable/overridable).
+-   A taxonomy-v2 release tags at least 30% of published entries, and every Published Tag has at least 25 accepted entries.
+-   No Published Tag may exceed 5,000 entries while the numeric tag UI is capped at 100 pages of 50 entries. Production sync may enumerate up to 10,000 entries per tag only as a deliberately broader post-deploy verification ceiling; the compiler's 5,000-entry UI gate remains authoritative.
 
 ---
 

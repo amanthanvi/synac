@@ -17,6 +17,9 @@ tools/ingest
   requirements, trust tier, ingest adapter config. A source contributes
   content only when enabled with complete license terms.
 - `content/tags.json` — curated taxonomy.
+- `content/tag-assignments.json` — reviewed, content-addressed automatic tag
+  assignments and classifier provenance. Manual add/remove overrides remain
+  authoritative.
 - `content/generated/<source>.json` — machine-owned per-source bundles
   (entries, senses, citations). Written only by `tools/ingest`; deterministic,
   so unchanged upstream content produces zero diff.
@@ -32,18 +35,21 @@ search documents, and denormalized counts. The compiler output carries a
 
 ## Sync (CI → Convex)
 
-On every push to `main`, the deploy workflow runs `npx convex deploy` and then
-pushes the compiled dataset through chunked, idempotent internal mutations
-(`convex/sync.ts`), stamping every row with the new `contentVersion` and then
-pruning rows whose stamp is stale. Re-running a sync is a no-op; reverting a
-content PR converges the deployment back. Runtime tables are never touched by
-sync.
+On every push to `main`, the deploy workflow runs `npx convex deploy`, builds a
+deterministic batch manifest, and stages an immutable generation through
+chunked internal mutations (`convex/sync.ts`). Batch hashes, table counts, tag
+counts, and source counts must match before one mutation atomically changes the
+active `contentVersion`. Public queries pin that active generation, so a failed
+or partial stage leaves the prior dataset intact. Stale generations are pruned
+only after activation. Re-running an acknowledged batch or active manifest is
+a no-op; reverting a content PR converges the deployment back. Runtime tables
+are never touched by sync.
 
 ## Serving plane (Convex + Next.js)
 
 - `convex/schema.ts` — native `v.id()` relations and literal-union types.
   Content tables (sources, tags, entries, senses, entryTags, entrySources,
-  relationships, redirects) are populated only by sync. Runtime tables
+  relationships, redirects, tagRedirects) are populated only by sync. Runtime tables
   (entryViews) are keyed by entry natural keys so they survive re-syncs.
 - Public queries (`publicEntries`, `publicBrowse`, `tags`, `sources`,
   `search`, `sitemap`) are indexed, bounded reads; counts are denormalized at

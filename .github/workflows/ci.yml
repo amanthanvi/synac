@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v4
@@ -51,7 +53,9 @@ jobs:
         run: pnpm test
 
       - name: Content check
-        run: pnpm content:check
+        run: pnpm content:check && pnpm content:history
+        env:
+          SYNAC_ASSIGNMENTS_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
 
       - name: Build
         run: pnpm build

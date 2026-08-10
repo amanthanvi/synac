@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "synac-openai-batch-manifest-v1",
+  "benchmarkHash": "28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465b",
+  "taxonomyVersion": "2",
+  "promptHash": "768e6d3536bfeed8c482c43405b27f28d26bcbcd1f4f12e4c021ab68ce35765f",
+  "outputSchemaHash": "89b8f49ff4b39e22549d1725a5d9843943df0c35b889a384fe88b821825a1f88",
+  "requestFiles": {
+    "luna": {
+      "path": "requests-luna.jsonl",
+      "sha256": "230db13ad724515a419bd22603b8c798e9e833253d303f47ef167bb54a4c9033",
+      "requestCount": 10
+    },
+    "terra": {
+      "path": "requests-terra.jsonl",
+      "sha256": "d44db92269ada10b0afa91faa4c95cb1d4ffc0f14f96bd897006ea6b070877ac",
+      "requestCount": 10
+    }
+  },
+  "requestCount": 20,
+  "caseCount": 110,
+  "configurations": [
+    {
+      "slug": "luna-low",
+      "model": "gpt-5.6-luna",
+      "effort": "low"
+    },
+    {
+      "slug": "luna-medium",
+      "model": "gpt-5.6-luna",
+      "effort": "medium"
+    },
+    {
+      "slug": "luna-high",
+      "model": "gpt-5.6-luna",
+      "effort": "high"
+    },
+    {
+      "slug": "luna-xhigh",
+      "model": "gpt-5.6-luna",
+      "effort": "xhigh"
+    },
+    {
+      "slug": "luna-max",
+      "model": "gpt-5.6-luna",
+      "effort": "max"
+    },
+    {
+      "slug": "terra-low",
+      "model": "gpt-5.6-terra",
+      "effort": "low"
+    },
+    {
+      "slug": "terra-medium",
+      "model": "gpt-5.6-terra",
+      "effort": "medium"
+    },
+    {
+      "slug": "terra-high",
+      "model": "gpt-5.6-terra",
+      "effort": "high"
+    },
+    {
+      "slug": "terra-xhigh",
+      "model": "gpt-5.6-terra",
+      "effort": "xhigh"
+    },
+    {
+      "slug": "terra-max",
+      "model": "gpt-5.6-terra",
+      "effort": "max"
+    }
+  ]
+}

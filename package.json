@@ -16,20 +16,21 @@
     "node": ">=22.21.1"
   },
   "scripts": {
-    "dev": "pnpm -r --parallel --if-present dev",
-    "gate": "pnpm lint && pnpm typecheck && pnpm test && pnpm content:check && pnpm build",
-    "content:check": "pnpm --filter @synac/content-tools check",
-    "content:compile": "pnpm --filter @synac/content-tools compile",
-    "build": "pnpm -r build",
-    "start": "pnpm --filter @synac/web start",
-    "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r --workspace-concurrency=1 test && pnpm test:convex",
+    "dev": "corepack pnpm -r --parallel --if-present dev",
+    "gate": "corepack pnpm lint && corepack pnpm typecheck && corepack pnpm test && corepack pnpm content:check && corepack pnpm content:history && corepack pnpm build",
+    "content:check": "corepack pnpm --filter @synac/content-tools check",
+    "content:history": "corepack pnpm --filter @synac/content-tools check:history",
+    "content:compile": "corepack pnpm --filter @synac/content-tools compile",
+    "build": "corepack pnpm -r build",
+    "start": "corepack pnpm --filter @synac/web start",
+    "lint": "corepack pnpm -r lint",
+    "typecheck": "corepack pnpm -r typecheck",
+    "test": "corepack pnpm -r --workspace-concurrency=1 test && corepack pnpm test:convex",
     "test:convex": "vitest run -c vitest.convex.config.ts",
-    "format": "pnpm -r format",
+    "format": "corepack pnpm -r format",
     "convex:dev": "convex dev",
     "convex:validate": "convex dev --once",
-    "ingest": "pnpm --filter @synac/ingest-tools ingest"
+    "ingest": "corepack pnpm --filter @synac/ingest-tools ingest"
   },
   "pnpm": {
     "overrides": {

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "check": "tsx src/check.ts",
+    "check:history": "tsx src/check-tag-history.ts",
     "compile": "tsx src/check.ts --emit",
     "sync": "tsx src/sync.ts",
     "build": "tsc -p tsconfig.build.json --noEmit",

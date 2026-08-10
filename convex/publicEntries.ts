@@ -1,11 +1,12 @@
-import { v } from "convex/values";
-import { query } from "./_generated/server";
-import type { QueryCtx } from "./_generated/server";
-import { entryType } from "./schema";
+import { v } from 'convex/values';
+import { query } from './_generated/server';
+import type { QueryCtx } from './_generated/server';
+import { activeGeneration } from './lib/contentGeneration';
+import { entryType } from './schema';
 
 export type EntrySummary = {
   key: string;
-  entryType: "TERM" | "ACRONYM";
+  entryType: 'TERM' | 'ACRONYM';
   slug: string;
   title: string;
   summaryText: string | null;
@@ -16,13 +17,16 @@ export type EntrySummary = {
 
 export async function tagNames(
   ctx: QueryCtx,
+  syncVersion: string,
   slugs: string[],
 ): Promise<Array<{ slug: string; name: string }>> {
   const tags: Array<{ slug: string; name: string }> = [];
   for (const slug of slugs) {
     const tag = await ctx.db
-      .query("tags")
-      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .query('tags')
+      .withIndex('by_syncVersion_and_slug', (q) =>
+        q.eq('syncVersion', syncVersion).eq('slug', slug),
+      )
       .unique();
     if (tag) tags.push({ slug: tag.slug, name: tag.name });
   }
@@ -36,11 +40,21 @@ export async function tagNames(
 export const resolveBySlug = query({
   args: { entryType, slug: v.string() },
   handler: async (ctx, args) => {
+    const generation = await activeGeneration(ctx);
+    if (!generation) return null;
     const slug = args.slug.trim().toLowerCase();
-    for (const type of [args.entryType, args.entryType === "TERM" ? ("ACRONYM" as const) : ("TERM" as const)]) {
+    for (const type of [
+      args.entryType,
+      args.entryType === 'TERM' ? ('ACRONYM' as const) : ('TERM' as const),
+    ]) {
       const entry = await ctx.db
-        .query("entries")
-        .withIndex("by_entryType_and_slug", (q) => q.eq("entryType", type).eq("slug", slug))
+        .query('entries')
+        .withIndex('by_syncVersion_and_entryType_and_slug', (q) =>
+          q
+            .eq('syncVersion', generation.version)
+            .eq('entryType', type)
+            .eq('slug', slug),
+        )
         .unique();
       if (entry) {
         return {
@@ -50,11 +64,20 @@ export const resolveBySlug = query({
         };
       }
       const redirect = await ctx.db
-        .query("redirects")
-        .withIndex("by_entryType_and_fromSlug", (q) => q.eq("entryType", type).eq("fromSlug", slug))
+        .query('redirects')
+        .withIndex('by_syncVersion_and_entryType_and_fromSlug', (q) =>
+          q
+            .eq('syncVersion', generation.version)
+            .eq('entryType', type)
+            .eq('fromSlug', slug),
+        )
         .unique();
       if (redirect) {
-        return { entryType: type, canonicalSlug: redirect.toSlug, needsRedirect: true };
+        return {
+          entryType: type,
+          canonicalSlug: redirect.toSlug,
+          needsRedirect: true,
+        };
       }
     }
     return null;
@@ -63,32 +86,53 @@ export const resolveBySlug = query({
 
 /** Everything the public entry page renders, in one call. */
 export const getEntryPage = query({
-  args: { entryType, slug: v.string(), relationshipLimit: v.optional(v.number()) },
+  args: {
+    entryType,
+    slug: v.string(),
+    relationshipLimit: v.optional(v.number()),
+  },
   handler: async (ctx, args) => {
+    const generation = await activeGeneration(ctx);
+    if (!generation) return null;
+    const slug = args.slug.trim().toLowerCase();
     const entry = await ctx.db
-      .query("entries")
-      .withIndex("by_entryType_and_slug", (q) => q.eq("entryType", args.entryType).eq("slug", args.slug))
+      .query('entries')
+      .withIndex('by_syncVersion_and_entryType_and_slug', (q) =>
+        q
+          .eq('syncVersion', generation.version)
+          .eq('entryType', args.entryType)
+          .eq('slug', slug),
+      )
       .unique();
     if (!entry) return null;
 
     const senses = await ctx.db
-      .query("senses")
-      .withIndex("by_entryId", (q) => q.eq("entryId", entry._id))
+      .query('senses')
+      .withIndex('by_entryId', (q) => q.eq('entryId', entry._id))
       .take(100);
     senses.sort((a, b) => a.order - b.order);
 
-    const limit = Math.max(1, Math.min(50, Math.floor(args.relationshipLimit ?? 50)));
+    const limit = Math.max(
+      1,
+      Math.min(50, Math.floor(args.relationshipLimit ?? 50)),
+    );
     const relationshipRows = await ctx.db
-      .query("relationships")
-      .withIndex("by_fromEntryId", (q) => q.eq("fromEntryId", entry._id))
+      .query('relationships')
+      .withIndex('by_fromEntryId', (q) => q.eq('fromEntryId', entry._id))
       .take(limit);
     const relationships: Array<{
-      type: "RELATED" | "SEE_ALSO" | "CONTRAST";
-      entry: { key: string; entryType: "TERM" | "ACRONYM"; slug: string; title: string; summaryText: string | null };
+      type: 'RELATED' | 'SEE_ALSO' | 'CONTRAST';
+      entry: {
+        key: string;
+        entryType: 'TERM' | 'ACRONYM';
+        slug: string;
+        title: string;
+        summaryText: string | null;
+      };
     }> = [];
     for (const rel of relationshipRows) {
       const target = await ctx.db.get(rel.toEntryId);
-      if (!target) continue;
+      if (!target || target.syncVersion !== generation.version) continue;
       relationships.push({
         type: rel.type,
         entry: {
@@ -112,7 +156,7 @@ export const getEntryPage = query({
         summaryText: entry.summaryText ?? null,
         editorialNotes: entry.editorialNotes ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
         senses: senses.map((sense) => ({
           key: sense.key,
           order: sense.order,
@@ -136,12 +180,16 @@ export const getEntryPage = query({
 export const listRecent = query({
   args: { page: v.number(), pageSize: v.number() },
   handler: async (ctx, args) => {
+    const generation = await activeGeneration(ctx);
+    if (!generation) return { entries: [], hasMore: false };
     const page = Math.max(1, Math.min(10, Math.floor(args.page)));
     const pageSize = Math.max(1, Math.min(50, Math.floor(args.pageSize)));
     const rows = await ctx.db
-      .query("entries")
-      .withIndex("by_updatedAt")
-      .order("desc")
+      .query('entries')
+      .withIndex('by_syncVersion_and_updatedAt', (q) =>
+        q.eq('syncVersion', generation.version),
+      )
+      .order('desc')
       .take(page * pageSize + 1);
     const pageRows = rows.slice((page - 1) * pageSize, page * pageSize);
     const entries: EntrySummary[] = [];
@@ -154,7 +202,7 @@ export const listRecent = query({
         summaryText: entry.summaryText ?? null,
         senseSummary: entry.senseSummary ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
       });
     }
     return { entries, hasMore: rows.length > page * pageSize };

@@ -17,6 +17,11 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Reproducible OpenAI Batch transport files (durable hashes live in manifests)
+experiments/tagging/served-model-bakeoff/api-batch/requests*.jsonl
+experiments/tagging/served-model-bakeoff/api-batch/responses*.jsonl
+experiments/tagging/served-model-bakeoff/api-batch/errors*.jsonl
+
 # Prisma
 packages/db/prisma/dev.db
 packages/db/prisma/dev.db-journal

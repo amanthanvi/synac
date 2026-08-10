@@ -1,0 +1,2750 @@
+{
+  "schemaVersion": "synac-served-model-result-v2",
+  "model": "gpt-5.6-luna",
+  "reasoningEffort": "xhigh",
+  "benchmarkHash": "28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465b",
+  "startedAtUtc": "2026-08-09T18:57:30.5632083Z",
+  "completedAtUtc": "2026-08-09T19:01:57.391Z",
+  "predictions": [
+    {
+      "caseId": "67e69ca6552d9ea3",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:access-control"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:access-control"
+        ]
+      }
+    },
+    {
+      "caseId": "b6833c7bd19ad264",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:approved-hash-algorithms"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:approved-hash-algorithms"
+        ]
+      }
+    },
+    {
+      "caseId": "762f8ed1d200972c",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1480.001"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1480.001"
+        ]
+      }
+    },
+    {
+      "caseId": "f613eae644f9912a",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:1-i"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:1-i"
+        ]
+      }
+    },
+    {
+      "caseId": "ee3c6111b01b7d0e",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:risk-adaptive-adaptable-access-control"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:risk-adaptive-adaptable-access-control"
+        ]
+      }
+    },
+    {
+      "caseId": "ed2d3d76c3c2ef4f",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      }
+    },
+    {
+      "caseId": "dc8dc27cf3570d95",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:vulnerability-assessment"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:vulnerability-assessment"
+        ]
+      }
+    },
+    {
+      "caseId": "f8660ad3bd8b0062",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:cryptographic-module-security-policy"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:cryptographic-module-security-policy"
+        ]
+      }
+    },
+    {
+      "caseId": "07bf9c8dc4f90d9d",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:sql-injection"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:sql-injection"
+        ]
+      }
+    },
+    {
+      "caseId": "a8dbbe7fd88f6ff8",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:authentication"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:authentication"
+        ]
+      }
+    },
+    {
+      "caseId": "b3c6586c33ce2526",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:malware"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:malware"
+        ]
+      }
+    },
+    {
+      "caseId": "ffdb1969c5744df3",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1190"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1190"
+        ]
+      }
+    },
+    {
+      "caseId": "793d8fb657ac10a7",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:patch-management"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:patch-management"
+        ]
+      }
+    },
+    {
+      "caseId": "72323594222f6184",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:open-pretty-good-privacy"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:open-pretty-good-privacy"
+        ]
+      }
+    },
+    {
+      "caseId": "fbd50f6abb412c5a",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:vulnerability"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:vulnerability"
+        ]
+      }
+    },
+    {
+      "caseId": "1cfb0735de9f70dd",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:rootkit"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:rootkit"
+        ]
+      }
+    },
+    {
+      "caseId": "af6646e7182baa88",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:cplp-manager"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:cplp-manager"
+        ]
+      }
+    },
+    {
+      "caseId": "2af877c49183d750",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:n"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:n"
+        ]
+      }
+    },
+    {
+      "caseId": "97cd2fe516363a2f",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:risk-assessment"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:risk-assessment"
+        ]
+      }
+    },
+    {
+      "caseId": "dd4c5284947aee8d",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:chief-privacy-officer"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:chief-privacy-officer"
+        ]
+      }
+    },
+    {
+      "caseId": "acb38d0089632d88",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      }
+    },
+    {
+      "caseId": "981a694a905438a2",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:network-intrusion-detection-system"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:network-intrusion-detection-system"
+        ]
+      }
+    },
+    {
+      "caseId": "1e5c0cdadd79ef1b",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:ipsec"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:ipsec"
+        ]
+      }
+    },
+    {
+      "caseId": "11e9d66a63833c9d",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:asymmetric-cryptography"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:asymmetric-cryptography"
+        ]
+      }
+    },
+    {
+      "caseId": "9eccae63fb09d4f1",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:phishing"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:phishing"
+        ]
+      }
+    },
+    {
+      "caseId": "f5f503e70caaa0cf",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:incident-handling"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:incident-handling"
+        ]
+      }
+    },
+    {
+      "caseId": "4126f3b800af046a",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:sbom"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:sbom"
+        ]
+      }
+    },
+    {
+      "caseId": "f2cc17cafc8dcae7",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:chain-of-custody"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:chain-of-custody"
+        ]
+      }
+    },
+    {
+      "caseId": "fa90ed2c1b676acc",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1027.010"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1027.010"
+        ]
+      }
+    },
+    {
+      "caseId": "24ea25d320f51857",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1597.001"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1597.001"
+        ]
+      }
+    },
+    {
+      "caseId": "af16d71fbd0b8391",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:risk-management"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:risk-management"
+        ]
+      }
+    },
+    {
+      "caseId": "0ef8b644adac2bfa",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:security-audit-trail"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:security-audit-trail"
+        ]
+      }
+    },
+    {
+      "caseId": "550a943aad0771bb",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authentication-assurance-level"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authentication-assurance-level"
+        ]
+      }
+    },
+    {
+      "caseId": "e4aa3616748e2a75",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:cybersecurity-supply-chain-risk-management"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:cybersecurity-supply-chain-risk-management"
+        ]
+      }
+    },
+    {
+      "caseId": "18982c814255a339",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:6",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:authorization"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:6",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:authorization"
+        ]
+      }
+    },
+    {
+      "caseId": "d6fc38f63dd3f2c9",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:attack-signature"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:attack-signature"
+        ]
+      }
+    },
+    {
+      "caseId": "c3c2cd462ba35765",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:1-i-cryptanalysis"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:1-i-cryptanalysis"
+        ]
+      }
+    },
+    {
+      "caseId": "87dcc53d3fb8f201",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:kerberos"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:kerberos"
+        ]
+      }
+    },
+    {
+      "caseId": "561a7623ae518539",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:internet-protocol"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:internet-protocol"
+        ]
+      }
+    },
+    {
+      "caseId": "11a8ae8d39e4c36c",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1008"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1008"
+        ]
+      }
+    },
+    {
+      "caseId": "67064af0aa37ab5b",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:supply-chain-assurance"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:supply-chain-assurance"
+        ]
+      }
+    },
+    {
+      "caseId": "5d46a7160a338fdb",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:worm"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:worm"
+        ]
+      }
+    },
+    {
+      "caseId": "949d887dda64976c",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:air-traffic-organization"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:air-traffic-organization"
+        ]
+      }
+    },
+    {
+      "caseId": "4cee38b32870faa0",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:firewall"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:firewall"
+        ]
+      }
+    },
+    {
+      "caseId": "59371c3243c3e904",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authenticated-encryption"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authenticated-encryption"
+        ]
+      }
+    },
+    {
+      "caseId": "ec34df4a0dd3ed0b",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:security-risk"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:security-risk"
+        ]
+      }
+    },
+    {
+      "caseId": "67a547e392a81f86",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:internet-protocol"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:internet-protocol"
+        ]
+      }
+    },
+    {
+      "caseId": "9a0226ee7e7758a8",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:media-sanitization"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:media-sanitization"
+        ]
+      }
+    },
+    {
+      "caseId": "3345b7ff6c849b6c",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:traffic-light-protocol"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:traffic-light-protocol"
+        ]
+      }
+    },
+    {
+      "caseId": "807c1dc13df208ef",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:account-recovery"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:account-recovery"
+        ]
+      }
+    },
+    {
+      "caseId": "ca0d2375db2ec310",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:trojan"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:trojan"
+        ]
+      }
+    },
+    {
+      "caseId": "659c8e06b162f580",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:6",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:tamper-resistant"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:6",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:tamper-resistant"
+        ]
+      }
+    },
+    {
+      "caseId": "f781c755aca7f69d",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:vulnerability"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:vulnerability"
+        ]
+      }
+    },
+    {
+      "caseId": "c15154b541134485",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:incident-response"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:incident-response"
+        ]
+      }
+    },
+    {
+      "caseId": "087ec89322ef0b27",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:emergency-action-plan"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:emergency-action-plan"
+        ]
+      }
+    },
+    {
+      "caseId": "47d05163bca7fafe",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:software-bill-of-materials"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:software-bill-of-materials"
+        ]
+      }
+    },
+    {
+      "caseId": "c27b7cd7bdc6d6f0",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:ransomware"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:ransomware"
+        ]
+      }
+    },
+    {
+      "caseId": "681cbb7d12581e7c",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:malware"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:malware"
+        ]
+      }
+    },
+    {
+      "caseId": "00cec21e8611d73f",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1070.004"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1070.004"
+        ]
+      }
+    },
+    {
+      "caseId": "d1f3e640f0a8d63d",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:buffer-overflow"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:buffer-overflow"
+        ]
+      }
+    },
+    {
+      "caseId": "215bb0ed1a199018",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:fingerprint-segmentation"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:fingerprint-segmentation"
+        ]
+      }
+    },
+    {
+      "caseId": "4c25e3dd3533efb5",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:generative-adversarial-networks"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:generative-adversarial-networks"
+        ]
+      }
+    },
+    {
+      "caseId": "de39e4a3a97ef3e3",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1573"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1573"
+        ]
+      }
+    },
+    {
+      "caseId": "4b1970b3505a13da",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:social-engineering"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:social-engineering"
+        ]
+      }
+    },
+    {
+      "caseId": "7f7187f58b68ec99",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1052"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1052"
+        ]
+      }
+    },
+    {
+      "caseId": "d063f3b55e546d06",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:forensic-science"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:forensic-science"
+        ]
+      }
+    },
+    {
+      "caseId": "99cd129bf47a8d6e",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:third-party-providers"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:third-party-providers"
+        ]
+      }
+    },
+    {
+      "caseId": "e253e71a95e4e435",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:data-provenance"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:data-provenance"
+        ]
+      }
+    },
+    {
+      "caseId": "c32f4f8817e0aba2",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:key-recovery"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:key-recovery"
+        ]
+      }
+    },
+    {
+      "caseId": "4c768ffa59a94637",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:data-privacy"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:data-privacy"
+        ]
+      }
+    },
+    {
+      "caseId": "60d5c58fe1406239",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:personal-identification-number"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:personal-identification-number"
+        ]
+      }
+    },
+    {
+      "caseId": "83425da2a328aa3b",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:information-security-policy"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:information-security-policy"
+        ]
+      }
+    },
+    {
+      "caseId": "0dcd0c896119e8cd",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1595"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1595"
+        ]
+      }
+    },
+    {
+      "caseId": "c353d0588d5ac9bf",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:phishing-resistance"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:phishing-resistance"
+        ]
+      }
+    },
+    {
+      "caseId": "784cd2613713f2a3",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:key-performance-indicator"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:key-performance-indicator"
+        ]
+      }
+    },
+    {
+      "caseId": "449e116b3e18347c",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:certificate-authority-authorization"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:certificate-authority-authorization"
+        ]
+      }
+    },
+    {
+      "caseId": "6abf48a1da72eec7",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1480.001"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1480.001"
+        ]
+      }
+    },
+    {
+      "caseId": "1a5d4800f79d1b63",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:supplier"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:supplier"
+        ]
+      }
+    },
+    {
+      "caseId": "fc6b5d0f527fe844",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:compromising-emanations"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:compromising-emanations"
+        ]
+      }
+    },
+    {
+      "caseId": "71c7c2991f33f911",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:facility"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:facility"
+        ]
+      }
+    },
+    {
+      "caseId": "cb53007cf3f0e6fc",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authorization-to-operate"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authorization-to-operate"
+        ]
+      }
+    },
+    {
+      "caseId": "9c58663a01e53b84",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:de-identification"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:de-identification"
+        ]
+      }
+    },
+    {
+      "caseId": "6159989b3be9795b",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:personal-identifying-information-personally-identifiable-information"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:personal-identifying-information-personally-identifiable-information"
+        ]
+      }
+    },
+    {
+      "caseId": "f2616249b3519460",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      }
+    },
+    {
+      "caseId": "e13396b0609ef6b5",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:ckms-security-policy"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:ckms-security-policy"
+        ]
+      }
+    },
+    {
+      "caseId": "a6b92f3ff017c452",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:vulnerability-assessment-and-management"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:vulnerability-assessment-and-management"
+        ]
+      }
+    },
+    {
+      "caseId": "a15b44eee09b2213",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:risk-governance"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:risk-governance"
+        ]
+      }
+    },
+    {
+      "caseId": "6c7f42e4c5659567",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:security-audit"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:security-audit"
+        ]
+      }
+    },
+    {
+      "caseId": "76d2ae86da26a622",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:issuing-facility"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:issuing-facility"
+        ]
+      }
+    },
+    {
+      "caseId": "49e8e10ea072b88b",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:personal-identification-number"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:personal-identification-number"
+        ]
+      }
+    },
+    {
+      "caseId": "40a00bae923aa426",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:transmission-control-protocol"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:transmission-control-protocol"
+        ]
+      }
+    },
+    {
+      "caseId": "c613af7b9caf3f5c",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authentication-tag"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:authentication-tag"
+        ]
+      }
+    },
+    {
+      "caseId": "2592ca96e335d7ac",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:packet-filter"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:packet-filter"
+        ]
+      }
+    },
+    {
+      "caseId": "6dbe90c14934d7a2",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:physical-access-control-system"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:physical-access-control-system"
+        ]
+      }
+    },
+    {
+      "caseId": "178afb6c9e6f9edd",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      }
+    },
+    {
+      "caseId": "399a4d364d6a56cb",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:risk-management"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:risk-management"
+        ]
+      }
+    },
+    {
+      "caseId": "03ede5cd1267da57",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:i"
+        ]
+      }
+    },
+    {
+      "caseId": "cb9ca3a7b085ac48",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:differential-privacy"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:differential-privacy"
+        ]
+      }
+    },
+    {
+      "caseId": "2290b413ae110649",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:computationally-bounded-adversary"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:computationally-bounded-adversary"
+        ]
+      }
+    },
+    {
+      "caseId": "2dad51d4353fe772",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:trusted-third-party"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:trusted-third-party"
+        ]
+      }
+    },
+    {
+      "caseId": "ee12ae5d588a3bea",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:indicator-of-compromise"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:indicator-of-compromise"
+        ]
+      }
+    },
+    {
+      "caseId": "928157c9f9e39789",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1480.001"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1480.001"
+        ]
+      }
+    },
+    {
+      "caseId": "64b81bca701ce572",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:privacy-risk-assessment"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:privacy-risk-assessment"
+        ]
+      }
+    },
+    {
+      "caseId": "a1f178e6aec48866",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1195.002"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1195.002"
+        ]
+      }
+    },
+    {
+      "caseId": "799de5c76c650257",
+      "passA": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:disaster-recovery-plan"
+        ]
+      },
+      "passB": {
+        "verdict": "not_applicable",
+        "confidence": 95,
+        "ruleIds": [
+          "exclude:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:disaster-recovery-plan"
+        ]
+      }
+    },
+    {
+      "caseId": "ac63c6b0c0c2d66d",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:digital-forensics"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:5",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "niccs-glossary:digital-forensics"
+        ]
+      }
+    },
+    {
+      "caseId": "91cf7862acfca268",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:attribute-based-access-control"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:4",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:attribute-based-access-control"
+        ]
+      }
+    },
+    {
+      "caseId": "fb40850a6a3395fa",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:advanced-encryption-standard"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:1",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "nist-csrc-glossary:advanced-encryption-standard"
+        ]
+      }
+    },
+    {
+      "caseId": "f90f59f62f27097c",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:d"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:3",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "rfc4949:d"
+        ]
+      }
+    },
+    {
+      "caseId": "90c6d9c822d1b531",
+      "passA": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1557"
+        ]
+      },
+      "passB": {
+        "verdict": "applicable",
+        "confidence": 96,
+        "ruleIds": [
+          "include:2",
+          "global:substantive-topic"
+        ],
+        "evidenceSenseKeys": [
+          "mitre-attack-cti:T1557"
+        ]
+      }
+    }
+  ]
+}

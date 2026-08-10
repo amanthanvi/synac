@@ -1,0 +1,446 @@
+{
+  "schemaVersion": "synac-served-model-anchor-v2",
+  "cases": [
+    {
+      "caseId": "67e69ca6552d9ea3",
+      "label": "applicable"
+    },
+    {
+      "caseId": "b6833c7bd19ad264",
+      "label": "applicable"
+    },
+    {
+      "caseId": "762f8ed1d200972c",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "f613eae644f9912a",
+      "label": "applicable"
+    },
+    {
+      "caseId": "ee3c6111b01b7d0e",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "ed2d3d76c3c2ef4f",
+      "label": "applicable"
+    },
+    {
+      "caseId": "dc8dc27cf3570d95",
+      "label": "applicable"
+    },
+    {
+      "caseId": "f8660ad3bd8b0062",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "07bf9c8dc4f90d9d",
+      "label": "applicable"
+    },
+    {
+      "caseId": "a8dbbe7fd88f6ff8",
+      "label": "applicable"
+    },
+    {
+      "caseId": "b3c6586c33ce2526",
+      "label": "applicable"
+    },
+    {
+      "caseId": "ffdb1969c5744df3",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "793d8fb657ac10a7",
+      "label": "applicable"
+    },
+    {
+      "caseId": "72323594222f6184",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "fbd50f6abb412c5a",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "1cfb0735de9f70dd",
+      "label": "applicable"
+    },
+    {
+      "caseId": "af6646e7182baa88",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "2af877c49183d750",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "97cd2fe516363a2f",
+      "label": "applicable"
+    },
+    {
+      "caseId": "dd4c5284947aee8d",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "acb38d0089632d88",
+      "label": "applicable"
+    },
+    {
+      "caseId": "981a694a905438a2",
+      "label": "applicable"
+    },
+    {
+      "caseId": "1e5c0cdadd79ef1b",
+      "label": "applicable"
+    },
+    {
+      "caseId": "11e9d66a63833c9d",
+      "label": "applicable"
+    },
+    {
+      "caseId": "9eccae63fb09d4f1",
+      "label": "applicable"
+    },
+    {
+      "caseId": "f5f503e70caaa0cf",
+      "label": "applicable"
+    },
+    {
+      "caseId": "4126f3b800af046a",
+      "label": "applicable"
+    },
+    {
+      "caseId": "f2cc17cafc8dcae7",
+      "label": "applicable"
+    },
+    {
+      "caseId": "fa90ed2c1b676acc",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "24ea25d320f51857",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "af16d71fbd0b8391",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "0ef8b644adac2bfa",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "550a943aad0771bb",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "e4aa3616748e2a75",
+      "label": "applicable"
+    },
+    {
+      "caseId": "18982c814255a339",
+      "label": "applicable"
+    },
+    {
+      "caseId": "d6fc38f63dd3f2c9",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "c3c2cd462ba35765",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "87dcc53d3fb8f201",
+      "label": "applicable"
+    },
+    {
+      "caseId": "561a7623ae518539",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "11a8ae8d39e4c36c",
+      "label": "applicable"
+    },
+    {
+      "caseId": "67064af0aa37ab5b",
+      "label": "applicable"
+    },
+    {
+      "caseId": "5d46a7160a338fdb",
+      "label": "applicable"
+    },
+    {
+      "caseId": "949d887dda64976c",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "4cee38b32870faa0",
+      "label": "applicable"
+    },
+    {
+      "caseId": "59371c3243c3e904",
+      "label": "applicable"
+    },
+    {
+      "caseId": "ec34df4a0dd3ed0b",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "67a547e392a81f86",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "9a0226ee7e7758a8",
+      "label": "applicable"
+    },
+    {
+      "caseId": "3345b7ff6c849b6c",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "807c1dc13df208ef",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "ca0d2375db2ec310",
+      "label": "applicable"
+    },
+    {
+      "caseId": "659c8e06b162f580",
+      "label": "applicable"
+    },
+    {
+      "caseId": "f781c755aca7f69d",
+      "label": "applicable"
+    },
+    {
+      "caseId": "c15154b541134485",
+      "label": "applicable"
+    },
+    {
+      "caseId": "087ec89322ef0b27",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "47d05163bca7fafe",
+      "label": "applicable"
+    },
+    {
+      "caseId": "c27b7cd7bdc6d6f0",
+      "label": "applicable"
+    },
+    {
+      "caseId": "681cbb7d12581e7c",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "00cec21e8611d73f",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "d1f3e640f0a8d63d",
+      "label": "applicable"
+    },
+    {
+      "caseId": "215bb0ed1a199018",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "4c25e3dd3533efb5",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "de39e4a3a97ef3e3",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "4b1970b3505a13da",
+      "label": "applicable"
+    },
+    {
+      "caseId": "7f7187f58b68ec99",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "d063f3b55e546d06",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "99cd129bf47a8d6e",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "e253e71a95e4e435",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "c32f4f8817e0aba2",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "4c768ffa59a94637",
+      "label": "applicable"
+    },
+    {
+      "caseId": "60d5c58fe1406239",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "83425da2a328aa3b",
+      "label": "applicable"
+    },
+    {
+      "caseId": "0dcd0c896119e8cd",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "c353d0588d5ac9bf",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "784cd2613713f2a3",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "449e116b3e18347c",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "6abf48a1da72eec7",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "1a5d4800f79d1b63",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "fc6b5d0f527fe844",
+      "label": "applicable"
+    },
+    {
+      "caseId": "71c7c2991f33f911",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "cb53007cf3f0e6fc",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "9c58663a01e53b84",
+      "label": "applicable"
+    },
+    {
+      "caseId": "6159989b3be9795b",
+      "label": "applicable"
+    },
+    {
+      "caseId": "f2616249b3519460",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "e13396b0609ef6b5",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "a6b92f3ff017c452",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "a15b44eee09b2213",
+      "label": "applicable"
+    },
+    {
+      "caseId": "6c7f42e4c5659567",
+      "label": "applicable"
+    },
+    {
+      "caseId": "76d2ae86da26a622",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "49e8e10ea072b88b",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "40a00bae923aa426",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "c613af7b9caf3f5c",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "2592ca96e335d7ac",
+      "label": "applicable"
+    },
+    {
+      "caseId": "6dbe90c14934d7a2",
+      "label": "applicable"
+    },
+    {
+      "caseId": "178afb6c9e6f9edd",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "399a4d364d6a56cb",
+      "label": "applicable"
+    },
+    {
+      "caseId": "03ede5cd1267da57",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "cb9ca3a7b085ac48",
+      "label": "applicable"
+    },
+    {
+      "caseId": "2290b413ae110649",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "2dad51d4353fe772",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "ee12ae5d588a3bea",
+      "label": "applicable"
+    },
+    {
+      "caseId": "928157c9f9e39789",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "64b81bca701ce572",
+      "label": "applicable"
+    },
+    {
+      "caseId": "a1f178e6aec48866",
+      "label": "applicable"
+    },
+    {
+      "caseId": "799de5c76c650257",
+      "label": "not_applicable"
+    },
+    {
+      "caseId": "ac63c6b0c0c2d66d",
+      "label": "applicable"
+    },
+    {
+      "caseId": "91cf7862acfca268",
+      "label": "applicable"
+    },
+    {
+      "caseId": "fb40850a6a3395fa",
+      "label": "applicable"
+    },
+    {
+      "caseId": "f90f59f62f27097c",
+      "label": "applicable"
+    },
+    {
+      "caseId": "90c6d9c822d1b531",
+      "label": "applicable"
+    }
+  ],
+  "benchmarkHash": "28ae4540e3c7e84564e1e4fd0c337d80105ebb13d6b34c569329c75ccf2c465b"
+}

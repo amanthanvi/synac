@@ -19,6 +19,8 @@ export const ADAPTERS = [
   'owaspVulnerabilities',
   'mitreAttackCti',
 ] as const;
+export const TAG_LIFECYCLES = ['CANDIDATE', 'PUBLISHED'] as const;
+export const TAG_ASSIGNMENT_AUTHORITIES = ['SYNTHETIC_REFERENCE'] as const;
 
 const slug = z
   .string()
@@ -31,7 +33,10 @@ const isoDate = z
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a YYYY-MM-DD date')
   .refine((value) => {
     const parsed = new Date(`${value}T00:00:00Z`);
-    return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+    return (
+      !Number.isNaN(parsed.valueOf()) &&
+      parsed.toISOString().slice(0, 10) === value
+    );
   }, 'must be a valid calendar date');
 const isoDateTime = z.iso.datetime({ offset: true });
 
@@ -68,17 +73,160 @@ export const sourceFileSchema = z
   })
   .strict();
 
+const tagContractSchema = z
+  .object({
+    slug,
+    name: z.string().min(1),
+    description: z.string().optional(),
+    definition: z.string().min(1).optional(),
+    inclusionRules: z.array(z.string().min(1)).optional(),
+    exclusionRules: z.array(z.string().min(1)).optional(),
+    positiveExamples: z.array(z.string().min(1)).optional(),
+    hardNegatives: z.array(z.string().min(1)).optional(),
+    allowedCooccurrences: z.array(slug).optional(),
+    lifecycle: z.enum(TAG_LIFECYCLES).optional(),
+  })
+  .strict();
+
 export const tagsFileSchema = z
   .object({
-    tags: z.array(
+    taxonomyVersion: z
+      .string()
+      .regex(/^\d+$/, 'must be a monotonically increasing integer string')
+      .optional(),
+    tags: z.array(tagContractSchema),
+    retiredTags: z
+      .array(
+        z
+          .object({
+            slug,
+            name: z.string().min(1),
+            replacedBy: slug.optional(),
+            reason: z.string().min(1),
+          })
+          .strict(),
+      )
+      .optional(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (Number(value.taxonomyVersion ?? '1') < 2) return;
+    if (!value.retiredTags) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['retiredTags'],
+        message: 'taxonomy v2 requires retiredTags',
+      });
+    }
+    for (const [index, tag] of value.tags.entries()) {
+      const path = ['tags', index] as const;
+      for (const field of [
+        'description',
+        'definition',
+        'inclusionRules',
+        'exclusionRules',
+        'positiveExamples',
+        'hardNegatives',
+        'allowedCooccurrences',
+        'lifecycle',
+      ] as const) {
+        if (tag[field] === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, field],
+            message: `taxonomy v2 requires ${field}`,
+          });
+        }
+      }
+      if ((tag.positiveExamples?.length ?? 0) < 5) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'positiveExamples'],
+          message: 'taxonomy v2 requires at least five positive examples',
+        });
+      }
+      if ((tag.hardNegatives?.length ?? 0) < 5) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, 'hardNegatives'],
+          message: 'taxonomy v2 requires at least five hard negatives',
+        });
+      }
+      for (const field of [
+        'inclusionRules',
+        'exclusionRules',
+        'positiveExamples',
+        'hardNegatives',
+        'allowedCooccurrences',
+      ] as const) {
+        const items = tag[field] ?? [];
+        if (new Set(items).size !== items.length) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, field],
+            message: 'taxonomy v2 values must be unique',
+          });
+        }
+      }
+    }
+  });
+
+const sha256 = z
+  .string()
+  .regex(/^[a-f0-9]{64}$/, 'must be a lowercase SHA-256 hex digest');
+const entryKeyValue = z
+  .string()
+  .regex(/^(TERM|ACRONYM):[a-z0-9]+(?:-[a-z0-9]+)*$/);
+
+export const tagAssignmentsFileSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    taxonomyVersion: z.string().regex(/^\d+$/),
+    taxonomyHash: sha256,
+    run: z
+      .object({
+        runId: z.string().min(1),
+        corpusHash: sha256,
+        model: z.string().min(1),
+        modelHash: sha256,
+        promptHash: sha256,
+        configHash: sha256,
+        calibrationHash: sha256,
+        certificationHash: sha256,
+        thresholds: z.record(slug, z.number().min(0).max(1)),
+        thresholdsHash: sha256,
+        previousAssignmentsHash: sha256.optional(),
+        labelOrigin: z.literal('synthetic_ai_panel'),
+        createdAt: isoDateTime,
+        release: z.literal(true),
+      })
+      .strict(),
+    assignments: z.array(
       z
         .object({
-          slug,
-          name: z.string().min(1),
-          description: z.string().optional(),
+          entryKey: entryKeyValue,
+          entryContentHash: sha256,
+          tagSlug: slug,
+          authority: z.enum(TAG_ASSIGNMENT_AUTHORITIES),
+          lane: z.literal('AUTO'),
+          score: z.number().min(0).max(1),
+          runId: z.string().min(1),
         })
         .strict(),
     ),
+    removals: z
+      .array(
+        z
+          .object({
+            entryKey: entryKeyValue,
+            tagSlug: slug,
+            previousEntryContentHash: sha256,
+            reason: z.string().min(1),
+            runId: z.string().min(1),
+          })
+          .strict(),
+      )
+      .default([]),
   })
   .strict();
 
@@ -194,6 +342,7 @@ export const overrideFileSchema = z
 
 export type SourceFile = z.infer<typeof sourceFileSchema>;
 export type TagsFile = z.infer<typeof tagsFileSchema>;
+export type TagAssignmentsFile = z.infer<typeof tagAssignmentsFileSchema>;
 export type RedirectsFile = z.infer<typeof redirectsFileSchema>;
 export type BundleFile = z.infer<typeof bundleFileSchema>;
 export type BundleEntry = z.infer<typeof bundleEntrySchema>;
@@ -264,9 +413,19 @@ export type CompiledSource = {
 export type CompiledDataset = {
   contentVersion: string;
   sources: CompiledSource[];
-  tags: Array<{ slug: string; name: string; description: string | undefined; entryCount: number }>;
+  tags: Array<{
+    slug: string;
+    name: string;
+    description: string | undefined;
+    entryCount: number;
+  }>;
   entries: CompiledEntry[];
   senses: CompiledSense[];
-  relationships: Array<{ fromKey: string; toKey: string; type: RelationshipType }>;
+  relationships: Array<{
+    fromKey: string;
+    toKey: string;
+    type: RelationshipType;
+  }>;
   redirects: Array<{ entryType: EntryType; fromSlug: string; toSlug: string }>;
+  tagRedirects: Array<{ fromSlug: string; toSlug: string | undefined }>;
 };

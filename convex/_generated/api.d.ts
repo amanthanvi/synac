@@ -9,6 +9,7 @@
  */
 
 import type * as crons from "../crons.js";
+import type * as lib_contentGeneration from "../lib/contentGeneration.js";
 import type * as lib_serviceKey from "../lib/serviceKey.js";
 import type * as publicBrowse from "../publicBrowse.js";
 import type * as publicEntries from "../publicEntries.js";
@@ -28,6 +29,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
+  "lib/contentGeneration": typeof lib_contentGeneration;
   "lib/serviceKey": typeof lib_serviceKey;
   publicBrowse: typeof publicBrowse;
   publicEntries: typeof publicEntries;
