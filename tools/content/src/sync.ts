@@ -12,61 +12,194 @@ import process from 'node:process';
 
 import { compileContent } from './compile.js';
 import { loadContentDir } from './load.js';
-import type { CompiledDataset, CompiledSense } from './model.js';
-
-const ENTRY_CHUNK = 25;
-const RELATIONSHIP_CHUNK = 200;
+import type { CompiledDataset } from './model.js';
+import {
+  createSyncPlan,
+  isSyncConverged,
+  stripUndefined,
+  type SyncBatchKind,
+} from './sync-plan.js';
 
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
 const prod = process.argv.includes('--prod');
 
-function runConvex(fn: string, args: unknown): void {
-  const cliArgs = ['convex', 'run', fn, JSON.stringify(args), ...(prod ? ['--prod'] : [])];
-  const result = spawnSync('npx', cliArgs, { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'] });
-  if (result.status !== 0) {
-    throw new Error(`npx convex run ${fn} failed:\n${result.stderr?.toString() ?? ''}`);
+function runConvex(fn: string, args: unknown): string {
+  const cliArgs = [
+    'convex',
+    'run',
+    fn,
+    JSON.stringify(args),
+    ...(prod ? ['--prod'] : []),
+  ];
+  let lastError = '';
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const result = spawnSync('npx', cliArgs, {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    if (result.status === 0) return result.stdout?.toString().trim() ?? '';
+    lastError = result.stderr?.toString() ?? '';
+    if (attempt < 3)
+      Atomics.wait(
+        new Int32Array(new SharedArrayBuffer(4)),
+        0,
+        0,
+        attempt * 1_000,
+      );
   }
+  throw new Error(
+    `npx convex run ${fn} failed after 3 attempts:\n${lastError}`,
+  );
 }
 
-function chunk<T>(items: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < items.length; i += size) chunks.push(items.slice(i, i + size));
-  return chunks;
-}
-
-function stripUndefined<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
+const SYNC_FUNCTIONS: Record<SyncBatchKind, string> = {
+  sources: 'sync:upsertSources',
+  tags: 'sync:upsertTags',
+  entries: 'sync:upsertEntries',
+  relationships: 'sync:upsertRelationships',
+  redirects: 'sync:upsertRedirects',
+  tagRedirects: 'sync:upsertTagRedirects',
+};
 
 function pushDataset(dataset: CompiledDataset): void {
-  const syncVersion = dataset.contentVersion;
-  const sensesByEntry = new Map<string, CompiledSense[]>();
-  for (const sense of dataset.senses) {
-    const list = sensesByEntry.get(sense.entryKey) ?? [];
-    list.push(sense);
-    sensesByEntry.set(sense.entryKey, list);
+  const plan = createSyncPlan(dataset);
+  const begin = convexJson<{
+    alreadyCurrent: boolean;
+    nextBatchOrdinal: number;
+  }>('sync:begin', {
+    syncVersion: plan.syncVersion,
+    manifestHash: plan.manifestHash,
+    batchHashes: plan.batchHashes,
+    expectedCounts: plan.expectedCounts,
+    expectedTagCounts: plan.expectedTagCounts,
+    expectedSourceCounts: plan.expectedSourceCounts,
+  });
+  if (begin.alreadyCurrent) return;
+  if (
+    begin.nextBatchOrdinal < 0 ||
+    begin.nextBatchOrdinal > plan.batches.length
+  ) {
+    throw new Error(
+      `pending sync returned invalid next batch ordinal ${begin.nextBatchOrdinal}`,
+    );
   }
-
-  runConvex('sync:upsertSources', { syncVersion, rows: stripUndefined(dataset.sources) });
-  runConvex('sync:upsertTags', { syncVersion, rows: stripUndefined(dataset.tags) });
-
-  const entryRows = dataset.entries.map((entry) => ({
-    ...entry,
-    senses: (sensesByEntry.get(entry.key) ?? []).map(({ entryKey: _entryKey, ...sense }) => sense),
-  }));
-  for (const [index, rows] of chunk(entryRows, ENTRY_CHUNK).entries()) {
-    runConvex('sync:upsertEntries', { syncVersion, rows: stripUndefined(rows) });
-    console.log(`entries: chunk ${index + 1} pushed (${rows.length} rows)`);
+  let entryChunk = plan.batches
+    .slice(0, begin.nextBatchOrdinal)
+    .filter((batch) => batch.kind === 'entries').length;
+  for (
+    let ordinal = begin.nextBatchOrdinal;
+    ordinal < plan.batches.length;
+    ordinal += 1
+  ) {
+    const batch = plan.batches[ordinal];
+    if (!batch) throw new Error(`sync plan batch ${ordinal} is missing`);
+    runConvex(SYNC_FUNCTIONS[batch.kind], {
+      syncVersion: plan.syncVersion,
+      manifestHash: plan.manifestHash,
+      ordinal,
+      batchHash: batch.hash,
+      rows: stripUndefined(batch.rows),
+    });
+    if (batch.kind === 'entries') {
+      entryChunk += 1;
+      console.log(
+        `entries: chunk ${entryChunk} pushed (${batch.rows.length} rows)`,
+      );
+    }
   }
-
-  for (const rows of chunk(dataset.relationships, RELATIONSHIP_CHUNK)) {
-    runConvex('sync:upsertRelationships', { syncVersion, rows: stripUndefined(rows) });
-  }
-  runConvex('sync:upsertRedirects', { syncVersion, rows: stripUndefined(dataset.redirects) });
-  runConvex('sync:finish', { syncVersion, entryCount: dataset.entries.length });
+  runConvex('sync:commit', {
+    syncVersion: plan.syncVersion,
+    manifestHash: plan.manifestHash,
+  });
 }
 
-const contentDir = process.env.SYNAC_CONTENT_DIR ?? path.join(repoRoot, 'content');
+function waitForConvergence(expectedVersion: string): string {
+  const attempts = 120;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const raw = runConvex('sync:status', {});
+    const status = JSON.parse(raw) as {
+      contentVersion?: string;
+      prunePending?: boolean;
+    };
+    if (status.contentVersion !== expectedVersion) {
+      throw new Error(
+        `sync status version ${status.contentVersion ?? 'missing'} does not match ${expectedVersion}`,
+      );
+    }
+    if (isSyncConverged(status)) return raw;
+    if (attempt < attempts)
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1_000);
+  }
+  throw new Error(
+    'content sync did not finish stale-row pruning within 120 seconds',
+  );
+}
+
+function convexJson<T>(fn: string, args: unknown): T {
+  const raw = runConvex(fn, args);
+  try {
+    return JSON.parse(raw) as T;
+  } catch (error) {
+    throw new Error(`${fn}: Convex CLI returned non-JSON output`, {
+      cause: error,
+    });
+  }
+}
+
+function verifyTagConvergence(dataset: CompiledDataset): void {
+  const actualTags = convexJson<Array<{ slug: string; entryCount: number }>>(
+    'tags:directory',
+    {},
+  );
+  const expectedBySlug = new Map(
+    dataset.tags.map((tag) => [tag.slug, tag.entryCount]),
+  );
+  if (actualTags.length !== dataset.tags.length) {
+    throw new Error(
+      `production tag count ${actualTags.length} does not match compiled count ${dataset.tags.length}`,
+    );
+  }
+  for (const tag of actualTags) {
+    const expectedCount = expectedBySlug.get(tag.slug);
+    if (expectedCount === undefined || expectedCount !== tag.entryCount) {
+      throw new Error(
+        `production tag ${tag.slug} declares ${tag.entryCount}; compiled dataset declares ${expectedCount ?? 'missing'}`,
+      );
+    }
+    const entryKeys = new Set<string>();
+    for (let page = 1; page <= 100; page += 1) {
+      const result = convexJson<{
+        entries: Array<{ key: string }>;
+        hasMore: boolean;
+      }>('tags:entriesForTag', {
+        tagSlug: tag.slug,
+        entryType: null,
+        page,
+        pageSize: 100,
+      });
+      for (const entry of result.entries) {
+        if (entryKeys.has(entry.key))
+          throw new Error(
+            `production tag ${tag.slug} repeats entry ${entry.key}`,
+          );
+        entryKeys.add(entry.key);
+      }
+      if (!result.hasMore) break;
+      if (page === 100)
+        throw new Error(
+          `production tag ${tag.slug} exceeds the supported 10,000-entry verification bound`,
+        );
+    }
+    if (entryKeys.size !== expectedCount) {
+      throw new Error(
+        `production tag ${tag.slug} enumerates ${entryKeys.size}; expected ${expectedCount}`,
+      );
+    }
+  }
+}
+
+const contentDir =
+  process.env.SYNAC_CONTENT_DIR ?? path.join(repoRoot, 'content');
 const loaded = await loadContentDir(contentDir);
 if (!loaded.ok) {
   for (const error of loaded.errors) console.error(`  ✗ ${error}`);
@@ -83,10 +216,8 @@ console.log(
     `to ${prod ? 'production' : 'the local dev deployment'}`,
 );
 pushDataset(result.dataset);
-
-const status = spawnSync(
-  'npx',
-  ['convex', 'run', 'sync:status', '{}', ...(prod ? ['--prod'] : [])],
-  { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'] },
+console.log(
+  `sync status: ${waitForConvergence(result.dataset.contentVersion)}`,
 );
-console.log(`sync status: ${status.stdout?.toString().trim()}`);
+verifyTagConvergence(result.dataset);
+console.log('tag convergence: verified');

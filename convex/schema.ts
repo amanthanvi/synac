@@ -1,11 +1,11 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
 
-export const entryType = v.union(v.literal("TERM"), v.literal("ACRONYM"));
+export const entryType = v.union(v.literal('TERM'), v.literal('ACRONYM'));
 export const relationshipType = v.union(
-  v.literal("RELATED"),
-  v.literal("SEE_ALSO"),
-  v.literal("CONTRAST"),
+  v.literal('RELATED'),
+  v.literal('SEE_ALSO'),
+  v.literal('CONTRAST'),
 );
 
 export const citationValidator = v.object({
@@ -23,6 +23,18 @@ export const citationValidator = v.object({
 export const exampleValidator = v.object({
   md: v.string(),
   text: v.string(),
+});
+
+const generationCountsValidator = v.object({
+  sources: v.number(),
+  tags: v.number(),
+  entries: v.number(),
+  senses: v.number(),
+  entryTags: v.number(),
+  entrySources: v.number(),
+  relationships: v.number(),
+  redirects: v.number(),
+  tagRedirects: v.number(),
 });
 
 // Content tables are populated exclusively by the sync pipeline from the
@@ -44,8 +56,9 @@ export default defineSchema({
     citedEntryCount: v.number(),
     syncVersion: v.string(),
   })
-    .index("by_slug", ["slug"])
-    .index("by_syncVersion", ["syncVersion"]),
+    .index('by_slug', ['slug'])
+    .index('by_syncVersion_and_slug', ['syncVersion', 'slug'])
+    .index('by_syncVersion', ['syncVersion']),
 
   tags: defineTable({
     slug: v.string(),
@@ -54,8 +67,9 @@ export default defineSchema({
     entryCount: v.number(),
     syncVersion: v.string(),
   })
-    .index("by_slug", ["slug"])
-    .index("by_syncVersion", ["syncVersion"]),
+    .index('by_slug', ['slug'])
+    .index('by_syncVersion_and_slug', ['syncVersion', 'slug'])
+    .index('by_syncVersion', ['syncVersion']),
 
   entries: defineTable({
     key: v.string(),
@@ -75,20 +89,41 @@ export default defineSchema({
     citedSourceSlugs: v.array(v.string()),
     syncVersion: v.string(),
   })
-    .index("by_key", ["key"])
-    .index("by_entryType_and_slug", ["entryType", "slug"])
-    .index("by_entryType_and_normalizedTitle", ["entryType", "normalizedTitle"])
-    .index("by_entryType_and_updatedAt", ["entryType", "updatedAt"])
-    .index("by_normalizedTitle", ["normalizedTitle"])
-    .index("by_updatedAt", ["updatedAt"])
-    .index("by_syncVersion", ["syncVersion"])
-    .searchIndex("search_searchDocument", {
-      searchField: "searchDocument",
-      filterFields: ["entryType"],
+    .index('by_key', ['key'])
+    .index('by_entryType_and_slug', ['entryType', 'slug'])
+    .index('by_entryType_and_normalizedTitle', ['entryType', 'normalizedTitle'])
+    .index('by_entryType_and_updatedAt', ['entryType', 'updatedAt'])
+    .index('by_normalizedTitle', ['normalizedTitle'])
+    .index('by_updatedAt', ['updatedAt'])
+    .index('by_syncVersion_and_key', ['syncVersion', 'key'])
+    .index('by_syncVersion_and_entryType_and_slug', [
+      'syncVersion',
+      'entryType',
+      'slug',
+    ])
+    .index('by_syncVersion_and_entryType_and_normalizedTitle', [
+      'syncVersion',
+      'entryType',
+      'normalizedTitle',
+    ])
+    .index('by_syncVersion_and_entryType_and_updatedAt', [
+      'syncVersion',
+      'entryType',
+      'updatedAt',
+    ])
+    .index('by_syncVersion_and_normalizedTitle', [
+      'syncVersion',
+      'normalizedTitle',
+    ])
+    .index('by_syncVersion_and_updatedAt', ['syncVersion', 'updatedAt'])
+    .index('by_syncVersion', ['syncVersion'])
+    .searchIndex('search_searchDocument', {
+      searchField: 'searchDocument',
+      filterFields: ['syncVersion', 'entryType'],
     }),
 
   senses: defineTable({
-    entryId: v.id("entries"),
+    entryId: v.id('entries'),
     entryKey: v.string(),
     key: v.string(),
     order: v.number(),
@@ -103,43 +138,87 @@ export default defineSchema({
     citations: v.array(citationValidator),
     syncVersion: v.string(),
   })
-    .index("by_entryId", ["entryId"])
-    .index("by_entryKey_and_key", ["entryKey", "key"])
-    .index("by_syncVersion", ["syncVersion"]),
+    .index('by_entryId', ['entryId'])
+    .index('by_entryKey_and_key', ['entryKey', 'key'])
+    .index('by_syncVersion_and_entryKey_and_key', [
+      'syncVersion',
+      'entryKey',
+      'key',
+    ])
+    .index('by_syncVersion', ['syncVersion']),
 
   entryTags: defineTable({
-    entryId: v.id("entries"),
+    entryId: v.id('entries'),
     entryKey: v.string(),
     tagSlug: v.string(),
+    // Optional for the one deployment that backfills existing links. Every
+    // current sync writes it; the compound index makes type-filtered tag
+    // pagination bounded without fetching unrelated Entries.
+    entryType: v.optional(entryType),
     updatedAt: v.number(),
     syncVersion: v.string(),
   })
-    .index("by_entryKey_and_tagSlug", ["entryKey", "tagSlug"])
-    .index("by_tagSlug_and_updatedAt", ["tagSlug", "updatedAt"])
-    .index("by_syncVersion", ["syncVersion"]),
+    .index('by_entryKey_and_tagSlug', ['entryKey', 'tagSlug'])
+    .index('by_tagSlug_and_updatedAt', ['tagSlug', 'updatedAt'])
+    .index('by_syncVersion_and_entryKey_and_tagSlug', [
+      'syncVersion',
+      'entryKey',
+      'tagSlug',
+    ])
+    .index('by_syncVersion_and_tagSlug_and_updatedAt', [
+      'syncVersion',
+      'tagSlug',
+      'updatedAt',
+    ])
+    .index('by_syncVersion_and_tagSlug_and_entryType_and_updatedAt', [
+      'syncVersion',
+      'tagSlug',
+      'entryType',
+      'updatedAt',
+    ])
+    .index('by_syncVersion', ['syncVersion']),
 
   entrySources: defineTable({
-    entryId: v.id("entries"),
+    entryId: v.id('entries'),
     entryKey: v.string(),
     sourceSlug: v.string(),
     normalizedTitle: v.string(),
     syncVersion: v.string(),
   })
-    .index("by_entryKey_and_sourceSlug", ["entryKey", "sourceSlug"])
-    .index("by_sourceSlug_and_normalizedTitle", ["sourceSlug", "normalizedTitle"])
-    .index("by_syncVersion", ["syncVersion"]),
+    .index('by_entryKey_and_sourceSlug', ['entryKey', 'sourceSlug'])
+    .index('by_sourceSlug_and_normalizedTitle', [
+      'sourceSlug',
+      'normalizedTitle',
+    ])
+    .index('by_syncVersion_and_entryKey_and_sourceSlug', [
+      'syncVersion',
+      'entryKey',
+      'sourceSlug',
+    ])
+    .index('by_syncVersion_and_sourceSlug_and_normalizedTitle', [
+      'syncVersion',
+      'sourceSlug',
+      'normalizedTitle',
+    ])
+    .index('by_syncVersion', ['syncVersion']),
 
   relationships: defineTable({
-    fromEntryId: v.id("entries"),
-    toEntryId: v.id("entries"),
+    fromEntryId: v.id('entries'),
+    toEntryId: v.id('entries'),
     fromKey: v.string(),
     toKey: v.string(),
     type: relationshipType,
     syncVersion: v.string(),
   })
-    .index("by_fromKey_and_toKey_and_type", ["fromKey", "toKey", "type"])
-    .index("by_fromEntryId", ["fromEntryId"])
-    .index("by_syncVersion", ["syncVersion"]),
+    .index('by_fromKey_and_toKey_and_type', ['fromKey', 'toKey', 'type'])
+    .index('by_fromEntryId', ['fromEntryId'])
+    .index('by_syncVersion_and_fromKey_and_toKey_and_type', [
+      'syncVersion',
+      'fromKey',
+      'toKey',
+      'type',
+    ])
+    .index('by_syncVersion', ['syncVersion']),
 
   redirects: defineTable({
     entryType,
@@ -147,15 +226,48 @@ export default defineSchema({
     toSlug: v.string(),
     syncVersion: v.string(),
   })
-    .index("by_entryType_and_fromSlug", ["entryType", "fromSlug"])
-    .index("by_syncVersion", ["syncVersion"]),
+    .index('by_entryType_and_fromSlug', ['entryType', 'fromSlug'])
+    .index('by_syncVersion_and_entryType_and_fromSlug', [
+      'syncVersion',
+      'entryType',
+      'fromSlug',
+    ])
+    .index('by_syncVersion', ['syncVersion']),
+
+  tagRedirects: defineTable({
+    fromSlug: v.string(),
+    toSlug: v.optional(v.string()),
+    syncVersion: v.string(),
+  })
+    .index('by_fromSlug', ['fromSlug'])
+    .index('by_syncVersion_and_fromSlug', ['syncVersion', 'fromSlug'])
+    .index('by_syncVersion', ['syncVersion']),
 
   syncMeta: defineTable({
-    key: v.literal("content"),
+    key: v.literal('content'),
     contentVersion: v.string(),
     syncedAt: v.number(),
     entryCount: v.number(),
-  }).index("by_key", ["key"]),
+    formatVersion: v.optional(v.number()),
+    prunePending: v.optional(v.boolean()),
+    pending: v.optional(
+      v.object({
+        state: v.union(v.literal('STAGING'), v.literal('ABORTING')),
+        syncVersion: v.string(),
+        manifestHash: v.string(),
+        batchHashes: v.array(v.string()),
+        nextBatchOrdinal: v.number(),
+        lastBatchOrdinal: v.optional(v.number()),
+        lastBatchHash: v.optional(v.string()),
+        expectedCounts: generationCountsValidator,
+        observedCounts: generationCountsValidator,
+        expectedTagCounts: v.record(v.string(), v.number()),
+        observedTagCounts: v.record(v.string(), v.number()),
+        expectedSourceCounts: v.record(v.string(), v.number()),
+        observedSourceCounts: v.record(v.string(), v.number()),
+      }),
+    ),
+  }).index('by_key', ['key']),
 
   // Runtime data — never touched by sync. Keyed by the entry's natural key so
   // rows survive content re-syncs.
@@ -166,6 +278,6 @@ export default defineSchema({
     lastSeenAt: v.number(),
     viewCount: v.number(),
   })
-    .index("by_entryKey_and_sessionHash", ["entryKey", "sessionHash"])
-    .index("by_lastSeenAt", ["lastSeenAt"]),
+    .index('by_entryKey_and_sessionHash', ['entryKey', 'sessionHash'])
+    .index('by_lastSeenAt', ['lastSeenAt']),
 });

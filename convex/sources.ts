@@ -1,6 +1,7 @@
-import { v } from "convex/values";
-import { query } from "./_generated/server";
-import { tagNames } from "./publicEntries";
+import { v } from 'convex/values';
+import { query } from './_generated/server';
+import { tagNames } from './publicEntries';
+import { activeGeneration } from './lib/contentGeneration';
 
 function publicSource(source: {
   slug: string;
@@ -35,7 +36,14 @@ function publicSource(source: {
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const sources = await ctx.db.query("sources").withIndex("by_slug").take(200);
+    const generation = await activeGeneration(ctx);
+    if (!generation) return [];
+    const sources = await ctx.db
+      .query('sources')
+      .withIndex('by_syncVersion_and_slug', (q) =>
+        q.eq('syncVersion', generation.version),
+      )
+      .take(200);
     return sources.map(publicSource);
   },
 });
@@ -43,9 +51,15 @@ export const list = query({
 export const bySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, args) => {
+    const generation = await activeGeneration(ctx);
+    if (!generation) return null;
     const source = await ctx.db
-      .query("sources")
-      .withIndex("by_slug", (q) => q.eq("slug", args.slug.trim().toLowerCase()))
+      .query('sources')
+      .withIndex('by_syncVersion_and_slug', (q) =>
+        q
+          .eq('syncVersion', generation.version)
+          .eq('slug', args.slug.trim().toLowerCase()),
+      )
       .unique();
     return source ? publicSource(source) : null;
   },
@@ -54,17 +68,23 @@ export const bySlug = query({
 export const citedEntries = query({
   args: { sourceSlug: v.string(), page: v.number(), pageSize: v.number() },
   handler: async (ctx, args) => {
+    const generation = await activeGeneration(ctx);
+    if (!generation) return { entries: [], hasMore: false };
     const page = Math.max(1, Math.min(10, Math.floor(args.page)));
     const pageSize = Math.max(1, Math.min(100, Math.floor(args.pageSize)));
     const links = await ctx.db
-      .query("entrySources")
-      .withIndex("by_sourceSlug_and_normalizedTitle", (q) => q.eq("sourceSlug", args.sourceSlug))
+      .query('entrySources')
+      .withIndex('by_syncVersion_and_sourceSlug_and_normalizedTitle', (q) =>
+        q
+          .eq('syncVersion', generation.version)
+          .eq('sourceSlug', args.sourceSlug),
+      )
       .take(page * pageSize + 1);
     const pageLinks = links.slice((page - 1) * pageSize, page * pageSize);
     const entries = [];
     for (const link of pageLinks) {
       const entry = await ctx.db.get(link.entryId);
-      if (!entry) continue;
+      if (!entry || entry.syncVersion !== generation.version) continue;
       entries.push({
         key: entry.key,
         entryType: entry.entryType,
@@ -72,7 +92,7 @@ export const citedEntries = query({
         title: entry.title,
         summaryText: entry.summaryText ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
       });
     }
     return { entries, hasMore: links.length > page * pageSize };

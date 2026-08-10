@@ -1,9 +1,19 @@
 # Releasing SynAc
 
 Deployment is continuous: every push to `main` triggers the `Deploy` workflow,
-which validates `content/`, deploys the Convex functions, and syncs the
-compiled content into the production deployment. Vercel builds the web app
-from `main` independently.
+which runs the complete repository gate, deploys the Convex functions, syncs
+the compiled content, and waits for stale-row pruning to converge. A failed
+gate or non-convergent sync never reports a successful content deployment.
+Vercel builds the web app from `main` independently.
+
+Content sync stages a complete, hash-bound generation while the prior
+generation remains active. Activation is one Convex mutation after exact
+batch, table, tag, and source counters match. A failed stage is safe to retry;
+if its content version is unchanged, the client resumes at the first
+unacknowledged batch. To abandon a stale pending generation, run
+`npx convex run sync:abortPending '{"syncVersion":"<pending-version>"}' --prod`
+and wait until `sync:status` no longer reports `pending` before deploying a
+different generation.
 
 ## Required configuration
 
@@ -43,7 +53,9 @@ Performed once when this architecture first ships:
 4. Merge to `main`; the deploy workflow pushes the new schema + functions and
    syncs the content in.
 5. Verify: `/`, an entry page, `/search?q=…`, `/sources`, and
-   `npx convex run sync:status --prod`.
+   `npx convex run sync:status --prod`. `pending` must be absent,
+   `prunePending` must be `false`, and the reported `contentVersion` must equal
+   the locally compiled version.
 6. Decommission Clerk (delete the application) and remove Clerk env vars from
    Vercel.
 
@@ -51,6 +63,9 @@ Performed once when this architecture first ships:
 
 - Content problem: revert the offending content PR — the next sync converges
   the deployment to the reverted state.
-- Function problem: revert the code PR; the deploy workflow redeploys.
+- Function problem after the generation schema has shipped: repair forward with
+  a compatibility-preserving function change. Do not redeploy a schema that
+  rejects `syncMeta.pending`, generation metadata, typed tag links, or tag
+  redirects already present in production.
 - Catastrophic data problem: restore the latest Convex backup, then re-run
   the sync from `main`.

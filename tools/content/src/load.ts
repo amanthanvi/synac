@@ -8,6 +8,7 @@ import {
   overrideFileSchema,
   redirectsFileSchema,
   sourceFileSchema,
+  tagAssignmentsFileSchema,
   tagsFileSchema,
   type EntryType,
   type OverrideFile,
@@ -73,6 +74,14 @@ export async function loadContentDir(contentDir: string): Promise<LoadResult> {
   const tags = (await parseJsonFile(path.join(contentDir, 'tags.json'), tagsFileSchema, errors)) ?? { tags: [] };
   const redirects =
     (await parseJsonFile(path.join(contentDir, 'redirects.json'), redirectsFileSchema, errors)) ?? { redirects: [] };
+  const tagAssignmentsPath = path.join(contentDir, 'tag-assignments.json');
+  let tagAssignments;
+  try {
+    await readFile(tagAssignmentsPath, 'utf8');
+    tagAssignments = await parseJsonFile(tagAssignmentsPath, tagAssignmentsFileSchema, errors);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  }
 
   const bundles = [];
   for (const name of await listJsonFiles(path.join(contentDir, 'generated'))) {
@@ -98,5 +107,5 @@ export async function loadContentDir(contentDir: string): Promise<LoadResult> {
   }
 
   if (errors.length > 0) return { ok: false, errors };
-  return { ok: true, input: { sources, tags, redirects, bundles, overrides } };
+  return { ok: true, input: { sources, tags, tagAssignments, redirects, bundles, overrides } };
 }
