@@ -28,3 +28,15 @@ export function tagRedirectPath(
   if (page > 1) query.set('page', String(Math.min(MAX_TAG_PAGE, page)));
   return `/tags/${slug}${query.size > 0 ? `?${query.toString()}` : ''}`;
 }
+
+export function nextTagPagePath(
+  slug: string,
+  entryType: TagEntryType | undefined,
+  page: number,
+  hasMore: boolean,
+): string | undefined {
+  if (!hasMore || page >= MAX_TAG_PAGE) return undefined;
+
+  const separator = entryType ? '&' : '?';
+  return `/tags/${slug}${entryType ? `?type=${encodeURIComponent(entryType)}` : ''}${separator}page=${page + 1}`;
+}

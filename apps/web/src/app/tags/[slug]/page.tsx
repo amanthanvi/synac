@@ -8,6 +8,7 @@ import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
 import {
+  nextTagPagePath,
   parseTagEntryType,
   parseTagPage,
   tagRedirectPath,
@@ -110,9 +111,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
     page > 1
       ? `${baseHref}${entryType ? '&' : '?'}page=${page - 1}`
       : undefined;
-  const nextHref = hasMore
-    ? `${baseHref}${entryType ? '&' : '?'}page=${page + 1}`
-    : undefined;
+  const nextHref = nextTagPagePath(tag.slug, entryType, page, hasMore);
 
   return (
     <div className={layoutStyles.pageNarrow}>
