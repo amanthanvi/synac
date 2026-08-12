@@ -1,0 +1,507 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T09",
+  "tagSlug": "privacy-data-protection",
+  "rows": [
+    {
+      "entryKey": "TERM:anonymized-information",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:anonymized-information",
+      "quote": "Previously identifiable information that has been de identified and for which a code or other association for re identification no longer exists.",
+      "rationale": "The source defines Anonymized Information as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:anonymizer",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "An internetwork service, usually provided via a proxy server, that provides anonymity and privacy for clients. That is, the service enables a client to access servers (a) without allowing anyone to gather information about which servers the client accesses and (b) without allowing the accessed servers to gather information about the client, such as its IP address.",
+      "rationale": "The source defines anonymizer as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:anticipated-re-identification-rate",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:anticipated-re-identification-rate",
+      "quote": "When an organization contemplates performing re identification, the re identification rate that the resulting de identified data are likely to have.",
+      "rationale": "The source defines anticipated re-identification rate as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:bounded-differential-privacy",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:bounded-differential-privacy",
+      "quote": "A unit of privacy variant that calls two datasets D1 and D2 neighbors if it is possible to construct D2 from D1 by changing one person’s data. Under bounded differential privacy, neighboring datasets have the same size. Bounded differential privacy allows for mechanisms that release the total size of the dataset with no noise.",
+      "rationale": "The source defines bounded differential privacy as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:context",
+      "polarity": "positive",
+      "ruleId": "T09-I04",
+      "senseKey": "nist-csrc-glossary:context",
+      "quote": "The circumstances surrounding the system's processing of PII.",
+      "rationale": "The source defines Context through the collection, use, disclosure, or other processing of PII, directly satisfying T09-I04.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:context-of-use",
+      "polarity": "positive",
+      "ruleId": "T09-I04",
+      "senseKey": "nist-csrc-glossary:context-of-use",
+      "quote": "The purpose for which PII is collected, stored, used, processed, disclosed, or disseminated.",
+      "rationale": "The source defines Context of Use through the collection, use, disclosure, or other processing of PII, directly satisfying T09-I04.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:control-p-function",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:control-pf",
+      "quote": "Develop and implement appropriate activities to enable organizations or individuals to manage data with sufficient granularity to manage privacy risks.",
+      "rationale": "The source defines Control-P (Function) as a privacy protection activity, control, framework, or requirement, directly satisfying T09-I02.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:core",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:core",
+      "quote": "A set of privacy protection activities and outcomes. The Framework Core comprises three elements: Functions, Categories, and Subcategories.",
+      "rationale": "The source defines Core as a privacy protection activity, control, framework, or requirement, directly satisfying T09-I02.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:direct-identifier",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:direct-identifier",
+      "quote": "An attribute that alone enables unique identification of a data principal within a specific operational context.",
+      "rationale": "The source defines direct identifier as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:disassociability",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:disassociability",
+      "quote": "Enabling the processing of PII or events without association to individuals or devices beyond the operational requirements of the system.",
+      "rationale": "The source defines disassociability as a privacy protection activity, control, framework, or requirement, directly satisfying T09-I02.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:disclosure-limitation",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:disclosure-limitation",
+      "quote": "Statistical methods used to hinder anyone from identifying an individual respondent or establishment by analyzing published data, especially by manipulating mathematical and arithmetical relationships among the data.",
+      "rationale": "The source defines disclosure limitation as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:dox",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "niccs-glossary:dox",
+      "quote": "search for and publish private or identifying information about (a particular individual) on the internet, typically with malicious intent.",
+      "rationale": "The source makes Dox a privacy harm or privacy-risk management concept, directly satisfying T09-I03.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:event-level-privacy",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:event-level-privacy",
+      "quote": "A unit of privacy that defines neighboring databases as those that differ in one event, for example, a single transaction, or a single row.",
+      "rationale": "The source defines event‐level privacy as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:expert-determination",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:expert-determination",
+      "quote": "Within the context of de identification, refers to the Expert Determination method for de identifying protected health information in accordance with the HIPAA Privacy Rule de identification standard.",
+      "rationale": "The source defines expert determination as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:genomic-information",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:genomic-information",
+      "quote": "Information based on an individual's genome, such as a sequence of DNA or the results of genetic testing.",
+      "rationale": "The source defines genomic information as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:group-privacy",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:group-privacy",
+      "quote": "A property of differential privacy. It says that if a mechanism provides differential privacy for one person, then it also provides a weaker differential privacy guarantee for groups of people. The weakness of the guarantee depends on the size of the group, and the definition of one person depends on the unit of privacy used.",
+      "rationale": "The source defines group privacy as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:health-insurance-portability-and-accountability-act",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:health-insurance-portability-and-accountability-act",
+      "quote": "A federal statute that called on the federal Department of Health and Human Services to establish regulatory standards to protect the privacy and security of individually identifiable health information.",
+      "rationale": "The source defines Health Insurance Portability and Accountability Act as a privacy protection activity, control, framework, or requirement, directly satisfying T09-I02.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:healthcare-identifier",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:healthcare-identifier",
+      "quote": "identifier of a person for exclusive use by a healthcare system",
+      "rationale": "The source defines healthcare identifier as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:hipaa-privacy-rule",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:hipaa-privacy-rule",
+      "quote": "Establishes national standards to protect individuals' medical records and other personal health information and applies to health plans, health care clearinghouses, and those health care providers that conduct certain health care transactions electronically.",
+      "rationale": "The source defines HIPAA Privacy Rule as a privacy protection activity, control, framework, or requirement, directly satisfying T09-I02.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:hyperparameter",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:hyperparameter",
+      "quote": "In a differential privacy mechanism, a setting or parameter that controls a portion of the mechanism’s behavior or execution. The best setting may be data‐dependent, and a method that uses the confidential data as the basis for these parameters would not satisfy differential privacy. Examples include the clipping parameter for mechanisms that perform clipping, the number of iterations for iterative algorithms, and the learning rate or minibatch size for machine learning algorithms.",
+      "rationale": "The source defines hyperparameter as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:identifiable-person",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:identifiable-person",
+      "quote": "one who can be identified, directly or indirectly, in particular by reference to an identification number or to one or more factors specific to his physical, physiological, mental, economic, cultural or social identity",
+      "rationale": "The source defines identifiable person as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:identity-fraud-and-identity-theft",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:identity-fraud-and-identity-theft",
+      "quote": "Identity theft and identity fraud are terms used to refer to all types of crime in which someone wrongfully obtains and uses another personʼs personal data in some way that involves fraud or deception, typically for economic gain.",
+      "rationale": "The source makes Identity Fraud and Identity Theft a privacy harm or privacy-risk management concept, directly satisfying T09-I03.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:implementation-tier",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:implementation-tier",
+      "quote": "Provides a point of reference on how an organization views privacy risk and whether it has sufficient processes and resources in place to manage that risk.",
+      "rationale": "The source makes Implementation Tier a privacy harm or privacy-risk management concept, directly satisfying T09-I03.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:inference",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:inference",
+      "quote": "Refers to the ability to deduce the identity of a person associated with a set of data through “clues” contained in that information. This analysis permits determination of the individual’s identity based on a combination of facts associated with that person even though specific identifiers have been removed, like name and social security number.",
+      "rationale": "The source defines inference as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:k-anonymity",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:k-anonymity",
+      "quote": "A technique “to release person specific data such that the ability to link to other information using the quasi identifier is limited.” The k anonymity technique achieves this through suppression of identifiers and output perturbation, although recent work has shown that the k anonymity mechanism can be reversed in some instances.",
+      "rationale": "The source defines k-anonymity as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:l-diversity",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:l-diversity",
+      "quote": "A refinement to the k anonymity approach that assures that groups of records specified by the same identifiers have sufficient diversity to prevent inferential disclosure.",
+      "rationale": "The source defines l-diversity as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:laplace-mechanism",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:laplace-mechanism",
+      "quote": "An algorithmic primitive for differential privacy that adds random noise sampled from the Laplace distribution to the output of a query.",
+      "rationale": "The source defines Laplace mechanism as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:limited-dataset",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:limited-dataset",
+      "quote": "A limited data set is protected health information that excludes the following direct identifiers of the individual or of relatives, employers, or household members of the individual (i) Names; (ii) Postal address information, other than town or city, State, and zip code; (iii) Telephone numbers; (iv) Fax numbers; (v) Electronic mail addresses; (vi) Social security numbers; (vii) Medical record numbers; (viii) Health plan beneficiary numbers; (ix) Account numbers; (x) Certificate/license numbers; (xi) Vehicle identifiers and serial numbers, including license plate numbers; (xii) Device identifiers and serial numbers; (xiii) Web Universal Resource Locators (URLs); (xiv) Internet Protocol (IP) address numbers; (xv) Biometric identifiers, including finger and voice prints; and (xvi) Full face photographic images and any comparable images. Limited data sets can contain complete dates, age to the nearest hour, city, state, and complete ZIP code.",
+      "rationale": "The source defines limited dataset as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:linkable-information",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:linkable-information",
+      "quote": "Information about or related to an individual for which there is a possibility of logical association with other information about the individual.",
+      "rationale": "The source defines linkable information as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:linked-information",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:linked-information",
+      "quote": "Information about or related to an individual that is logically associated with other information about the individual.",
+      "rationale": "The source defines linked information as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:linking-attack",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:linking-attack",
+      "quote": "An approach for exposing information specific to individuals in a de‐identified dataset by matching up records with a second dataset.",
+      "rationale": "The source defines linking attack as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:masking",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:masking",
+      "quote": "The process of systematically removing a field or replacing it with a value in a way that does not preserve the analytic utility of the value, such as replacing a phone number with asterisks or a randomly generated pseudonym.",
+      "rationale": "The source defines masking as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:motivated-intruder-test",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:motivated-intruder-test",
+      "quote": "The ‘motivated intruder’ is taken to be a person who starts without any prior knowledge but who wishes to identify the individual from whose personal data the anonymized data have been derived. This test is meant to assess whether the motivated intruder would be successful.",
+      "rationale": "The source defines motivated intruder test as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:neighboring-datasets",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:neighboring-datasets",
+      "quote": "The definition of neighboring datasets is a parameter to the differential privacy framework. In many contexts, two databases are considered neighbors if they differ in the data of one individual.",
+      "rationale": "The source defines neighboring datasets as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:noise-injection",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:noise-injection",
+      "quote": "A de identification technique that modifies a dataset by adding random values to the values of a selected attribute.",
+      "rationale": "The source defines noise injection as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:non-ignorable-bias",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:non-ignorable-bias",
+      "quote": "In the context of de identification, a bias that results from the suppression or redaction of data based on the value of the suppressed data.",
+      "rationale": "The source defines non-ignorable bias as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:non-public-personal-information",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:non-public-personal-information",
+      "quote": "Information about a person that is not publicly known; called “private information” in some other publications.",
+      "rationale": "The source defines Non-Public Personal Information as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:post-processing-invariance",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:post-processing-invariance",
+      "quote": "A property of differential privacy. It says that the output of a differentially private mechanism remains differentially private, even if further processing is performed on it.",
+      "rationale": "The source defines post‐processing invariance as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:potentially-identifiable-personal-information",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:potentially-identifiable-personal-information",
+      "quote": "A new category of information proposed by Robert Gellman for information that has been de identified but can be potentially re identified. Potentially identifiable personal information is any personal information without overt identifiers. Under Gellman’s proposal, parties that wish to exchange attempts PI2 could voluntarily subscribe to a regime that would provide for both criminal and civil penalties if the recipient of the data attempted to re identify the data subjects.",
+      "rationale": "The source defines potentially identifiable personal information as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:privacy-control-baseline",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:privacy-control-baseline",
+      "quote": "A collection of controls specifically assembled or brought together by a group, organization, or community of interest to address the privacy protection needs of individuals.",
+      "rationale": "The source defines privacy control baseline as a privacy protection activity, control, framework, or requirement, directly satisfying T09-I02.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:privacy-requirements",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:privacy-requirements",
+      "quote": "Requirements of an organization, information program, or system that are derived from applicable laws, Executive Orders, directives, policies, standards, instructions, regulations, procedures, or organizational mission and business case needs with respect to privacy.",
+      "rationale": "The source defines Privacy Requirements as a privacy protection activity, control, framework, or requirement, directly satisfying T09-I02.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:processing",
+      "polarity": "positive",
+      "ruleId": "T09-I04",
+      "senseKey": "nist-csrc-glossary:processing",
+      "quote": "Operation or set of operations performed upon PII that can include but is not limited to the collection, retention, logging, generation, transformation, use, disclosure, transfer, and disposal of PII.",
+      "rationale": "The source defines processing through the collection, use, disclosure, or other processing of PII, directly satisfying T09-I04.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:putative-re-identifications",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:putative-re-identifications",
+      "quote": "Apparent re identifications that may or may not be correct.",
+      "rationale": "The source defines putative re-identifications as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:quasi-identifier",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:quasi-identifier",
+      "quote": "A variable that can be used to identify an individual through association with another variable.",
+      "rationale": "The source defines quasi-identifier as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:re-identification",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:re-identification",
+      "quote": "A process by which information is attributed to de identified data in order to identify the individual to whom the de identified data relate.",
+      "rationale": "The source defines re-identification as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:re-identification-probability",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:re-identification-probability",
+      "quote": "The probability that an individual’s identity will be correctly inferred by an outside party using information contained in a de identified dataset.",
+      "rationale": "The source defines re-identification probability as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:system-of-record",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:system-of-record",
+      "quote": "A system of records is a group of records under the control of a Federal agency which contains a personal identifier (such as a name, date of birth, finger print, Social Security Number, and Employee Number) and one other item of personal data (such as home address, performance rating, and blood type) from which information is retrieved using a personal identifier.",
+      "rationale": "The source defines system of record as personal, identifying, or individual-related information, directly satisfying T09-I01.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:threshold-rule",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:threshold-rule",
+      "quote": "Usually, with the threshold rule, a cell in a table of frequencies is defined to be sensitive if the number of respondents is less than some specified number. Some agencies require at least five respondents in a cell, others require three. When thresholds are not respected, an agency may restructure tables and combine categories or use cell suppression, rounding or the confidentiality edit, or provide other additional protection in order to satisfy the rule.",
+      "rationale": "The source defines threshold rule as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:unbounded-differential-privacy",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:unbounded-differential-privacy",
+      "quote": "A unit of privacy variant that calls two datasets D1 and D2 neighbors if it is possible to construct D2 from D1 by adding or removing one person’s data. Under unbounded differential privacy, neighboring datasets have different sizes.",
+      "rationale": "The source defines unbounded differential privacy as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:user-level-privacy",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:user-level-privacy",
+      "quote": "A unit of privacy that defines neighboring databases as those that differ in one user’s data.",
+      "rationale": "The source defines user‐level privacy as an anonymization, de-identification, disclosure-limitation, or differential-privacy concept, directly satisfying T09-I05.",
+      "primaryReviewer": "recovery-primary-t09",
+      "secondaryReviewer": "recovery-secondary-t09"
+    }
+  ]
+}

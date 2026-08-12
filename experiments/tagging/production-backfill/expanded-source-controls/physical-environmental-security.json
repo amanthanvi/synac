@@ -1,0 +1,197 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T11",
+  "tagSlug": "physical-environmental-security",
+  "rows": [
+    {
+      "entryKey": "TERM:tamper-resistant",
+      "polarity": "positive",
+      "ruleId": "T11-I06",
+      "senseKey": "rfc4949:i",
+      "quote": "A characteristic of a system component that provides passive protection against an attack. (See: tamper.) Usage: Usually involves physical means of protection.",
+      "rationale": "The source explicitly defines component protection against attack using physical means, directly satisfying security-relevant physical tamper resistance under T11-I06.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:tamper-evident",
+      "polarity": "positive",
+      "ruleId": "T11-I06",
+      "senseKey": "rfc4949:i",
+      "quote": "A characteristic of a system component that provides evidence that an attack has been attempted on that component or system. Usage: Usually involves physical evidence.",
+      "rationale": "The definition centrally concerns physical evidence of attempted component attack, directly satisfying physical tamper protection under T11-I06.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:external-controls",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "rfc4949:i-compusec",
+      "quote": "Refers to administrative security, personnel security, and physical security.",
+      "rationale": "Physical security is one of the three coequal external-control domains in the exact definition, making facility and physical safeguards substantive under T11-I01.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:media-library",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:media-library",
+      "quote": "Stores, protects, and controls all authorized versions of media CIs.",
+      "rationale": "The source directly defines protected and controlled storage of authorized media, satisfying media protection under T11-I05.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:sanitize",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "rfc4949:1-i",
+      "quote": "Delete sensitive data from a file, device, or system.",
+      "rationale": "The definition centers deletion of sensitive data from devices and systems, directly satisfying media sanitization under T11-I05.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:overwrite",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:overwrite",
+      "quote": "Writing one or more patterns of data on top of the physical location of data stored on the media.",
+      "rationale": "The source directly defines a physical-media overwrite operation used for sanitization, satisfying T11-I05.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:security-safeguards",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:security-safeguards",
+      "quote": "Safeguards may include security features, management constraints, personnel security, and security of physical structures, areas, and devices.",
+      "rationale": "The source explicitly includes security of physical structures, areas, and devices among safeguards, directly satisfying T11-I01.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:secure",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:secure",
+      "quote": "To reduce the risks of intrusions and attacks as well as the effects of natural or manmade disasters on critical infrastructure by physical means or defensive cyber measures.",
+      "rationale": "The definition expressly includes physical measures reducing disaster effects on critical infrastructure, directly satisfying environmental protection under T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:environmental-testing",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:environmental-testing",
+      "quote": "Evaluating the behavior of a device or system to obtain assurance that it will not be compromised by environmental conditions or fluctuations when operating outside the normal environmental operating range.",
+      "rationale": "Unlike generic environmental testing, this definition explicitly seeks security assurance against environmental compromise, directly satisfying T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:uninterruptible-power-supply",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:uninterruptible-power-supply",
+      "quote": "A device with an internal battery that allows connected devices to run for at least a short time when the primary power source is lost.",
+      "rationale": "The definition directly centers continuity protection against primary power loss, an environmental safeguard under T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:comsec-manager",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:comsec-manager",
+      "quote": "An individual designated by proper authority to be responsible for the receipt, transfer, accountability, safeguarding, and destruction of COMSEC material assigned to a COMSEC account.",
+      "rationale": "The manager's defined duties centrally include safeguarding and destroying COMSEC material, directly satisfying media protection under T11-I05.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:warm-site",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:warm-site",
+      "quote": "An environmentally conditioned work space that is partially equipped with information systems and telecommunications equipment to support relocated operations in the event of a significant disruption.",
+      "rationale": "The source centers an environmentally conditioned recovery space for information systems after disruption, directly satisfying T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:hot-site",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:hot-site",
+      "quote": "A fully operational offsite data processing facility equipped with hardware and software, to be used in the event of an information system disruption.",
+      "rationale": "The definition centers a prepared offsite information-system facility protecting operations against disruption, an environmental/facility safeguard under T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:cold-site",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:cold-site",
+      "quote": "A backup facility that has the necessary electrical and physical components of a computer facility, but does not have the computer equipment in place.",
+      "rationale": "The source centers a prepared backup computer facility with necessary electrical and physical infrastructure, satisfying environmental/facility protection under T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:georedundancy",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "niccs-glossary:georedundancy",
+      "quote": "the distribution of mission critical components or infrastructures across multiple geographic locations Geo redundancy acts as a safety in case of primary site failures or in the event of a disaster or an outage that impacts a region.",
+      "rationale": "The source defines geographic distribution as a safeguard against site failure, regional disaster, and outage, directly satisfying T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:insider",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "rfc4949:2-o",
+      "quote": "A person with authorized physical access to the system.",
+      "rationale": "The selected live sense is centrally and exclusively about authorized physical system access, directly satisfying physical access control under T11-I02.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:disruption",
+      "polarity": "positive",
+      "ruleId": "T11-I03",
+      "senseKey": "nist-csrc-glossary:disruption",
+      "quote": "An unplanned event that causes the general system or major application to be inoperable for an unacceptable length of time (e.g., minor or extended power outage, extended unavailable network, or equipment or facility damage or destruction).",
+      "rationale": "The NIST sense explicitly centers power outages and equipment or facility damage affecting system operation, directly grounding environmental protection under T11-I03.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:comsec-facility",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:comsec-facility",
+      "quote": "The space used for generating, storing, repairing, or using COMSEC material. The COMSEC material may be in either physical or electronic form.",
+      "rationale": "The source centers a dedicated physical space for storing and handling COMSEC material, making a security-specific facility substantive under T11-I01.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:permanent-storage",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "Non volatile media that, once written into, can never be completely erased.",
+      "rationale": "The definition is centrally about a physical-media property that prevents complete erasure, a necessary media-sanitization constraint under T11-I05.",
+      "primaryReviewer": "production-primary-t11",
+      "secondaryReviewer": "production-secondary-t05"
+    }
+  ]
+}

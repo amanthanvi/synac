@@ -5,6 +5,7 @@ import {
   REVIEW_ROLES,
   buildReviewPacket,
   buildReviewedReport,
+  responseSchema,
   reviewBatchWithRetry,
   validateDecisionResponse,
   type Contract,
@@ -96,7 +97,7 @@ function resolved(
 
 function manifest(): ReviewManifest {
   return {
-    schemaVersion: 'synac-local-adversarial-review-manifest-v1',
+    schemaVersion: 'synac-local-adversarial-review-manifest-v4',
     source: {
       productionManifestHash: 'a'.repeat(64),
       contentVersion: 'b'.repeat(64),
@@ -147,8 +148,42 @@ test('review packets contain local index, Entry, and exactly one contract withou
     'index',
   ]);
   assert.equal(packet.candidates[0].contract.slug, contract.slug);
+  assert.deepEqual(packet.candidates[0].contract.inclusionRules[0], {
+    id: 'include:1',
+    text: contract.inclusionRules[0],
+  });
+  assert.deepEqual(packet.candidates[0].contract.exclusionRules[0], {
+    id: 'exclude:1',
+    text: contract.exclusionRules[0],
+  });
   assert.equal('score' in packet.candidates[0], false);
   assert.equal('lane' in packet.candidates[0], false);
+});
+
+test('response schema pins tuple order, rule IDs, and evidence keys per candidate', () => {
+  const schema = responseSchema([preparedCandidate(0), preparedCandidate(1)]);
+  const items = schema.properties.decisions.items;
+  assert.equal(items.length, 2);
+  assert.equal(items[0].oneOf[0].properties.index.const, 0);
+  assert.equal(items[1].oneOf[0].properties.index.const, 1);
+  assert.deepEqual(items[0].oneOf[0].properties.ruleIds.items.enum, [
+    'include:1',
+    'include:2',
+  ]);
+  assert.deepEqual(items[0].oneOf[1].properties.ruleIds.items.enum, [
+    'global:substantive-topic',
+    'exclude:1',
+  ]);
+  assert.equal(items[0].oneOf[0].properties.evidenceSenseKeys.minItems, 1);
+  assert.equal(items[0].oneOf[2].properties.evidenceSenseKeys.maxItems, 0);
+  assert.deepEqual(
+    items[0].oneOf[0].properties.confidence.enum,
+    [75, 90, 95, 98, 100],
+  );
+  assert.equal(items[0].oneOf[2].properties.confidence.const, 0);
+  assert.deepEqual(items[1].oneOf[0].properties.evidenceSenseKeys.items.enum, [
+    'sense-1',
+  ]);
 });
 
 test('strict response validation rejects wrong indices, extra fields, rules, and sense keys', () => {

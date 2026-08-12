@@ -3,8 +3,8 @@
   "type": "module",
   "scripts": {
     "format": "corepack pnpm --dir ../../../tools/content exec prettier ../../experiments/tagging/production-backfill --check --ignore-path ../../.prettierignore",
-    "typecheck": "corepack pnpm --dir ../../../tools/content exec tsc --noEmit --strict --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck ../../experiments/tagging/production-backfill/openai-batch.ts ../../experiments/tagging/production-backfill/local-review.ts ../../experiments/tagging/production-backfill/emit-assignments.ts",
-    "test": "corepack pnpm --dir ../../../tools/content exec tsx --test ../../experiments/tagging/production-backfill/local-review.test.ts ../../experiments/tagging/production-backfill/emit-assignments.test.ts",
+    "typecheck": "corepack pnpm --dir ../../../tools/content exec tsc --noEmit --allowImportingTsExtensions --strict --target ES2022 --module NodeNext --moduleResolution NodeNext --skipLibCheck ../../experiments/tagging/production-backfill/openai-batch.ts ../../experiments/tagging/production-backfill/codex-cli.ts ../../experiments/tagging/production-backfill/local-review.ts ../../experiments/tagging/production-backfill/emit-assignments.ts",
+    "test": "corepack pnpm --dir ../../../tools/content exec tsx --test ../../experiments/tagging/production-backfill/openai-batch.test.ts ../../experiments/tagging/production-backfill/codex-cli.test.ts ../../experiments/tagging/production-backfill/local-review.test.ts ../../experiments/tagging/production-backfill/emit-assignments.test.ts",
     "check": "corepack pnpm run format && corepack pnpm run typecheck && corepack pnpm run test"
   }
 }

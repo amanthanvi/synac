@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T07",
+  "tagSlug": "incident-response",
+  "rows": [
+    {
+      "entryKey": "TERM:respond-csf-function",
+      "polarity": "positive",
+      "ruleId": "T07-I03",
+      "senseKey": "nist-csrc-glossary:respond-csf",
+      "quote": "Develop and implement the appropriate activities to take action regarding a detected cybersecurity event.",
+      "rationale": "The source defines action following a detected cybersecurity event, directly satisfying T07-I03 response and containment.",
+      "primaryReviewer": "recovery-primary-t07",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    }
+  ]
+}

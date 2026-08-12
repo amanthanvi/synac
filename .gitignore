@@ -23,12 +23,14 @@ experiments/tagging/served-model-bakeoff/api-batch/responses*.jsonl
 experiments/tagging/served-model-bakeoff/api-batch/errors*.jsonl
 
 # Reproducible production tagging transport (hashes/manifests are committed)
-experiments/tagging/production-backfill/api-batch/requests.jsonl
-experiments/tagging/production-backfill/api-batch/responses.jsonl
-experiments/tagging/production-backfill/api-batch/errors.jsonl
+experiments/tagging/production-backfill/api-batch*/
+experiments/tagging/production-backfill/codex-cli/
+experiments/tagging/production-backfill/validation-errors.json
 experiments/tagging/production-backfill/candidates.json
-experiments/tagging/production-backfill/local-review-progress.jsonl
+experiments/tagging/production-backfill/local-review-progress*.jsonl
 experiments/tagging/production-backfill/reviewed-candidates.json
+experiments/tagging/production-backfill/expanded-source-controls/*.json.draft
+experiments/tagging/production-backfill/recovery-source-controls/*.json.draft
 experiments/tagging/synthetic-reference/reviewed-controls/*.json.draft
 
 # Prisma

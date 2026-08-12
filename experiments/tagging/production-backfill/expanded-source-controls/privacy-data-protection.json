@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T09",
+  "tagSlug": "privacy-data-protection",
+  "rows": [
+    {
+      "entryKey": "TERM:aggregated-information",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:aggregated-information",
+      "quote": "Information elements collated on a number of individuals, typically used for the purposes of making comparisons or identifying patterns.",
+      "rationale": "Information collated about multiple individuals is personal-data content, directly satisfying T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:unit-of-privacy",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:unit-of-privacy",
+      "quote": "The choice of definition for neighboring datasets.",
+      "rationale": "The source defines the neighboring-dataset unit whose choice determines differential-privacy protection, directly satisfying T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:anonymity",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:anonymity",
+      "quote": "Condition in identification whereby an entity can be recognized as distinct, without sufficient identity information to establish a link to a known identity.",
+      "rationale": "Preventing a distinct entity from being linked to a known identity directly satisfies T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:p-q-rule",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:p-q-rule",
+      "quote": "In the (p,q) rule the ratio p/q represents the information gain through publication. If the information gain is unacceptable, the cell is declared as confidential.",
+      "rationale": "The rule limits information gain from published statistics, a disclosure-control method directly satisfying T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:biometric-characteristic",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:biometric-characteristic",
+      "quote": "Biological attribute of an individual from which distinctive and repeatable values can be extracted for the purpose of automated recognition.",
+      "rationale": "A distinctive biological attribute extracted from an individual is personal biometric data under T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:learning-program-plan",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:learning-program-plan",
+      "quote": "A formal document that provides an overview of an agency’s cybersecurity and privacy learning program, including a description of its structure, the resources dedicated to it, the roles of senior agency officials and staff, and the strategic goals and objectives of the learning program to meet applicable privacy requirements and manage privacy risks.",
+      "rationale": "The source makes meeting privacy requirements and managing privacy risks central objectives of the agency program plan, directly satisfying T09-I03.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:biometric-data-record",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:biometric-data-record",
+      "quote": "Biometric sample or aggregation of biometric samples at any stage of processing.",
+      "rationale": "A record of biometric samples is personal biometric data at a defined processing stage, satisfying T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:biometric-reference",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:biometric-reference",
+      "quote": "One or more stored biometric samples, templates, or models attributed to an individual and used as the object of biometric comparison in a database, such as a facial image stored digitally on a passport, fingerprint minutiae template on a National ID card, or Gaussian Mixture Model for speaker recognition.",
+      "rationale": "Stored biometric samples attributed to an individual are identifiable personal data under T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:biometric-sample",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:biometric-sample",
+      "quote": "An analog or digital representation of biometric characteristics prior to biometric feature extraction, such as a record that contains a fingerprint image.",
+      "rationale": "A fingerprint or other biometric representation is identifiable personal data, directly satisfying T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:capture",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:capture",
+      "quote": "Series of actions undertaken to obtain and record, in a retrievable form, signals of biometric characteristics directly from individuals.",
+      "rationale": "Obtaining and recording biometric signals directly from individuals is personal-data collection under T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:clipping",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:clipping",
+      "quote": "The general name for any algorithm that enforces a bound on the impact of one user’s data on an aggregate statistic.",
+      "rationale": "Bounding one user's contribution to an aggregate is a differential-privacy sensitivity mechanism under T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:data-consumer",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:data-consumer",
+      "quote": "In a trust model for differential privacy, the data consumers are those who receive differentially private results.",
+      "rationale": "The definition expressly places the data consumer in a differential-privacy trust model, satisfying T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:data-curator",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:data-curator",
+      "quote": "In a trust model for differential privacy, the data curator is where the data is aggregated.",
+      "rationale": "The definition expressly places data aggregation within a differential-privacy trust model, satisfying T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:data-intruder",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:data-intruder",
+      "quote": "A data user who attempts to disclose information about a population through identification or attribution.",
+      "rationale": "Identification or attribution used to disclose population information is a direct privacy risk under T09-I03.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:dataset-without-identifiers",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:dataset-without-identifiers",
+      "quote": "A dataset that does not contain direct identifiers.",
+      "rationale": "Removal of direct identifiers is a de-identification property directly covered by T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:location-information-loci",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:location-information",
+      "quote": "The Location Area Identifier (LAI) of the phone’s current location, continuously maintained on the (C/U)SIM when the phone is active and saved whenever the phone is turned off.",
+      "rationale": "Continuously maintained phone-location information is identifiable personal location data under T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:manageability",
+      "polarity": "positive",
+      "ruleId": "T09-I04",
+      "senseKey": "nist-csrc-glossary:manageability",
+      "quote": "Providing the capability for granular administration of data, including alteration, deletion, and selective disclosure.",
+      "rationale": "Granular alteration, deletion, and selective disclosure are data-processing choices directly covered by T09-I04.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:perturbation-based-methods",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:perturbation-based-methods",
+      "quote": "Perturbation based methods falsify the data before publication by introducing an element of error purposely for confidentiality reasons.",
+      "rationale": "Perturbing data before publication to prevent disclosure is a privacy-preserving transformation under T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:predictability",
+      "polarity": "positive",
+      "ruleId": "T09-I04",
+      "senseKey": "nist-csrc-glossary:predictability",
+      "quote": "Enabling reliable assumptions by individuals, owners, and operators about data and their processing by a system, product, or service.",
+      "rationale": "Predictable processing lets individuals understand how their data is handled, directly supporting T09-I04.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:personal-information-management-pim-data",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:personal-information-management-data",
+      "quote": "The set of data types such as contacts, calendar entries, phonebook entries, notes, memos, and reminders maintained on a device, which may be synchronized with a personal computer.",
+      "rationale": "Contacts, calendar entries, and phonebook records are personal information maintained and processed on devices under T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:primary-account-number",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "rfc4949:o-set",
+      "quote": "The assigned number that identifies the card issuer and cardholder.",
+      "rationale": "A number identifying a cardholder is directly identifiable personal financial data under T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:privacy-information",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:privacy-information",
+      "quote": "Information that describes the privacy posture of an information system or organization.",
+      "rationale": "Information describing privacy posture is directly part of privacy engineering and control management under T09-I02.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:problematic-data-action",
+      "polarity": "positive",
+      "ruleId": "T09-I03",
+      "senseKey": "nist-csrc-glossary:problematic-data-action",
+      "quote": "A data action that could cause an adverse effect for individuals",
+      "rationale": "A data action capable of harming individuals is expressly a privacy-risk concept under T09-I03.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:protect-p-function",
+      "polarity": "positive",
+      "ruleId": "T09-I02",
+      "senseKey": "nist-csrc-glossary:protect-pf",
+      "quote": "Develop and implement appropriate data processing safeguards.",
+      "rationale": "Developing and implementing data-processing safeguards is directly privacy engineering and controls under T09-I02.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:pseudonym",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:pseudonym",
+      "quote": "A name assigned through a formal process by a federal department or agency to a federal employee for the purpose of the employee’s protection (i.e., the employee might be placed at risk if their actual name were known) or for other purposes.",
+      "rationale": "Replacing an employee's actual name to prevent identification and harm is pseudonymization under T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:re-identification-precision",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:re-identification-precision",
+      "quote": "The ratio of correct re identifications to the sum of correct and incorrect apparent re identifications.",
+      "rationale": "Measuring successful re-identification directly concerns identifiability and de-identification risk under T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:re-identification-rate",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:re-identification-rate",
+      "quote": "The percentage of records in a dataset that can be re identified.",
+      "rationale": "The proportion of records that can be re-identified directly measures de-identification effectiveness under T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:suppression",
+      "polarity": "positive",
+      "ruleId": "T09-I05",
+      "senseKey": "nist-csrc-glossary:suppression",
+      "quote": "One of the most commonly used ways of protecting sensitive cells in a table is via suppression.",
+      "rationale": "Suppressing sensitive cells prevents their disclosure, a de-identification and data-protection technique under T09-I05.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:synthetic-identity-fraud",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:synthetic-identity-fraud",
+      "quote": "The use of a combination of personal information to fabricate a person or entity to commit a dishonest act for personal or financial gain.",
+      "rationale": "The misuse of personal information is necessary to the defined fraud mechanism and directly satisfies T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:web-bug",
+      "polarity": "positive",
+      "ruleId": "T09-I01",
+      "senseKey": "nist-csrc-glossary:web-bug",
+      "quote": "Malicious code, invisible to a user, placed on web sites in such a way that it allows third parties to track use of web servers and collect information about the user, including internet protocol (IP) address, host name, browser type and version, operating system name and version, and web browser cookie.",
+      "rationale": "Invisible tracking and collection of user-linked device and network information is a direct personal-data privacy risk under T09-I01.",
+      "primaryReviewer": "production-primary-t09",
+      "secondaryReviewer": "production-secondary-t04"
+    }
+  ]
+}

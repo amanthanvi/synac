@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T07",
+  "tagSlug": "incident-response",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:bad",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:bad",
+      "quote": "A mechanism providing a multifaceted approach to detecting cybersecurity attacks.",
+      "rationale": "Detecting cybersecurity attacks is the mechanism's central purpose, directly satisfying incident detection rule T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:administrative-incident-comsec",
+      "polarity": "positive",
+      "ruleId": "T07-I04",
+      "senseKey": "nist-csrc-glossary:administrative-incident",
+      "quote": "A violation of procedures or practices dangerous to security that is not serious enough to jeopardize the integrity of a controlled cryptographic item (CCI), but requires corrective action to ensure the violation does not recur or possibly lead to a reportable COMSEC incident.",
+      "rationale": "Correcting a security incident so the violation does not recur is post-incident improvement under T07-I04.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:anomaly-detection",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "An intrusion detection method that searches for activity that is different from the normal behavior of system entities and system resources. (See: IDS. Compare: misuse detection.)",
+      "rationale": "Searching for abnormal activity as an intrusion-detection method directly satisfies T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:attack-sensing-and-warning",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:attack-sensing-and-warning1",
+      "quote": "Detection, correlation, identification, and characterization of intentional unauthorized activity with notification to decision makers so that an appropriate response can be developed.",
+      "rationale": "Detecting and characterizing unauthorized activity, then notifying decision makers for response, directly satisfies T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:capability-anomalous-event-detection-management",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:capability-anomalous-event-detection-management",
+      "quote": "An ISCM capability that identifies routine and unexpected events that can compromise security within a time frame that prevents or reduces the impact (i.e., consequences) of the events to the extent possible.",
+      "rationale": "Identifying security-compromising events quickly enough to reduce their impact directly satisfies T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:cyber-exercise",
+      "polarity": "positive",
+      "ruleId": "T07-I01",
+      "senseKey": "niccs-glossary:cyber-exercise",
+      "quote": "A planned event during which an organization simulates a cyber disruption to develop or test capabilities such as preventing, detecting, mitigating, responding to or recovering from the disruption.",
+      "rationale": "Testing detection, mitigation, response, and recovery capabilities through a simulated cyber disruption directly satisfies T07-I01.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:cyber-resiliency",
+      "polarity": "positive",
+      "ruleId": "T07-I03",
+      "senseKey": "nist-csrc-glossary:cyber-resiliency",
+      "quote": "The ability to anticipate, withstand, recover from, and adapt to adverse conditions, stresses, attacks, or compromises on systems that use or are enabled by cyber resources.",
+      "rationale": "Recovery and adaptation after attacks or compromises on cyber-enabled systems directly satisfies T07-I03.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:cyber-survivability",
+      "polarity": "positive",
+      "ruleId": "T07-I03",
+      "senseKey": "nist-csrc-glossary:cyber-survivability",
+      "quote": "The ability of warfighter systems to prevent, mitigate, recover from and adapt to adverse cyber events that could impact mission related functions by applying a risk managed approach to achieve and maintain an operationally relevant risk posture throughout its life cycle.",
+      "rationale": "Mitigation and recovery from adverse cyber events directly satisfy incident containment and recovery rule T07-I03.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:damage-limiting-operations",
+      "polarity": "positive",
+      "ruleId": "T07-I03",
+      "senseKey": "nist-csrc-glossary:damage-limiting-operations",
+      "quote": "Procedural and operational measures that use system capabilities to maximize the ability of an organization to detect successful system compromises by an adversary and to limit the effects of such compromises (both detected and undetected).",
+      "rationale": "Limiting the effects of successful adversary compromises is incident containment under T07-I03.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:detect-csf-function",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:detect-csf",
+      "quote": "Develop and implement the appropriate activities to identify the occurrence of a cybersecurity event.",
+      "rationale": "Identifying the occurrence of cybersecurity events directly satisfies incident detection rule T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:evaluating-authority",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:evaluating-authority",
+      "quote": "The official responsible for evaluating a reported COMSEC incident for the possibility of compromise.",
+      "rationale": "Evaluating a reported COMSEC incident for possible compromise is incident triage under T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:honeytokens",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "niccs-glossary:honeytokens",
+      "quote": "is data that looks attractive to cyber criminals but is actually false or of no value a fake IT resource created and positioned in a system or network to appear to a cyber criminals to be of value, but is actually used to allow tracking and detection of hacking attempts",
+      "rationale": "Tracking and detecting hacking attempts is the fake resource's stated operational purpose, directly satisfying T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:host-based-intrusion-detection-and-prevention-system",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:host-based-intrusion-detection-and-prevention-system",
+      "quote": "A program that monitors the characteristics of a single host and the events occurring within that host to identify and stop suspicious activity.",
+      "rationale": "Identifying and stopping suspicious host activity directly satisfies incident detection and triage rule T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:host-based-security",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:host-based-security",
+      "quote": "A set of capabilities that provide a framework to implement a wide range of security solutions on hosts. This framework includes a trusted agent and a centralized management function that together provide automated protection to detect, respond, and report host based vulnerabilities and incidents.",
+      "rationale": "Automated detection, response, and reporting of host-based incidents directly satisfies T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:information-operations-condition",
+      "polarity": "positive",
+      "ruleId": "T07-I03",
+      "senseKey": "rfc4949:o-u-s-dod",
+      "quote": "A comprehensive defense posture and response based on the status of information systems, military operations, and intelligence assessments of adversary capabilities and intent. (See: threat) Derivation: From DEFCON, i.e., defense condition. Tutorial: The U.S. DoD defines five INFOCON levels: NORMAL (normal activity), ALPHA (increased risk of attack), BRAVO (specific risk of attack), CHARLIE (limited attack), and DELTA (general attack).",
+      "rationale": "A response posture escalating with specific, limited, or general cyber attack conditions directly satisfies T07-I03.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:intrusion-prevention-system-ips",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:intrusion-prevention-system",
+      "quote": "Intrusion Prevention System: Software that has all the capabilities of an intrusion detection system and can also attempt to stop possible incidents.",
+      "rationale": "Detecting intrusions and attempting to stop possible incidents directly satisfies T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:relevant-event",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:relevant-event",
+      "quote": "An occurrence (e.g., an auditable event or flag) considered to have potential security implications to the system or its environment that may require further action (noting, investigating, or reacting).",
+      "rationale": "Flagging a security-relevant occurrence for investigation or reaction directly satisfies incident triage rule T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    },
+    {
+      "entryKey": "TERM:trigger",
+      "polarity": "positive",
+      "ruleId": "T07-I02",
+      "senseKey": "nist-csrc-glossary:trigger",
+      "quote": "1) A set of logic statements to be applied to a data stream that produces an alert when an anomalous incident or behavior occurs",
+      "rationale": "Producing an alert when anomalous incidents occur directly satisfies incident detection and alert-triage rule T07-I02.",
+      "primaryReviewer": "production-primary-t07",
+      "secondaryReviewer": "production-secondary-t10t11"
+    }
+  ]
+}

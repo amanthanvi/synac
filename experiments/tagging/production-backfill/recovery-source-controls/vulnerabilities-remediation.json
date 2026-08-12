@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T05",
+  "tagSlug": "vulnerabilities-remediation",
+  "rows": [
+    {
+      "entryKey": "TERM:blackbox",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "niccs-glossary:blackbox",
+      "quote": "Black Box refers to penetration testing methodology where testers have no prior system knowledge, simulating real world attacks",
+      "rationale": "The source defines a penetration-testing assessment methodology, directly satisfying T05-I03.",
+      "primaryReviewer": "recovery-primary-t05",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    },
+    {
+      "entryKey": "TERM:dangling-vulnerability",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "rfc4949:o",
+      "quote": "A vulnerability of a system for which there is no corresponding threat and, therefore, no implied risk.",
+      "rationale": "The source expressly defines a system vulnerability, directly satisfying T05-I01 even when no corresponding threat exists.",
+      "primaryReviewer": "recovery-primary-t05",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    },
+    {
+      "entryKey": "TERM:false-positive",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:false-positive",
+      "quote": "An alert that incorrectly indicates that a vulnerability is present.",
+      "rationale": "The source defines an erroneous vulnerability-detection result, directly satisfying T05-I03 assessment.",
+      "primaryReviewer": "recovery-primary-t05",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    },
+    {
+      "entryKey": "TERM:flaw-hypothesis-methodology",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "An evaluation or attack technique in which specifications and documentation for a system are analyzed to hypothesize flaws in the system. The list of hypothetical flaws is prioritized on the basis of the estimated probability that a flaw exists and, assuming it does, on the ease of exploiting it and the extent of control or compromise it would provide. The prioritized list is used to direct a penetration test or attack against the system. [NCS04] (See: fault tree, flaw.)",
+      "rationale": "The source defines a flaw-finding evaluation method that directs penetration testing, directly satisfying T05-I03.",
+      "primaryReviewer": "recovery-primary-t05",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    },
+    {
+      "entryKey": "TERM:improper-pointer-subtraction",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "owasp-vulnerabilities:improper-pointer-subtraction",
+      "quote": "The subtraction of one pointer from another in order to determine size is dependant on the assumption that both pointers exist in the same memory chunk.",
+      "rationale": "The OWASP source defines an unsafe pointer operation and its invalid memory assumption, directly satisfying T05-I01 weakness coverage.",
+      "primaryReviewer": "recovery-primary-t05",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    },
+    {
+      "entryKey": "TERM:maintenance-hook",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "\"Special instructions (trapdoors) in software allowing easy maintenance and additional feature development. Since maintenance hooks frequently allow entry into the code without the usual checks, they are a serious security risk if they are not removed prior to live implementation.\" [C4009] (See: back door.)",
+      "rationale": "The source defines a software trapdoor that bypasses usual checks, making an insecure design weakness central under T05-I01.",
+      "primaryReviewer": "recovery-primary-t05",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    },
+    {
+      "entryKey": "TERM:security-fault-injection-test",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:security-fault-injection-test",
+      "quote": "Involves data perturbation (i.e., alteration of the type of data the execution environment components pass to the application, or that the application’s components pass to one another). Fault injection can reveal the effects of security defects on the behavior of the components themselves and on the application as a whole.",
+      "rationale": "The source defines a test that reveals security defects and their effects, directly satisfying T05-I03 assessment.",
+      "primaryReviewer": "recovery-primary-t05",
+      "secondaryReviewer": "recovery-secondary-t05-t07-t06"
+    }
+  ]
+}

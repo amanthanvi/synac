@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T01",
+  "tagSlug": "identity-access",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:d-s",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:d-s",
+      "quote": "(In the context of this practice guide, a directory services stores identity information and enables the authentication and identification of people and machines.)",
+      "rationale": "The directory service stores identity information and enables identification, directly satisfying identity lifecycle rule T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:applicant",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:applicant",
+      "quote": "An individual applying for a PIV Card or derived PIV credential. The applicant may be a current or prospective federal hire, a federal employee, or a contractor.",
+      "rationale": "Applying for a PIV credential is a credential issuance lifecycle activity, directly satisfying T01-I03.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:attribute-reference",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:attribute-reference",
+      "quote": "A statement asserting a property of a subscriber without necessarily containing identity information, independent of format.",
+      "rationale": "A subscriber attribute statement is directly part of managing and representing a digital identity, satisfying T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:biometric-capture-device",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:biometric-capture-device",
+      "quote": "Device that collects a signal from a biometric characteristic and converts it to a captured biometric sample.",
+      "rationale": "The device captures biometric-factor material used by biometric authenticators, directly satisfying T01-I02.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:biometric-characteristic",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:biometric-characteristic",
+      "quote": "Biological attribute of an individual from which distinctive and repeatable values can be extracted for the purpose of automated recognition.",
+      "rationale": "A repeatable individual characteristic used for automated recognition is biometric authentication-factor material under T01-I02.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:access-policy",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "rfc4949:i",
+      "quote": "A kind of \"security policy\". (See: access, access control.)",
+      "rationale": "The source explicitly defines this as an access-control security policy, directly satisfying logical authorization policy rule T01-I06.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:biometric-data-record",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:biometric-data-record",
+      "quote": "Biometric sample or aggregation of biometric samples at any stage of processing.",
+      "rationale": "The record directly contains biometric-factor samples processed by biometric authenticators, satisfying T01-I02.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:biometric-reference",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:biometric-reference",
+      "quote": "One or more stored biometric samples, templates, or models attributed to an individual and used as the object of biometric comparison in a database, such as a facial image stored digitally on a passport, fingerprint minutiae template on a National ID card, or Gaussian Mixture Model for speaker recognition.",
+      "rationale": "A stored individual biometric reference used for comparison is direct biometric authenticator material under T01-I02.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:biometric-sample",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:biometric-sample",
+      "quote": "An analog or digital representation of biometric characteristics prior to biometric feature extraction, such as a record that contains a fingerprint image.",
+      "rationale": "The sample is a direct representation of biometric-factor characteristics used by biometric authenticators, satisfying T01-I02.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:cardholder",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:cardholder",
+      "quote": "An individual who possesses an issued PIV Card.",
+      "rationale": "Possession of an issued PIV credential places the cardholder directly in credential lifecycle management under T01-I03.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:challenge-response",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "An authentication process that verifies an identity by requiring correct authentication information to be provided in response to a challenge.",
+      "rationale": "The source explicitly defines an authentication process and its authentication information, directly satisfying T01-I02.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:domain-accounts",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "mitre-attack-cti:T1078.002",
+      "quote": "Domain accounts are those managed by Active Directory Domain Services where access and permissions are configured across systems and services that are part of that domain.",
+      "rationale": "Managed domain accounts with configured access and permissions are directly account and credential management under T01-I03.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:federated-trust",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:federated-trust",
+      "quote": "Trust established within a federation, enabling each of the mutually trusting realms to share and use trust information (e.g., credentials) obtained from any of the other mutually trusting realms.",
+      "rationale": "Sharing credential trust across federated realms directly satisfies federation rule T01-I05.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:federation-authority",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:federation-authority",
+      "quote": "A party that facilitates the establishment and management of one or more trust agreements between federated parties.",
+      "rationale": "Managing trust agreements between federated parties is directly within federation rule T01-I05.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:federation-protocol",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:federation-protocol",
+      "quote": "A technical protocol that is used in a federation transaction between networked systems.",
+      "rationale": "A protocol whose defined use is a federation transaction directly satisfies T01-I05.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:generic-security-service-application-program-interface",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet Standard protocol [R2743] that specifies calling conventions by which an application (typically another communication protocol) can obtain authentication, integrity, and confidentiality security services independently of the underlying security mechanisms and technologies, thus enabling the application source code to be ported to different environments.",
+      "rationale": "The API substantively provides authentication services to applications, directly satisfying T01-I02.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:group-identity",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "rfc4949:i",
+      "quote": "See: secondary definition under \"identity\".",
+      "rationale": "The source explicitly defines this concept through the identity definition, placing it directly under identity lifecycle rule T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:application",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:application",
+      "quote": "In this context, an application incorporates a system used to satisfy a subset of requirements related to the verification or identification of an end user’s identity so that the end user’s identifier can be used to facilitate the end user’s interaction with the system.",
+      "rationale": "The application is defined by end-user identity verification, identification, and identifier use, directly satisfying identity lifecycle rule T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:identification-protocol",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "rfc4949:i",
+      "quote": "A client server Internet protocol [R1413] for learning the identity of a user of a particular TCP connection.",
+      "rationale": "The protocol's defined purpose is learning a user's identity, directly satisfying identity lifecycle rule T01-I01 despite not authenticating it.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:identity-api",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:identity-api",
+      "quote": "A protected API that is accessed by an RP to retrieve the attributes of a specific subscriber.",
+      "rationale": "An RP retrieving subscriber attributes through an identity API is directly a federation interaction under T01-I05.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:anonymity",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:anonymity",
+      "quote": "Condition in identification whereby an entity can be recognized as distinct, without sufficient identity information to establish a link to a known identity.",
+      "rationale": "The source defines an identification state based on whether identity information links an entity to a known identity, directly satisfying T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:local-registration-authority-lra",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:local-registration-authority",
+      "quote": "A registration authority with responsibility for a local community.",
+      "rationale": "A registration authority directly administers credential registration for its community, satisfying T01-I03.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:logical-identifier",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:logical-identifier",
+      "quote": "A device identifier that is expressed logically by the device’s software.",
+      "rationale": "A software-expressed device identifier directly represents a non-human digital identity under T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:non-person-entity-npe",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:non-person-entity",
+      "quote": "An entity related to information technology with a digital identity that acts in cyberspace, but is not a human actor.",
+      "rationale": "The source explicitly defines a non-human actor with a digital identity, directly satisfying T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:personal-identity-verification-piv-authorizing-official",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:personal-identity-verification-authorizing-official",
+      "quote": "An individual who can act on behalf of an agency to authorize the issuance of a credential to an applicant.",
+      "rationale": "Authorizing credential issuance is directly account and credential lifecycle management under T01-I03.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:device-information-declaration",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:device-information-declaration",
+      "quote": "A trusted digital assertion with information about the IoT device, such as the identity or certificate of the device owner and possibly the identities or certificates of any other entities that the device owner has authorized to onboard the device on its behalf.",
+      "rationale": "The assertion carries owner and delegate identities for authorized device onboarding, directly satisfying digital identity lifecycle rule T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:system-administration",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "niccs-glossary:system-administration",
+      "quote": "also manages accounts, firewalls, and patches; responsible for access control, passwords, and account creation and administration.",
+      "rationale": "Account creation, administration, passwords, and access control are substantive credential-management duties directly satisfying T01-I03.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:information-domain",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:information-domain",
+      "quote": "provides a security policy that identifies the roles and privileges of the members and the protections required for the information objects.",
+      "rationale": "A security policy assigning member roles and privileges is directly logical authorization policy under T01-I06.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "ACRONYM:oimo",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:oimo",
+      "quote": "Organization Identity Management Official; The individual responsible for overseeing the operations of an issuer in accordance with [FIPS 201 2] and for performing the responsibilities specified in this guideline.",
+      "rationale": "Overseeing identity-issuer operations is directly credential lifecycle management under T01-I03.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    },
+    {
+      "entryKey": "TERM:user-identity",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "rfc4949:i",
+      "quote": "See: identity.",
+      "rationale": "The source explicitly defines user identity through the identity concept, directly satisfying identity lifecycle rule T01-I01.",
+      "primaryReviewer": "production-primary-t01",
+      "secondaryReviewer": "production-secondary-t07"
+    }
+  ]
+}

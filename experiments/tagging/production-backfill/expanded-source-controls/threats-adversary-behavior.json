@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T04",
+  "tagSlug": "threats-adversary-behavior",
+  "rows": [
+    {
+      "entryKey": "TERM:domain-accounts",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1078.002",
+      "quote": "Adversaries may obtain and abuse credentials of a domain account as a means of gaining Initial Access, Persistence, Privilege Escalation, or Defense Evasion.",
+      "rationale": "The ATT&CK sense defines adversary abuse of domain credentials as an access, persistence, escalation, and evasion technique.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:file-transfer-protocols",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1071.002",
+      "quote": "Adversaries may communicate using application layer protocols associated with transferring files to avoid detection/network filtering by blending in with existing traffic.",
+      "rationale": "The entry is an ATT&CK command-and-control technique describing adversary use of file-transfer protocols to evade detection.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:file-path-exclusions",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1564.012",
+      "quote": "Adversaries may attempt to hide their file based artifacts by writing them to specific folders or file names excluded from antivirus (AV) scanning and other defensive capabilities.",
+      "rationale": "The ATT&CK sense centrally describes an adversary defense-evasion technique using file and path exclusions.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:fileless-storage",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1027.011",
+      "quote": "Adversaries may store data in \"fileless\" formats to conceal malicious activity from defenses.",
+      "rationale": "The ATT&CK sense centrally describes fileless storage as adversary concealment behavior.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:impersonization",
+      "polarity": "positive",
+      "ruleId": "T04-I03",
+      "senseKey": "niccs-glossary:impersonization",
+      "quote": "An attack type targeted phishing attack where a malicious actor pretends to be someone else or other entities to steal sensitive data",
+      "rationale": "The NICCS definition explicitly identifies targeted phishing and malicious impersonation, directly satisfying the social-engineering rule.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:threat-agent",
+      "polarity": "positive",
+      "ruleId": "T04-I01",
+      "senseKey": "niccs-glossary:threat-agent",
+      "quote": "An individual, group, organization, or government that conducts or has the intent to conduct detrimental activities.",
+      "rationale": "The entry defines the entity conducting or intending detrimental activity, making an adversary entity its central subject.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:anti-forensic",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "niccs-glossary:anti-forensic",
+      "quote": "Anti forensics refers to techniques designed to deliberately hinder, confuse, or destroy digital evidence, making forensic investigation difficult or impossible.",
+      "rationale": "The entry centrally defines deliberate evidence-hindering and evidence-destruction techniques used to obstruct investigation.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:counter-biometrics",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "niccs-glossary:counter-biometrics",
+      "quote": "refers to the methods used to bypass or spoof biometric security systems",
+      "rationale": "The entry centrally defines methods for bypassing or spoofing biometric security systems.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:cyberwarrior",
+      "polarity": "positive",
+      "ruleId": "T04-I01",
+      "senseKey": "niccs-glossary:cyberwarrior",
+      "quote": "an individual who participates in cyberwarfare, motivated either by personal, patriotic, or religious reasons, but not due to professional requirement",
+      "rationale": "The entry centrally defines a non-professional actor who participates in cyberwarfare.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:exfiltration",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "niccs-glossary:exfiltration",
+      "quote": "The unauthorized transfer of information from an information system.",
+      "rationale": "The entry defines exfiltration itself, a substantive adversary collection and transfer behavior.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:threat",
+      "polarity": "positive",
+      "ruleId": "T04-I01",
+      "senseKey": "rfc4949:2-o",
+      "quote": "The technical and operational ability of a hostile entity to detect, exploit, or subvert a friendly system and the demonstrated, presumed, or inferred intent of that entity to conduct such activity.",
+      "rationale": "The selected RFC sense defines a hostile entity's capability and intent, making the adversary threat central rather than generic risk.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:adversarial-example",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:adversarial-example",
+      "quote": "A modified testing sample that induces misclassification",
+      "rationale": "The entry defines an adversarial machine-learning input crafted to induce model failure, a concrete attack artifact and technique.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:computer-network-exploitation-cne",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:computer-network-exploitation",
+      "quote": "Enabling operations and intelligence collection capabilities conducted through the use of computer networks to gather data from target or adversary information systems or networks.",
+      "rationale": "The entry centrally defines computer-network exploitation and intelligence collection operations against target systems.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:functional-attack",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:functional-attack",
+      "quote": "An adversarial attack that is optimized for a set of data in a domain rather than per data point.",
+      "rationale": "The NIST sense directly defines an adversarial machine-learning attack technique.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:data-breach",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "niccs-glossary:data-breach",
+      "quote": "The unauthorized movement or disclosure of sensitive information to a party, usually outside the organization, that is not authorized to have or see the information.",
+      "rationale": "The entry centrally defines unauthorized movement or disclosure of sensitive information to an unauthorized external party.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:spam",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "niccs-glossary:spam",
+      "quote": "The abuse of electronic messaging systems to indiscriminately send unsolicited bulk messages.",
+      "rationale": "The entry centrally defines abusive use of messaging systems to distribute unsolicited bulk messages.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:trojanize",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "niccs-glossary:trojanize",
+      "quote": "To convert into a Trojan",
+      "rationale": "The entry directly defines the act of converting software into a Trojan, a malicious-code preparation behavior.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:targeted-poisoning-attack",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:targeted-poisoning-attack",
+      "quote": "A poisoning attack that changes the prediction",
+      "rationale": "The NIST sense directly defines a targeted adversarial machine-learning poisoning technique.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:attack-tree",
+      "polarity": "positive",
+      "ruleId": "T04-I05",
+      "senseKey": "nist-csrc-glossary:attack-tree",
+      "quote": "A branching, hierarchical data structure that represents a set of potential approaches to achieving an event in which system security is penetrated or compromised in a specified way.",
+      "rationale": "The entry is an analytic representation of potential attack paths, making adversary-behavior analysis its central purpose.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:threat-assessment-analysis",
+      "polarity": "positive",
+      "ruleId": "T04-I05",
+      "senseKey": "nist-csrc-glossary:threat-assessment-analysis",
+      "quote": "Process of formally evaluating the degree of threat to an information system or enterprise and describing the nature of the threat.",
+      "rationale": "The entry centrally defines formal threat evaluation and characterization, directly within threat-intelligence analysis.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:typosquatting",
+      "polarity": "positive",
+      "ruleId": "T04-I03",
+      "senseKey": "niccs-glossary:typosquatting",
+      "quote": "a form of cybersquatting (sitting on sites under someone else's brand or copyright) that targets Internet users who incorrectly type a website address into their web browser",
+      "rationale": "The entry centrally defines deceptive domain placement that targets users who mistype website addresses.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:expectation-over-transformation",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:expectation-over-transformation",
+      "quote": "A method for strengthening adversarial examples",
+      "rationale": "The entry centrally defines a method for making adversarial examples robust to real-world image transformations.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:privacy-compromise",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:privacy-compromise",
+      "quote": "In the AML context, the unauthorized access of restricted",
+      "rationale": "The entry defines an adversarial-machine-learning compromise through unauthorized access to model or application information.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:shadow-model",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:shadow-model",
+      "quote": "Typically, the attack model is trained on the labeled inputs and outputs of the shadow model.",
+      "rationale": "The entry defines the shadow model used to train an attack model, making it an adversarial-ML technique artifact.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:attack-potential",
+      "polarity": "positive",
+      "ruleId": "T04-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "The perceived likelihood of success should an attack be launched, expressed in terms of the attacker's ability (i.e., expertise and resources) and motivation.",
+      "rationale": "The entry analyzes attack success through attacker capability and motivation, making adversary assessment central.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:web-bug",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:web-bug",
+      "quote": "Malicious code, invisible to a user, placed on web sites in such a way that it allows third parties to track use of web servers and collect information about the user, including internet protocol (IP) address, host name, browser type and version, operating system name and version, and web browser cookie.",
+      "rationale": "The entry centrally defines hidden malicious web code used to track users and collect system information.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:threat-consequence",
+      "polarity": "positive",
+      "ruleId": "G01",
+      "senseKey": "rfc4949:i",
+      "quote": "A security violation that results from a threat action.",
+      "rationale": "The entry's entire meaning is the security consequence of a threat action, so the threat topic is necessary to understand it.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:synthetic-identity-fraud",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:synthetic-identity-fraud",
+      "quote": "The use of a combination of personal information to fabricate a person or entity to commit a dishonest act for personal or financial gain.",
+      "rationale": "The entry centrally defines identity fabrication using personal information to commit fraud for gain.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:threat-event-outcome",
+      "polarity": "positive",
+      "ruleId": "G01",
+      "senseKey": "nist-csrc-glossary:threat-event-outcome",
+      "quote": "The effect a threat acting upon a vulnerability has on the confidentiality, integrity, and/or availability of the organization’s operations, assets, or individuals.",
+      "rationale": "The entry centrally defines the cybersecurity impact produced by a threat acting on a vulnerability.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    },
+    {
+      "entryKey": "TERM:spoofing-attack",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "Synonym for \"masquerade attack\".",
+      "rationale": "The entry directly identifies a spoofing attack as the masquerade attack technique.",
+      "primaryReviewer": "production-primary-t04",
+      "secondaryReviewer": "production-secondary-t06"
+    }
+  ]
+}

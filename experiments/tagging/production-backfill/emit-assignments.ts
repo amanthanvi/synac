@@ -16,6 +16,9 @@ import {
   stableJsonHash,
   tagTaxonomyHash,
 } from '../../../tools/content/src/tagging.js';
+import { compileClassificationEntries } from '../synthetic-reference/corpus.js';
+import { loadReviewedControls } from '../synthetic-reference/reviewed-controls.js';
+import { FROZEN_RUBRIC } from '../synthetic-reference/rubric.js';
 
 const MINIMUM_COVERAGE = 0.3;
 const MINIMUM_PER_TAG = 25;
@@ -52,6 +55,27 @@ export type BuildEmissionInput = {
   createdAt: string;
   previous?: HashedArtifact;
   removals?: HashedArtifact;
+  sourceControls?: SourceControlSuite;
+};
+
+export type SourceControlCandidate = {
+  entryKey: string;
+  entryContentHash: string;
+  tagSlug: string;
+  ruleId: string;
+  senseKey: string;
+  primaryReviewer: string;
+  secondaryReviewer: string;
+};
+
+export type SourceControlSuite = {
+  artifactHash: string;
+  files: Array<{
+    tagSlug: string;
+    fileHash: string;
+    rowCount: number;
+  }>;
+  positives: SourceControlCandidate[];
 };
 
 export type FileOperations = {
@@ -810,6 +834,52 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
       runId: input.runId,
     });
   }
+  const sourceControlPairs = new Set<string>();
+  for (const control of input.sourceControls?.positives ?? []) {
+    const identity = pairKey(control);
+    if (sourceControlPairs.has(identity)) {
+      throw new Error(
+        `duplicate source control ${control.entryKey}/${control.tagSlug}`,
+      );
+    }
+    sourceControlPairs.add(identity);
+    const entry = corpusByKey.get(control.entryKey);
+    if (!entry || entry.entryContentHash !== control.entryContentHash) {
+      throw new Error(
+        `source control ${control.entryKey}/${control.tagSlug} has stale serving evidence`,
+      );
+    }
+    if (!published.has(control.tagSlug)) {
+      throw new Error(
+        `source control references non-published tag ${control.tagSlug}`,
+      );
+    }
+    if (!entry.evidenceSenseKeys.includes(control.senseKey)) {
+      throw new Error(
+        `source control ${control.entryKey}/${control.tagSlug} has stale sense ${control.senseKey}`,
+      );
+    }
+    if (
+      control.primaryReviewer.length === 0 ||
+      control.secondaryReviewer.length === 0 ||
+      control.primaryReviewer === control.secondaryReviewer
+    ) {
+      throw new Error(
+        `source control ${control.entryKey}/${control.tagSlug} has invalid reviewers`,
+      );
+    }
+    if (!assignmentsByPair.has(identity)) {
+      assignmentsByPair.set(identity, {
+        entryKey: control.entryKey,
+        entryContentHash: control.entryContentHash,
+        tagSlug: control.tagSlug,
+        authority: 'SYNTHETIC_REFERENCE',
+        lane: 'AUTO',
+        score: 1,
+        runId: input.runId,
+      });
+    }
+  }
   const removalsByPair = new Map(
     reviewedRemovals.removals.map((row) => [pairKey(row), row]),
   );
@@ -886,6 +956,12 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     },
     localReviewers: reviewed.roles,
     ollama: reviewed.ollama,
+    sourceControls: input.sourceControls
+      ? {
+          artifactHash: input.sourceControls.artifactHash,
+          files: input.sourceControls.files,
+        }
+      : null,
   };
   const configBinding = {
     schemaVersion: 'synac-production-tagging-config-binding-v1',
@@ -893,6 +969,7 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     productionRequestFileHash: production.requestFileHash,
     localReviewManifestHash: reviewed.reviewManifestHash,
     reviewedCandidatesHash: input.reviewed.artifactHash,
+    sourceControlsHash: input.sourceControls?.artifactHash ?? null,
     emitter: {
       assignmentSchemaVersion: 1,
       authority: 'SYNTHETIC_REFERENCE',
@@ -910,6 +987,7 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     terraCandidatesHash: reviewed.sourceCandidatesHash,
     reviewedCandidatesHash: input.reviewed.artifactHash,
     localReviewManifestHash: reviewed.reviewManifestHash,
+    sourceControlsHash: input.sourceControls?.artifactHash ?? null,
   };
   const thresholdsBinding = {
     schemaVersion: 'synac-production-tagging-thresholds-v1',
@@ -953,6 +1031,8 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     terraCandidatesHash: reviewed.sourceCandidatesHash,
     predecessorArtifactHash: previous.artifactHash,
     reviewedRemovalsArtifactHash: reviewedRemovals.artifactHash,
+    sourceControlsArtifactHash: input.sourceControls?.artifactHash ?? null,
+    sourceControlPairCount: sourceControlPairs.size,
     removals,
   };
   const modelHash = hashJson(modelBinding);
@@ -1019,6 +1099,9 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     assignments: floor.perTag.get(tagSlug) ?? 0,
     added: added.filter((row) => row.tagSlug === tagSlug).length,
     removed: removed.filter((row) => row.tagSlug === tagSlug).length,
+    sourceControls: [...sourceControlPairs].filter((identity) =>
+      identity.endsWith(`\0${tagSlug}`),
+    ).length,
   }));
   const artifactHash = sha256Text(serializeJson(parsed.data));
   const report: JsonRecord = {
@@ -1118,9 +1201,11 @@ function exactArtifact(text: string, semanticHash = false): HashedArtifact {
   };
 }
 
-async function currentCorpus(
-  rootDir: string,
-): Promise<{ corpus: CurrentCorpus; tags: TagsFile }> {
+async function currentCorpus(rootDir: string): Promise<{
+  corpus: CurrentCorpus;
+  tags: TagsFile;
+  sourceControls: SourceControlSuite;
+}> {
   const loaded = await loadContentDir(`${rootDir}/content`);
   if (!loaded.ok) throw new Error(loaded.errors.join('\n'));
   const compiled = compileContent(
@@ -1134,8 +1219,79 @@ async function currentCorpus(
     senses.push(sense);
     sensesByEntry.set(sense.entryKey, senses);
   }
+  const classificationEntries = compileClassificationEntries(
+    compiled.dataset.entries,
+    compiled.dataset.senses,
+  );
+  const reviewedControls = await loadReviewedControls(
+    `${rootDir}/experiments/tagging/synthetic-reference/reviewed-controls`,
+    FROZEN_RUBRIC,
+    classificationEntries,
+  );
+  const expandedControls = await loadReviewedControls(
+    `${rootDir}/experiments/tagging/production-backfill/expanded-source-controls`,
+    FROZEN_RUBRIC,
+    classificationEntries,
+  );
+  const recoveryControls = await loadReviewedControls(
+    `${rootDir}/experiments/tagging/production-backfill/recovery-source-controls`,
+    FROZEN_RUBRIC,
+    classificationEntries,
+  );
+  const combinedControls = {
+    files: [
+      ...reviewedControls.files,
+      ...expandedControls.files,
+      ...recoveryControls.files,
+    ],
+    rows: [
+      ...reviewedControls.rows,
+      ...expandedControls.rows,
+      ...recoveryControls.rows,
+    ],
+  };
+  const controlPairs = new Set<string>();
+  for (const { tagSlug, row } of combinedControls.rows) {
+    const identity = `${row.entryKey}\0${tagSlug}`;
+    if (controlPairs.has(identity)) {
+      throw new Error(
+        `duplicate source control across base and expanded sets: ${row.entryKey}/${tagSlug}`,
+      );
+    }
+    controlPairs.add(identity);
+  }
+  const servingHashes = new Map(
+    compiled.dataset.entries.map((entry) => {
+      const senses = sensesByEntry.get(entry.key) ?? [];
+      return [entry.key, classificationEntryHash(entry, senses)] as const;
+    }),
+  );
+  const sourceControls: SourceControlSuite = {
+    artifactHash: stableJsonHash(combinedControls),
+    files: combinedControls.files.map(({ tagSlug, fileHash, rowCount }) => ({
+      tagSlug,
+      fileHash,
+      rowCount,
+    })),
+    positives: combinedControls.rows
+      .filter(({ row }) => row.polarity === 'positive')
+      .map(({ tagSlug, row }) => ({
+        entryKey: row.entryKey,
+        entryContentHash:
+          servingHashes.get(row.entryKey) ??
+          (() => {
+            throw new Error(`reviewed source control missing ${row.entryKey}`);
+          })(),
+        tagSlug,
+        ruleId: row.ruleId,
+        senseKey: row.senseKey,
+        primaryReviewer: row.primaryReviewer,
+        secondaryReviewer: row.secondaryReviewer,
+      })),
+  };
   return {
     tags: loaded.input.tags,
+    sourceControls,
     corpus: {
       contentVersion: compiled.dataset.contentVersion,
       corpusHash: classificationCorpusHash(
@@ -1337,6 +1493,7 @@ export async function runEmitter(
     rubric: exactArtifact(rubricText),
     tags: compiled.tags,
     corpus: compiled.corpus,
+    sourceControls: compiled.sourceControls,
     runId: options.runId,
     createdAt: options.createdAt,
     ...(predecessorText !== undefined

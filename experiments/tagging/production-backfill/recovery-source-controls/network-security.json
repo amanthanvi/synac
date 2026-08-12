@@ -1,0 +1,527 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T03",
+  "tagSlug": "network-security",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:bgp-srx",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:bgp-srx",
+      "quote": "BGP Secure Routing Extension consisting of multiple software modules that implement Route Origin Validation as well as BGPsec Path Validation.",
+      "rationale": "The extension validates route origins and BGP paths, making protection of network routing communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "ACRONYM:dmz",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "nist-csrc-glossary:dmz",
+      "quote": "A perimeter network or screened subnet separating an internal network that is more trusted from an external network that is less trusted.",
+      "rationale": "The definition centers on a screened subnet separating networks by trust, directly satisfying network segmentation under T03-I02.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "ACRONYM:tsig",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:2-i",
+      "quote": "an Internet protocol (RFC 2845) for data origin authentication and data integrity for certain DNS operations.",
+      "rationale": "TSIG authenticates and integrity-protects DNS operations, making secure network communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:air-gap",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "niccs-glossary:air-gap",
+      "quote": "To physically separate or isolate a system from other systems or networks (verb).",
+      "rationale": "An air gap isolates systems from other systems or networks, directly implementing network segmentation under T03-I02.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:bandwidth-hijacking",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1496.002",
+      "quote": "Adversaries may leverage the network bandwidth resources of co opted systems to complete resource intensive tasks, which may impact system and/or hosted service availability.",
+      "rationale": "The attack consumes victims' network bandwidth and impacts availability, so its network mechanism is substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:bastion-host",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "rfc4949:i",
+      "quote": "A strongly protected computer that is in a network protected by a firewall (or is part of a firewall) and is the only host (or one of only a few) in the network that can be directly accessed from networks on the other side of the firewall.",
+      "rationale": "The bastion host is explicitly part of or protected by a firewall and mediates cross-firewall access, satisfying T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:bootstrapping",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:bootstrapping",
+      "quote": "It introduces just enough information to a device and a network onboarding component to enable them to trust one another and establish a secure channel.",
+      "rationale": "The network-onboarding subprocess establishes trust and a secure channel, making secure communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:bump-in-the-stack",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "An implementation approach that places a network security mechanism inside the system that is to be protected.",
+      "rationale": "The approach inserts a network-security mechanism into the protected protocol stack, directly supporting secure communications under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:computer-network-defense-analysis",
+      "polarity": "positive",
+      "ruleId": "T03-I04",
+      "senseKey": "niccs-glossary:computer-network-defense-analysis",
+      "quote": "Uses defensive measures and information collected from a variety of sources to identify, analyze, and report events that occur or might occur within the network in order to protect information, information systems, and networks from threats.",
+      "rationale": "The work identifies and analyzes network events to defend networks from threats, directly satisfying T03-I04.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:datagram-integrity-service",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A data integrity service that preserves the integrity of data in a single, independent, packet; i.e., the service applies to datagrams one at a time.",
+      "rationale": "The service protects the integrity of individual network packets, making secure packet communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:deny-by-default",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:deny-by-default",
+      "quote": "To block all inbound and outbound traffic that has not been expressly permitted by firewall policy.",
+      "rationale": "The definition is explicitly a firewall policy for filtering inbound and outbound traffic, directly satisfying T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:disable-or-modify-system-firewall",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "mitre-attack-cti:T1686",
+      "quote": "Adversaries may disable or modify host based or network firewalls to impair defensive mechanisms and enable further action.",
+      "rationale": "The technique directly targets host or network firewalls, making firewall defense central under T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:distributed-denial-of-service-ddos",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "nist-csrc-glossary:distributed-denial-of-service",
+      "quote": "A denial of service technique that uses numerous hosts to perform the attack.",
+      "rationale": "Distributed hosts jointly deliver a denial-of-service attack, making the network attack mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:dns-calculation",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1568.003",
+      "quote": "Adversaries may perform calculations on addresses returned in DNS results to determine which port and IP address to use for command and control, rather than relying on a predetermined port number or the actual returned IP address.",
+      "rationale": "The technique derives command-and-control endpoints from DNS results, so its network mechanism is substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:domain-fronting",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1090.004",
+      "quote": "take advantage of routing schemes in Content Delivery Networks (CDNs) and other services which host multiple domains to obfuscate the intended destination of HTTPS traffic or traffic tunneled through HTTPS.",
+      "rationale": "Domain fronting manipulates CDN routing and HTTPS destinations, making its network mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:dynamic-resolution",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1568",
+      "quote": "Adversaries may dynamically establish connections to command and control infrastructure to evade common detections and remediations.",
+      "rationale": "Dynamic establishment of command-and-control network connections is the technique's substantive mechanism under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:egress-filtering",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:egress-filtering",
+      "quote": "Filtering of outgoing network traffic.",
+      "rationale": "The definition directly centers on filtering outgoing network traffic, satisfying T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:encapsulating-security-payload",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet protocol [R2406, R4303] designed to provide data confidentiality service and other security services for IP datagrams.",
+      "rationale": "ESP supplies confidentiality and security services for IP datagrams, directly satisfying secure communications under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:exfiltration-over-web-service",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1567",
+      "quote": "Adversaries may use an existing, legitimate external Web service to exfiltrate data rather than their primary command and control channel.",
+      "rationale": "The technique exfiltrates data through external web-service communications, making the network mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:external-remote-services",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1133",
+      "quote": "Adversaries may leverage external facing remote services to initially access and/or persist within a network.",
+      "rationale": "External remote services provide the network access and persistence mechanism, making network behavior substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:icmp-flood",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "A denial of service attack that sends a host more ICMP echo request (\"ping\") packets than the protocol implementation can handle.",
+      "rationale": "The attack overwhelms a host with ICMP packets, making its network mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:ingress-filtering",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:ingress-filtering",
+      "quote": "Filtering of incoming network traffic.",
+      "rationale": "The definition directly centers on filtering incoming network traffic, satisfying T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:junk-data",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1001.001",
+      "quote": "Adversaries may add junk data to protocols used for command and control to make detection more difficult.",
+      "rationale": "The technique alters command-and-control protocol traffic to evade detection, making its network mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:network-based-intrusion-detection-and-prevention-system",
+      "polarity": "positive",
+      "ruleId": "T03-I04",
+      "senseKey": "nist-csrc-glossary:network-based-intrusion-detection-and-prevention-system",
+      "quote": "An intrusion detection and prevention system that monitors network traffic for particular network segments or devices and analyzes the network and application protocol activity to identify and stop suspicious activity.",
+      "rationale": "The system monitors network traffic and protocol activity to detect and stop intrusions, directly satisfying T03-I04.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:network-share-discovery",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1135",
+      "quote": "Adversaries may look for folders and drives shared on remote systems as a means of identifying sources of information to gather as a precursor for Collection and to identify potential systems of interest for Lateral Movement.",
+      "rationale": "Discovery of remote network shares is the technique's substantive network mechanism under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:non-standard-port",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1571",
+      "quote": "Adversaries may communicate using a protocol and port pairing that are typically not associated.",
+      "rationale": "The technique evades defenses through anomalous protocol-and-port network communications, making the mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:osirm-security-architecture",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:n",
+      "quote": "The part of the OSIRM [I7498 2] that specifies the security services and security mechanisms that can be applied to protect communications between two systems.",
+      "rationale": "The architecture specifies mechanisms protecting communications between systems, directly satisfying T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:personal-firewall-appliance",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:personal-firewall-appliance",
+      "quote": "A device that performs functions similar to a personal firewall for a group of computers on a home network.",
+      "rationale": "The appliance provides firewall functions for computers on a network, directly satisfying T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:proxy-agent",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:proxy-agent",
+      "quote": "A software application running on a firewall or on a dedicated proxy server that is capable of filtering a protocol and routing it between the interfaces of the device.",
+      "rationale": "The agent filters and routes protocol traffic on a firewall or proxy, directly satisfying T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:proxyjacking",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "niccs-glossary:proxyjacking",
+      "quote": "a malicious technique where an attacker gains control over a target's proxy server, allowing them to intercept and manipulate the targets internet traffic",
+      "rationale": "The attack compromises a proxy to intercept and manipulate network traffic, making its network mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:secure-communications",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:secure-communications",
+      "quote": "Telecommunications deriving security through use of National Security Agency (NSA) approved products and/or protected distribution systems (PDSs).",
+      "rationale": "The definition centers on securing telecommunications, directly satisfying secure transport and communications under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:secure-data-exchange",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:n",
+      "quote": "A LAN security protocol defined by the IEEE 802.10 standard.",
+      "rationale": "The definition directly identifies a LAN security protocol, satisfying secure network communications under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:secure-data-network-system",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:o",
+      "quote": "An NSA program that developed security protocols for electronic mail (see: MSP), OSIRM Layer 3 (see: SP3), OSIRM Layer 4 (see: SP4), and key establishment (see: KMP).",
+      "rationale": "The program's subject is security protocols across network and transport layers, directly supporting T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:security-association-database-sad",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:security-association-database",
+      "quote": "A list or table of all IPsec SAs, including those that are still being negotiated.",
+      "rationale": "The database manages IPsec security associations, making secure IP communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:security-parameters-index",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:1-i-ipsec",
+      "quote": "A 32 bit identifier used to distinguish among security associations that terminate at the same destination (IP address) and use the same security protocol (AH or ESP).",
+      "rationale": "The identifier selects AH or ESP security associations for an IP destination, making secure communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:security-policy-database",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i-ipsec",
+      "quote": "In an IPsec implementation operating in a network node, a database that contains parameters that specify policies set by a user or administrator to determine what IPsec services, if any, are to be provided to IP datagrams sent or received by the node, and in what fashion they are provided.",
+      "rationale": "The database governs IPsec services applied to sent and received IP datagrams, directly satisfying T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:security-protocol-3",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:o",
+      "quote": "A protocol [SDNS3] developed by SDNS to provide connectionless data security at the top of OSIRM Layer 3.",
+      "rationale": "SP3 provides connectionless network-layer data security, directly satisfying secure communications under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:security-protocol-4",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:o",
+      "quote": "A protocol [SDNS4] developed by SDNS to provide either connectionless or end to end connection oriented data security at the bottom of OSIRM Layer 4.",
+      "rationale": "SP4 provides connectionless or end-to-end transport-layer data security, directly satisfying T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:slowloris",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "niccs-glossary:slowloris",
+      "quote": "an attack tool designed to take down a server by flooding it with incomplete HTTP requests, without using much of bandwidth",
+      "rationale": "Slowloris exhausts a server through incomplete HTTP requests, making its network attack mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:snmp-mib-dump",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1602.001",
+      "quote": "Adversaries may target the Management Information Base (MIB) to collect and/or mine valuable information in a network managed using Simple Network Management Protocol (SNMP).",
+      "rationale": "The technique mines SNMP-managed network data from a MIB, making its network mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:socket-filters",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1205.002",
+      "quote": "Adversaries may attach filters to a network socket to monitor then activate backdoors used for persistence or command and control.",
+      "rationale": "Network-socket filters monitor packets and activate backdoors, making the network attack mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:standards-for-interoperable-lan-man-security",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:2-n",
+      "quote": "A set of IEEE standards, which has eight parts: (a) Model, including security management, (b) Secure Data Exchange protocol, (c) Key Management, (d) [has been incorporated in (a)], (e) SDE Over Ethernet 2.0, (f) SDE Sublayer Management, (g) SDE Security Labels, and (h) SDE PICS Conformance.",
+      "rationale": "The standards define secure data exchange and security functions for LAN/MAN communications, directly satisfying T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:stateful-protocol-analysis",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:stateful-protocol-analysis",
+      "quote": "A firewalling capability that improves upon standard stateful inspection by adding basic intrusion detection technology.",
+      "rationale": "The capability combines firewall inspection with intrusion detection, directly satisfying firewalling under T03-I01.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:stream-integrity-service",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A data integrity service that preserves integrity for a sequence of data packets, including both (a) bit by bit datagram integrity of each individual packet in the set and (b) packet by packet sequential integrity of the set as a whole.",
+      "rationale": "The service protects individual packets and packet sequence integrity, making secure network communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:threat-signaling",
+      "polarity": "positive",
+      "ruleId": "T03-I04",
+      "senseKey": "nist-csrc-glossary:threat-signaling",
+      "quote": "Real time signaling of DDoS related telemetry and threat handling requests and data between elements concerned with DDoS attack detection, classification, trace back, and mitigation.",
+      "rationale": "The mechanism exchanges DDoS telemetry for attack detection and mitigation, directly satisfying network-specific monitoring under T03-I04.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:traffic-flow-confidentiality-tfc-padding",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:traffic-flow-confidentiality-tfc-padding",
+      "quote": "Dummy data added to real data in order to obfuscate the length and frequency of information sent over IPsec.",
+      "rationale": "TFC padding conceals IPsec traffic characteristics, making secure network communications central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:traffic-flow-security-tfs",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:traffic-flow-security",
+      "quote": "Techniques to counter Traffic Analysis.",
+      "rationale": "Traffic-flow security counters analysis of communications traffic, making secure transport behavior central under T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:transmission-control-code-field-tcc-field",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A data field that provides a means to segregate traffic and define controlled communities of interest in the security option (option type = 130) of IPv4's datagram header format.",
+      "rationale": "The IPv4 security-option field segregates traffic into controlled communities, directly satisfying network segmentation under T03-I02.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:trusted-subnetwork",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A subnetwork containing hosts and routers that trust each other not to engage in active or passive attacks.",
+      "rationale": "The concept defines a bounded subnetwork whose hosts and routers share an attack-resistance trust assumption, satisfying T03-I02.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:virtual-private-network",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A restricted use, logical (i.e., artificial or simulated) computer network that is constructed from the system resources of a relatively public, physical (i.e., real) network (e.g., the Internet), often by using encryption (located at hosts or gateways), and often by tunneling links of the virtual network across the real network.",
+      "rationale": "A VPN uses encryption and tunneling to secure communications across a public network, directly satisfying T03-I03.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:udp-flood",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "A denial of service attack that takes advantage of (a) one system's UDP test function that generates a series of characters for each packet it receives and (b) another system's UPD test function that echoes any character it receives; the attack connects (a) to (b) to cause a nonstop flow of data between the two systems.",
+      "rationale": "The attack abuses UDP packet exchange to create nonstop network traffic, making its mechanism substantive under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:wi-fi-networks",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "mitre-attack-cti:T1669",
+      "quote": "Adversaries may gain initial access to target systems by connecting to wireless networks.",
+      "rationale": "Connecting to wireless networks is the attack's substantive initial-access mechanism under T03-I05.",
+      "primaryReviewer": "recovery-primary-t03",
+      "secondaryReviewer": "recovery-secondary-t03"
+    }
+  ]
+}

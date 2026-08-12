@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T10",
+  "tagSlug": "supply-chain-security",
+  "rows": [
+    {
+      "entryKey": "TERM:trusted-distribution",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "rfc4949:i-compusec",
+      "quote": "A trusted method for distributing the TCB hardware, software, and firmware components, both originals and updates, that provides methods for protecting the TCB from modification during distribution and for detection of any changes to the TCB that may occur.",
+      "rationale": "Protecting trusted computing-base components and detecting modification during original or update distribution directly satisfies supply-chain assurance rule T10-I04.",
+      "primaryReviewer": "recovery-primary-t10",
+      "secondaryReviewer": "recovery-secondary-t10"
+    }
+  ]
+}

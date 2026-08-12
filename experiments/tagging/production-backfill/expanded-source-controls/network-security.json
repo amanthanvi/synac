@@ -1,0 +1,307 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T03",
+  "tagSlug": "network-security",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:guls",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "Generic Upper Layer Security service element (ISO 11586), a five part standard for the exchange of security information and security transformation functions that protect confidentiality and integrity of application data.",
+      "rationale": "The definition centers on an upper-layer security standard protecting application-data confidentiality and integrity, so secure network communications are substantive under T03-I03 and G01.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "ACRONYM:missi",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:o",
+      "quote": "Multilevel Information System Security Initiative, an NSA program to encourage development of interoperable, modular products for constructing secure network information systems in support of a wide variety of U.S. Government missions.",
+      "rationale": "The source explicitly centers MISSI on constructing secure network information systems, directly satisfying secure network communications under T03-I03 and centrality under G01.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:anomaly-detection",
+      "polarity": "positive",
+      "ruleId": "T03-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "An intrusion detection method that searches for activity that is different from the normal behavior of system entities and system resources.",
+      "rationale": "Anomaly detection is defined as an intrusion-detection method, making security monitoring its central topic and directly satisfying T03-I04.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:anti-jam",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:n",
+      "quote": "\"Measures ensuring that transmitted information can be received despite deliberate jamming attempts.\"",
+      "rationale": "The source defines anti-jam as protecting transmitted information against deliberate interference, making communications defense central under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:anti-signal-spoof",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:anti-signal-spoof",
+      "quote": "Result of measures used to resist attempts to achieve imitative or manipulative communications deception based on signal parameters.",
+      "rationale": "The definition is centrally about resisting signal-based communications deception, a substantive protection of communications under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:banner-grabbing",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "nist-csrc-glossary:banner-grabbing",
+      "quote": "The process of capturing banner information—such as application type and version— that is transmitted by a remote port when a connection is initiated.",
+      "rationale": "Capturing service information from a remote port is the entry's substantive network-reconnaissance mechanism, satisfying T03-I05 and G01.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:cellular-network-isolation-card-cnic",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "nist-csrc-glossary:cellular-network-isolation-card",
+      "quote": "A SIM card that isolates the device from cell tower connectivity.",
+      "rationale": "The source makes network isolation from cellular connectivity the card's defining function, directly satisfying network segmentation under T03-I02.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:comsec-monitoring",
+      "polarity": "positive",
+      "ruleId": "T03-I04",
+      "senseKey": "nist-csrc-glossary:comsec-monitoring",
+      "quote": "The act of listening to, copying, or recording transmissions of one's own official telecommunications to provide material for analysis in order to determine the degree of security being provided to those transmissions.",
+      "rationale": "Monitoring telecommunications to assess their security is the exact subject of the definition, directly satisfying network-specific monitoring under T03-I04.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:controlled-interface",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "nist-csrc-glossary:controlled-interface",
+      "quote": "A boundary with a set of mechanisms that enforces the security policies and controls the flow of information between interconnected information systems.",
+      "rationale": "The definition centers on a security boundary controlling information flow between interconnected systems, directly satisfying T03-I02.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:cover-transec",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:cover",
+      "quote": "Result of measures used to obfuscate message externals to resist traffic analysis.",
+      "rationale": "Obfuscating message externals to resist traffic analysis is a substantive communications-protection mechanism under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:dnstwist",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "niccs-glossary:dnstwist",
+      "quote": "generates a list of similarly looking domain names for a given domain name and performs DNS queries for them (A, AAAA, NS and MX) which can be used to intercept misdirected traffic.",
+      "rationale": "DNS lookalike discovery and interception of misdirected traffic are the entry's substantive network mechanisms, directly satisfying T03-I05.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:filtering-router",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "rfc4949:i",
+      "quote": "An internetwork router that selectively prevents the passage of data packets according to a security policy.",
+      "rationale": "Selective packet blocking according to security policy is the router's defining function, directly satisfying firewalls and packet filtering under T03-I01.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:group-security-association",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "\"A bundling of [security associations] (SAs) that together define how a group communicates securely.",
+      "rationale": "The source expressly defines how a group communicates securely, making secure communications central and directly satisfying T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:guard",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A computer system that (a) acts as gateway between two information systems operating under different security policies and (b) is trusted to mediate information data transfers between the two.",
+      "rationale": "The guard is defined as a trusted gateway mediating transfers across security-policy boundaries, directly satisfying network segmentation under T03-I02.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:intrusion-prevention",
+      "polarity": "positive",
+      "ruleId": "T03-I04",
+      "senseKey": "nist-csrc-glossary:intrusion-prevention",
+      "quote": "The process of monitoring the events occurring in a computer system or network, analyzing them for signs of possible incidents, and attempting to stop detected possible incidents.",
+      "rationale": "The source centers on monitoring network events for incidents and stopping them, directly satisfying network intrusion monitoring and prevention under T03-I04.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:internet-private-line-interface",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:o",
+      "quote": "A successor to the PLI, updated to use TCP/IP and newer military grade COMSEC equipment (TSEC/KG 84). The IPLI was a portable, modular system that was developed for use in tactical, packet radio networks.",
+      "rationale": "The definition centers on COMSEC equipment for tactical packet-radio networks, making protected network communications substantive under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:internet-protocol-security-option",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "Refers to one of three types of IP security options, which are fields that may be added to an IP datagram for carrying security information about the datagram.",
+      "rationale": "Carrying security information within IP datagrams is the entry's defining purpose, directly satisfying secure network transport under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:leap-of-faith",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:2-i-comsec",
+      "quote": "The initial part, i.e., the first communication step, or steps, of a protocol that is vulnerable to attack (especially a man in the middle attack) during that part but, if that part is completed without being attacked, is subsequently not vulnerable in later steps",
+      "rationale": "The cited sense is centrally a protocol-stage vulnerability to man-in-the-middle attack, making its network mechanism substantive under T03-I05.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:low-probability-of-detection-lpd",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:low-probability-of-detection",
+      "quote": "Result of measures used to hide or disguise intentional electromagnetic transmissions.",
+      "rationale": "Hiding or disguising communications transmissions is the definition's central protection mechanism, satisfying secure communications under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:low-probability-of-intercept-lpi",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:low-probability-of-intercept",
+      "quote": "Result of measures used to resist attempts by adversaries to analyze the parameters of a transmission to determine if it is a signal of interest.",
+      "rationale": "Resisting adversarial interception analysis of a transmission is centrally communications protection and directly satisfies T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:managed-interface",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "nist-csrc-glossary:managed-interface",
+      "quote": "An interface within an information system that provides boundary protection capability using automated mechanisms or devices.",
+      "rationale": "Automated boundary protection is the managed interface's defining capability, directly satisfying network segmentation under T03-I02.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:message-security-protocol",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "rfc4949:n",
+      "quote": "A secure message handling protocol [SDNS7] for use with X.400 and Internet mail protocols.",
+      "rationale": "The entry is explicitly a secure protocol for network mail communications, directly satisfying secure transport and communications under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:network-discovery",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "nist-csrc-glossary:network-discovery",
+      "quote": "The process of discovering active and responding hosts on a network, identifying weaknesses, and learning how the network operates.",
+      "rationale": "Discovering network hosts and their weaknesses is the entry's substantive reconnaissance mechanism, directly satisfying T03-I05.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:operating-system-os-fingerprinting",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "nist-csrc-glossary:operating-system-fingerprinting",
+      "quote": "Analyzing characteristics of packets sent by a target, such as packet headers or listening ports, to identify the operating system in use on the target.",
+      "rationale": "Packet and listening-port analysis are the substantive fingerprinting mechanism, directly satisfying network-mechanistic attack or reconnaissance under T03-I05.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:port-scan",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "A port scan can be used for pre attack surveillance, with the goal of finding an active port and subsequently exploiting a known vulnerability of that port's service. A port scan can also be used as a flooding attack.",
+      "rationale": "The source explicitly defines port scanning as network surveillance and possible flooding attack, directly satisfying T03-I05.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:rogue-device",
+      "polarity": "positive",
+      "ruleId": "T03-I05",
+      "senseKey": "nist-csrc-glossary:rogue-device",
+      "quote": "An unauthorized node on a network.",
+      "rationale": "The entry is defined entirely as an unauthorized network node, making its network-security weakness central under T03-I05 and G01.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:ruleset",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:ruleset",
+      "quote": "A table of instructions used by a controlled interface to determine what data is allowable and how the data is handled between interconnected systems.",
+      "rationale": "The ruleset's defining function is filtering allowable data across interconnected systems, directly satisfying packet filtering under T03-I01.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:secure-channel",
+      "polarity": "positive",
+      "ruleId": "T03-I03",
+      "senseKey": "nist-csrc-glossary:secure-channel",
+      "quote": "A path for transferring data between two entities or components that ensures confidentiality, integrity and replay protection, as well as mutual authentication between the entities or components.",
+      "rationale": "A protected data-transfer path is the entry's exact subject, directly satisfying secure transport and communications under T03-I03.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:socks-protocol",
+      "polarity": "positive",
+      "ruleId": "T03-I01",
+      "senseKey": "nist-csrc-glossary:socks-protocol",
+      "quote": "An Internet protocol to allow client applications to form a circuit level gateway to a network firewall via a proxy service.",
+      "rationale": "The protocol's defining purpose is forming a proxy gateway to a network firewall, directly satisfying T03-I01.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    },
+    {
+      "entryKey": "TERM:unidirectional-gateway",
+      "polarity": "positive",
+      "ruleId": "T03-I02",
+      "senseKey": "nist-csrc-glossary:unidirectional-gateway",
+      "quote": "The hardware permits data to flow from one network to another but is physically unable to send any information at all back to the source network.",
+      "rationale": "The source centers on enforcing one-way flow between networks, a substantive boundary-segmentation control under T03-I02.",
+      "primaryReviewer": "production-primary-t03",
+      "secondaryReviewer": "production-secondary-t05"
+    }
+  ]
+}

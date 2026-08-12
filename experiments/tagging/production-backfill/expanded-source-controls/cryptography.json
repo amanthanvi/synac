@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T02",
+  "tagSlug": "cryptography",
+  "rows": [
+    {
+      "entryKey": "TERM:comsec-demilitarization",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:comsec-demilitarization",
+      "quote": "The process of preparing National Security System equipment for disposal by extracting all CCI, classified, or CRYPTO marked components for their secure destruction, as well as defacing and disposing of the remaining equipment hulk.",
+      "rationale": "Secure extraction and destruction of controlled cryptographic components is the entry's central implementation-lifecycle subject under T02-I05.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:approved-cryptography",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:approved-cryptography",
+      "quote": "An encryption algorithm, hash function, random bit generator, or similar technique that is Federal Information Processing Standards (FIPS) approved or NIST recommended.",
+      "rationale": "Approved cryptography centrally concerns validation status for cryptographic algorithms and techniques, satisfying implementation and assurance rule T02-I05.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:approved-entropy-source",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:approved-entropy-source",
+      "quote": "An entropy source that has been validated as conforming to [NIST SP 800 90B].",
+      "rationale": "The entry concerns validation of a secure-randomness entropy source, directly within cryptographic implementation assurance.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:conditioning-function",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:conditioning-function",
+      "quote": "A deterministic function used to reduce bias and/or improve the entropy per bit.",
+      "rationale": "Conditioning entropy-source output is a substantive secure-randomness primitive, satisfying T02-I01.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:consuming-application",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:consuming-application",
+      "quote": "The application (including middleware) that uses random numbers or bits obtained from an approved random bit generator.",
+      "rationale": "The term is defined specifically by its role in approved random-bit-generator infrastructure, satisfying cryptographic supporting-infrastructure scope.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:continuous-test",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:continuous-test",
+      "quote": "A type of health test performed within an entropy source on the output of its noise source in order to gain some level of assurance that the noise source is working correctly, prior to producing each output from the entropy source.",
+      "rationale": "Continuous entropy-source health testing is directly about cryptographic implementation assurance and failure detection under T02-I05.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:crypto-agility-for-a-communication-protocol",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "nist-csrc-glossary:crypto-agility-for-a-communication-protocol",
+      "quote": "The ability to maintain interoperability when introducing new cryptographic algorithms and preventing the use of vulnerable algorithms.",
+      "rationale": "Cryptographic algorithm replacement is substantive to this protocol property, directly satisfying T02-I04.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:entropy",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:1-i",
+      "quote": "An information theoretic measure (usually stated as a number of bits) of the amount of uncertainty that an attacker faces to determine the value of a secret.",
+      "rationale": "This sense defines entropy as attacker uncertainty about a secret, making cryptographic strength the central topic under T02-I01.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:entropy-rate",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:entropy-rate",
+      "quote": "The rate at which a digitized noise source (or entropy source) provides entropy; it is computed as the assessed amount of entropy provided by a bitstring output from the source, divided by the total number of bits in the bitstring (yielding the assessed bits of entropy per output bit).",
+      "rationale": "Entropy rate is a core quantitative property of secure-randomness sources, satisfying the primitives rule.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:entropy-source",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:entropy-source",
+      "quote": "A physical source of information whose output either appears to be random in itself or by applying some filtering/distillation process. This output is used as input to either a RNG or PRNG.",
+      "rationale": "An entropy source supplies randomness to RNG and PRNG mechanisms, placing it centrally within cryptographic primitives.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:formatting-function",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:formatting-function",
+      "quote": "The function that transforms the payload, associated data, and nonce into a sequence of complete blocks.",
+      "rationale": "Payload, associated data, nonce, and block formatting define a cryptographic construction primitive, satisfying T02-I01.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:fresh-random-value",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:fresh-random-value",
+      "quote": "An output that was produced by a random bit generator and has not been previously used.",
+      "rationale": "Fresh random values are defined directly as unique RBG outputs, making secure randomness the central subject.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:full-entropy-bitstring",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:full-entropy-bitstring",
+      "quote": "A bitstring with ideal randomness (i.e., the amount of entropy per bit is equal to 1).",
+      "rationale": "Ideal per-bit entropy is a core secure-randomness property, directly satisfying the algorithms-and-primitives rule.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:non-physical-non-deterministic-random-bit-generator",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:non-physical-non-deterministic-random-bit-generator",
+      "quote": "An entropy source that does not use dedicated hardware but uses system resources (RAM content, thread number etc.) or the interaction of the user (time between keystrokes etc.).",
+      "rationale": "This non-deterministic entropy source is itself a random-bit-generation primitive, directly satisfying T02-I01.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:personalization-string",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:personalization-string",
+      "quote": "An optional string of bits that is combined with a secret entropy input and (possibly) a nonce to produce a seed.",
+      "rationale": "The personalization string is a defined input to entropy-based seed construction, making it a substantive cryptographic primitive component.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:prime-number-generation-seed",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:prime-number-generation-seed",
+      "quote": "A string of random bits that is used to begin a search for a prime number with the required characteristics.",
+      "rationale": "The entry defines the random seed driving cryptographic prime generation, directly satisfying the algorithms-and-primitives rule.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:public-seed",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:public-seed",
+      "quote": "A starting value for a pseudorandom number generator. The value produced by the random number generator may be made public. The public seed is often called a \"salt\".",
+      "rationale": "A public seed is defined entirely by its role in pseudorandom generation, making cryptographic primitive support central.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:random-bit-generator-rbg",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:random-bit-generator",
+      "quote": "A device or algorithm that can produce a sequence of bits that appear to be both statistically independent and unbiased.",
+      "rationale": "The entry directly defines the random-bit generator algorithm or device covered by secure-randomness scope.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:random-nonce",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:random-nonce",
+      "quote": "A nonce containing a random value component that is generated anew for each nonce.",
+      "rationale": "A freshly generated random nonce is a substantive cryptographic primitive input, directly satisfying T02-I01.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:work-factor",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:1b-i-cryptography",
+      "quote": "The estimated amount of computing power and time needed to break a cryptographic system.",
+      "rationale": "Work factor measures the effort required to break a cryptographic system, directly satisfying analysis and failure rule T02-I05.",
+      "primaryReviewer": "production-primary-t02",
+      "secondaryReviewer": "production-secondary-t03"
+    }
+  ]
+}

@@ -1,0 +1,697 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T01",
+  "tagSlug": "identity-access",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:idaas",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "niccs-glossary:idaas",
+      "quote": "a cloud based identity and access management (IAM) offered by a third party provider",
+      "rationale": "IDaaS is explicitly a managed identity-and-access service, directly satisfying account and credential management under T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "ACRONYM:upn",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:upn",
+      "quote": "In Windows Active Directory, this is the name of a system user in email address format, i.e., a concatenation of username, the “@” symbol, and domain name.",
+      "rationale": "A UPN is centrally a directory account identifier for a system user, satisfying account management under T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:access-and-identity-management",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "niccs-glossary:access-and-identity-management",
+      "quote": "The methods and processes used to manage subjects and their authentication and authorizations to access specific objects.",
+      "rationale": "The entry directly defines management of subjects, authentication, and authorization, satisfying T01-I03 and G01.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:access-type",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:access-type",
+      "quote": "Privilege to perform action on an object. Read, write, execute, append, modify, delete, and create are examples of access types.",
+      "rationale": "The definition centers on privileges governing actions on objects, directly satisfying logical access control under T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:account-linking",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:account-linking",
+      "quote": "The association of multiple federated identifiers with a single RP subscriber account or the management of those associations.",
+      "rationale": "Account linking manages federated identifiers associated with a relying-party account, directly satisfying T01-I05.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:activation-factor",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:activation-factor",
+      "quote": "An additional authentication factor that is used to enable successful authentication with a multi factor authenticator.",
+      "rationale": "An activation factor is itself an authentication factor enabling a multifactor authenticator, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:activation-secret",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:activation-secret",
+      "quote": "A password that is used locally as an activation factor for a multi factor authenticator.",
+      "rationale": "The secret is centrally a password-based activation factor for a multifactor authenticator, satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:active-directory",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:active-directory",
+      "quote": "A Microsoft directory service for the management of identities in Windows domain networks.",
+      "rationale": "Active Directory is explicitly an identity-management directory service, directly satisfying T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:anonymous-credential",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "rfc4949:d-u-s-government",
+      "quote": "A credential that (a) can be used to authenticate a person as having a specific attribute or being a member of a specific group (e.g., military veterans or U.S. citizens) but (b) does not reveal the individual identity of the person that presents the credential.",
+      "rationale": "The entry centrally defines a privacy-preserving credential used to authenticate attributes or membership, satisfying T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:applicant-reference",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:applicant-reference",
+      "quote": "A representative of the applicant who can vouch for the identity of the applicant, specific attributes related to the applicant, or conditions relative to the context of the individual (e.g., emergency status, homelessness).",
+      "rationale": "An applicant reference supplies evidence about an applicant's identity or attributes during identity proofing, satisfying T01-I01.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:authenticable-entity",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authenticable-entity",
+      "quote": "An entity that can successfully participate in an authentication protocol with a card application.",
+      "rationale": "The entity is defined by its ability to participate in an authentication protocol, making authentication central under T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:authentication-event",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authentication-event",
+      "quote": "An attempt by a user to authenticate to an online service that ends in overall success or failure.",
+      "rationale": "An authentication event is centrally a user's completed authentication attempt, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:authentication-factor",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authentication-factor",
+      "quote": "The three types of authentication factors are something you know, something you have, and something you are. Every authenticator has one or more authentication factors.",
+      "rationale": "The entry defines the factor categories used by authenticators, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:authentication-mechanism",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:authentication-mechanism",
+      "quote": "Hardware or software based mechanisms that force users to prove their identity before accessing data on a device.",
+      "rationale": "The mechanism centrally requires users to prove identity before access, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:authorize",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "rfc4949:i",
+      "quote": "Grant an authorization to a system entity.",
+      "rationale": "The action is explicitly granting authorization to a system entity, directly satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:authorized-entity",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:authorized-entity",
+      "quote": "An entity that has implicitly or explicitly been granted approval to interact with a particular IoT device.",
+      "rationale": "The entity is defined by granted approval to interact with a device, making authorization central under T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:authorized-party",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:authorized-party",
+      "quote": "In federation, the organization, person, or entity that is responsible for making decisions regarding the release of information within the federation transaction, most notably subscriber attributes.",
+      "rationale": "The authorized party governs subscriber-attribute release in federation transactions, directly satisfying T01-I05.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:bell-lapadula-model",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:n",
+      "quote": "A formal, mathematical, state transition model of confidentiality policy for multilevel secure computer systems [Bell].",
+      "rationale": "Bell-LaPadula is centrally a formal access-control model for multilevel confidentiality policy, satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:biba-model",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:n",
+      "quote": "A formal, mathematical, state transition model of integrity policy for multilevel secure computer systems [Biba].",
+      "rationale": "Biba is centrally a formal access-control model for multilevel integrity policy, satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:biometric-authentication-bio-bio-a",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:biometric-authentication",
+      "quote": "A form of authentication in which authenticity is established by biometric verification of a new biometric sample from a cardholder to a biometric data record read from the cardholder’s activated PIV Card.",
+      "rationale": "The entry centrally defines biometric verification used for authentication, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:bound-authenticator",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:bound-authenticator",
+      "quote": "An authenticator verified by the RP in addition to an assertion at FAL3. The bound authenticator is bound to the RP subscriber account.",
+      "rationale": "A bound authenticator is verified by a relying party and bound to its subscriber account, satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:brewer-nash-model",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:n",
+      "quote": "A security model [BN89] to enforce the Chinese wall policy.",
+      "rationale": "Brewer-Nash is centrally an access-control model enforcing Chinese-wall policy, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:capability-list",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:capability-list",
+      "quote": "A list attached to a subject ID specifying what accesses are allowed to the subject.",
+      "rationale": "A capability list explicitly specifies the accesses allowed to a subject, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:capability-token",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A token (usually an unforgeable data object) that gives the bearer or holder the right to access a system resource.",
+      "rationale": "A capability token grants its holder a right to access a resource, making access control central under T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:controlled-access-protection",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:controlled-access-protection",
+      "quote": "Minimum set of security functionality that enforces access control on individual users and makes them accountable for their actions through login procedures, auditing of security relevant events, and resource isolation.",
+      "rationale": "The functionality centrally enforces per-user access control and accountability, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:discretionary-access-control-dac",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:discretionary-access-control",
+      "quote": "An access control policy that is enforced over all subjects and objects in an information system where the policy specifies that a subject that has been granted access to information can do one or more of the following",
+      "rationale": "DAC is explicitly an access-control policy over subjects and objects, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:distinguishing-identifier",
+      "polarity": "positive",
+      "ruleId": "T01-I01",
+      "senseKey": "nist-csrc-glossary:distinguishing-identifier",
+      "quote": "Information which unambiguously distinguishes an entity in the authentication process.",
+      "rationale": "A distinguishing identifier supplies unambiguous entity identity during authentication, satisfying T01-I01.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:dual-authorization",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:dual-authorization",
+      "quote": "A system of storage and handling that is designed to prohibit individual access to certain resources by requiring the presence and actions of at least two authorized persons, each capable of detecting incorrect or unauthorized security procedures with respect to the task being performed.",
+      "rationale": "Dual authorization centrally requires two authorized persons before resource access, directly satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:entity-authentication",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:entity-authentication",
+      "quote": "The process of providing assurance about the identity of an entity interacting with a system (e.g., to access a resource).",
+      "rationale": "Entity authentication directly provides identity assurance for an interacting entity, satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:extensible-authentication-protocol",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "An extension framework for PPP that supports multiple, optional authentication mechanisms, including cleartext passwords, challenge response, and arbitrary dialog sequences.",
+      "rationale": "EAP is centrally a framework supporting multiple authentication mechanisms, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:false-acceptance",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:false-acceptance",
+      "quote": "When a biometric system incorrectly identifies an individual or incorrectly authenticates an impostor against a claimed identity.",
+      "rationale": "False acceptance is centrally an identity or authentication error in a biometric system, satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:false-rejection",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:false-rejection",
+      "quote": "When a biometric system fails to identify an enrollee or fails to verify the legitimate claimed identity of an enrollee.",
+      "rationale": "False rejection is centrally an identity-verification failure in a biometric system, satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:general-purpose-idp",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:general-purpose-idp",
+      "quote": "An IdP that is housed and executed separately from a subscriber’s device (e.g., a remote service). Often, a general purpose IdP will be capable of representing multiple subscribers.",
+      "rationale": "The entry centrally defines a remote identity provider representing subscribers, directly satisfying T01-I05.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:identity-credential-and-access-management-icam",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:identity-credential-and-access-management",
+      "quote": "Programs, processes, technologies, and personnel used to create trusted digital identity representations of individuals and non person entities (NPEs), bind those identities to credentials that may serve as a proxy for the individual or NPE in access transactions, and leverage the credentials to provide authorized access to an agency‘s resources.",
+      "rationale": "ICAM centrally manages identities, credentials, and their use in authorized access transactions, directly satisfying T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:identity-ecosystem",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:identity-ecosystem",
+      "quote": "An online environment where individuals can choose from a variety of credentials to use in lieu of passwords for interactions conducted across the internet.",
+      "rationale": "The ecosystem centrally provides credential choices replacing passwords for online interactions, satisfying T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:identity-federation",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:identity-federation",
+      "quote": "A group of organizations that agree to follow the rules of a trust framework.",
+      "rationale": "Identity federation centrally joins organizations under a shared trust framework, directly satisfying T01-I05.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:least-privilege",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:least-privilege",
+      "quote": "A security principle that a system should restrict the access privileges of users (or processes acting on behalf of users) to the minimum necessary to accomplish assigned tasks.",
+      "rationale": "Least privilege centrally restricts access rights to the minimum necessary, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:login",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:login",
+      "quote": "The establishment of an authenticated session between a person and a system. Also known as “sign in,” “log on,” or “sign on.”",
+      "rationale": "Login centrally establishes an authenticated person-to-system session, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:mandatory-access-control",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:1-i",
+      "quote": "An access control service that enforces a security policy based on comparing (a) security labels, which indicate how sensitive or critical system resources are, with (b) security clearances, which indicate that system entities are eligible to access certain resources.",
+      "rationale": "MAC centrally enforces access policy by comparing resource labels with entity clearances, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:multifactor-authenticator",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:multifactor-authenticator",
+      "quote": "An authenticator that provides more than one distinct authentication factor, such as a cryptographic authentication device with an integrated biometric sensor that is required to activate the device.",
+      "rationale": "A multifactor authenticator centrally supplies multiple distinct authentication factors, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:need-to-know",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:need-to-know",
+      "quote": "A determination within the executive branch in accordance with directives issued pursuant to this order [E.O. 13526] that a prospective recipient requires access to specific classified information in order to perform or assist in a lawful and authorized governmental function.",
+      "rationale": "Need-to-know is centrally an authorization determination for access to specified information, satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:network-access-control-nac",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:network-access-control",
+      "quote": "A feature provided by some firewalls that allows access based on a user’s credentials and the results of health checks performed on the telework client device.",
+      "rationale": "NAC centrally grants access based on user credentials and device health, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:password-authentication-protocol",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A simple authentication mechanism in PPP. In PAP, a user identifier and password are transmitted in cleartext form. [R1334] (See: CHAP.)",
+      "rationale": "PAP is centrally an authentication mechanism using a user identifier and password, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:peer-entity-authentication-service",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:peer-entity-authentication-service",
+      "quote": "A security service that verifies an identity claimed by or for a system entity in an association.",
+      "rationale": "The service centrally verifies a claimed system-entity identity, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:personal-identity-verification-piv-identity-account",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:piv-identity-account",
+      "quote": "The logical record containing credentialing information for a given PIV cardholder.",
+      "rationale": "A PIV identity account is centrally the credentialing record for a cardholder, directly satisfying T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:physical-authenticator",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:physical-authenticator",
+      "quote": "An authenticator that the claimant proves possession of as part of an authentication process.",
+      "rationale": "A physical authenticator centrally proves claimant possession during authentication, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:policy-based-access-control-pbac",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:policy-based-access-control",
+      "quote": "A strategy for managing user access to one or more systems, where the business roles of users is combined with policies to determine what access privileges users of each role should have.",
+      "rationale": "PBAC centrally combines roles and policy to determine user access privileges, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:privilege",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:privilege",
+      "quote": "A right that, when granted to an entity, permits the entity access and/or authorization to an otherwise restricted object, state, or resource.",
+      "rationale": "A privilege is centrally a granted right permitting access or authorization, directly satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:privileged-account",
+      "polarity": "positive",
+      "ruleId": "T01-I03",
+      "senseKey": "nist-csrc-glossary:privileged-account",
+      "quote": "An information system account with approved authorizations of a privileged user.",
+      "rationale": "A privileged account centrally holds approved elevated authorizations for a user, directly satisfying T01-I03.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:reference-monitor",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:reference-monitor",
+      "quote": "A set of design requirements on a reference validation mechanism that, as a key component of an operating system, enforces an access control policy over all subjects and objects.",
+      "rationale": "A reference monitor centrally enforces access-control policy over subjects and objects, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:trust-agreement",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "nist-csrc-glossary:trust-agreement",
+      "quote": "A set of conditions under which a CSP, IdP, and RP are allowed to participate in a federation transaction to establish an authentication session between the subscriber and the RP.",
+      "rationale": "A trust agreement defines federation participation conditions for establishing subscriber authentication sessions, directly satisfying T01-I05.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:community-string",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A community name in the form of an octet string that serves as a cleartext password in SNMP version 1 (RFC 1157) and version 2 (RFC 1901).",
+      "rationale": "A community string is centrally a password authenticator for SNMP access, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:compartmentalization",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "nist-csrc-glossary:compartmentalization",
+      "quote": "A nonhierarchical grouping of information used to control access to data more finely than with hierarchical security classification alone.",
+      "rationale": "Compartmentalization centrally groups information to provide finer access control, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:confinement-property",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:n-formal-model",
+      "quote": "Property of a system whereby a subject has write access to an object only if the classification of the object dominates the clearance of the subject.",
+      "rationale": "The confinement property centrally constrains subject write access by classification and clearance, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:constraints",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:constraints",
+      "quote": "Access Control rules or confinements that describe the access privileges of resources for subjects.",
+      "rationale": "Constraints are explicitly access-control rules describing subject privileges over resources, directly satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:data-origin-authentication-service",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A security service that verifies the identity of a system entity that is claimed to be the original source of received data.",
+      "rationale": "The service centrally verifies the claimed identity of a data-originating entity, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:deauthentication",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "niccs-glossary:deauthentication",
+      "quote": "To revoke the authentication of; to cause no longer to be authenticated.",
+      "rationale": "Deauthentication is centrally the revocation of an authenticated state, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:digital-policy",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:digital-policy",
+      "quote": "Access control rules that compile directly into machine executable codes or signals.",
+      "rationale": "Digital policy is explicitly machine-executable access-control rules, directly satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:digital-rights-management",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "niccs-glossary:digital-rights-management",
+      "quote": "A form of access control technology to protect and manage use of digital content or devices in accordance with the content or device provider's intentions.",
+      "rationale": "DRM is centrally access-control technology governing use of content or devices, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:formal-access-approval",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:formal-access-approval",
+      "quote": "A formalization of the security determination for authorizing access to a specific type of classified or controlled unclassified information (CUI) categories or subcategories based on specified access requirements, a determination of the individual’s security eligibility, and a determination that the individual’s official duties require the individual be provided access to the information.",
+      "rationale": "Formal access approval centrally records an authorization determination based on eligibility and duties, directly satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:handling-restriction",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A type of access control other than (a) the rule based protections of mandatory access control and (b) the identity based protections of discretionary access control; usually involves administrative security.",
+      "rationale": "A handling restriction is explicitly an administrative access-control type, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:liberty-alliance",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "rfc4949:o",
+      "quote": "An international consortium of more than 150 commercial, nonprofit, and governmental organizations that was created in 2001 to address technical, business, and policy problems of identity and identity based Web services and develop a standard for federated network identity that supports current and emerging network devices.",
+      "rationale": "Liberty Alliance centrally developed standards for federated network identity, directly satisfying T01-I05.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:natural-language-policy",
+      "polarity": "positive",
+      "ruleId": "T01-I06",
+      "senseKey": "nist-csrc-glossary:natural-language-policy",
+      "quote": "Statements governing management and access of enterprise objects. NLPs are human expressions that can be translated to machine enforceable access control policies.",
+      "rationale": "Natural-language policy centrally expresses rules that translate into enforceable access control, directly satisfying T01-I06.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:protection-ring",
+      "polarity": "positive",
+      "ruleId": "T01-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "One of a hierarchy of privileged operation modes of a system that gives certain access rights to processes authorized to operate in that mode.",
+      "rationale": "A protection ring is centrally a hierarchy granting access rights to authorized processes, directly satisfying T01-I04.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:restricted-authenticator",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:restricted-authenticator",
+      "quote": "An authenticator type, class, or instantiation that has additional risk of false acceptance associated with its use and is therefore subject to additional requirements.",
+      "rationale": "The entry centrally defines an authenticator subject to extra requirements because of false-acceptance risk, satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:role-based-authentication",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:role-based-authentication",
+      "quote": "A process that provides assurance of an entity’s role by means of an authentication mechanism that verifies the role of the entity.",
+      "rationale": "Role-based authentication centrally verifies an entity's asserted role through an authentication mechanism, satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:security-assertion-markup-language",
+      "polarity": "positive",
+      "ruleId": "T01-I05",
+      "senseKey": "rfc4949:n",
+      "quote": "A protocol consisting of XML based request and response message formats for exchanging security information, expressed in the form of assertions about subjects, between on line business partners. [SAML]",
+      "rationale": "SAML centrally exchanges subject assertions between relying parties, making federated identity its substantive topic under T01-I05.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:simple-authentication-and-security-layer",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet specification [R2222, R4422] for adding authentication service to connection based protocols.",
+      "rationale": "SASL is centrally a framework for adding authentication service to protocols, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    },
+    {
+      "entryKey": "TERM:time-dependent-password",
+      "polarity": "positive",
+      "ruleId": "T01-I02",
+      "senseKey": "nist-csrc-glossary:time-dependent-password",
+      "quote": "Password that is valid only at a certain time of day or during a specified interval of time.",
+      "rationale": "A time-dependent password is centrally a bounded-validity authentication secret, directly satisfying T01-I02.",
+      "primaryReviewer": "recovery-primary-t01",
+      "secondaryReviewer": "recovery-secondary-t01"
+    }
+  ]
+}
