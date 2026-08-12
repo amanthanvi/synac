@@ -1,0 +1,837 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T04",
+  "tagSlug": "threats-adversary-behavior",
+  "rows": [
+    {
+      "entryKey": "TERM:cyberspace-attack",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "nist-csrc-glossary:cyberspace-attack",
+      "quote": "Cyberspace actions that create various direct denial effects (i.e. degradation, disruption, or destruction) and manipulation that leads to denial that is hidden or that manifests in the physical domains.",
+      "rationale": "The source centrally defines hostile cyberspace actions and their denial effects, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:cyberwarfare",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "niccs-glossary:cyberwarfare",
+      "quote": "typically defined as a set of actions by a nation or organization to attack countries or institutions' computer network systems with the intention of disrupting, damaging, or destroying infrastructure by computer viruses or denial of service attacks",
+      "rationale": "The source centrally defines nation or organization attacks against computer networks, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:advanced-persistent-threats",
+      "polarity": "positive",
+      "ruleId": "T04-I01",
+      "senseKey": "nist-csrc-glossary:advanced-persistent-threats",
+      "quote": "An adversary with sophisticated levels of expertise and significant resources, allowing it through the use of multiple different attack vectors (e.g., cyber, physical, and deception) to generate opportunities to achieve its objectives, which are typically to establish and extend footholds within the information technology infrastructure of organizations for purposes of continually exfiltrating information and/or to undermine or impede critical aspects of a mission, program, or organization, or place itself in a position to do so in the future; moreover, the advanced persistent threat pursues its objectives repeatedly over an extended period of time, adapting to a defender’s efforts to resist it, and with determination to maintain the level of interaction needed to execute its objectives.",
+      "rationale": "The source centrally defines Advanced Persistent Threats as an adversary entity, satisfying T04-I01.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:script-kiddy",
+      "polarity": "positive",
+      "ruleId": "T04-I01",
+      "senseKey": "rfc4949:d-slang",
+      "quote": "A cracker who is able to use existing attack techniques (i.e., to read scripts) and execute existing attack software, but is unable to invent new exploits or manufacture the tools to perform them; pejoratively, an immature or novice cracker.",
+      "rationale": "The source centrally defines a novice adversary actor using attack tools, satisfying T04-I01.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:social-engineering",
+      "polarity": "positive",
+      "ruleId": "T04-I03",
+      "senseKey": "niccs-glossary:social-engineering",
+      "quote": "the use of deception to manipulate individuals into divulging confidential or personal information that may be used for fraudulent purposes",
+      "rationale": "The source centrally defines deceptive social engineering behavior, satisfying T04-I03.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:spearphishing-service",
+      "polarity": "positive",
+      "ruleId": "T04-I03",
+      "senseKey": "mitre-attack-cti:T1598.001",
+      "quote": "Adversaries may send spearphishing messages via third party services to elicit sensitive information that can be used during targeting.",
+      "rationale": "The source directly describes spearphishing through third-party services, satisfying T04-I03.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:spearphishing-voice",
+      "polarity": "positive",
+      "ruleId": "T04-I03",
+      "senseKey": "mitre-attack-cti:T1598.004",
+      "quote": "Adversaries may use voice communications to elicit sensitive information that can be used during targeting.",
+      "rationale": "The source directly describes voice-based spearphishing behavior, satisfying T04-I03.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:whaling",
+      "polarity": "positive",
+      "ruleId": "T04-I03",
+      "senseKey": "nist-csrc-glossary:whaling",
+      "quote": "A specific kind of phishing that targets high ranking members of organizations.",
+      "rationale": "The source centrally defines a phishing technique aimed at senior targets, satisfying T04-I03.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:attack-signature",
+      "polarity": "positive",
+      "ruleId": "T04-I04",
+      "senseKey": "niccs-glossary:attack-signature",
+      "quote": "Attack Signature is a unique, predefined pattern or byte sequence used by cybersecurity tools (IDS/IPS, antivirus, WAF) to identify known malicious activity, such as malware strains, SQL injections, or vulnerability exploits.",
+      "rationale": "The source centrally defines an attack indicator used to identify malicious activity, satisfying T04-I04.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:cyber-threat-intelligence",
+      "polarity": "positive",
+      "ruleId": "T04-I05",
+      "senseKey": "nist-csrc-glossary:cyber-threat-intelligence",
+      "quote": "Cyber threat information that has been aggregated, transformed, analyzed, interpreted, or enriched to provide the necessary context for decision making processes.",
+      "rationale": "The source centrally defines analyzed and enriched cyber threat intelligence, satisfying T04-I05.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:acquire-infrastructure",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1583",
+      "quote": "Adversaries may buy, lease, rent, or obtain infrastructure that can be used during targeting.",
+      "rationale": "The source directly describes adversary infrastructure acquisition, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:application-shimming",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1546.011",
+      "quote": "Adversaries may establish persistence and/or elevate privileges by executing malicious content triggered by application shims.",
+      "rationale": "The source directly describes adversary persistence through application shims, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:archive-via-custom-method",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1560.003",
+      "quote": "An adversary may compress or encrypt data that is collected prior to exfiltration using a custom method.",
+      "rationale": "The source directly describes adversary preparation of collected data for exfiltration, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:asynchronous-procedure-call",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1055.004",
+      "quote": "Adversaries may inject malicious code into processes via the asynchronous procedure call (APC) queue in order to evade process based defenses as well as possibly elevate privileges.",
+      "rationale": "The source directly describes adversary APC process injection, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:autohotkey-autoit",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1059.010",
+      "quote": "Adversaries may execute commands and perform malicious tasks using AutoIT and AutoHotKey automation scripts.",
+      "rationale": "The source directly describes adversary command execution through automation scripts, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:backup-software-discovery",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1518.002",
+      "quote": "Adversaries may attempt to get a listing of backup software or configurations that are installed on a system.",
+      "rationale": "The source directly describes adversary discovery of backup software, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:bits-jobs",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1197",
+      "quote": "Adversaries may abuse BITS jobs to persistently execute code and perform various background tasks.",
+      "rationale": "The source directly describes adversary abuse of BITS jobs for persistence, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:boot-or-logon-initialization-scripts",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1037",
+      "quote": "Adversaries may use scripts automatically executed at boot or logon initialization to establish persistence.",
+      "rationale": "The source directly describes adversary persistence through initialization scripts, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:break-process-trees",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1036.009",
+      "quote": "An adversary may attempt to evade process tree based analysis by modifying executed malware's parent process ID (PPID).",
+      "rationale": "The source directly describes adversary evasion by breaking process trees, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:business-relationships",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1591.002",
+      "quote": "Adversaries may gather information about the victim's business relationships that can be used during targeting.",
+      "rationale": "The source directly describes adversary reconnaissance of victim relationships, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:ccache-files",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1558.005",
+      "quote": "Adversaries may attempt to steal Kerberos tickets stored in credential cache files (or ccache).",
+      "rationale": "The source directly describes adversary theft of cached Kerberos tickets, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:cdns",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1596.004",
+      "quote": "Adversaries may search content delivery network (CDN) data about victims that can be used during targeting.",
+      "rationale": "The source directly describes adversary reconnaissance using CDN data, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:clipboard-data",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1115",
+      "quote": "Adversaries may collect data stored in the clipboard from users copying information within or between applications.",
+      "rationale": "The source directly describes adversary collection of clipboard data, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:cloud-account",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1087.004",
+      "quote": "Adversaries may attempt to get a listing of cloud accounts.",
+      "rationale": "The source directly describes adversary discovery of cloud accounts, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:cloud-services",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1021.007",
+      "quote": "Adversaries may log into accessible cloud services within a compromised environment using Valid Accounts that are synchronized with or federated to on premises user identities.",
+      "rationale": "The source directly describes adversary access to cloud services using valid accounts, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:code-repositories",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1593.003",
+      "quote": "Adversaries may search public code repositories for information about victims that can be used during targeting.",
+      "rationale": "The source directly describes adversary reconnaissance of code repositories, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:compiled-html-file",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1218.001",
+      "quote": "Adversaries may abuse Compiled HTML files (.chm) to conceal malicious code.",
+      "rationale": "The source directly describes adversary abuse of compiled HTML files, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:component-object-model",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1559.001",
+      "quote": "Adversaries may use the Windows Component Object Model (COM) for local code execution.",
+      "rationale": "The source directly describes adversary use of COM for code execution, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:component-object-model-hijacking",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1546.015",
+      "quote": "Adversaries may establish persistence by executing malicious content triggered by hijacked references to Component Object Model (COM) objects.",
+      "rationale": "The source directly describes adversary COM hijacking for persistence, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:compromise-host-software-binary",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1554",
+      "quote": "Adversaries may modify host software binaries to establish persistent access to systems.",
+      "rationale": "The source directly describes adversary modification of binaries for persistence, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:compute-hijacking",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1496.001",
+      "quote": "Adversaries may leverage the compute resources of co opted systems to complete resource intensive tasks, which may impact system and/or hosted service availability.",
+      "rationale": "The source directly describes adversary hijacking of compute resources, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:container-administration-command",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1609",
+      "quote": "Adversaries may abuse a container administration service to execute commands within a container.",
+      "rationale": "The source directly describes adversary command execution through container administration, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:container-and-resource-discovery",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1613",
+      "quote": "Adversaries may attempt to discover containers and other resources that are available within a containers environment.",
+      "rationale": "The source directly describes adversary discovery in container environments, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:container-api",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1552.007",
+      "quote": "Adversaries may gather credentials via APIs within a containers environment.",
+      "rationale": "The source directly describes adversary credential gathering through container APIs, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:container-cli-api",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1059.013",
+      "quote": "Adversaries may abuse built in CLI tools or API calls to execute malicious commands in containerized environments.",
+      "rationale": "The source directly describes adversary command execution through container CLI or APIs, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:create-or-modify-system-process",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1543",
+      "quote": "Adversaries may create or modify system level processes to repeatedly execute malicious payloads as part of persistence.",
+      "rationale": "The source directly describes adversary process creation or modification for persistence, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:data-from-configuration-repository",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1602",
+      "quote": "Adversaries may collect data related to managed devices from configuration repositories.",
+      "rationale": "The source directly describes adversary collection from configuration repositories, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:data-from-local-system",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1005",
+      "quote": "Adversaries may search local system sources, such as file systems, configuration files, local databases, virtual machine files, or process memory, to find files of interest and sensitive data prior to Exfiltration.",
+      "rationale": "The source directly describes adversary collection from local systems, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:data-from-removable-media",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1025",
+      "quote": "Adversaries may search connected removable media on computers they have compromised to find files of interest.",
+      "rationale": "The source directly describes adversary collection from removable media, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:databases",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1213.006",
+      "quote": "Adversaries may leverage databases to mine valuable information.",
+      "rationale": "The source directly describes adversary collection from databases, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:determine-physical-locations",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1591.001",
+      "quote": "Adversaries may gather the victim's physical location(s) that can be used during targeting.",
+      "rationale": "The source directly describes adversary reconnaissance of victim locations, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:develop-capabilities",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1587",
+      "quote": "Adversaries may build capabilities that can be used during targeting.",
+      "rationale": "The source directly describes adversary development of operational capabilities, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:digital-certificates",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1596.003",
+      "quote": "Adversaries may search public digital certificate data for information about victims that can be used during targeting.",
+      "rationale": "The source directly describes adversary reconnaissance using certificate data, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:downgrade-attack",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1689",
+      "quote": "Adversaries may downgrade or use a version of system features that may be outdated, vulnerable, and/or does not support updated security controls.",
+      "rationale": "The source directly describes adversary downgrade behavior against security controls, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:email-hiding-rules",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1564.008",
+      "quote": "Adversaries may use email rules to hide inbound emails in a compromised user's mailbox.",
+      "rationale": "The source directly describes adversary email-rule concealment, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:embedded-payloads",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1027.009",
+      "quote": "Adversaries may embed payloads within other files to conceal malicious content from defenses.",
+      "rationale": "The source directly describes adversary concealment of embedded payloads, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:encrypted-encoded-file",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1027.013",
+      "quote": "Adversaries may encrypt or encode files to obfuscate strings, bytes, and other specific patterns to impede detection.",
+      "rationale": "The source directly describes adversary file obfuscation to impede detection, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:escape-to-host",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1611",
+      "quote": "Adversaries may break out of a container or virtualized environment to gain access to the underlying host.",
+      "rationale": "The source directly describes adversary escape from isolation to a host, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:financial-theft",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1657",
+      "quote": "Adversaries may steal monetary resources from targets through extortion, social engineering, technical theft, or other methods aimed at their own financial gain at the expense of the availability of these resources for victims.",
+      "rationale": "The source directly describes adversary theft for financial gain, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:firmware-corruption",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1495",
+      "quote": "Adversaries may overwrite or corrupt the flash memory contents of system BIOS or other firmware in devices attached to a system in order to render them inoperable or unable to boot, thus denying the availability to use the devices and/or the system.",
+      "rationale": "The source directly describes adversary corruption of firmware for impact, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:forced-authentication",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1187",
+      "quote": "Adversaries may gather credential material by invoking or forcing a user to automatically provide authentication information through a mechanism in which they can intercept.",
+      "rationale": "The source directly describes adversary interception through forced authentication, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:hidden-file-system",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1564.005",
+      "quote": "Adversaries may use a hidden file system to conceal malicious activity from users and security tools.",
+      "rationale": "The source directly describes adversary concealment in a hidden file system, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:hidden-files-and-directories",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1564.001",
+      "quote": "Adversaries may set files and directories to be hidden to evade detection mechanisms.",
+      "rationale": "The source directly describes adversary concealment of files and directories, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:hidden-users",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1564.002",
+      "quote": "Adversaries may use hidden users to hide the presence of user accounts they create or modify.",
+      "rationale": "The source directly describes adversary concealment of user accounts, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:hidden-window",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1564.003",
+      "quote": "Adversaries may use hidden windows to conceal malicious activity from the plain sight of users.",
+      "rationale": "The source directly describes adversary concealment through hidden windows, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:keylogging",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1056.001",
+      "quote": "Adversaries may log user keystrokes to intercept credentials as the user types them.",
+      "rationale": "The source directly describes adversary keylogging for credential interception, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:netsh-helper-dll",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1546.007",
+      "quote": "Adversaries may establish persistence by executing malicious content triggered by Netsh Helper DLLs.",
+      "rationale": "The source directly describes adversary persistence through Netsh Helper DLLs, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:internet-connection-discovery",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1016.001",
+      "quote": "Adversaries may check for Internet connectivity on compromised systems.",
+      "rationale": "The source directly describes adversary Internet connection discovery, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:local-account",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1087.001",
+      "quote": "Adversaries may attempt to get a listing of local system accounts.",
+      "rationale": "The source directly describes adversary discovery of local accounts, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:local-email-collection",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1114.001",
+      "quote": "Adversaries may target user email on local systems to collect sensitive information.",
+      "rationale": "The source directly describes adversary collection of local email, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:modify-cloud-compute-infrastructure",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1578",
+      "quote": "An adversary may attempt to modify a cloud account's compute service infrastructure to evade defenses.",
+      "rationale": "The source directly describes adversary modification of cloud infrastructure, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:network-security-appliances",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1590.006",
+      "quote": "Adversaries may gather information about the victim's network security appliances that can be used during targeting.",
+      "rationale": "The source directly describes adversary reconnaissance of security appliances, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:office-application-startup",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1137",
+      "quote": "Adversaries may leverage Microsoft Office based applications for persistence between startups.",
+      "rationale": "The source directly describes adversary persistence through Office startup, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:password-guessing",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1110.001",
+      "quote": "Adversaries with no prior knowledge of legitimate credentials within the system or environment may guess passwords to attempt access to accounts.",
+      "rationale": "The source directly describes adversary password guessing, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:password-managers",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1555.005",
+      "quote": "Adversaries may acquire user credentials from third party password managers.",
+      "rationale": "The source directly describes adversary credential acquisition from password managers, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:password-policy-discovery",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1201",
+      "quote": "Adversaries may attempt to access detailed information about the password policy used within an enterprise network or cloud environment.",
+      "rationale": "The source directly describes adversary password-policy discovery, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:patch-system-image",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1601.001",
+      "quote": "Adversaries may modify the operating system of a network device to introduce new capabilities or weaken existing defenses.",
+      "rationale": "The source directly describes adversary modification of network-device system images, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:peripheral-device-discovery",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1120",
+      "quote": "Adversaries may attempt to gather information about attached peripheral devices and components connected to a computer system.",
+      "rationale": "The source directly describes adversary peripheral-device discovery, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:prevent-command-history-logging",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1690",
+      "quote": "Adversaries may impair command history logging to hide commands they run on a compromised system.",
+      "rationale": "The source directly describes adversary impairment of command-history logging, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:process-discovery",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1057",
+      "quote": "Adversaries may attempt to get information about running processes on a system.",
+      "rationale": "The source directly describes adversary process discovery, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:process-hollowing",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1055.012",
+      "quote": "Adversaries may inject malicious code into suspended and hollowed processes in order to evade process based defenses.",
+      "rationale": "The source directly describes adversary process hollowing, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:ptrace-system-calls",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1055.008",
+      "quote": "Adversaries may inject malicious code into processes via ptrace (process trace) system calls in order to evade process based defenses as well as possibly elevate privileges.",
+      "rationale": "The source directly describes adversary ptrace injection, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:registry-run-keys-startup-folder",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1547.001",
+      "quote": "Adversaries may achieve persistence by adding a program to a startup folder or referencing it with a Registry run key.",
+      "rationale": "The source directly describes adversary persistence through run keys or startup folders, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:regsvcs-regasm",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1218.009",
+      "quote": "Adversaries may abuse Regsvcs and Regasm to proxy execution of code through a trusted Windows utility.",
+      "rationale": "The source directly describes adversary proxy execution through Regsvcs or Regasm, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:resource-forking",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1564.009",
+      "quote": "Adversaries may abuse resource forks to hide malicious code or executables to evade detection and bypass security applications.",
+      "rationale": "The source directly describes adversary concealment through resource forks, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:rommonkit",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1542.004",
+      "quote": "Adversaries may abuse the ROM Monitor (ROMMON) by loading an unauthorized firmware with adversary code to provide persistent access and manipulate device behavior that is difficult to detect.",
+      "rationale": "The source directly describes adversary ROMMON firmware persistence, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:scan-databases",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1596.005",
+      "quote": "Adversaries may search within public scan databases for information about victims that can be used during targeting.",
+      "rationale": "The source directly describes adversary reconnaissance through scan databases, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:scheduled-task-job",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1053",
+      "quote": "Adversaries may abuse task scheduling functionality to facilitate initial or recurring execution of malicious code.",
+      "rationale": "The source directly describes adversary task scheduling for code execution, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:selective-exclusion",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1679",
+      "quote": "Adversaries may intentionally exclude certain files, folders, directories, file types, or system components from encryption or tampering during a ransomware or malicious payload execution.",
+      "rationale": "The source directly describes adversary selective exclusion during malicious execution, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:sharepoint",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1213.002",
+      "quote": "Adversaries may leverage the SharePoint repository as a source to mine valuable information.",
+      "rationale": "The source directly describes adversary collection from SharePoint repositories, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:shortcut-modification",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1547.009",
+      "quote": "Adversaries may create or modify shortcuts that can execute a program during system boot or user login.",
+      "rationale": "The source directly describes adversary shortcut modification for execution, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:sms-pumping",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1496.003",
+      "quote": "Adversaries may leverage messaging services for SMS pumping, which may impact system and/or hosted service availability.",
+      "rationale": "The source directly describes adversary SMS pumping for resource impact, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    },
+    {
+      "entryKey": "TERM:software-deployment-tools",
+      "polarity": "positive",
+      "ruleId": "T04-I02",
+      "senseKey": "mitre-attack-cti:T1072",
+      "quote": "Adversaries may gain access to and use centralized software suites installed within an enterprise to execute commands and move laterally through the network.",
+      "rationale": "The source directly describes adversary abuse of deployment tools for execution and movement, satisfying T04-I02.",
+      "primaryReviewer": "recovery-primary-t04",
+      "secondaryReviewer": "recovery-secondary-t04"
+    }
+  ]
+}

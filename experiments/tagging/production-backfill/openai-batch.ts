@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { compileContent } from '../../../tools/content/src/compile.js';
@@ -11,7 +12,7 @@ import {
 } from '../../../tools/content/src/tagging.js';
 
 type Pass = 'a' | 'b';
-type Rubric = {
+export type Rubric = {
   taxonomyVersion: string;
   globalRules: string[];
   contracts: Array<{
@@ -22,17 +23,17 @@ type Rubric = {
     exclusionRules: string[];
   }>;
 };
-type EntryPacket = ReturnType<typeof classificationEntryPayload> & {
+export type EntryPacket = ReturnType<typeof classificationEntryPayload> & {
   entryContentHash: string;
 };
-type ProposedTag = {
+export type ProposedTag = {
   tagSlug: string;
   lane: 'AUTO' | 'REVIEW';
   confidence: number;
   ruleIds: string[];
   evidenceSenseKeys: string[];
 };
-type Result = {
+export type Result = {
   entryKey: string;
   entryContentHash: string;
   injectionSuspected: boolean;
@@ -46,6 +47,8 @@ type BatchRecord = {
     body: {
       id: string;
       model: string;
+      status?: string;
+      incomplete_details?: null | { reason?: string };
       output: Array<{
         type: string;
         content?: Array<{ type: string; text?: string }>;
@@ -64,7 +67,9 @@ type BatchRecord = {
 
 const directory = fileURLToPath(new URL('.', import.meta.url));
 const rootDir = fileURLToPath(new URL('../../..', import.meta.url));
-const batchDirectory = `${directory}/api-batch`;
+const batchGeneration = 'codex-v1';
+const transport = 'codex-cli';
+const batchDirectory = `${directory}/codex-cli`;
 const requestPath = `${batchDirectory}/requests.jsonl`;
 const responsePath = `${batchDirectory}/responses.jsonl`;
 const batchesPath = `${batchDirectory}/batch.json`;
@@ -238,7 +243,9 @@ async function prepare() {
           model: 'gpt-5.6-terra',
           store: false,
           reasoning: { effort: 'max' },
-          max_output_tokens: maxOutputTokens,
+          ...(transport === 'codex-cli'
+            ? {}
+            : { max_output_tokens: maxOutputTokens }),
           input: [
             {
               role: 'developer',
@@ -270,7 +277,7 @@ async function prepare() {
             },
           },
           metadata: {
-            run: 'synac-production-backfill-v1',
+            run: `synac-production-backfill-${batchGeneration}`,
             pass,
             chunk: chunkId,
             rubric_hash: rubricHash,
@@ -292,11 +299,13 @@ async function prepare() {
   };
   const manifest = {
     schemaVersion: 'synac-production-backfill-manifest-v1',
+    generation: batchGeneration,
+    transport,
     model: 'gpt-5.6-terra',
     reasoningEffort: 'max',
     passes: ['a', 'b'],
     chunkSize,
-    maxOutputTokens,
+    maxOutputTokens: transport === 'codex-cli' ? null : maxOutputTokens,
     entryCount: corpus.entries.length,
     requestCount: requests.length,
     contentVersion: corpus.contentVersion,
@@ -308,8 +317,9 @@ async function prepare() {
       JSON.stringify({
         model: 'gpt-5.6-terra',
         effort: 'max',
+        transport,
         chunkSize,
-        maxOutputTokens,
+        maxOutputTokens: transport === 'codex-cli' ? null : maxOutputTokens,
         passes: ['a', 'b'],
       }),
     ),
@@ -323,6 +333,11 @@ async function prepare() {
 }
 
 async function submit() {
+  if (transport === 'codex-cli') {
+    throw new Error(
+      'OpenAI API submission is disabled for the Codex CLI generation',
+    );
+  }
   try {
     const existing = JSON.parse(await readFile(batchesPath, 'utf8')) as {
       id?: string;
@@ -362,7 +377,7 @@ async function submit() {
       endpoint: '/v1/responses',
       completion_window: '24h',
       metadata: {
-        run: 'synac-production-backfill-v1',
+        run: `synac-production-backfill-${batchGeneration}`,
         model: 'gpt-5.6-terra',
         effort: 'max',
       },
@@ -432,54 +447,101 @@ function extractOutputText(
     .find((item) => item.type === 'output_text')?.text;
 }
 
-function validateResult(
-  result: Result,
+type Quarantine = {
+  entryKey: string;
+  scope: 'RESULT' | 'TAG';
+  tagSlug?: string;
+  reasons: string[];
+};
+
+function validateTag(
+  tag: ProposedTag,
   expected: EntryPacket,
   rubric: Rubric,
 ): string[] {
   const errors: string[] = [];
-  if (result.entryKey !== expected.key)
-    errors.push(`entry key ${result.entryKey} != ${expected.key}`);
-  if (result.entryContentHash !== expected.entryContentHash)
-    errors.push(`${expected.key}: content hash mismatch`);
   const senseKeys = new Set(expected.senses.map((sense) => sense.key));
-  const contracts = new Map(
-    rubric.contracts.map((contract) => [contract.slug, contract]),
+  const contract = rubric.contracts.find(
+    (candidate) => candidate.slug === tag.tagSlug,
   );
+  if (!contract) return [`unknown tag ${tag.tagSlug}`];
+  if (tag.lane === 'AUTO' && tag.confidence < 98) errors.push('AUTO below 98');
+  if (tag.lane === 'REVIEW' && (tag.confidence < 75 || tag.confidence > 97))
+    errors.push('REVIEW outside 75-97');
+  if (tag.evidenceSenseKeys.length === 0) errors.push('no evidence sense');
+  for (const key of tag.evidenceSenseKeys)
+    if (!senseKeys.has(key)) errors.push(`bad sense ${key}`);
+  for (const rule of tag.ruleIds) {
+    if (rule === 'global:substantive-topic') continue;
+    const match = /^(include|exclude):(\d+)$/.exec(rule);
+    const count =
+      match?.[1] === 'include'
+        ? contract.inclusionRules.length
+        : contract.exclusionRules.length;
+    if (!match || Number(match[2]) < 1 || Number(match[2]) > count)
+      errors.push(`bad rule ${rule}`);
+  }
+  return errors;
+}
+
+export function sanitizeResult(
+  result: Result,
+  expected: EntryPacket,
+  rubric: Rubric,
+): { result: Result; quarantine: Quarantine[] } {
+  const quarantine: Quarantine[] = [];
+  const envelopeErrors: string[] = [];
+  if (result.entryKey !== expected.key) {
+    envelopeErrors.push(`entry key ${result.entryKey} != ${expected.key}`);
+  }
+  if (result.entryContentHash !== expected.entryContentHash) {
+    envelopeErrors.push('content hash mismatch');
+  }
+  if (envelopeErrors.length > 0) {
+    quarantine.push({
+      entryKey: expected.key,
+      scope: 'RESULT',
+      reasons: envelopeErrors,
+    });
+    return {
+      result: {
+        entryKey: expected.key,
+        entryContentHash: expected.entryContentHash,
+        injectionSuspected: result.injectionSuspected,
+        tags: [],
+      },
+      quarantine,
+    };
+  }
+  if (result.injectionSuspected && result.tags.length > 0) {
+    quarantine.push({
+      entryKey: expected.key,
+      scope: 'RESULT',
+      reasons: ['injection result emitted tags'],
+    });
+    return {
+      result: { ...result, tags: [] },
+      quarantine,
+    };
+  }
   const seen = new Set<string>();
+  const tags: ProposedTag[] = [];
   for (const tag of result.tags) {
-    if (seen.has(tag.tagSlug))
-      errors.push(`${expected.key}: duplicate tag ${tag.tagSlug}`);
+    const tagErrors = validateTag(tag, expected, rubric);
+    if (seen.has(tag.tagSlug)) tagErrors.push(`duplicate tag ${tag.tagSlug}`);
     seen.add(tag.tagSlug);
-    const contract = contracts.get(tag.tagSlug);
-    if (!contract) {
-      errors.push(`${expected.key}: unknown tag ${tag.tagSlug}`);
-      continue;
-    }
-    if (tag.lane === 'AUTO' && tag.confidence < 98)
-      errors.push(`${expected.key}/${tag.tagSlug}: AUTO below 98`);
-    if (tag.lane === 'REVIEW' && (tag.confidence < 75 || tag.confidence > 97)) {
-      errors.push(`${expected.key}/${tag.tagSlug}: REVIEW outside 75-97`);
-    }
-    if (tag.evidenceSenseKeys.length === 0)
-      errors.push(`${expected.key}/${tag.tagSlug}: no evidence sense`);
-    for (const key of tag.evidenceSenseKeys)
-      if (!senseKeys.has(key))
-        errors.push(`${expected.key}/${tag.tagSlug}: bad sense ${key}`);
-    for (const rule of tag.ruleIds) {
-      if (rule === 'global:substantive-topic') continue;
-      const match = /^(include|exclude):(\d+)$/.exec(rule);
-      const count =
-        match?.[1] === 'include'
-          ? contract.inclusionRules.length
-          : contract.exclusionRules.length;
-      if (!match || Number(match[2]) < 1 || Number(match[2]) > count)
-        errors.push(`${expected.key}/${tag.tagSlug}: bad rule ${rule}`);
+    if (tagErrors.length > 0) {
+      quarantine.push({
+        entryKey: expected.key,
+        scope: 'TAG',
+        tagSlug: tag.tagSlug,
+        reasons: tagErrors,
+      });
+    } else {
+      tags.push(tag);
     }
   }
-  if (result.injectionSuspected && result.tags.length > 0)
-    errors.push(`${expected.key}: injection result emitted tags`);
-  return errors;
+  return { result: { ...result, tags }, quarantine };
 }
 
 async function collect() {
@@ -524,6 +586,7 @@ async function collect() {
     ['b', new Map()],
   ]);
   const validationErrors: string[] = [];
+  const quarantine: Quarantine[] = [];
   const usage = {
     inputTokens: 0,
     cachedInputTokens: 0,
@@ -547,7 +610,12 @@ async function collect() {
       }
       const output = extractOutputText(record.response.body);
       if (!output) {
-        validationErrors.push(`${id}: missing output text`);
+        const reason = record.response.body.incomplete_details?.reason;
+        validationErrors.push(
+          record.response.body.status === 'incomplete'
+            ? `${id}: incomplete response (${reason ?? 'unknown reason'})`
+            : `${id}: missing output text`,
+        );
         continue;
       }
       let parsed: { results: Result[] };
@@ -566,11 +634,13 @@ async function collect() {
         continue;
       }
       for (let index = 0; index < expected.length; index += 1) {
-        const result = parsed.results[index];
-        validationErrors.push(
-          ...validateResult(result, expected[index], rubric),
+        const sanitized = sanitizeResult(
+          parsed.results[index],
+          expected[index],
+          rubric,
         );
-        proposedByPass.get(pass)?.set(result.entryKey, result);
+        quarantine.push(...sanitized.quarantine);
+        proposedByPass.get(pass)?.set(expected[index].key, sanitized.result);
       }
       const requestUsage = record.response.body.usage;
       if (requestUsage) {
@@ -586,13 +656,18 @@ async function collect() {
   }
   if (validationErrors.length > 0) {
     await writeFile(
-      `${directory}/validation-errors.json`,
+      `${batchDirectory}/validation-errors.json`,
       `${JSON.stringify(validationErrors, null, 2)}\n`,
     );
     throw new Error(
       `${validationErrors.length} validation errors; no candidates emitted`,
     );
   }
+  const quarantineJson = `${JSON.stringify(quarantine, null, 2)}\n`;
+  await writeFile(
+    `${batchDirectory}/validation-quarantine.json`,
+    quarantineJson,
+  );
   const accepted: Array<{
     entryKey: string;
     entryContentHash: string;
@@ -670,6 +745,8 @@ async function collect() {
     acceptedEntryCount: taggedEntries.size,
     acceptedEntryCoverage: taggedEntries.size / corpus.entries.length,
     reviewCount: review.length,
+    quarantineCount: quarantine.length,
+    quarantineHash: sha256(quarantineJson),
     perTag: [...perTag]
       .map(([tagSlug, counts]) => ({ tagSlug, ...counts }))
       .sort((a, b) => a.tagSlug.localeCompare(b.tagSlug)),
@@ -690,9 +767,15 @@ async function collect() {
   );
 }
 
-const command = process.argv[2];
-if (command === 'prepare') await prepare();
-else if (command === 'submit') await submit();
-else if (command === 'status') await status();
-else if (command === 'collect') await collect();
-else throw new Error('usage: openai-batch.ts <prepare|submit|status|collect>');
+if (
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
+  const command = process.argv[2];
+  if (command === 'prepare') await prepare();
+  else if (command === 'submit') await submit();
+  else if (command === 'status') await status();
+  else if (command === 'collect') await collect();
+  else
+    throw new Error('usage: openai-batch.ts <prepare|submit|status|collect>');
+}

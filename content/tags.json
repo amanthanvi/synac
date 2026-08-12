@@ -1,12 +1,483 @@
 {
+  "taxonomyVersion": "2",
   "tags": [
-    { "slug": "access-control", "name": "Access control", "description": "Authentication, authorization, and identity mechanisms." },
-    { "slug": "cryptography", "name": "Cryptography", "description": "Encryption, hashing, signatures, and key management." },
-    { "slug": "network-security", "name": "Network security", "description": "Protocols, segmentation, and traffic protection." },
-    { "slug": "threat-intelligence", "name": "Threat intelligence", "description": "Adversary behavior, TTPs, and attribution." },
-    { "slug": "vulnerability-management", "name": "Vulnerability management", "description": "Weaknesses, exposures, and remediation." },
-    { "slug": "malware", "name": "Malware", "description": "Malicious software and persistence mechanisms." },
-    { "slug": "incident-response", "name": "Incident response", "description": "Detection, containment, and recovery." },
-    { "slug": "protocols", "name": "Protocols", "description": "Standardized communication procedures." }
+    {
+      "slug": "identity-access",
+      "name": "Identity and access",
+      "description": "Digital identities, accounts, credentials, identity proofing, authentication, federation, authorization, and logical access policy.",
+      "definition": "Digital identities, accounts, credentials, identity proofing, authentication, federation, authorization, and logical access policy.",
+      "inclusionRules": [
+        "Identity lifecycle.",
+        "Authenticators and factors.",
+        "Account and credential management.",
+        "Access-control models and mechanisms.",
+        "Federation and single sign-on.",
+        "Logical authorization policy."
+      ],
+      "exclusionRules": [
+        "Facility access by itself.",
+        "Authorization-to-operate governance.",
+        "Cryptographic authentication tags or codes whose subject is the primitive.",
+        "Acronyms that only resemble identity protocols."
+      ],
+      "positiveExamples": [
+        "access-control",
+        "authentication",
+        "authorization",
+        "attribute-based-access-control-abac",
+        "kerberos"
+      ],
+      "hardNegatives": [
+        "physical-security",
+        "emergency-action-plan-eap",
+        "authorization-to-operate",
+        "certificate-authority-authorization",
+        "authentication-tag"
+      ],
+      "allowedCooccurrences": [
+        "cryptography",
+        "network-security",
+        "privacy-data-protection",
+        "physical-environmental-security"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "cryptography",
+      "name": "Cryptography",
+      "description": "Cryptographic primitives, encryption, hashes and MACs, signatures, key exchange and management, PKI and certificates, secure randomness, cryptanalysis, supporting infrastructure, and cryptographic failures.",
+      "definition": "Cryptographic primitives, encryption, hashes and MACs, signatures, key exchange and management, PKI and certificates, secure randomness, cryptanalysis, supporting infrastructure, and cryptographic failures.",
+      "inclusionRules": [
+        "Algorithms and primitives.",
+        "Key material and lifecycle.",
+        "Certificates and trust infrastructure.",
+        "Cryptographic protocols when cryptography is substantive.",
+        "Implementation, analysis, and failure concepts."
+      ],
+      "exclusionRules": [
+        "Generic encoding and non-security checksums.",
+        "Credentials without cryptographic substance.",
+        "Lexical uses of key or signature.",
+        "Ordinary protocols where cryptography is incidental."
+      ],
+      "positiveExamples": [
+        "advanced-encryption-standard",
+        "asymmetric-cryptography",
+        "approved-hash-algorithms",
+        "certificate-authority",
+        "authenticated-encryption"
+      ],
+      "hardNegatives": [
+        "attack-signature",
+        "key-performance-indicator",
+        "environmental-keying",
+        "personal-identification-number-pin",
+        "internet-protocol"
+      ],
+      "allowedCooccurrences": [
+        "identity-access",
+        "network-security",
+        "privacy-data-protection",
+        "vulnerabilities-remediation"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "network-security",
+      "name": "Network security",
+      "description": "Protection, monitoring, segmentation, filtering, and defense of networks and network communications.",
+      "definition": "Protection, monitoring, segmentation, filtering, and defense of networks and network communications.",
+      "inclusionRules": [
+        "Firewalls and packet filtering.",
+        "Network segmentation.",
+        "Secure transport and communications.",
+        "Network-specific monitoring and intrusion detection.",
+        "Attacks or weaknesses whose network mechanism is substantive."
+      ],
+      "exclusionRules": [
+        "Generic networking, routing, addressing, sockets, and protocol definitions.",
+        "Information-sharing conventions.",
+        "Biometric segmentation.",
+        "Non-security traffic concepts."
+      ],
+      "positiveExamples": [
+        "firewall",
+        "ipsec",
+        "network-intrusion-detection-system",
+        "packet-filter",
+        "traffic-flow-confidentiality"
+      ],
+      "hardNegatives": [
+        "internet-protocol",
+        "transmission-control-protocol",
+        "user-datagram-protocol",
+        "traffic-light-protocol",
+        "air-traffic-organization"
+      ],
+      "allowedCooccurrences": [
+        "cryptography",
+        "identity-access",
+        "threats-adversary-behavior",
+        "vulnerabilities-remediation",
+        "malware",
+        "incident-response"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "threats-adversary-behavior",
+      "name": "Threats and adversary behavior",
+      "description": "Cybersecurity threats, actors, campaigns, TTPs, techniques, social engineering, indicators, attribution, and threat-intelligence artifacts whose substantive subject is adversarial activity.",
+      "definition": "Cybersecurity threats, actors, campaigns, TTPs, techniques, social engineering, indicators, attribution, and threat-intelligence artifacts whose substantive subject is adversarial activity.",
+      "inclusionRules": [
+        "Adversary entities and campaigns.",
+        "Attack behavior and TTPs.",
+        "Phishing and social engineering.",
+        "Indicators and attribution.",
+        "Threat-intelligence concepts about acquiring, analyzing, or sharing adversary information."
+      ],
+      "exclusionRules": [
+        "Non-cyber uses of adversarial terminology.",
+        "General risk or weakness without a specific threat subject.",
+        "Defenses whose primary subject belongs elsewhere.",
+        "Command-and-control terminology unrelated to adversaries."
+      ],
+      "positiveExamples": [
+        "phishing",
+        "social-engineering",
+        "adversary-in-the-middle",
+        "indicator-of-compromise",
+        "fallback-channels"
+      ],
+      "hardNegatives": [
+        "generative-adversarial-networks",
+        "computationally-bounded-adversary",
+        "phishing-resistance",
+        "security-risk",
+        "vulnerability"
+      ],
+      "allowedCooccurrences": [
+        "malware",
+        "network-security",
+        "vulnerabilities-remediation",
+        "incident-response",
+        "supply-chain-security"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "vulnerabilities-remediation",
+      "name": "Vulnerabilities and remediation",
+      "description": "Cybersecurity weaknesses and exposures, plus their identification, cataloging, assessment, prioritization, and resolution.",
+      "definition": "Cybersecurity weaknesses and exposures, plus their identification, cataloging, assessment, prioritization, and resolution.",
+      "inclusionRules": [
+        "Vulnerabilities, weaknesses, insecure designs, and misconfiguration.",
+        "CVE, CWE, CVSS, and vulnerability catalogs.",
+        "Assessment and scanning.",
+        "Prioritization.",
+        "Patching and remediation."
+      ],
+      "exclusionRules": [
+        "Adversary behavior that does not make an underlying weakness substantive.",
+        "Generic risk.",
+        "Workforce capability wrappers.",
+        "Malware as an artifact rather than a weakness."
+      ],
+      "positiveExamples": [
+        "vulnerability",
+        "buffer-overflow",
+        "sql-injection",
+        "patch-management",
+        "vulnerability-assessment"
+      ],
+      "hardNegatives": [
+        "exploit-public-facing-application",
+        "active-scanning",
+        "vulnerability-assessment-and-management",
+        "risk-management",
+        "malware"
+      ],
+      "allowedCooccurrences": [
+        "threats-adversary-behavior",
+        "identity-access",
+        "cryptography",
+        "network-security",
+        "risk-governance",
+        "supply-chain-security"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "malware",
+      "name": "Malware",
+      "description": "Malicious software, its families, lifecycle, capabilities, delivery, execution, malware-specific persistence, analysis, detection, and removal.",
+      "definition": "Malicious software, its families, lifecycle, capabilities, delivery, execution, malware-specific persistence, analysis, detection, and removal.",
+      "inclusionRules": [
+        "Malware families and types.",
+        "Malicious-code behavior.",
+        "Malware delivery, execution, and persistence.",
+        "Analysis, detection, disinfection, and removal when malware remains the substantive topic."
+      ],
+      "exclusionRules": [
+        "Threat behavior, infrastructure, or evasion that merely mentions malware.",
+        "Generic exploitation or persistence.",
+        "Threat actors and campaigns without malicious software as a substantive subject."
+      ],
+      "positiveExamples": [
+        "malware",
+        "ransomware",
+        "rootkit",
+        "trojan",
+        "worm"
+      ],
+      "hardNegatives": [
+        "command-obfuscation",
+        "encrypted-channel",
+        "file-deletion",
+        "code-signing",
+        "environmental-keying"
+      ],
+      "allowedCooccurrences": [
+        "threats-adversary-behavior",
+        "network-security",
+        "incident-response",
+        "vulnerabilities-remediation",
+        "supply-chain-security"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "incident-response",
+      "name": "Incident response",
+      "description": "Preparation for, investigation of, triage of, containment of, eradication of, recovery from, and learning after cybersecurity incidents.",
+      "definition": "Preparation for, investigation of, triage of, containment of, eradication of, recovery from, and learning after cybersecurity incidents.",
+      "inclusionRules": [
+        "Incident planning and teams.",
+        "Detection and alert triage in incident context.",
+        "Containment, eradication, and recovery.",
+        "Post-incident learning.",
+        "Digital forensics and evidence handling tied to cybersecurity investigation."
+      ],
+      "exclusionRules": [
+        "Generic monitoring.",
+        "Ordinary account, data, or key recovery.",
+        "Business continuity and disaster recovery without incident context.",
+        "Routine IT troubleshooting.",
+        "General forensic science."
+      ],
+      "positiveExamples": [
+        "incident-response",
+        "incident-handling",
+        "digital-forensics",
+        "chain-of-custody",
+        "computer-security-incident-response-team"
+      ],
+      "hardNegatives": [
+        "account-recovery",
+        "data-recovery",
+        "disaster-recovery-plan-drp",
+        "forensic-science",
+        "key-recovery"
+      ],
+      "allowedCooccurrences": [
+        "threats-adversary-behavior",
+        "malware",
+        "network-security",
+        "privacy-data-protection",
+        "risk-governance",
+        "physical-environmental-security"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "risk-governance",
+      "name": "Risk and governance",
+      "description": "Cybersecurity risk, governance, policy, compliance, authorization, audit, and program assurance.",
+      "definition": "Cybersecurity risk, governance, policy, compliance, authorization, audit, and program assurance.",
+      "inclusionRules": [
+        "Risk identification, assessment, and treatment.",
+        "Cybersecurity governance.",
+        "Policy and compliance.",
+        "Authorization and accreditation.",
+        "Security audit and program assurance."
+      ],
+      "exclusionRules": [
+        "Generic organizational management.",
+        "Operational audit logs.",
+        "Cryptographic module or key-management policy whose primary subject is cryptography.",
+        "Identity mechanisms that adapt to risk.",
+        "Roles by title alone."
+      ],
+      "positiveExamples": [
+        "risk-management",
+        "risk-assessment",
+        "risk-governance",
+        "information-security-policy",
+        "security-audit"
+      ],
+      "hardNegatives": [
+        "security-audit-trail",
+        "cryptographic-module-security-policy",
+        "ckms-security-policy",
+        "risk-adaptive-adaptable-access-control",
+        "authentication-assurance-level"
+      ],
+      "allowedCooccurrences": [
+        "privacy-data-protection",
+        "supply-chain-security",
+        "vulnerabilities-remediation",
+        "identity-access",
+        "incident-response"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "privacy-data-protection",
+      "name": "Privacy and data protection",
+      "description": "Privacy risk and responsible processing, protection, minimization, consent, identifiability, and de-identification of personal data.",
+      "definition": "Privacy risk and responsible processing, protection, minimization, consent, identifiability, and de-identification of personal data.",
+      "inclusionRules": [
+        "PII and personal data.",
+        "Privacy engineering and controls.",
+        "Privacy risk.",
+        "Consent and data-processing choices.",
+        "Anonymization, de-identification, and differential privacy."
+      ],
+      "exclusionRules": [
+        "Confidentiality alone.",
+        "Cryptographic products whose names contain privacy.",
+        "Identity credentials and PINs.",
+        "Privacy roles and job titles by type alone."
+      ],
+      "positiveExamples": [
+        "data-privacy",
+        "personal-identifying-information-personally-identifiable-information",
+        "de-identification",
+        "differential-privacy",
+        "privacy-risk-assessment"
+      ],
+      "hardNegatives": [
+        "open-pretty-good-privacy-openpgp",
+        "wired-equivalent-privacy",
+        "chief-privacy-officer",
+        "cybersecurity-and-or-privacy-learning-program-manager",
+        "personal-identification-number-pin"
+      ],
+      "allowedCooccurrences": [
+        "risk-governance",
+        "identity-access",
+        "cryptography",
+        "incident-response"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "supply-chain-security",
+      "name": "Supply-chain security",
+      "description": "Cybersecurity risk and compromise across products, services, suppliers, dependencies, acquisition, provenance, and delivery chains.",
+      "definition": "Cybersecurity risk and compromise across products, services, suppliers, dependencies, acquisition, provenance, and delivery chains.",
+      "inclusionRules": [
+        "Cybersecurity supply-chain risk management.",
+        "Product and service acquisition and supplier security.",
+        "SBOM and software or hardware component provenance.",
+        "Supply-chain assurance.",
+        "Software or hardware supply-chain compromise."
+      ],
+      "exclusionRules": [
+        "Generic vendors, suppliers, and third parties.",
+        "Dependencies without security context.",
+        "Generic data provenance.",
+        "Cryptographic trusted-third-party concepts."
+      ],
+      "positiveExamples": [
+        "compromise-software-supply-chain",
+        "cybersecurity-supply-chain-risk-management",
+        "sbom",
+        "software-bill-of-materials",
+        "supply-chain-assurance"
+      ],
+      "hardNegatives": [
+        "data-provenance",
+        "supplier",
+        "third-party-providers",
+        "trusted-third-party",
+        "threat-intel-vendors"
+      ],
+      "allowedCooccurrences": [
+        "risk-governance",
+        "threats-adversary-behavior",
+        "vulnerabilities-remediation",
+        "malware",
+        "physical-environmental-security"
+      ],
+      "lifecycle": "PUBLISHED"
+    },
+    {
+      "slug": "physical-environmental-security",
+      "name": "Physical and environmental security",
+      "description": "Physical access, facilities, media, environmental hazards, emanations, and physical tamper protection as they relate to information-system security.",
+      "definition": "Physical access, facilities, media, environmental hazards, emanations, and physical tamper protection as they relate to information-system security.",
+      "inclusionRules": [
+        "Facility and perimeter safeguards.",
+        "Physical access control.",
+        "Environmental protection.",
+        "Emanations security.",
+        "Media protection and sanitization.",
+        "Security-relevant physical tamper resistance."
+      ],
+      "exclusionRules": [
+        "Generic facilities and hardware.",
+        "Cyber-physical or operational technology as a platform.",
+        "Malware environmental keying.",
+        "Physical-medium exfiltration when adversary behavior is the subject.",
+        "Non-security environmental testing."
+      ],
+      "positiveExamples": [
+        "physical-security",
+        "physical-access-control-system",
+        "compromising-emanations",
+        "media-sanitization",
+        "tamper-resistant"
+      ],
+      "hardNegatives": [
+        "environmental-keying",
+        "facility",
+        "issuing-facility",
+        "exfiltration-over-physical-medium",
+        "fingerprint-segmentation"
+      ],
+      "allowedCooccurrences": [
+        "identity-access",
+        "incident-response",
+        "risk-governance",
+        "supply-chain-security"
+      ],
+      "lifecycle": "PUBLISHED"
+    }
+  ],
+  "retiredTags": [
+    {
+      "slug": "access-control",
+      "name": "Access control",
+      "replacedBy": "identity-access",
+      "reason": "Renamed into the broader identity and access contract in taxonomy v2."
+    },
+    {
+      "slug": "threat-intelligence",
+      "name": "Threat intelligence",
+      "replacedBy": "threats-adversary-behavior",
+      "reason": "Expanded into the threats and adversary behavior contract in taxonomy v2."
+    },
+    {
+      "slug": "vulnerability-management",
+      "name": "Vulnerability management",
+      "replacedBy": "vulnerabilities-remediation",
+      "reason": "Expanded into the vulnerabilities and remediation contract in taxonomy v2."
+    },
+    {
+      "slug": "protocols",
+      "name": "Protocols",
+      "reason": "Retired without a successor because protocol identity alone is not a cybersecurity topic."
+    }
   ]
 }

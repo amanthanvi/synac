@@ -15,6 +15,7 @@ import {
   type BuildEmissionInput,
   type CorpusEntry,
   type HashedArtifact,
+  type SourceControlSuite,
 } from './emit-assignments.ts';
 
 const tagSlugs = Array.from({ length: 11 }, (_value, index) => `tag-${index}`);
@@ -307,6 +308,46 @@ test('coverage and per-tag release floors are enforced independently', () => {
     () => buildAssignmentEmission(makeFixture({ acceptedPerTag: 24 })),
     /has 24 assignments; at least 25 required/,
   );
+});
+
+test('double-reviewed positive source controls supplement rare tags without lowering model gates', () => {
+  const input = makeFixture({ acceptedPerTag: 24 });
+  const positives = tagSlugs.map((tagSlug, tagIndex) => {
+    const source = input.corpus.entries[tagIndex * 24 + 24];
+    return {
+      entryKey: source.entryKey,
+      entryContentHash: source.entryContentHash,
+      tagSlug,
+      ruleId: `T${String(tagIndex + 1).padStart(2, '0')}-I01`,
+      senseKey: source.evidenceSenseKeys[0],
+      primaryReviewer: 'primary-agent',
+      secondaryReviewer: 'secondary-agent',
+    };
+  });
+  const sourceControls: SourceControlSuite = {
+    artifactHash: sha256Text('reviewed-source-controls'),
+    files: tagSlugs.map((tagSlug) => ({
+      tagSlug,
+      fileHash: `sha256:${sha256Text(tagSlug)}`,
+      rowCount: 50,
+    })),
+    positives,
+  };
+  input.sourceControls = sourceControls;
+
+  const emission = buildAssignmentEmission(input);
+  assert.equal(emission.artifact.assignments.length, 25 * 11);
+  for (const row of positives) {
+    const assignment = emission.artifact.assignments.find(
+      (candidate) =>
+        candidate.entryKey === row.entryKey &&
+        candidate.tagSlug === row.tagSlug,
+    );
+    assert.equal(assignment?.score, 1);
+    assert.equal(assignment?.authority, 'SYNTHETIC_REFERENCE');
+  }
+  const hashes = emission.report.hashes as Record<string, unknown>;
+  assert.equal(typeof hashes.certificationHash, 'string');
 });
 
 test('unchanged predecessor pairs omitted by the new review are preserved', () => {

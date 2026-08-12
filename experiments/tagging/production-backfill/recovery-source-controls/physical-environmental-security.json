@@ -1,0 +1,237 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T11",
+  "tagSlug": "physical-environmental-security",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:at",
+      "polarity": "positive",
+      "ruleId": "T11-I06",
+      "senseKey": "nist-csrc-glossary:at",
+      "quote": "Systems engineering activities intended to prevent physical manipulation or delay exploitation of critical program information in U.S. defense systems in domestic and export configurations to impede countermeasure development, unintended technology transfer, or alteration of a system due to reverse engineering.",
+      "rationale": "Preventing physical manipulation and delaying reverse-engineering exploitation make anti-tamper protection central, directly satisfying T11-I06.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:access-list",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "nist-csrc-glossary:access-list",
+      "quote": "Roster of individuals authorized admittance to a controlled area.",
+      "rationale": "Authorizing individuals for admittance to a controlled physical area directly satisfies T11-I02.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:closed-storage",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:closed-storage",
+      "quote": "The storage of classified information in properly secured General Services Administration approved security containers.",
+      "rationale": "Securing classified information in approved physical security containers is media protection under T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:controlled-area",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:controlled-area",
+      "quote": "Any area or space for which the organization has confidence that the physical and procedural protections provided are sufficient to meet the requirements established for protecting the information and/or information system.",
+      "rationale": "An area defined by physical and procedural safeguards for information systems directly satisfies T11-I01.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:compromising-emanations",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:compromising-emanations",
+      "quote": "Unintentional signals that, if intercepted and analyzed, would disclose the information transmitted, received, handled, or otherwise processed by telecommunications or information systems equipment.",
+      "rationale": "Information-bearing unintentional emissions from information-system equipment directly satisfy emanations-security rule T11-I04.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:cutting",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:cutting",
+      "quote": "The use of a tool or physical technique to break the surface of electronic storage media, potentially breaking the media into two or more pieces and making it difficult or infeasible to recover the data using state of the art laboratory techniques.",
+      "rationale": "Physically destroying electronic storage media to prevent data recovery is media sanitization under T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:destruction",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:destruction",
+      "quote": "The process of overwriting, erasing, or physically destroying information (e.g., a cryptographic key) so that it cannot be recovered. See NIST SP 800 88.",
+      "rationale": "Irrecoverably sanitizing information through overwrite, erasure, or physical destruction directly satisfies T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:emanation",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A signal (e.g., electromagnetic or acoustic) that is emitted by a system (e.g., through radiation or conductance) as a consequence (i.e., byproduct) of the system's operation, and that may contain information.",
+      "rationale": "Information-bearing electromagnetic or acoustic system emissions are the direct subject of emanations security rule T11-I04.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:erase",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "rfc4949:2-o-u-s-government",
+      "quote": "Delete magnetically stored data in such a way that the data cannot be recovered by ordinary means, but might be recoverable by laboratory methods.",
+      "rationale": "Deleting magnetic-media data to prevent ordinary recovery is media sanitization under T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:erasure",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:erasure",
+      "quote": "Process intended to render magnetically stored information irretrievable by normal means.",
+      "rationale": "Rendering information on magnetic media irretrievable by normal means directly satisfies T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:implant",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:implant",
+      "quote": "Electronic device or electronic equipment modification designed to gain unauthorized interception of information bearing emanations.",
+      "rationale": "A physical equipment modification for intercepting information-bearing emanations makes EMSEC substantive under T11-I04.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:magnetic-remanence",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:magnetic-remanence",
+      "quote": "Magnetic representation of residual information remaining on a magnetic medium after the medium has been cleared.",
+      "rationale": "Residual information remaining on cleared magnetic media is a direct media-sanitization concern under T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:no-lone-zone",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A room or other space or area to which no person may have unaccompanied access and that, when occupied, is required to be occupied by two or more appropriately authorized persons.",
+      "rationale": "Requiring authorized two-person occupancy and prohibiting unaccompanied physical access directly satisfies T11-I02.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:object-reuse",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:object-reuse",
+      "quote": "The reassignment to some subject of a storage medium (e.g., page frame, disk sector, magnetic tape) that contained one or more objects. To be securely reassigned, no residual data can be available to the new subject through standard system mechanisms.",
+      "rationale": "Preventing residual-data exposure when reassigning storage media directly satisfies media sanitization rule T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:open-storage",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:open-storage",
+      "quote": "Any storage of classified national security information outside of General Services Administration approved storage containers. This includes classified information that is resident on information systems media and outside of an approved storage container, regardless of whether or not that media is in use (i.e., unattended operations).",
+      "rationale": "The concept centrally governs physical protection of classified information-system media outside approved containers, satisfying T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:overwrite-procedure",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:overwrite-procedure",
+      "quote": "A software process that replaces data previously stored on storage media with a predetermined set of meaningless data or random patterns.",
+      "rationale": "Replacing stored data with meaningless patterns is a media-sanitization procedure under T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:physical-security",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "Tangible means of preventing unauthorized physical access to a system. Examples: Fences, walls, and other barriers; locks, safes, and vaults; dogs and armed guards; sensors and alarm bells.",
+      "rationale": "Preventing unauthorized physical system access through tangible barriers and controls directly satisfies T11-I02.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:protective-packaging",
+      "polarity": "positive",
+      "ruleId": "T11-I06",
+      "senseKey": "nist-csrc-glossary:protective-packaging",
+      "quote": "Packaging techniques for COMSEC material that discourage penetration, reveal a penetration has occurred or was attempted, or inhibit viewing or copying of keying material prior to the time it is exposed for use.",
+      "rationale": "Packaging that resists or reveals physical penetration of COMSEC material directly satisfies T11-I06.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:red-signal",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "nist-csrc-glossary:red-signal",
+      "quote": "Any electronic emission (e.g., plain text, key, key stream, subkey stream, initial fill, or control signal) that would divulge national security information if recovered.",
+      "rationale": "An electronic emission capable of divulging national-security information is directly an emanations-security subject under T11-I04.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:screen-room",
+      "polarity": "positive",
+      "ruleId": "T11-I04",
+      "senseKey": "rfc4949:d-slang",
+      "quote": "Synonym for \"shielded enclosure\" in the context of electromagnetic emanations. (See: EMSEC, TEMPEST.)",
+      "rationale": "A shielded enclosure explicitly defined in the EMSEC and TEMPEST context directly satisfies T11-I04.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:sensitive-compartmented-information-facility-scif",
+      "polarity": "positive",
+      "ruleId": "T11-I01",
+      "senseKey": "nist-csrc-glossary:sensitive-compartmented-information-facility",
+      "quote": "An area, room, group of rooms, buildings, or installation certified and accredited as meeting Director of National Intelligence security standards for the processing, storage, and/or discussion of sensitive compartmented information (SCI).",
+      "rationale": "A certified secure facility for processing, storing, and discussing sensitive information directly satisfies T11-I01.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:u-s-controlled-facility",
+      "polarity": "positive",
+      "ruleId": "T11-I02",
+      "senseKey": "nist-csrc-glossary:us-controlled-facility",
+      "quote": "A base or building, access to which is physically controlled by U.S. citizens or resident aliens who are authorized U.S. Government or U.S. Government contractor employees.",
+      "rationale": "Physically controlling authorized access to a base or building directly satisfies T11-I02.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    },
+    {
+      "entryKey": "TERM:wiping",
+      "polarity": "positive",
+      "ruleId": "T11-I05",
+      "senseKey": "nist-csrc-glossary:wiping",
+      "quote": "Overwriting media or portions of media with random or constant values to hinder the collection of data.",
+      "rationale": "Overwriting media to hinder data recovery or collection directly satisfies media-sanitization rule T11-I05.",
+      "primaryReviewer": "recovery-primary-t11",
+      "secondaryReviewer": "recovery-secondary-t11"
+    }
+  ]
+}

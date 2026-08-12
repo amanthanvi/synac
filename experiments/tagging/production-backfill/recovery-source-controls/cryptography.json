@@ -1,0 +1,847 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T02",
+  "tagSlug": "cryptography",
+  "rows": [
+    {
+      "entryKey": "ACRONYM:cshake",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:cshake",
+      "quote": "The customizable SHAKE function.",
+      "rationale": "The quoted source makes cSHAKE directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:ctr-drbg",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:ctr-drbg",
+      "quote": "A DRBG specified in SP 800 90A based on a block cipher algorithm.",
+      "rationale": "The quoted source makes CTR_DRBG directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:kmac",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:kmac",
+      "quote": "KECCAK Message Authentication Code.",
+      "rationale": "The quoted source makes KMAC directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:md2",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A cryptographic hash [R1319] that produces a 128 bit hash result, was designed by Ron Rivest, and is similar to MD4 and MD5 but slower.",
+      "rationale": "The quoted source makes MD2 directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:sha-1",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:sha-1",
+      "quote": "The Secure Hash Algorithm defined in Federal Information Processing Standard 180 1.",
+      "rationale": "The quoted source makes SHA-1 directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:cast",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A design procedure for symmetric encryption algorithms, and a resulting family of algorithms, invented by Carlisle Adams (C.A.) and Stafford Tavares (S.T.).",
+      "rationale": "The quoted source makes CAST directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:des",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:des",
+      "quote": "Data Encryption Standard specified in FIPS 46 3",
+      "rationale": "The quoted source makes DES directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:kem",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:kem",
+      "quote": "A set of three cryptographic algorithms (KeyGen, Encaps, and Decaps) that can be used by two parties to establish a shared secret key over a public channel.",
+      "rationale": "The quoted source makes KEM directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:additional-authenticated-data",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:additional-authenticated-data",
+      "quote": "The input data to the authenticated encryption function that is authenticated but not encrypted.",
+      "rationale": "The quoted source makes Additional Authenticated Data directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:counter-mode",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A block cipher mode that enhances ECB mode by ensuring that each encrypted block is different from every other block encrypted under the same key.",
+      "rationale": "The quoted source makes counter mode directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:counter-with-cipher-block-chaining-message-authentication-code",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A block cipher mode [SP38C] that provides both data confidentiality and data origin authentication, by combining the techniques of CTR and a CBC based message authentication code.",
+      "rationale": "The quoted source makes Counter with Cipher Block Chaining-Message Authentication Code directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:cryptographic-algorithm",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:cryptographic-algorithm",
+      "quote": "1. A well defined computational procedure that takes variable inputs, including a cryptographic key, and produces an output.",
+      "rationale": "The quoted source makes cryptographic algorithm directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:decapsulation",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:decapsulation",
+      "quote": "The process of applying the Decaps algorithm of a KEM.",
+      "rationale": "The quoted source makes decapsulation directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:khafre",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A patented, symmetric block cipher designed by Ralph C. Merkle as a plug in replacement for DES.",
+      "rationale": "The quoted source makes Khafre directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:dual-signature",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:o-set",
+      "quote": "A single digital signature that protects two separate messages by including the hash results for both sets in a single encrypted value.",
+      "rationale": "The quoted source makes dual signature directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:electronic-codebook",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A block cipher mode in which a plaintext block is used directly as input to the encryption algorithm and the resultant output block is used directly as cipher text [FP081].",
+      "rationale": "The quoted source makes electronic codebook directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:entropy-input",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:entropy-input",
+      "quote": "An input bitstring that provides an assessed minimum amount of unpredictability for a DRBG mechanism.",
+      "rationale": "The quoted source makes Entropy Input directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:equivalent-inverse-cipher",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:equivalent-inverse-cipher",
+      "quote": "An alternative specification of the inverse of CIPHER() with a structure similar to that of CIPHER() and with a modified key schedule as input.",
+      "rationale": "The quoted source makes Equivalent inverse cipher directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:initialization-value",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:i-cryptography",
+      "quote": "An input parameter that sets the starting state of a cryptographic algorithm or mode.",
+      "rationale": "The quoted source makes initialization value directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:message-digest",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:message-digest",
+      "quote": "The result of applying a hash function to a message.",
+      "rationale": "The quoted source makes message digest directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:null-encryption-algorithm",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:i",
+      "quote": "An algorithm [R2410] that is specified as doing nothing to transform plaintext data; i.e., a no op.",
+      "rationale": "The quoted source makes NULL encryption algorithm directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:one-time-pad-otp",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:one-time-pad",
+      "quote": "Manual one time cryptosystem produced in pad form.",
+      "rationale": "The quoted source makes one-time pad (OTP) directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:primitive-algorithm",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:primitive-algorithm",
+      "quote": "A low level cryptographic algorithm (e.g., an RSA encryption operation) used as a basic building block for higher level cryptographic algorithms or schemes (e.g., RSA key transport).",
+      "rationale": "The quoted source makes Primitive algorithm directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:pseudorandom-function-prf",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:pseudorandom-function",
+      "quote": "A function that can be used to generate output from a random seed and a data variable, such that the output is computationally indistinguishable from truly random output.",
+      "rationale": "The quoted source makes Pseudorandom function (PRF) directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:randomized-hashing",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:randomized-hashing",
+      "quote": "A technique for randomizing the input to a cryptographic hash function.",
+      "rationale": "The quoted source makes Randomized hashing directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:rivest-cipher-4",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:n",
+      "quote": "A proprietary, variable key length stream cipher invented by Ron Rivest for RSA Data Security, Inc.",
+      "rationale": "The quoted source makes Rivest Cipher #4 directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:s-box",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:s-box",
+      "quote": "A non linear substitution table used in SUBBYTES() and KEYEXPANSION() to perform a one to one substitution of a byte value.",
+      "rationale": "The quoted source makes S-box directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:secure-hash-algorithm-3",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:secure-hash-algorithm-3",
+      "quote": "Secure Hash Algorithm 3.",
+      "rationale": "The quoted source makes Secure Hash Algorithm 3 directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:second-preimage",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:second-preimage",
+      "quote": "A message Ms’, that is different from a given message Ms , such that its message digest is the same as the known message digest of Ms.",
+      "rationale": "The quoted source makes Second preimage directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:sponge-construction",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "nist-csrc-glossary:sponge-construction",
+      "quote": "The method originally specified in [Cryptographic sponge functions, version 0.1] for defining a function from the following: 1) an underlying function on bit strings of a fixed length, 2) a padding rule, and 3) a rate.",
+      "rationale": "The quoted source makes Sponge Construction directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:twofish",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:o",
+      "quote": "A symmetric, 128 bit block cipher with variable key length (128, 192, or 256 bits), developed by Counterpane Labs as a candidate for the AES.",
+      "rationale": "The quoted source makes Twofish directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:zero-knowledge-proof",
+      "polarity": "positive",
+      "ruleId": "T02-I01",
+      "senseKey": "rfc4949:i-cryptography",
+      "quote": "A proof of possession protocol whereby a system entity can prove possession of some information to another entity, without revealing any of that information.",
+      "rationale": "The quoted source makes zero-knowledge proof directly about a cryptographic algorithm, primitive, or construction, satisfying T02-I01.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:compromised-key-list",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:n-missi",
+      "quote": "A list that identifies keys for which unauthorized disclosure or alteration may have occurred.",
+      "rationale": "The quoted source makes compromised key list directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:decapsulation-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:decapsulation-key",
+      "quote": "A cryptographic key produced by a KEM during key generation and used during the decapsulation process.",
+      "rationale": "The quoted source makes decapsulation key directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:hard-copy-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:hard-copy-key",
+      "quote": "Physical keying material, such as printed key lists, punched or printed key tapes, or programmable, read only memories (PROMs).",
+      "rationale": "The quoted source makes hard copy key directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-authentication",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:n",
+      "quote": "\"The assurance of the legitimate participants in a key agreement [i.e., in a key agreement protocol] that no non legitimate party possesses the shared symmetric key.\" [A9042]",
+      "rationale": "The quoted source makes key authentication directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-bundle",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:key-bundle",
+      "quote": "The three DEA cryptographic keys (Key1, Key2, Key3) that are used with a TDEA mode.",
+      "rationale": "The quoted source makes Key Bundle directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-distribution",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:key-distribution",
+      "quote": "The transport of a key and other keying material from an entity that either owns or generates the key to another entity that is intended to use the key.",
+      "rationale": "The quoted source makes key distribution directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-escrow-system",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:key-escrow-system",
+      "quote": "The system responsible for storing and providing a mechanism for obtaining copies of private keys associated with encryption certificates, which are necessary for the recovery of encrypted data.",
+      "rationale": "The quoted source makes key escrow system directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-establishment-key-pair",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:key-establishment-key-pair",
+      "quote": "A public key and its corresponding private key.",
+      "rationale": "The quoted source makes key-establishment key pair directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-generator",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:1-i",
+      "quote": "An algorithm that uses mathematical rules to deterministically produce a pseudorandom sequence of cryptographic key values.",
+      "rationale": "The quoted source makes key generator directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-lifetime",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:2-o-missi",
+      "quote": "An attribute of a MISSI key pair that specifies a time span that bounds the validity period of any MISSI X.509 public key certificate that contains the public component of the pair.",
+      "rationale": "The quoted source makes key lifetime directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-management",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:key-management",
+      "quote": "The activities involving the handling of cryptographic keys and other related security parameters (e.g.",
+      "rationale": "The quoted source makes key management directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-rotation",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:key-rotation",
+      "quote": "Changing the key, i.e., replacing it by a new key.",
+      "rationale": "The quoted source makes Key Rotation directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:private-key-private-signature-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:private-key-private-signature-key",
+      "quote": "A cryptographic key that is used with an asymmetric (public key) cryptographic algorithm and is associated with a public key.",
+      "rationale": "The quoted source makes Private key/private signature key directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:session-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "In the context of symmetric encryption, a key that is temporary or is used for a relatively short period of time.",
+      "rationale": "The quoted source makes session key directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:split-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:i",
+      "quote": "A cryptographic key that is generated and distributed as two or more separate data items that individually convey no knowledge of the whole key that results from combining the items.",
+      "rationale": "The quoted source makes split key directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:static-key-pair",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:static-key-pair",
+      "quote": "A long term key pair for which the public key is often provided in a public key certificate.",
+      "rationale": "The quoted source makes Static key pair directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:traffic-encryption-key-tek",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:traffic-encryption-key",
+      "quote": "Key used to encrypt plain text or to superencrypt previously encrypted text and/or to decrypt cipher text.",
+      "rationale": "The quoted source makes traffic encryption key (TEK) directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:key-establishment-transaction",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:key-establishment-transaction",
+      "quote": "An instance of establishing secret keying material using a key agreement or key transport transaction.",
+      "rationale": "The quoted source makes Key-establishment transaction directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:root-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "rfc4949:i-pki",
+      "quote": "A public key for which the matching private key is held by a root.",
+      "rationale": "The quoted source makes root key directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:update-a-key",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:update-a-key",
+      "quote": "Automatic or manual cryptographic process that irreversibly modifies the state of a COMSEC key, equipment, device, or system.",
+      "rationale": "The quoted source makes update (a key) directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:installation-of-keying-material",
+      "polarity": "positive",
+      "ruleId": "T02-I02",
+      "senseKey": "nist-csrc-glossary:installation-of-keying-material",
+      "quote": "The process of making keying material available for establishing and maintaining cryptographic relationships.",
+      "rationale": "The quoted source makes Installation (of keying material) directly about cryptographic key material or its lifecycle, satisfying T02-I02.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:attribute-certificate",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:1-i",
+      "quote": "A digital certificate that binds a set of descriptive data items, other than a public key, either directly to a subject name or to the identifier of another certificate that is a public key certificate.",
+      "rationale": "The quoted source makes attribute certificate directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:certificate-creation",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "The act or process by which a CA sets the values of a digital certificate's data fields and signs it.",
+      "rationale": "The quoted source makes certificate creation directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:certificate-policy-qualifier",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "Information that pertains to a certificate policy and is included in a \"certificatePolicies\" extension in a v3 X.509 public key certificate.",
+      "rationale": "The quoted source makes certificate policy qualifier directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:certificate-signing-request",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:certificate-signing-request",
+      "quote": "A request sent from a certificate requester to a certificate authority to apply for a digital identity certificate.",
+      "rationale": "The quoted source makes Certificate Signing Request directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:certification-practice-statement-cps",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:certification-practice-statement",
+      "quote": "A statement of the practices that a certification authority (CA) employs in issuing, suspending, revoking, and renewing certificates and providing access to them, in accordance with specific requirements (i.e., requirements specified in this Certificate Policy, or requirements specified in a contract for services).",
+      "rationale": "The quoted source makes certification practice statement (CPS) directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:delta-crl",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A partial CRL that only contains entries for certificates that have been revoked since the issuance of a prior, base CRL [X509].",
+      "rationale": "The quoted source makes delta CRL directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:digital-certificate",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A certificate document in the form of a digital data object (a data object used by a computer) to which is appended a computed digital signature value that depends on the data object.",
+      "rationale": "The quoted source makes Digital Certificate directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:extended-validation-certificate",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:extended-validation-certificate",
+      "quote": "A certificate used for HTTPS websites and software that includes identity information that has been subjected to an identity verification process standardized by the CA Browser Forum in its Baseline Requirements that verifies that the identified owner of the website for which the certificate has been issued has exclusive rights to use the domain; exists legally, operationally, and physically; and has authorized the issuance of the certificate.",
+      "rationale": "The quoted source makes Extended Validation Certificate directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:indirect-certificate-revocation-list",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:n",
+      "quote": "In X.509, a CRL that may contain certificate revocation notifications for certificates issued by CAs other than the issuer (i.e., signer) of the ICRL.",
+      "rationale": "The quoted source makes indirect certificate revocation list directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:online-certificate-status-protocol-responder",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:online-certificate-status-protocol-responder",
+      "quote": "A PKI entity that verifies the revocation status of certificates following the Online Certificate Status Protocol (specified in RFC 6960).",
+      "rationale": "The quoted source makes Online Certificate Status Protocol responder directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:revocation-date",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:n-x-509",
+      "quote": "In a CRL entry, a date time field that states when the certificate revocation occurred, i.e., when the CA declared the digital certificate to be invalid.",
+      "rationale": "The quoted source makes revocation date directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:self-signed-certificate",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "nist-csrc-glossary:self-signed-certificate",
+      "quote": "A public key certificate whose digital signature may be verified by the public key contained within the certificate.",
+      "rationale": "The quoted source makes Self-signed certificate directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:trust-anchor-ca",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:i",
+      "quote": "A CA that is the subject of a trust anchor certificate or otherwise establishes a trust anchor key.",
+      "rationale": "The quoted source makes trust anchor CA directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:x-509-certificate-revocation-list",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:n",
+      "quote": "A CRL in one of the formats defined by X.509 version 1 (v1) or version 2 (v2).",
+      "rationale": "The quoted source makes X.509 certificate revocation list directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:x-509-public-key-certificate",
+      "polarity": "positive",
+      "ruleId": "T02-I03",
+      "senseKey": "rfc4949:n",
+      "quote": "A public key certificate in one of the formats defined by X.509 version 1 (v1), version 2 (v2), or version 3 (v3).",
+      "rationale": "The quoted source makes X.509 public-key certificate directly about certificates, PKI, or trust infrastructure, satisfying T02-I03.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "ACRONYM:scep",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "nist-csrc-glossary:scep",
+      "quote": "A protocol defined in an IETF internet draft specification that is used by numerous manufacturers of network equipment and software who are developing simplified means of handling certificates for large scale implementation to everyday users, as well as referenced in other industry standards.",
+      "rationale": "The quoted source makes cryptography substantive to the SCEP protocol, satisfying T02-I04.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:photuris",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A UDP based, key establishment protocol for session keys, designed for use with the IPsec protocols AH and ESP.",
+      "rationale": "The quoted source makes cryptography substantive to the Photuris protocol, satisfying T02-I04.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:domain-keys-identified-mail",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A protocol, which is being specified by the IETF working group of the same name, to provide data integrity and domain level (see: DNS, domain name) data origin authentication for Internet mail messages.",
+      "rationale": "The quoted source makes cryptography substantive to the Domain Keys Identified Mail protocol, satisfying T02-I04.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:privacy-enhanced-mail",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "An Internet protocol to provide data confidentiality, data integrity, and data origin authentication for electronic mail.",
+      "rationale": "The quoted source makes cryptography substantive to the Privacy Enhanced Mail protocol, satisfying T02-I04.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:proof-of-possession-protocol",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A protocol whereby a system entity proves to another that it possesses and controls a cryptographic key or other secret information.",
+      "rationale": "The quoted source makes cryptography substantive to the proof-of-possession protocol protocol, satisfying T02-I04.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:simple-key-management-for-internet-protocols",
+      "polarity": "positive",
+      "ruleId": "T02-I04",
+      "senseKey": "rfc4949:i",
+      "quote": "A key distribution protocol that uses hybrid encryption to convey session keys that are used to encrypt data in IP packets.",
+      "rationale": "The quoted source makes cryptography substantive to the Simple Key Management for Internet Protocols protocol, satisfying T02-I04.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:algorithm-security-lifetime",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:algorithm-security-lifetime",
+      "quote": "The estimated time period during which data protected by a specific cryptographic algorithm remains secure, given that the key has not been compromised.",
+      "rationale": "The quoted source makes Algorithm security lifetime directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:backtracking-resistance",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:backtracking-resistance",
+      "quote": "An RBG provides backtracking resistance relative to time T if it provides assurance that an adversary that has knowledge of the state of the RBG at some time(s) subsequent to time T (but incapable of performing work that matches the claimed security strength of the RBG) would be unable to distinguish between observations of ideal random bitstrings and (previously unseen) bitstrings that are output by the RBG at or prior to time T.",
+      "rationale": "The quoted source makes Backtracking Resistance directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:effective-key-length",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:o",
+      "quote": "\"A measure of strength of a cryptographic algorithm, regardless of actual key length.\" [IATF] (See: work factor.)",
+      "rationale": "The quoted source makes effective key length directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:extraction-resistance",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:o",
+      "quote": "Ability of cryptographic equipment to resist efforts to extract keying material directly from the equipment (as opposed to gaining knowledge of keying material by cryptanalysis).",
+      "rationale": "The quoted source makes extraction resistance directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:fips-pub-140",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:n",
+      "quote": "The U.S. Government standard [FP140] for security requirements to be met by a cryptographic module when the module is used to protect unclassified information in computer and communication systems.",
+      "rationale": "The quoted source makes FIPS PUB 140 directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:indistinguishability",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "An attribute of an encryption algorithm that is a formalization of the notion that the encryption of some string is indistinguishable from the encryption of an equal length string of nonsense.",
+      "rationale": "The quoted source makes indistinguishability directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:nonce-misuse",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:nonce-misuse",
+      "quote": "A setting in which a nonce is used more than once for the encryption algorithm under a given key.",
+      "rationale": "The quoted source makes nonce-misuse directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:side-channel-attack",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:side-channel-attack",
+      "quote": "An attack enabled by leakage of information from a physical cryptosystem.",
+      "rationale": "The quoted source makes Side-Channel Attack directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:support-a-security-strength",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "nist-csrc-glossary:support-a-security-strength",
+      "quote": "A security strength of s bits is said to be supported by a particular choice of algorithm, primitive, auxiliary function, parameters (etc.) for use in the implementation of a cryptographic mechanism if that choice will not prevent the resulting implementation from attaining a security strength of at least s bits.",
+      "rationale": "The quoted source makes Support a security strength directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    },
+    {
+      "entryKey": "TERM:weak-key",
+      "polarity": "positive",
+      "ruleId": "T02-I05",
+      "senseKey": "rfc4949:i",
+      "quote": "In the context of a particular cryptographic algorithm, a key value that provides poor security.",
+      "rationale": "The quoted source makes weak key directly about cryptographic implementation, analysis, assurance, or failure, satisfying T02-I05.",
+      "primaryReviewer": "recovery-primary-t02",
+      "secondaryReviewer": "recovery-secondary-t02"
+    }
+  ]
+}

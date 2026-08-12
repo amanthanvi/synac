@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T05",
+  "tagSlug": "vulnerabilities-remediation",
+  "rows": [
+    {
+      "entryKey": "TERM:attack-surface",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "niccs-glossary:attack-surface",
+      "quote": "Attack Surface is the total sum of all vulnerabilities, entry points, and pathways—digital, physical, and human—that an unauthorized user can exploit to enter, steal data from, or disrupt an organization's systems. It includes everything from websites, servers, and APIs to employee devices, shadow IT, and social engineering risks.",
+      "rationale": "The source defines an attack surface as the total set of exploitable vulnerabilities and pathways, directly satisfying weakness rule T05-I01.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:authenticated-configuration-scanner",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:authenticated-configuration-scanner",
+      "quote": "A product that runs with administrative or root privileges on a target system to conduct its assessment.",
+      "rationale": "The source defines a privileged configuration scanner by its target-system assessment function, directly satisfying assessment and scanning rule T05-I03.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:bug-bounty",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:bug-bounty",
+      "quote": "A method of compensating individuals for reporting software errors, flaws, or faults (“bugs”) that might allow for security exploitation or vulnerabilities.",
+      "rationale": "The source centers on discovering and reporting exploitable software flaws and vulnerabilities, directly satisfying assessment rule T05-I03.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:build-security-in",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "niccs-glossary:build-security-in",
+      "quote": "A set of principles, practices, and tools to design, develop, and evolve information systems and software that enhance resistance to vulnerabilities, flaws, and attacks.",
+      "rationale": "The source centers on designing software to resist vulnerabilities and flaws, directly satisfying insecure-design and weakness rule T05-I01.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:certification-test-and-evaluation",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:certification-test-and-evaluation",
+      "quote": "Software, hardware, and firmware security tests conducted during development of an information system component.",
+      "rationale": "The source meaning is security testing of system components during development, directly satisfying assessment and testing rule T05-I03.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:external-security-testing",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:external-security-testing",
+      "quote": "Security testing conducted from outside the organization’s security perimeter.",
+      "rationale": "The source meaning is security testing from outside an organization’s perimeter, directly satisfying assessment and testing rule T05-I03.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:federal-coordination",
+      "polarity": "positive",
+      "ruleId": "G01",
+      "senseKey": "nist-csrc-glossary:federal-coordination",
+      "quote": "A set of aligned activities across the Federal Government, including identifying and engaging stakeholders, mediating, communicating, and other planning to support vulnerability disclosure.",
+      "rationale": "The source meaning is a coordination process specifically supporting vulnerability disclosure, making the T05 topic central under G01.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:flaw",
+      "polarity": "positive",
+      "ruleId": "T05-I01",
+      "senseKey": "rfc4949:1-i",
+      "quote": "An error in the design, implementation, or operation of an information system. A flaw may result in a vulnerability. (Compare: vulnerability.)",
+      "rationale": "The source defines a design, implementation, or operational error that may create a vulnerability, directly satisfying weakness rule T05-I01.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:internal-security-testing",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:internal-security-testing",
+      "quote": "Security testing conducted from inside the organization’s security perimeter.",
+      "rationale": "The source meaning is security testing from inside an organization’s perimeter, directly satisfying assessment and testing rule T05-I03.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:overt-testing",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:overt-testing",
+      "quote": "Security testing performed with the knowledge and consent of the organization’s IT staff.",
+      "rationale": "The source meaning is an explicit mode of authorized security testing, directly satisfying assessment and testing rule T05-I03.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:passive-security-testing",
+      "polarity": "positive",
+      "ruleId": "T05-I03",
+      "senseKey": "nist-csrc-glossary:passive-security-testing",
+      "quote": "Security testing that does not involve any direct interaction with the targets, such as sending packets to a target.",
+      "rationale": "The source meaning is a noninteractive security-testing technique, directly satisfying assessment and testing rule T05-I03.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:patch",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:patch",
+      "quote": "Software component that, when installed, directly modifies files or device settings related to a different software component without changing the version number or release details for the related software component.",
+      "rationale": "The source defines a patch by the software modifications it installs, directly satisfying patching and remediation rule T05-I05.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:patch-level",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:patch-level",
+      "quote": "Denotes either a patch level or a patch set. More specifically, when patches must be applied in order, the patch level is the identifier of the most recently applied patch.",
+      "rationale": "The source defines the state of ordered patch application, directly satisfying patching and remediation rule T05-I05.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:patch-set",
+      "polarity": "positive",
+      "ruleId": "T05-I05",
+      "senseKey": "nist-csrc-glossary:patch-set",
+      "quote": "When patches do not need to be applied in any particular order, the patch set includes all (and only) the applied patches.",
+      "rationale": "The source defines the complete set of applied patches, directly satisfying patching and remediation rule T05-I05.",
+      "primaryReviewer": "production-primary-t05",
+      "secondaryReviewer": "production-secondary-t03"
+    }
+  ]
+}

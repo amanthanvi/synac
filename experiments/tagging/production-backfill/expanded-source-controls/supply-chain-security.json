@@ -1,0 +1,177 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T10",
+  "tagSlug": "supply-chain-security",
+  "rows": [
+    {
+      "entryKey": "TERM:key-device-cybersecurity-requirement",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "nist-csrc-glossary:key-device-cybersecurity-requirement",
+      "quote": "A device cybersecurity requirement that if lacking from an IoT device (in the case of a device cybersecurity capability) or manufacturer or supporting entity (in the case of a non technical supporting capability) will result in unacceptable risk to the organization.",
+      "rationale": "The definition makes manufacturer and supporting-entity cybersecurity capabilities an acquisition risk requirement, directly satisfying T10-I02.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:non-technical-supporting-capability-core-baseline",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "nist-csrc-glossary:non-technical-supporting-capability-core-baseline",
+      "quote": "The non technical supporting capability core baseline is a set of non technical supporting capabilities generally needed from manufacturers or other third parties to support common cybersecurity controls that protect an organization’s devices as well as device data, systems, and ecosystems.",
+      "rationale": "The baseline expressly defines cybersecurity support required from manufacturers and third parties, making supplier security central under T10-I02.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:commodity-service",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "nist-csrc-glossary:commodity-service",
+      "quote": "The organization acquiring and/or receiving the commodity service possesses limited visibility into the management structure and operations of the provider, and while the organization may be able to negotiate service level agreements, the organization is typically not in a position to require that the provider implement specific security controls.",
+      "rationale": "The source centers acquisition risk on limited provider visibility and inability to require security controls, directly satisfying service acquisition security under T10-I02.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:pre-market-capability",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "nist-csrc-glossary:pre-market-capability",
+      "quote": "A cybersecurity or privacy capability built into an IoT device. Pre market capabilities are integrated into IoT devices by the manufacturer or vendor before they are shipped to customer organizations.",
+      "rationale": "The source directly concerns manufacturer or vendor integration of cybersecurity capabilities before product delivery, satisfying product and supplier security under T10-I02.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:cybersecurity-outcome",
+      "polarity": "positive",
+      "ruleId": "T10-I02",
+      "senseKey": "nist-csrc-glossary:cybersecurity-outcome",
+      "quote": "Statement of what is expected either from a product or from an organization in support of a product related to the cybersecurity of that product.",
+      "rationale": "The definition centers cybersecurity expectations for a product and its supporting organization, directly supporting product and supplier security under T10-I02.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:commercial-comsec-evaluation-program",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "rfc4949:o",
+      "quote": "Relationship between NSA and industry in which NSA provides the COMSEC expertise (i.e., standards, algorithms, evaluations, and guidance) and industry provides design, development, and production capabilities to produce a type 1 or type 2 product.",
+      "rationale": "The RFC definition directly ties industry production to NSA security expertise and evaluation, making product supply-chain assurance central under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:commercially-licensed-evaluation-facility",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "rfc4949:n",
+      "quote": "An organization that has official approval to evaluate the security of products and systems under the Common Criteria, ITSEC, or some other standard.",
+      "rationale": "The source centers officially approved independent security evaluation of products and systems, direct product assurance under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:security-target",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "rfc4949:n-common-criteria",
+      "quote": "A set of security requirements and specifications to be used as the basis for evaluation of an identified TOE.",
+      "rationale": "The Common Criteria security target is the explicit basis for evaluating a supplied technology product, making product assurance central under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:target-of-evaluation",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "rfc4949:n-common-criteria",
+      "quote": "An information technology product or system that is the subject of a security evaluation, together with the product's associated administrator and user documentation.",
+      "rationale": "The entry is centrally an IT product subjected to formal security evaluation, directly supporting product supply-chain assurance under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:independent-verification-validation-iv-v",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:independent-verification-and-validation",
+      "quote": "A comprehensive review, analysis, and testing, (software and/or hardware) performed by an objective third party to confirm (i.e., verify) that the requirements are correctly defined, and to confirm (i.e., validate) that the system correctly implements the required functionality and security requirements.",
+      "rationale": "The source defines independent third-party hardware/software verification of security requirements, direct supply-chain assurance under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:certification-test-and-evaluation",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:certification-test-and-evaluation",
+      "quote": "Software, hardware, and firmware security tests conducted during development of an information system component.",
+      "rationale": "Certification testing during component development directly assures software, hardware, and firmware supply integrity under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:counterfeit",
+      "polarity": "positive",
+      "ruleId": "T10-I03",
+      "senseKey": "nist-csrc-glossary:counterfeit",
+      "quote": "An unauthorized copy or substitute that has been identified, marked, and/or altered by a source other than the item's legally authorized source and has been misrepresented to be an authorized item of the legally authorized source.",
+      "rationale": "The definition centers false item source and authorization, making product authenticity and provenance the substantive topic under T10-I03.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:provenance",
+      "polarity": "positive",
+      "ruleId": "T10-I03",
+      "senseKey": "nist-csrc-glossary:provenance",
+      "quote": "The chronology of the origin, development, ownership, location, and changes to a system or system component and associated data.",
+      "rationale": "Unlike generic data provenance, this definition explicitly centers system and component origin, development, ownership, and changes, directly satisfying T10-I03.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:system-assurance",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:system-assurance",
+      "quote": "The justified confidence that the system functions as intended and is free of exploitable vulnerabilities, either intentionally or unintentionally designed or inserted as part of the system at any time during the life cycle.",
+      "rationale": "The definition directly centers lifecycle assurance against designed or inserted exploitable vulnerabilities, a substantive supply-chain assurance topic under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:composed-commercial-solution",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:composed-commercial-solution",
+      "quote": "Two or more commercial Information Assurance (IA) products layered together to address the security requirements of an operational use case according to National Security Agency (NSA) guidance.",
+      "rationale": "The source centers NSA-guided composition of commercial products to satisfy security requirements, providing direct acquisition and product assurance under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:nsa-approved-commercial-solution",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:nsa-approved-commercial-solution",
+      "quote": "The combination of multiple COTS CS products in a layered configuration that satisfies the security requirements of an operational use case, when properly implemented in accordance with NSA approved requirements and standards.",
+      "rationale": "The definition centers standards-backed assurance for combined commercial products satisfying security requirements, directly supporting T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    },
+    {
+      "entryKey": "TERM:commercial-solutions-for-classified-csfc",
+      "polarity": "positive",
+      "ruleId": "T10-I04",
+      "senseKey": "nist-csrc-glossary:commercial-solutions-for-classified",
+      "quote": "A COTS end to end strategy and process in which two or more COTS products can be combined into a solution to protect classified information.",
+      "rationale": "The source defines an end-to-end process for combining commercial products into an assured protective solution, satisfying product supply-chain assurance under T10-I04.",
+      "primaryReviewer": "production-primary-t10",
+      "secondaryReviewer": "production-secondary-t03"
+    }
+  ]
+}

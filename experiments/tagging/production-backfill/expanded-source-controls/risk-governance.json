@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "synac-reviewed-controls-v1",
+  "tagId": "T08",
+  "tagSlug": "risk-governance",
+  "rows": [
+    {
+      "entryKey": "TERM:actual-residual-risk",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:actual-residual-risk",
+      "quote": "The risk remaining after management has taken action to alter its severity.",
+      "rationale": "The source defines residual risk after management treatment, directly satisfying the T08-I01 risk assessment and treatment rule.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:independent-verification-validation-iv-v",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:independent-verification-and-validation",
+      "quote": "A comprehensive review, analysis, and testing, (software and/or hardware) performed by an objective third party to confirm (i.e., verify) that the requirements are correctly defined, and to confirm (i.e., validate) that the system correctly implements the required functionality and security requirements.",
+      "rationale": "The source defines independent review and testing of security requirements and their implementation, directly satisfying T08-I05 program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:key-risk-indicator",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:key-risk-indicator",
+      "quote": "A metric used to measure risk.",
+      "rationale": "The source makes risk measurement the entire concept, directly satisfying T08-I01 risk assessment.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:qualitative-risk-analysis",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:qualitative-risk-analysis",
+      "quote": "A method for risk analysis that is based on the assignment of a descriptor such as low, medium, or high.",
+      "rationale": "The source defines qualitative risk analysis, directly satisfying T08-I01 risk assessment.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:quantitative-risk-analysis",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:quantitative-risk-analysis",
+      "quote": "A method for risk analysis where numerical values are assigned to both impact and likelihood based on statistical probabilities and monetarized valuation of loss or gain.",
+      "rationale": "The source defines quantitative analysis of risk impact and likelihood, directly satisfying T08-I01.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:protection-needs",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "nist-csrc-glossary:protection-needs",
+      "quote": "Informal statement or expression of the stakeholder security requirements focused on protecting information, systems, and services associated with mission and business functions throughout the system life cycle.",
+      "rationale": "The source defines stakeholder security requirements governing mission and business protection needs, directly satisfying T08-I03.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:risk-assessment-report-rar",
+      "polarity": "positive",
+      "ruleId": "T08-I01",
+      "senseKey": "nist-csrc-glossary:risk-assessment-report",
+      "quote": "The report which contains the results of performing a risk assessment or the formal output from the process of assessing risk.",
+      "rationale": "The source defines a risk-assessment report as formal assessment output, directly satisfying T08-I01.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:conformance-testing",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "nist-csrc-glossary:conformance-testing",
+      "quote": "A process established by NIST within its responsibilities of developing, promulgating, and supporting a FIPS for testing specific characteristics of components, products, services, people, and organizations for compliance with the FIPS.",
+      "rationale": "The source makes standards compliance testing the substantive topic, directly satisfying T08-I03.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:enhanced-security-requirements",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "nist-csrc-glossary:enhanced-security-requirements",
+      "quote": "Security requirements that can be implemented in addition to the requirements in NIST Special Publication 800 171. The additional security requirements provide the foundation for a defense in depth protection strategy that includes three mutually supportive and reinforcing components: (1) penetration resistant architecture, (2) damage limiting operations, and (3) cyber resiliency.",
+      "rationale": "The source defines additional organizational security requirements under NIST guidance, directly satisfying T08-I03 policy and compliance direction.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:united-states-government-configuration-baseline-usgcb",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "nist-csrc-glossary:united-states-government-configuration-baseline",
+      "quote": "The United States Government Configuration Baseline (USGCB) provides security configuration baselines for Information Technology products widely deployed across the federal agencies. The USGCB baseline evolved from the federal Desktop Core Configuration mandate. The USGCB is a Federal government wide initiative that provides guidance to agencies on what should be done to improve and maintain an effective configuration settings focusing primarily on security.",
+      "rationale": "The source defines government-wide security configuration guidance rooted in a federal mandate, directly satisfying T08-I03.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:assessment-boundary",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assessment-boundary",
+      "quote": "The scope of (assessment objects included in) an organization’s ISCM implementation to which assessment of objects is applied. Typically, assessment boundary includes an entire network to its outside perimeter.",
+      "rationale": "The source defines the organizational scope of an ISCM assessment, directly satisfying T08-I05 program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:assessment-completeness",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assessment-completeness",
+      "quote": "The degree to which the continuous monitoring generated, security related information is collected on all assessment objects for all applicable defect checks within a defined period of time.",
+      "rationale": "The source defines completeness of security continuous-monitoring assessment evidence, directly satisfying T08-I05 program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:assessment-criterion-criteria",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assessment-criterion",
+      "quote": "A rule (or rules) of logic to allow the automated or manual detection of defects. Typically, the assessment criterion in ISCM defines what in the desired state specification is compared to what in the actual state and the conditions that indicate a defect.",
+      "rationale": "The source defines ISCM evaluation criteria for defect detection, directly satisfying T08-I05 program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:assessment-element-text",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assessment-element-text",
+      "quote": "A statement that should be true for a well implemented ISCM program. This statement is the evaluation criteria part of an assessment element.",
+      "rationale": "The source defines evaluation criteria for a well-implemented ISCM program, directly satisfying T08-I05.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:assessment-plan",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assessment-plan",
+      "quote": "The objectives for the control assessments and a detailed roadmap of how to conduct such assessments.",
+      "rationale": "The source defines planning for control assessments, directly satisfying T08-I05 security assessment and program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:assessment-timeliness",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:assessment-timeliness",
+      "quote": "The degree to which the continuous monitoring generated, security related information is collected within the specified period of time (or frequency).",
+      "rationale": "The source defines timeliness of security continuous-monitoring evidence, directly satisfying T08-I05 program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:security-control-baseline",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "nist-csrc-glossary:security-control-baseline",
+      "quote": "The set of minimum security controls defined for a low impact, moderate impact, or high impact information system.",
+      "rationale": "The source defines minimum security controls by system-impact tier, directly satisfying T08-I03 security policy and compliance direction.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:continuous-monitoring-as-a-service-cmaas",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "niccs-glossary:continuous-monitoring-as-a-service-cmaas",
+      "quote": "Continuous Monitoring as a Service (CMaaS) is a cloud based, outsourced cybersecurity solution that provides real time, automated oversight of an organization's IT infrastructure, security controls, and compliance status.",
+      "rationale": "The source defines cybersecurity oversight of security controls and compliance status, directly satisfying T08-I05 program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:tailoring",
+      "polarity": "positive",
+      "ruleId": "T08-I03",
+      "senseKey": "nist-csrc-glossary:tailoring",
+      "quote": "The process by which a security control baseline is modified based on: (i) the application of scoping guidance; (ii) the specification of compensating security controls, if needed; and (iii) the specification of organization defined parameters in the security controls via explicit assignment and selection statements.",
+      "rationale": "The source defines organizational modification of control baselines through scoping, compensating controls, and explicit parameters, directly satisfying T08-I03.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:expected-output",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:expected-output",
+      "quote": "Any data collected from monitoring and assessments as part of the information security continuous monitoring (ISCM) strategy.",
+      "rationale": "The source defines evidence collected by monitoring and assessment under an ISCM strategy, directly satisfying T08-I05.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:information-security-continuous-monitoring-iscm-program",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:information-security-continuous-monitoring-program",
+      "quote": "A program established to collect information in accordance with pre established metrics, utilizing information readily available in part through implemented security controls.",
+      "rationale": "The source defines a metrics-based information-security monitoring program using implemented controls, directly satisfying T08-I05.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:security-requirements-traceability-matrix-srtm",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:security-requirements-traceability-matrix",
+      "quote": "Matrix documenting the system's agreed upon security requirements derived from all sources, the security features' implementation details and schedule, and the resources required for assessment.",
+      "rationale": "The source defines an auditable matrix connecting security requirements, implementation, schedule, and assessment resources, directly satisfying T08-I05.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:security-target",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:security-target",
+      "quote": "Implementation dependent statement of security needs for a specific identified target of evaluation (TOE).",
+      "rationale": "The source defines security needs for a formal target of evaluation, directly satisfying T08-I05 security assessment and assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:specification",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:specification",
+      "quote": "An assessment object that includes document based artifacts (e.g., policies, procedures, plans, system security requirements, functional specifications, and architectural designs) associated with an information system.",
+      "rationale": "The source defines security policies, plans, and requirements as assessment artifacts, directly satisfying T08-I05.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    },
+    {
+      "entryKey": "TERM:tier-iv-checklist",
+      "polarity": "positive",
+      "ruleId": "T08-I05",
+      "senseKey": "nist-csrc-glossary:tier-iv-checklist",
+      "quote": "A checklist in the National Checklist Repository that is considered production ready and has been validated by NIST or a NIST recognized authoritative entity to ensure, to the maximum extent possible, interoperability with SCAP validated products. Tier IV checklists also demonstrate the ability to map low level security settings (for example, standardized identifiers for individual security configuration issues) to high level security requirements as represented in various security frameworks (e.g., SP 800 53 controls for FISMA), and the mappings have been vetted with the appropriate authority.",
+      "rationale": "The source defines validated, authority-vetted mappings from security settings to FISMA framework requirements, directly satisfying T08-I05 program assurance.",
+      "primaryReviewer": "production-primary-t08",
+      "secondaryReviewer": "production-secondary-t09"
+    }
+  ]
+}
