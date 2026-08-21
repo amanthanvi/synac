@@ -15,6 +15,9 @@ Open content model (GitOps rework).
   public and anonymous.
 - Automated source ingest moved to a scheduled GitHub Actions workflow that
   opens a reviewable pull request when upstream content changes.
+- Hardened scheduled ingest timeouts and NIST concurrency, refreshed the Node
+  24 toolchain, and cleared high-severity dependency advisories (#206) — thanks
+  @amanthanvi.
 - Rebuilt the backend on a clean Convex schema with typed relations, a
   validated content-sync pipeline, and service-key-guarded runtime endpoints.
 - Repo/community polish (docs, templates, contributor experience).
