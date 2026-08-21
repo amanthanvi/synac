@@ -1,22 +1,43 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('node:dns/promises', () => ({
-  lookup: vi.fn(async () => [{ address: '93.184.216.34', family: 4 }]),
+const dnsMocks = vi.hoisted(() => ({
+  cancel: vi.fn(),
+  resolve4: vi.fn<() => Promise<string[]>>(),
+  resolve6: vi.fn<() => Promise<string[]>>(),
 }));
 
-import { lookup } from 'node:dns/promises';
+vi.mock('node:dns/promises', () => ({
+  Resolver: class {
+    cancel = dnsMocks.cancel;
+    resolve4 = dnsMocks.resolve4;
+    resolve6 = dnsMocks.resolve6;
+  },
+}));
 
 import { safeFetch } from './safeFetch.js';
 
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.clearAllMocks();
 });
 
 describe('safeFetch response timeout', () => {
   it('times out while hostname resolution is stalled', async () => {
     vi.useFakeTimers();
-    vi.mocked(lookup).mockImplementationOnce(() => new Promise(() => undefined));
+    const rejectLookups: Array<(error: Error) => void> = [];
+    dnsMocks.resolve4.mockImplementationOnce(
+      () => new Promise((_, reject) => rejectLookups.push(reject)),
+    );
+    dnsMocks.resolve6.mockImplementationOnce(
+      () => new Promise((_, reject) => rejectLookups.push(reject)),
+    );
+    dnsMocks.cancel.mockImplementationOnce(() => {
+      const error = Object.assign(new Error('DNS query cancelled'), {
+        code: 'ECANCELLED',
+      });
+      for (const reject of rejectLookups) reject(error);
+    });
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -35,11 +56,14 @@ describe('safeFetch response timeout', () => {
     await vi.advanceTimersByTimeAsync(100);
 
     await rejection;
+    expect(dnsMocks.cancel).toHaveBeenCalledOnce();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('aborts when the response body stalls after headers arrive', async () => {
     vi.useFakeTimers();
+    dnsMocks.resolve4.mockResolvedValueOnce(['93.184.216.34']);
+    dnsMocks.resolve6.mockResolvedValueOnce([]);
 
     let bodyController: ReadableStreamDefaultController<Uint8Array> | undefined;
     let requestSignal: AbortSignal | undefined;
@@ -75,7 +99,7 @@ describe('safeFetch response timeout', () => {
       maxBytes: 1024,
     });
 
-    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(0);
     expect(fetchMock).toHaveBeenCalledOnce();
 
     try {

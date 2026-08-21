@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { lookup } from 'node:dns/promises';
+import { Resolver } from 'node:dns/promises';
 import { Readable } from 'node:stream';
 
 import { isAllowedHostname, isForbiddenHostname, isForbiddenIp } from './ssrf.js';
@@ -43,7 +43,26 @@ async function readBodyWithLimit(response: Response, maxBytes: number): Promise<
   return Buffer.concat(chunks);
 }
 
-async function assertSafeHostname(hostname: string, allowedHosts: string[]) {
+function dnsErrorCode(error: unknown): string | undefined {
+  if (!(error instanceof Error) || !('code' in error)) return undefined;
+  return typeof error.code === 'string' ? error.code : undefined;
+}
+
+async function resolveDnsFamily(operation: Promise<string[]>): Promise<string[]> {
+  try {
+    return await operation;
+  } catch (error) {
+    const code = dnsErrorCode(error);
+    if (code === 'ENODATA' || code === 'ENOTFOUND') return [];
+    throw error;
+  }
+}
+
+async function assertSafeHostname(
+  hostname: string,
+  allowedHosts: string[],
+  signal: AbortSignal,
+) {
   if (isForbiddenHostname(hostname)) {
     throw new Error(`Forbidden hostname: ${hostname}`);
   }
@@ -51,11 +70,25 @@ async function assertSafeHostname(hostname: string, allowedHosts: string[]) {
     throw new Error(`Hostname not in allowlist: ${hostname}`);
   }
 
-  const results = await lookup(hostname, { all: true, verbatim: true });
-  for (const r of results) {
-    if (isForbiddenIp(r.address)) {
-      throw new Error(`Forbidden IP for hostname ${hostname}: ${r.address}`);
+  const resolver = new Resolver();
+  const cancel = () => resolver.cancel();
+  signal.addEventListener('abort', cancel, { once: true });
+  try {
+    const [ipv4, ipv6] = await Promise.all([
+      resolveDnsFamily(resolver.resolve4(hostname)),
+      resolveDnsFamily(resolver.resolve6(hostname)),
+    ]);
+    const addresses = [...ipv4, ...ipv6];
+    if (addresses.length === 0) {
+      throw new Error(`Hostname did not resolve: ${hostname}`);
     }
+    for (const address of addresses) {
+      if (isForbiddenIp(address)) {
+        throw new Error(`Forbidden IP for hostname ${hostname}: ${address}`);
+      }
+    }
+  } finally {
+    signal.removeEventListener('abort', cancel);
   }
 }
 
@@ -101,7 +134,10 @@ export async function safeFetch(options: SafeFetchOptions): Promise<SafeFetchRes
     const t = setTimeout(() => controller.abort(), options.timeoutMs);
 
     try {
-      await withAbort(assertSafeHostname(current.hostname, allowedHosts), controller.signal);
+      await withAbort(
+        assertSafeHostname(current.hostname, allowedHosts, controller.signal),
+        controller.signal,
+      );
 
       const response = await fetch(current.toString(), {
         redirect: 'manual',
