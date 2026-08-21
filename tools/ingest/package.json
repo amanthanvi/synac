@@ -16,11 +16,11 @@
     "@synac/content-tools": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.2.3",
-    "eslint": "^9.39.2",
+    "@types/node": "^24.13.3",
+    "eslint": "^9.39.5",
     "prettier": "^3.8.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11"
   }
 }
