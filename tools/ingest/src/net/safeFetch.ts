@@ -59,6 +59,34 @@ async function assertSafeHostname(hostname: string, allowedHosts: string[]) {
   }
 }
 
+function abortReason(signal: AbortSignal): unknown {
+  return signal.reason ?? new DOMException('Aborted', 'AbortError');
+}
+
+async function withAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) throw abortReason(signal);
+
+  return new Promise<T>((resolve, reject) => {
+    const cleanup = () => signal.removeEventListener('abort', onAbort);
+    const onAbort = () => {
+      cleanup();
+      reject(abortReason(signal));
+    };
+
+    signal.addEventListener('abort', onAbort, { once: true });
+    operation.then(
+      (value) => {
+        cleanup();
+        resolve(value);
+      },
+      (error: unknown) => {
+        cleanup();
+        reject(error);
+      },
+    );
+  });
+}
+
 export async function safeFetch(options: SafeFetchOptions): Promise<SafeFetchResult> {
   const allowedHosts = options.allowedHosts.map((h) => h.trim().toLowerCase()).filter(Boolean);
   if (allowedHosts.length === 0) throw new Error('allowedHosts is required');
@@ -69,55 +97,53 @@ export async function safeFetch(options: SafeFetchOptions): Promise<SafeFetchRes
   }
 
   for (let i = 0; i <= options.maxRedirects; i += 1) {
-    await assertSafeHostname(current.hostname, allowedHosts);
-
     const controller = new AbortController();
     const t = setTimeout(() => controller.abort(), options.timeoutMs);
 
-    let response: Response;
     try {
-      response = await fetch(current.toString(), {
+      await withAbort(assertSafeHostname(current.hostname, allowedHosts), controller.signal);
+
+      const response = await fetch(current.toString(), {
         redirect: 'manual',
         headers: options.headers,
         signal: controller.signal,
       });
+
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
+        const location = response.headers.get('location');
+        if (!location) throw new Error(`Redirect without location from ${current.toString()}`);
+        if (i === options.maxRedirects) throw new Error('Too many redirects');
+        current = new URL(location, current);
+        if (current.protocol !== 'https:') {
+          throw new Error(`Redirected to non-https URL: ${current.toString()}`);
+        }
+        continue;
+      }
+
+      const contentType = response.headers.get('content-type') ?? '';
+      const okType = options.allowedContentTypePrefixes.some((p) =>
+        contentType.toLowerCase().startsWith(p.toLowerCase()),
+      );
+      if (!okType) {
+        throw new Error(`Disallowed content-type: ${contentType || '(missing)'}`);
+      }
+
+      const body = await readBodyWithLimit(response, options.maxBytes);
+      const sha256 = createHash('sha256').update(body).digest('hex');
+
+      return {
+        url: current.toString(),
+        status: response.status,
+        contentType,
+        etag: response.headers.get('etag'),
+        lastModified: response.headers.get('last-modified'),
+        body,
+        sha256,
+      };
     } finally {
       clearTimeout(t);
     }
-
-    if ([301, 302, 303, 307, 308].includes(response.status)) {
-      const location = response.headers.get('location');
-      if (!location) throw new Error(`Redirect without location from ${current.toString()}`);
-      if (i === options.maxRedirects) throw new Error('Too many redirects');
-      current = new URL(location, current);
-      if (current.protocol !== 'https:') {
-        throw new Error(`Redirected to non-https URL: ${current.toString()}`);
-      }
-      continue;
-    }
-
-    const contentType = response.headers.get('content-type') ?? '';
-    const okType = options.allowedContentTypePrefixes.some((p) =>
-      contentType.toLowerCase().startsWith(p.toLowerCase()),
-    );
-    if (!okType) {
-      throw new Error(`Disallowed content-type: ${contentType || '(missing)'}`);
-    }
-
-    const body = await readBodyWithLimit(response, options.maxBytes);
-    const sha256 = createHash('sha256').update(body).digest('hex');
-
-    return {
-      url: current.toString(),
-      status: response.status,
-      contentType,
-      etag: response.headers.get('etag'),
-      lastModified: response.headers.get('last-modified'),
-      body,
-      sha256,
-    };
   }
 
   throw new Error('Unexpected redirect loop');
 }
-

@@ -8,6 +8,8 @@ import type { BundleFile } from '@synac/content-tools';
 export const ADAPTER_VERSION = 'nist-glossary/1.0.0';
 const INDEX_DOCUMENT_KEY = 'nist-glossary-index';
 const USER_AGENT = 'synac-ingest/1.0 (+https://github.com/amanthanvi/synac)';
+const TERM_FETCH_CONCURRENCY = 8;
+const PROGRESS_INTERVAL = 100;
 
 type Variant = { variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' };
 
@@ -169,9 +171,51 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
   const entries: DraftEntry[] = [];
   const seenEntryKeys = new Set<string>();
   const seenDocumentKeys = new Set<string>([INDEX_DOCUMENT_KEY]);
+  const termsToFetch = termUrls.slice(0, ctx.maxItems);
+  const fetchedTerms = termsToFetch.map((termUrl) => ({
+    termUrl,
+    result: undefined as Awaited<ReturnType<typeof fetchPage>> | undefined,
+  }));
+  let nextTermIndex = 0;
+  let completedTerms = 0;
+  let nextProgress = PROGRESS_INTERVAL;
+  let failed = false;
+  let firstError: unknown;
+  const workerCount = Math.min(TERM_FETCH_CONCURRENCY, fetchedTerms.length);
 
-  for (const termUrl of termUrls.slice(0, ctx.maxItems)) {
-    const res = await fetchPage(termUrl);
+  console.log(
+    `[nist-glossary] fetching ${fetchedTerms.length} term pages (concurrency ${workerCount})`,
+  );
+
+  const fetchWorker = async () => {
+    while (!failed) {
+      const index = nextTermIndex;
+      nextTermIndex += 1;
+      const term = fetchedTerms[index];
+      if (!term) return;
+
+      try {
+        term.result = await fetchPage(term.termUrl);
+      } catch (error) {
+        if (!failed) {
+          failed = true;
+          firstError = error;
+        }
+        return;
+      }
+      completedTerms += 1;
+      if (completedTerms >= nextProgress || completedTerms === fetchedTerms.length) {
+        console.log(`[nist-glossary] fetched ${completedTerms}/${fetchedTerms.length} term pages`);
+        while (nextProgress <= completedTerms) nextProgress += PROGRESS_INTERVAL;
+      }
+    }
+  };
+
+  await Promise.all(Array.from({ length: workerCount }, fetchWorker));
+  if (failed) throw firstError;
+
+  for (const { termUrl, result: res } of fetchedTerms) {
+    if (!res) throw new Error(`NIST glossary term fetch produced no result for ${termUrl}`);
     if (res.status !== 200) continue;
 
     const parsed = parseNistTermPage(res.body.toString('utf8'));

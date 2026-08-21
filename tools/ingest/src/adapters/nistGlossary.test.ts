@@ -115,4 +115,166 @@ describe('nist glossary ingest freshness', () => {
     expect(current.entries[0]?.senses[0]?.definitionMd).toBe('Corrected definition.');
     expect(safeFetch).toHaveBeenCalledTimes(4);
   });
+
+  it('fetches terms concurrently while preserving discovery-order dedupe and concise progress', async () => {
+    const source = sourceFileSchema.parse({
+      slug: 'nist-csrc-glossary',
+      name: 'NIST CSRC Glossary',
+      baseUrl: 'https://csrc.nist.gov/glossary',
+      license: {
+        type: 'US_GOV_PD',
+        allowedUse: 'Reproduce with citation.',
+        attributionRequirements: 'NIST CSRC Glossary',
+      },
+      accessMethod: 'HTML',
+      trustTier: 'TIER1',
+      enabled: true,
+      lastVerifiedAt: '2026-07-01',
+    });
+    const indexUrl = 'https://csrc.nist.gov/glossary';
+    const termUrls = Array.from(
+      { length: 10 },
+      (_, index) => `https://csrc.nist.gov/glossary/term/term_${index + 1}`,
+    );
+    const indexHtml = termUrls
+      .map(
+        (url, index) =>
+          `<a href="${new URL(url).pathname}">Term ${index + 1}</a>`,
+      )
+      .join('');
+    let active = 0;
+    let maxActive = 0;
+    const completionOrder: number[] = [];
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    vi.mocked(safeFetch).mockImplementation(async (options) => {
+      if (options.url === indexUrl) {
+        return htmlResponse(indexUrl, indexHtml, 'a'.repeat(64));
+      }
+
+      const termNumber = Number(new URL(options.url).pathname.split('_').pop());
+      active += 1;
+      maxActive = Math.max(maxActive, active);
+      await new Promise((resolve) =>
+        setTimeout(resolve, (11 - termNumber) * 4),
+      );
+      completionOrder.push(termNumber);
+      active -= 1;
+
+      const title = termNumber <= 2 ? 'Shared Term' : `Term ${termNumber}`;
+      const html = [
+        `<h3 id="term-text">${title}</h3>`,
+        `<span id="term-def-text-0">Definition ${termNumber}.</span>`,
+      ].join('');
+      return htmlResponse(
+        options.url,
+        html,
+        String(termNumber).padStart(64, '0'),
+      );
+    });
+
+    try {
+      const bundle = await runNistGlossary({
+        source,
+        previous: null,
+        maxItems: termUrls.length,
+        now: new Date('2026-07-01T00:00:00Z'),
+      });
+
+      expect(maxActive).toBe(8);
+      expect(completionOrder[0]).toBe(8);
+      expect(
+        vi
+          .mocked(safeFetch)
+          .mock.calls.slice(1)
+          .map(([options]) => options.url),
+      ).toEqual(termUrls);
+      expect(
+        bundle.entries.find((entry) => entry.slug === 'shared-term')?.senses[0]
+          ?.key,
+      ).toBe('term-1');
+      expect(log.mock.calls.map(([message]) => message)).toEqual([
+        '[nist-glossary] fetching 10 term pages (concurrency 8)',
+        '[nist-glossary] fetched 10/10 term pages',
+      ]);
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  it('drains in-flight term fetches before propagating the first failure', async () => {
+    const source = sourceFileSchema.parse({
+      slug: 'nist-csrc-glossary',
+      name: 'NIST CSRC Glossary',
+      baseUrl: 'https://csrc.nist.gov/glossary',
+      license: {
+        type: 'US_GOV_PD',
+        allowedUse: 'Reproduce with citation.',
+        attributionRequirements: 'NIST CSRC Glossary',
+      },
+      accessMethod: 'HTML',
+      trustTier: 'TIER1',
+      enabled: true,
+      lastVerifiedAt: '2026-07-01',
+    });
+    const indexUrl = 'https://csrc.nist.gov/glossary';
+    const termUrls = Array.from(
+      { length: 10 },
+      (_, index) => `https://csrc.nist.gov/glossary/term/term_${index + 1}`,
+    );
+    const indexHtml = termUrls
+      .map((url) => `<a href="${new URL(url).pathname}">Term</a>`)
+      .join('');
+    let rejectFirst: (error: Error) => void = () => undefined;
+    const firstFetch = new Promise<ReturnType<typeof htmlResponse>>((_, reject) => {
+      rejectFirst = reject;
+    });
+    const releaseInFlight: Array<() => void> = [];
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+
+    vi.mocked(safeFetch).mockImplementation((options) => {
+      if (options.url === indexUrl) {
+        return Promise.resolve(htmlResponse(indexUrl, indexHtml, 'a'.repeat(64)));
+      }
+      if (options.url === termUrls[0]) return firstFetch;
+
+      return new Promise((resolve) => {
+        releaseInFlight.push(() =>
+          resolve(htmlResponse(options.url, '<h3 id="term-text">Term</h3>', 'b'.repeat(64))),
+        );
+      });
+    });
+
+    try {
+      const run = runNistGlossary({
+        source,
+        previous: null,
+        maxItems: termUrls.length,
+        now: new Date('2026-07-01T00:00:00Z'),
+      });
+      let outcome: 'pending' | 'fulfilled' | 'rejected' = 'pending';
+      void run.then(
+        () => {
+          outcome = 'fulfilled';
+        },
+        () => {
+          outcome = 'rejected';
+        },
+      );
+
+      await vi.waitFor(() => expect(safeFetch).toHaveBeenCalledTimes(9));
+      rejectFirst(new Error('term fetch failed'));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(outcome).toBe('pending');
+      for (const release of releaseInFlight) release();
+
+      await expect(run).rejects.toThrow('term fetch failed');
+      expect(safeFetch).toHaveBeenCalledTimes(9);
+    } finally {
+      for (const release of releaseInFlight) release();
+      log.mockRestore();
+    }
+  });
 });
