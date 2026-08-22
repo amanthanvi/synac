@@ -18,6 +18,8 @@ Open content model (GitOps rework).
 - Hardened scheduled ingest timeouts and NIST concurrency, refreshed the Node
   24 toolchain, and cleared high-severity dependency advisories (#206) — thanks
   @amanthanvi.
+- Raised the NIST ingest ceiling to cover the complete live glossary index
+  (#207) — thanks @amanthanvi.
 - Rebuilt the backend on a clean Convex schema with typed relations, a
   validated content-sync pipeline, and service-key-guarded runtime endpoints.
 - Repo/community polish (docs, templates, contributor experience).
