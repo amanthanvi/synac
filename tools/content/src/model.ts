@@ -64,7 +64,7 @@ export const sourceFileSchema = z
       .object({
         adapter: z.enum(ADAPTERS),
         schedule: z.enum(['weekly', 'monthly']).default('weekly'),
-        maxItems: z.number().int().min(1).max(10000).optional(),
+        maxItems: z.number().int().min(1).max(20000).optional(),
       })
       .strict()
       .optional(),

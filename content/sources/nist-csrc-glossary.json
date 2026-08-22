@@ -12,6 +12,6 @@
   "accessMethod": "HTML",
   "trustTier": "TIER1",
   "enabled": true,
-  "ingest": { "adapter": "nistGlossary", "schedule": "weekly" },
+  "ingest": { "adapter": "nistGlossary", "schedule": "weekly", "maxItems": 15000 },
   "lastVerifiedAt": "2026-02-10"
 }
