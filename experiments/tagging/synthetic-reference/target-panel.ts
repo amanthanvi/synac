@@ -52,16 +52,7 @@ import {
 } from './validators.ts';
 
 export type TargetLane =
-  | 'P1'
-  | 'P2'
-  | 'P3'
-  | 'P4'
-  | 'C+'
-  | 'C-'
-  | 'A1'
-  | 'A2'
-  | 'V1'
-  | 'V2';
+  'P1' | 'P2' | 'P3' | 'P4' | 'C+' | 'C-' | 'A1' | 'A2' | 'V1' | 'V2';
 export type TargetPhase = 'primary' | 'critic' | 'arbiter' | 'verify';
 export type TargetMirror = 'M1' | 'M2' | 'S1';
 export type TargetVerdict = 'yes' | 'no' | 'abstain';

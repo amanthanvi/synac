@@ -31,16 +31,13 @@ const rubric: Rubric = {
   globalRules: ['Apply only when central.'],
   contracts: [
     contract,
-    ...Array.from(
-      { length: 10 },
-      (_value, index): Contract => ({
-        slug: `tag-${index}`,
-        name: `Tag ${index}`,
-        definition: `Definition ${index}`,
-        inclusionRules: [`Include ${index}`],
-        exclusionRules: [`Exclude ${index}`],
-      }),
-    ),
+    ...Array.from({ length: 10 }, (_value, index): Contract => ({
+      slug: `tag-${index}`,
+      name: `Tag ${index}`,
+      definition: `Definition ${index}`,
+      inclusionRules: [`Include ${index}`],
+      exclusionRules: [`Exclude ${index}`],
+    })),
   ],
 };
 

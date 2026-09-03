@@ -15,10 +15,7 @@ export const TAG_IDS = [
 export type TagId = (typeof TAG_IDS)[number];
 export type Polarity = 'positive' | 'negative';
 export type ReferenceSplit =
-  | 'development'
-  | 'calibration'
-  | 'validation'
-  | 'audit';
+  'development' | 'calibration' | 'validation' | 'audit';
 export type SealedRole = 'primary' | 'critic' | 'arbiter' | 'auditor';
 
 export type RubricRule = Readonly<{
