@@ -54,7 +54,9 @@ function normalizeQuery(value: string): string {
 }
 
 function matchesNav(query: string, item: NavItem): boolean {
-  const haystack = [item.label, item.href, ...(item.keywords ?? [])].join(' ').toLowerCase();
+  const haystack = [item.label, item.href, ...(item.keywords ?? [])]
+    .join(' ')
+    .toLowerCase();
   return query.split(' ').every((token) => !token || haystack.includes(token));
 }
 
@@ -78,26 +80,27 @@ export function SearchPalette() {
   const q = normalizeQuery(query);
 
   useEffect(() => {
-    if (!open || q.length < 2) {
-      setEntries([]);
-      setSearching(false);
-      return;
-    }
+    if (!open || q.length < 2) return;
 
     const controller = new AbortController();
     setSearching(true);
     const handle = window.setTimeout(async () => {
       try {
-        const response = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}`, {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          `/api/v1/search?q=${encodeURIComponent(q)}`,
+          {
+            signal: controller.signal,
+          },
+        );
         if (!response.ok) throw new Error(`search ${response.status}`);
         const body = (await response.json()) as { results?: EntryResult[] };
         setEntries((body.results ?? []).slice(0, 8));
+        setActiveIndex(0);
         setSearching(false);
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
           setEntries([]);
+          setActiveIndex(0);
           setSearching(false);
         }
       }
@@ -111,7 +114,12 @@ export function SearchPalette() {
 
   const items = useMemo<PaletteItem[]>(() => {
     if (!q) {
-      return NAV_ITEMS.map((item) => ({ kind: 'nav', id: item.id, label: item.label, href: item.href }));
+      return NAV_ITEMS.map((item) => ({
+        kind: 'nav',
+        id: item.id,
+        label: item.label,
+        href: item.href,
+      }));
     }
 
     const list: PaletteItem[] = [
@@ -121,11 +129,19 @@ export function SearchPalette() {
         label: `Search for “${q}”`,
         href: `/search?q=${encodeURIComponent(q)}`,
       },
-      ...entries.map(
-        (entry): PaletteItem => ({ kind: 'entry', id: `entry-${entry.id}`, href: entryHref(entry), entry }),
-      ),
+      ...entries.map((entry): PaletteItem => ({
+        kind: 'entry',
+        id: `entry-${entry.id}`,
+        href: entryHref(entry),
+        entry,
+      })),
       ...NAV_ITEMS.filter((item) => matchesNav(q, item)).map(
-        (item): PaletteItem => ({ kind: 'nav', id: item.id, label: item.label, href: item.href }),
+        (item): PaletteItem => ({
+          kind: 'nav',
+          id: item.id,
+          label: item.label,
+          href: item.href,
+        }),
       ),
     ];
     return list;
@@ -134,6 +150,8 @@ export function SearchPalette() {
   function close() {
     setOpen(false);
     setQuery('');
+    setEntries([]);
+    setSearching(false);
     setActiveIndex(0);
     triggerRef.current?.focus();
   }
@@ -141,20 +159,24 @@ export function SearchPalette() {
   function openPalette() {
     setQuery('');
     setEntries([]);
+    setSearching(false);
     setActiveIndex(0);
     setOpen(true);
+  }
+
+  function updateQuery(value: string) {
+    const nextQuery = normalizeQuery(value);
+    setQuery(value);
+    if (nextQuery === q) return;
+    setEntries([]);
+    setSearching(nextQuery.length >= 2);
+    setActiveIndex(0);
   }
 
   function navigate(href: string) {
     close();
     router.push(href);
   }
-
-  // Reset the selection whenever the option list changes — including when
-  // debounced results arrive — so Enter never fires on a shifted item.
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [items]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -243,9 +265,25 @@ export function SearchPalette() {
         aria-expanded={open}
         aria-label="Search"
       >
-        <svg className={styles.triggerIcon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.6" />
-          <path d="m16 16 4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <svg
+          className={styles.triggerIcon}
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle
+            cx="11"
+            cy="11"
+            r="6.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          />
+          <path
+            d="m16 16 4.5 4.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
         </svg>
         <span className={styles.triggerLabel}>Search…</span>
         <kbd className={styles.triggerKbd} aria-hidden="true">
@@ -264,21 +302,39 @@ export function SearchPalette() {
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <div className={styles.top}>
-                  <svg className={styles.inputIcon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.6" />
-                    <path d="m16 16 4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <svg
+                    className={styles.inputIcon}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      cx="11"
+                      cy="11"
+                      r="6.5"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                    />
+                    <path
+                      d="m16 16 4.5 4.5"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                    />
                   </svg>
                   <input
                     ref={inputRef}
                     className={styles.input}
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => updateQuery(e.target.value)}
                     placeholder="Search terms and acronyms…"
                     aria-label="Search terms and acronyms"
                     role="combobox"
                     aria-expanded="true"
                     aria-controls={listboxId}
-                    aria-activedescendant={activeItem ? `${listboxId}-${activeItem.id}` : undefined}
+                    aria-activedescendant={
+                      activeItem ? `${listboxId}-${activeItem.id}` : undefined
+                    }
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}
@@ -292,7 +348,12 @@ export function SearchPalette() {
                   )}
                 </div>
 
-                <ul className={styles.list} id={listboxId} role="listbox" aria-label="Results">
+                <ul
+                  className={styles.list}
+                  id={listboxId}
+                  role="listbox"
+                  aria-label="Results"
+                >
                   {!q ? <li className={styles.groupLabel}>Go to</li> : null}
                   {items.map((item, idx) => (
                     <li
@@ -307,7 +368,9 @@ export function SearchPalette() {
                       {item.kind === 'entry' ? (
                         <span className={styles.entryItem}>
                           <span className={styles.entryTitleRow}>
-                            <span className={styles.entryTitle}>{item.entry.displayTitle}</span>
+                            <span className={styles.entryTitle}>
+                              {item.entry.displayTitle}
+                            </span>
                             <TypeMarker type={item.entry.entryType} />
                           </span>
                           {item.entry.snippet || item.entry.summaryText ? (
@@ -330,7 +393,8 @@ export function SearchPalette() {
 
                 {q && !searching && entries.length === 0 ? (
                   <div className={styles.empty}>
-                    No entries match “{q}” yet. Press Enter for full-text search.
+                    No entries match “{q}” yet. Press Enter for full-text
+                    search.
                   </div>
                 ) : null}
               </div>
