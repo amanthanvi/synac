@@ -13,7 +13,7 @@
     "format:write": "prettier . --write --ignore-path ../../.prettierignore"
   },
   "dependencies": {
-    "convex": "^1.39.1",
+    "convex": "^1.45.0",
     "geist": "^1.7.2",
     "next": "16.3.4",
     "react": "19.2.8",
