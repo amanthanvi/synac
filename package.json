@@ -61,6 +61,6 @@
   },
   "dependencies": {
     "@convex-dev/rate-limiter": "^0.3.2",
-    "convex": "^1.39.1"
+    "convex": "^1.45.0"
   }
 }
