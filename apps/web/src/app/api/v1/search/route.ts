@@ -1,101 +1,106 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { readEntrySearch, readSenseSearch } from '@/lib/convex';
+import {
+  SEARCH_PAGE_SIZE,
+  isIgnoredSearchQuery,
+  normalizeSearchQuery,
+  parseEntryTypeParam,
+  parseSearchPage,
+  parseSearchScope,
+} from '@/lib/searchQuery';
+import { entryPath } from '@/lib/publicEntryPage';
 
-import { api, getConvexClient } from '@/lib/convex';
-import { logger } from '@/lib/logger';
-import { enforceRateLimit } from '@/lib/rateLimit';
+import {
+  handleReadRequest,
+  jsonResponse,
+  optionsResponse,
+  parseSlug,
+} from '../_shared';
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
 
-function parseEntryType(value: string | null): 'TERM' | 'ACRONYM' | undefined {
-  const v = value?.toUpperCase();
-  if (v === 'TERM') return 'TERM';
-  if (v === 'ACRONYM') return 'ACRONYM';
-  return undefined;
+export function GET(request: Request): Promise<Response> {
+  return handleReadRequest(request, 'search', async (url) => {
+    const query = normalizeSearchQuery(url.searchParams.get('q') ?? '');
+    const scope = parseSearchScope(url.searchParams.get('scope'));
+    const page = parseSearchPage(url.searchParams.get('page'));
+    const entryType = parseEntryTypeParam(url.searchParams.get('type'));
+    const tagSlug = parseSlug(url.searchParams.get('tag'));
+
+    // A query the index would refuse is an empty result, not a client error.
+    if (!query || isIgnoredSearchQuery(query)) {
+      return jsonResponse(request, {
+        results: [],
+        meta: {
+          page,
+          pageSize: SEARCH_PAGE_SIZE,
+          total: 0,
+          hasMore: false,
+          scope,
+        },
+      });
+    }
+
+    if (scope === 'senses') {
+      const senses = await readSenseSearch(
+        query,
+        entryType,
+        page,
+        SEARCH_PAGE_SIZE,
+      );
+      return jsonResponse(request, {
+        results: senses.results.map((result) => ({
+          entryType: result.entryType,
+          slug: result.slug,
+          title: result.title,
+          senseKey: result.senseKey,
+          anchor: result.anchor,
+          label: result.label,
+          expandedForm: result.expandedForm,
+          labelFallback: result.labelFallback,
+          sourceNames: result.sourceNames,
+          snippet: result.snippet,
+          url: `${entryPath(result.entryType, result.slug)}#${result.anchor}`,
+        })),
+        meta: {
+          page,
+          pageSize: SEARCH_PAGE_SIZE,
+          total: senses.total,
+          hasMore: senses.hasMore,
+          scope,
+        },
+      });
+    }
+
+    const entries = await readEntrySearch(
+      query,
+      entryType,
+      tagSlug,
+      page,
+      SEARCH_PAGE_SIZE,
+    );
+    return jsonResponse(request, {
+      results: entries.results.map((result) => ({
+        id: result.key,
+        entryType: result.entryType,
+        displayTitle: result.title,
+        primarySlug: result.slug,
+        summaryText: result.summaryText,
+        snippet: result.snippet,
+        senseCount: result.senseCount,
+        senseSummary: result.senseSummary,
+        url: entryPath(result.entryType, result.slug),
+      })),
+      meta: {
+        page,
+        pageSize: SEARCH_PAGE_SIZE,
+        total: entries.total,
+        hasMore: entries.hasMore,
+        scope,
+      },
+    });
+  });
 }
 
-export async function GET(request: NextRequest) {
-  const startMs = Date.now();
-  const requestId = request.headers.get('x-request-id') ?? undefined;
-
-  try {
-    const url = new URL(request.url);
-    const q = (url.searchParams.get('q') ?? '').trim();
-    const normalizedQuery = q.toLowerCase().replace(/\s+/g, ' ').trim();
-    const page = Math.max(1, Math.min(10, Number(url.searchParams.get('page') ?? 1) || 1));
-
-    if (!q || q.length > 120) {
-      return NextResponse.json({
-        results: [],
-        meta: { page, pageSize: 20 },
-      });
-    }
-
-    if (
-      normalizedQuery.length <= 1 ||
-      normalizedQuery === 'a' ||
-      normalizedQuery === 'an' ||
-      normalizedQuery === 'and' ||
-      normalizedQuery === 'or' ||
-      normalizedQuery === 'the'
-    ) {
-      return NextResponse.json({
-        results: [],
-        meta: { page, pageSize: 20 },
-      });
-    }
-
-    const rate = await enforceRateLimit({ request, scope: 'api_v1_search' });
-    if (!rate.allowed) {
-      logger.warn('api.search.rate_limited', { requestId, retryAfterSeconds: rate.retryAfterSeconds });
-      return NextResponse.json(
-        { error: 'rate_limited', requestId, retryAfterSeconds: rate.retryAfterSeconds },
-        { status: 429, headers: { 'retry-after': String(rate.retryAfterSeconds) } },
-      );
-    }
-
-    const entryType = parseEntryType(url.searchParams.get('type'));
-    const tag = url.searchParams.get('tag') ?? undefined;
-
-    const results = await getConvexClient().query(api.search.search, {
-      query: q,
-      entryType: entryType ?? null,
-      tagSlug: tag?.trim() ? tag.trim().toLowerCase() : null,
-      page,
-      pageSize: 20,
-    });
-
-    const totalDurationMs = Date.now() - startMs;
-
-    logger.info('api.search.ok', {
-      requestId,
-      durationMs: totalDurationMs,
-      qLen: q.trim().length,
-      entryType,
-      tag: tag?.trim() ? tag.trim().toLowerCase() : undefined,
-      page,
-      resultsCount: results.length,
-    });
-
-    return NextResponse.json({
-      results: results.map((r) => ({
-        id: r.key,
-        entryType: r.entryType,
-        displayTitle: r.title,
-        primarySlug: r.slug,
-        summaryText: r.summaryText,
-        snippet: r.snippet,
-        senseCount: r.senseCount,
-        senseSummary: r.senseSummary,
-        url: r.entryType === 'TERM' ? `/term/${r.slug}` : `/acronym/${r.slug}`,
-        score: r.score,
-        bucket: r.bucket,
-      })),
-      meta: { page, pageSize: 20 },
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    logger.error('api.search.error', { requestId, durationMs: Date.now() - startMs, error: message });
-    return NextResponse.json({ error: 'internal_error', requestId }, { status: 500 });
-  }
+export function OPTIONS(): Response {
+  return optionsResponse();
 }

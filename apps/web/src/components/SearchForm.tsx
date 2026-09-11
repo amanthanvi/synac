@@ -1,7 +1,3 @@
-'use client';
-
-import { useId } from 'react';
-
 import styles from './SearchForm.module.css';
 
 type SearchFormProps = {
@@ -14,38 +10,47 @@ type SearchFormProps = {
 };
 
 // Plain GET form: typing + Enter runs full-text search on /search.
-// Live suggestions live in one place only — the ⌘K SearchPalette.
+// Live suggestions live in one place only, the ⌘K SearchPalette.
+// Server-rendered: the form owns no state, and the id is a prop rather than
+// useId so the two call sites (home hero, /search) stay unique on their own.
 export function SearchForm({
   action = '/search',
   defaultValue,
   placeholder = 'Search terms and acronyms…',
   inputName = 'q',
-  inputId,
+  inputId = 'search-input',
   size = 'md',
 }: SearchFormProps) {
-  const autoId = useId();
-  const resolvedInputId = inputId ?? `search-${autoId}`;
-
   return (
     <form className={styles.form} action={action} method="get" role="search">
       <div className={`${styles.field} ${size === 'lg' ? styles.fieldLg : ''}`}>
-        <label className="srOnly" htmlFor={resolvedInputId}>
+        <label className="srOnly" htmlFor={inputId}>
           Search
         </label>
         <svg
           className={`${styles.icon} ${size === 'lg' ? styles.iconLg : ''}`}
           viewBox="0 0 24 24"
+          fill="none"
           aria-hidden="true"
           focusable="false"
         >
+          <circle
+            cx="11"
+            cy="11"
+            r="6.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          />
           <path
-            fill="currentColor"
-            d="M10 4a6 6 0 1 1 0 12A6 6 0 0 1 10 4m0-2a8 8 0 1 0 4.9 14.3l4.4 4.4a1 1 0 0 0 1.4-1.4l-4.4-4.4A8 8 0 0 0 10 2"
+            d="m16 16 4.5 4.5"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
           />
         </svg>
         <input
           className={`${styles.input} ${size === 'lg' ? styles.inputLg : ''}`}
-          id={resolvedInputId}
+          id={inputId}
           name={inputName}
           defaultValue={defaultValue}
           placeholder={placeholder}

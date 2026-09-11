@@ -16,7 +16,10 @@ export function Pagination({ page, prevHref, nextHref }: PaginationProps) {
           Prev
         </Link>
       ) : (
-        <span className={`${styles.link} ${styles.disabled}`} aria-disabled="true">
+        <span
+          className={`${styles.link} ${styles.disabled}`}
+          aria-disabled="true"
+        >
           Prev
         </span>
       )}
@@ -28,7 +31,10 @@ export function Pagination({ page, prevHref, nextHref }: PaginationProps) {
           Next
         </Link>
       ) : (
-        <span className={`${styles.link} ${styles.disabled}`} aria-disabled="true">
+        <span
+          className={`${styles.link} ${styles.disabled}`}
+          aria-disabled="true"
+        >
           Next
         </span>
       )}

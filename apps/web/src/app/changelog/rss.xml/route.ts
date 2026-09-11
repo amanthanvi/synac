@@ -1,37 +1,28 @@
 import { NextResponse } from 'next/server';
 
-import { CHANGELOG } from '@/lib/changelog';
+import { CHANGELOG, changelogAnchorId } from '@/lib/changelog';
+import { escapeXml, getSiteUrl } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function escapeXml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&apos;');
-}
-
-function slugifyVersion(version: string): string {
-  return version.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? 'https://synac.example';
+  const siteUrl = getSiteUrl();
   const now = new Date();
 
   const items = CHANGELOG.slice(0, 50)
     .map((entry) => {
-      const id = `v-${slugifyVersion(entry.version)}`;
-      const link = `${siteUrl}/changelog#${id}`;
+      const link = `${siteUrl}/changelog#${changelogAnchorId(entry.version)}`;
       const pubDate = new Date(`${entry.date}T00:00:00.000Z`).toUTCString();
       const description = [
         entry.title,
         ...entry.sections.flatMap((section) => {
           if (section.items.length === 0) return [];
-          return ['', `${section.title}:`, ...section.items.map((item) => `- ${item}`)];
+          return [
+            '',
+            `${section.title}:`,
+            ...section.items.map((item) => `- ${item}`),
+          ];
         }),
       ].join('\n');
 

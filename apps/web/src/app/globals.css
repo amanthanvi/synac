@@ -73,8 +73,10 @@
   --mark-bg: color-mix(in srgb, var(--accent) 16%, transparent);
 
   /* Shadows — overlays only; offset + soft blur. */
-  --shadow-sm: 0 1px 2px rgba(33, 31, 28, 0.06), 0 4px 12px rgba(33, 31, 28, 0.06);
-  --shadow-md: 0 2px 4px rgba(33, 31, 28, 0.07), 0 16px 40px rgba(33, 31, 28, 0.14);
+  --shadow-sm:
+    0 1px 2px rgba(33, 31, 28, 0.06), 0 4px 12px rgba(33, 31, 28, 0.06);
+  --shadow-md:
+    0 2px 4px rgba(33, 31, 28, 0.07), 0 16px 40px rgba(33, 31, 28, 0.14);
 
   /* Radius */
   --radius-sm: 6px;
@@ -98,17 +100,6 @@
   --ease-in-out: ease-in-out;
   --dur-hover: 120ms;
   --dur-overlay: 180ms;
-  --dur-accordion: 200ms;
-
-  /* Legacy token aliases (admin UI still consumes these). */
-  --font-serif: var(--font-sans);
-  --bg0: var(--bg-0);
-  --bg1: var(--bg-1);
-  --bg2: var(--bg-2);
-  --muted: var(--fg-muted);
-  --accent2: var(--accent-2);
-  --shadow: var(--shadow-md);
-  --shadow-tight: var(--shadow-sm);
 }
 
 /* Color — dark. Warm dark, tuned separately (not inverted light). */
@@ -119,7 +110,7 @@
     --bg-2: #262320;
     --fg: #ece9e4;
     --fg-muted: #a49d93;
-    --fg-subtle: #8b857b;
+    --fg-subtle: #948e83;
     --border: #2f2c28;
     --border-hover: #3d3934;
     --border-strong: #4b463f;
@@ -168,8 +159,10 @@ html[data-theme='light'] {
   --warn: #a16207;
   --mark-bg: color-mix(in srgb, var(--accent) 16%, transparent);
 
-  --shadow-sm: 0 1px 2px rgba(33, 31, 28, 0.06), 0 4px 12px rgba(33, 31, 28, 0.06);
-  --shadow-md: 0 2px 4px rgba(33, 31, 28, 0.07), 0 16px 40px rgba(33, 31, 28, 0.14);
+  --shadow-sm:
+    0 1px 2px rgba(33, 31, 28, 0.06), 0 4px 12px rgba(33, 31, 28, 0.06);
+  --shadow-md:
+    0 2px 4px rgba(33, 31, 28, 0.07), 0 16px 40px rgba(33, 31, 28, 0.14);
 }
 
 html[data-theme='dark'] {
@@ -180,7 +173,7 @@ html[data-theme='dark'] {
   --bg-2: #262320;
   --fg: #ece9e4;
   --fg-muted: #a49d93;
-  --fg-subtle: #8b857b;
+  --fg-subtle: #948e83;
   --border: #2f2c28;
   --border-hover: #3d3934;
   --border-strong: #4b463f;
@@ -234,7 +227,7 @@ a {
 
 mark {
   background: var(--mark-bg);
-  color: inherit;
+  color: var(--fg);
   padding: 0 0.14em;
   border-radius: 3px;
 }
@@ -243,12 +236,6 @@ mark {
   outline: 2px solid color-mix(in srgb, var(--accent) 75%, transparent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
-}
-
-.appMain {
-  max-width: var(--page-max);
-  margin: 0 auto;
-  padding: var(--space-6) var(--page-pad-x) var(--space-8);
 }
 
 .srOnly {

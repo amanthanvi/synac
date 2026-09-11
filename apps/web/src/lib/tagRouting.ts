@@ -1,6 +1,6 @@
-export const MAX_TAG_PAGE = 100;
+const MAX_TAG_PAGE = 100;
 
-export type TagEntryType = 'TERM' | 'ACRONYM';
+type TagEntryType = 'TERM' | 'ACRONYM';
 
 export function parseTagEntryType(
   value: string | undefined,
@@ -18,7 +18,8 @@ export function parseTagPage(value: string | undefined): number {
   );
 }
 
-export function tagRedirectPath(
+/** The only builder for tag URLs: filters are validated, pagination is clamped. */
+export function tagPagePath(
   slug: string,
   entryType: TagEntryType | undefined,
   page: number,
@@ -36,7 +37,5 @@ export function nextTagPagePath(
   hasMore: boolean,
 ): string | undefined {
   if (!hasMore || page >= MAX_TAG_PAGE) return undefined;
-
-  const separator = entryType ? '&' : '?';
-  return `/tags/${slug}${entryType ? `?type=${encodeURIComponent(entryType)}` : ''}${separator}page=${page + 1}`;
+  return tagPagePath(slug, entryType, page + 1);
 }

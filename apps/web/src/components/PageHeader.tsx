@@ -3,8 +3,6 @@ import styles from './PageHeader.module.css';
 type PageHeaderProps = {
   title: string;
   subtitle?: string;
-  /** @deprecated retained for call-site compatibility; no longer rendered. */
-  badge?: string;
 };
 
 export function PageHeader({ title, subtitle }: PageHeaderProps) {

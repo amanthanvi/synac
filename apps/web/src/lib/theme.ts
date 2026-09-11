@@ -3,7 +3,7 @@ export type ThemePreference = 'system' | 'dark' | 'light';
 export const THEME_CHANGE_EVENT = 'synac-theme-change' as const;
 export const THEME_STORAGE_KEY = 'synac-theme' as const;
 
-export function parseThemePreference(value: unknown): ThemePreference | null {
+function parseThemePreference(value: string | null): ThemePreference | null {
   if (value === 'system' || value === 'dark' || value === 'light') return value;
   return null;
 }
@@ -12,9 +12,11 @@ export function getStoredThemePreference(): ThemePreference {
   if (typeof window === 'undefined') return 'system';
 
   try {
-    return parseThemePreference(window.localStorage.getItem(THEME_STORAGE_KEY)) ?? 'system';
-  } catch (error) {
-    void error;
+    return (
+      parseThemePreference(window.localStorage.getItem(THEME_STORAGE_KEY)) ??
+      'system'
+    );
+  } catch {
     return 'system';
   }
 }
@@ -37,20 +39,22 @@ export function setThemePreference(preference: ThemePreference): void {
 
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, preference);
-  } catch (error) {
-    void error;
+  } catch {
+    // A browser with storage disabled still gets the theme applied below.
   }
 
   applyThemePreference(preference);
 
   try {
     window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
-  } catch (error) {
-    void error;
+  } catch {
+    // Event construction fails only in environments without a DOM.
   }
 }
 
-export function cycleThemePreference(current: ThemePreference): ThemePreference {
+export function cycleThemePreference(
+  current: ThemePreference,
+): ThemePreference {
   if (current === 'system') return 'dark';
   if (current === 'dark') return 'light';
   return 'system';

@@ -14,18 +14,33 @@ type MobileNavLink = {
   label: string;
 };
 
+/** Page furniture behind the panel; both live outside React's tree. */
+const INERT_SELECTORS = ['#content', '#site-header'];
+
 export function MobileNav({ links }: { links: MobileNavLink[] }) {
   const pathname = usePathname() ?? '';
   const [open, setOpen] = useState(false);
   const dialogId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
 
+  // Focus, scroll lock, the inert screen behind the panel, and focus restore
+  // all share one lifetime; the cleanup lifts inert before it restores focus so
+  // the trigger inside the header is focusable again.
   useEffect(() => {
     if (!open) return;
 
+    const restoreTo = triggerRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    const blocked = INERT_SELECTORS.flatMap((selector) => {
+      const node = document.querySelector(selector);
+      return node ? [node] : [];
+    });
+    for (const node of blocked) node.setAttribute('inert', '');
+
     closeRef.current?.focus();
 
     function onKeyDown(e: KeyboardEvent) {
@@ -36,6 +51,8 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       document.body.style.overflow = previousOverflow;
+      for (const node of blocked) node.removeAttribute('inert');
+      restoreTo?.focus();
     };
   }, [open]);
 
@@ -46,12 +63,13 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
     if (!panel) return;
 
     const focusable = panel.querySelectorAll<HTMLElement>(
-      'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])',
     );
     if (focusable.length === 0) return;
 
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
+    if (!first || !last) return;
     const active = document.activeElement as HTMLElement | null;
 
     if (e.shiftKey) {
@@ -71,6 +89,7 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
   return (
     <>
       <button
+        ref={triggerRef}
         className={styles.trigger}
         type="button"
         aria-label="Open menu"
@@ -78,7 +97,12 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
-        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg
+          className={styles.icon}
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
           <path
             d="M5 7h14M5 12h14M5 17h14"
             stroke="currentColor"
@@ -136,7 +160,11 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
                     return (
                       <Link
                         key={l.href}
-                        className={current ? `${styles.link} ${styles.linkCurrent}` : styles.link}
+                        className={
+                          current
+                            ? `${styles.link} ${styles.linkCurrent}`
+                            : styles.link
+                        }
                         aria-current={current ? 'page' : undefined}
                         href={l.href}
                         onClick={() => setOpen(false)}
@@ -146,7 +174,6 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
                     );
                   })}
                 </nav>
-
               </div>
             </div>,
             document.body,

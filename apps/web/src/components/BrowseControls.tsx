@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
+import type { BrowseSort } from '@/lib/convex';
+import { buildBrowseHref, type BrowseBasePath } from '@/lib/publicBrowse';
 import styles from './BrowseControls.module.css';
 
 type BrowseTag = {
@@ -12,34 +14,13 @@ type BrowseTag = {
 };
 
 export type BrowseControlsProps = {
-  basePath: string;
+  basePath: BrowseBasePath;
   letter: string;
-  sort: 'title' | 'updated';
+  sort: BrowseSort;
   query: string;
   activeTagSlug?: string | null;
   tags: BrowseTag[];
 };
-
-function buildHref(
-  basePath: string,
-  params: {
-    letter: string;
-    sort: 'title' | 'updated';
-    query?: string;
-    tag?: string | null;
-  },
-): string {
-  const sp = new URLSearchParams();
-
-  if (params.letter && params.letter !== 'a') sp.set('letter', params.letter);
-  if (params.sort !== 'title') sp.set('sort', params.sort);
-  const trimmed = params.query?.trim() ?? '';
-  if (trimmed) sp.set('q', trimmed);
-  if (params.tag) sp.set('tag', params.tag);
-
-  const qs = sp.toString();
-  return qs ? `${basePath}?${qs}` : basePath;
-}
 
 export function BrowseControls({
   basePath,
@@ -57,19 +38,34 @@ export function BrowseControls({
   const normalizedQuery = query.trim();
 
   const tagHrefs = useMemo(() => {
-    const items: Array<{ label: string; slug: string | null; href: string }> = [];
+    const items: Array<{ label: string; slug: string | null; href: string }> =
+      [];
 
     items.push({
       label: 'All tags',
       slug: null,
-      href: buildHref(basePath, { letter, sort, query, tag: null }),
+      href: buildBrowseHref({
+        basePath,
+        letter,
+        page: 1,
+        sort,
+        query,
+        tagSlug: null,
+      }),
     });
 
     for (const t of tags) {
       items.push({
         label: t.name,
         slug: t.slug,
-        href: buildHref(basePath, { letter, sort, query, tag: t.slug }),
+        href: buildBrowseHref({
+          basePath,
+          letter,
+          page: 1,
+          sort,
+          query,
+          tagSlug: t.slug,
+        }),
       });
     }
 
@@ -123,11 +119,13 @@ export function BrowseControls({
                 if (trimmed === normalizedQuery) return;
 
                 router.replace(
-                  buildHref(basePath, {
+                  buildBrowseHref({
+                    basePath,
                     letter,
+                    page: 1,
                     sort,
                     query: trimmed,
-                    tag: activeTagSlug ?? null,
+                    tagSlug: activeTagSlug ?? null,
                   }),
                 );
               }, 260);
@@ -152,15 +150,18 @@ export function BrowseControls({
                 window.clearTimeout(debounceRef.current);
                 debounceRef.current = null;
               }
-              const nextSort = e.target.value === 'updated' ? 'updated' : 'title';
+              const nextSort =
+                e.target.value === 'updated' ? 'updated' : 'title';
               if (nextSort === sort) return;
 
               router.replace(
-                buildHref(basePath, {
+                buildBrowseHref({
+                  basePath,
                   letter,
+                  page: 1,
                   sort: nextSort,
                   query,
-                  tag: activeTagSlug ?? null,
+                  tagSlug: activeTagSlug ?? null,
                 }),
               );
             }}
@@ -176,7 +177,9 @@ export function BrowseControls({
           <Link
             key={t.slug ?? 'all'}
             className={`${styles.tag} ${
-              (t.slug ?? null) === (activeTagSlug ?? null) ? styles.tagActive : ''
+              (t.slug ?? null) === (activeTagSlug ?? null)
+                ? styles.tagActive
+                : ''
             }`}
             href={t.href}
           >

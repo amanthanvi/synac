@@ -16,7 +16,7 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   return (
-    <header className={styles.header}>
+    <header id="site-header" className={styles.header}>
       <div className={styles.inner}>
         <Link className={styles.brand} href="/">
           SynAc

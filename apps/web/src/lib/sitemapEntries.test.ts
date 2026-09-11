@@ -1,11 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import {
-  collectEntrySitemapUrls,
-  type EntrySitemapPage,
-} from './sitemapEntries';
+import { collectEntrySlugs, type EntrySitemapPage } from './sitemapEntries';
 
-describe('collectEntrySitemapUrls', () => {
+describe('collectEntrySlugs', () => {
   test('restarts once without mixing generations', async () => {
     const pages: EntrySitemapPage[] = [
       {
@@ -34,8 +31,7 @@ describe('collectEntrySitemapUrls', () => {
       cursor: string | null;
       expectedVersion: string | null;
     }> = [];
-    const urls = await collectEntrySitemapUrls({
-      siteUrl: 'https://synac.app',
+    const records = await collectEntrySlugs({
       entryType: 'TERM',
       fetchPage: async (request) => {
         requests.push(request);
@@ -49,13 +45,12 @@ describe('collectEntrySitemapUrls', () => {
       { cursor: 'old-cursor', expectedVersion: 'v1' },
       { cursor: null, expectedVersion: 'v2' },
     ]);
-    expect(urls.map((url) => url.loc)).toEqual(['https://synac.app/term/new']);
+    expect(records.map((record) => record.slug)).toEqual(['new']);
   });
 
   test('fails if the generation changes twice', async () => {
     await expect(
-      collectEntrySitemapUrls({
-        siteUrl: 'https://synac.app',
+      collectEntrySlugs({
         entryType: 'ACRONYM',
         fetchPage: async () => ({
           page: [],

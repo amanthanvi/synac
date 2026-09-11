@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const SESSION_COOKIE = 'synac_session';
-const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
+const CSP_REPORT_PATH = '/api/v1/csp-report';
 
 function generateNonce(): string {
   const bytes = new Uint8Array(16);
@@ -15,7 +14,11 @@ function generateNonce(): string {
 function buildContentSecurityPolicy(nonce: string): string {
   const isDev = process.env.NODE_ENV !== 'production';
 
-  const scriptSrc = ["'self'", `'nonce-${nonce}'`, ...(isDev ? ["'unsafe-eval'"] : [])].join(' ');
+  const scriptSrc = [
+    "'self'",
+    `'nonce-${nonce}'`,
+    ...(isDev ? ["'unsafe-eval'"] : []),
+  ].join(' ');
   const connectSrc = ["'self'", ...(isDev ? ['ws:', 'wss:'] : [])].join(' ');
 
   const directives = [
@@ -29,91 +32,55 @@ function buildContentSecurityPolicy(nonce: string): string {
     "frame-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
+    "form-action 'self'",
     "frame-ancestors 'none'",
     ...(isDev ? [] : ['upgrade-insecure-requests']),
+    'report-to csp-endpoint',
+    `report-uri ${CSP_REPORT_PATH}`,
   ];
 
   return directives.join('; ');
 }
 
-function setSecurityHeaders(request: NextRequest, response: NextResponse): NextResponse {
-  const shouldContinue = response.headers.get('x-synac-proxy-continue') !== 'false';
-  response.headers.delete('x-synac-proxy-continue');
-
+export default function proxy(request: NextRequest) {
   const existingRequestId = request.headers.get('x-request-id');
-  const requestId = existingRequestId?.trim() ? existingRequestId.trim() : crypto.randomUUID();
-
-  response.headers.set('x-request-id', requestId);
-
-  response.headers.set('x-content-type-options', 'nosniff');
-  response.headers.set('referrer-policy', 'strict-origin-when-cross-origin');
-  response.headers.set(
-    'permissions-policy',
-    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
-  );
-
-  response.headers.set('x-frame-options', 'DENY');
-
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set('strict-transport-security', 'max-age=15552000; includeSubDomains');
-  }
-
+  const requestId = existingRequestId?.trim()
+    ? existingRequestId.trim()
+    : crypto.randomUUID();
   const nonce = generateNonce();
   const csp = buildContentSecurityPolicy(nonce);
-
-  response.headers.set('X-Nonce', nonce);
-  response.headers.set('content-security-policy', csp);
-
-  if (!shouldContinue) return response;
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('X-Nonce', nonce);
   requestHeaders.set('content-security-policy', csp);
   requestHeaders.set('x-request-id', requestId);
 
-  const next = NextResponse.next({ request: { headers: requestHeaders } });
-  for (const [key, value] of response.headers) {
-    next.headers.set(key, value);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+
+  response.headers.set('x-request-id', requestId);
+  response.headers.set('x-content-type-options', 'nosniff');
+  response.headers.set('referrer-policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'permissions-policy',
+    'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
+  );
+  response.headers.set('x-frame-options', 'DENY');
+  // report-to is only honoured when the endpoint group is declared.
+  response.headers.set(
+    'reporting-endpoints',
+    `csp-endpoint="${CSP_REPORT_PATH}"`,
+  );
+  response.headers.set('X-Nonce', nonce);
+  response.headers.set('content-security-policy', csp);
+
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'strict-transport-security',
+      'max-age=15552000; includeSubDomains',
+    );
   }
-
-  for (const cookie of response.cookies.getAll()) {
-    next.cookies.set(cookie);
-  }
-
-  return next;
-}
-
-function shouldSetSessionCookie(request: NextRequest): boolean {
-  if (request.method !== 'GET') return false;
-
-  const pathname = request.nextUrl.pathname;
-  if (pathname === '/robots.txt') return false;
-  if (pathname.startsWith('/sitemap')) return false;
-  if (pathname.startsWith('/api')) return false;
-
-  return true;
-}
-
-function maybeSetSessionCookie(request: NextRequest, response: NextResponse): NextResponse {
-  const existing = request.cookies.get(SESSION_COOKIE)?.value;
-  if (existing || !shouldSetSessionCookie(request)) return response;
-
-  response.cookies.set({
-    name: SESSION_COOKIE,
-    value: crypto.randomUUID(),
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: SESSION_TTL_SECONDS,
-    path: '/',
-  });
 
   return response;
-}
-
-export default function proxy(request: NextRequest) {
-  const withCookies = maybeSetSessionCookie(request, NextResponse.next());
-  return setSecurityHeaders(request, withCookies);
 }
 
 export const config = {

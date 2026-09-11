@@ -1,22 +1,28 @@
-export type EntrySitemapType = 'TERM' | 'ACRONYM';
+type EntrySitemapType = 'TERM' | 'ACRONYM';
+
+export type EntrySlugRecord = { slug: string; updatedAt: number };
 
 export type EntrySitemapPage = {
-  page: Array<{ slug: string; updatedAt: number }>;
+  page: EntrySlugRecord[];
   isDone: boolean;
   continueCursor: string;
   contentVersion: string | null;
   generationChanged: boolean;
 };
 
-export async function collectEntrySitemapUrls(input: {
-  siteUrl: string;
+/**
+ * Walks every slug of one entry type. A content deploy swaps the whole
+ * generation mid-walk, so a changed generation restarts the walk once rather
+ * than emitting a list that mixes two versions of the corpus.
+ */
+export async function collectEntrySlugs(input: {
   entryType: EntrySitemapType;
   fetchPage: (args: {
     cursor: string | null;
     expectedVersion: string | null;
   }) => Promise<EntrySitemapPage>;
-}): Promise<Array<{ loc: string; lastmod: Date }>> {
-  const urls: Array<{ loc: string; lastmod: Date }> = [];
+}): Promise<EntrySlugRecord[]> {
+  const records: EntrySlugRecord[] = [];
   let cursor: string | null = null;
   let expectedVersion: string | null = null;
   let restarts = 0;
@@ -25,24 +31,18 @@ export async function collectEntrySitemapUrls(input: {
     if (page.generationChanged) {
       if (restarts >= 1) {
         throw new Error(
-          `content generation changed twice while building the ${input.entryType.toLowerCase()} sitemap`,
+          `content generation changed twice while listing ${input.entryType.toLowerCase()} slugs`,
         );
       }
       restarts += 1;
-      urls.length = 0;
+      records.length = 0;
       cursor = null;
       expectedVersion = page.contentVersion;
       continue;
     }
     expectedVersion = page.contentVersion;
-    const segment = input.entryType === 'TERM' ? 'term' : 'acronym';
-    for (const entry of page.page) {
-      urls.push({
-        loc: `${input.siteUrl}/${segment}/${entry.slug}`,
-        lastmod: new Date(entry.updatedAt),
-      });
-    }
-    if (page.isDone) return urls;
+    records.push(...page.page);
+    if (page.isDone) return records;
     cursor = page.continueCursor;
   }
 }

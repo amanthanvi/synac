@@ -12,12 +12,15 @@ export function EntryRow({
   href,
   title,
   entryType,
+  label,
   summary,
   meta,
 }: {
   href: string;
   title: string;
   entryType: 'TERM' | 'ACRONYM';
+  /** Sense-level rows name the meaning next to the headword; entry rows omit it. */
+  label?: ReactNode;
   summary?: ReactNode;
   meta?: ReactNode;
 }) {
@@ -28,6 +31,7 @@ export function EntryRow({
           {title}
         </Link>
         <TypeMarker type={entryType} />
+        {label ? <span className={styles.label}>{label}</span> : null}
         {meta ? <span className={styles.meta}>{meta}</span> : null}
       </div>
       {summary ? <p className={styles.summary}>{summary}</p> : null}

@@ -7,13 +7,20 @@ import styles from './TagDirectory.module.css';
 import tagStyles from '@/app/_styles/Tags.module.css';
 
 export type TagDirectoryItem = {
-  id: string;
   name: string;
   slug: string;
   description?: string | null;
   count: number;
-  countIsApproximate?: boolean;
+  editorialCount: number;
+  autoCount: number;
 };
+
+function countLabel(tag: TagDirectoryItem): string {
+  const total = `${tag.count.toLocaleString()} entries`;
+  if (tag.autoCount === 0) return total;
+  if (tag.editorialCount === 0) return `${total} · all auto`;
+  return `${total} · ${tag.autoCount.toLocaleString()} auto`;
+}
 
 export function TagDirectory({ tags }: { tags: TagDirectoryItem[] }) {
   const [value, setValue] = useState('');
@@ -22,7 +29,8 @@ export function TagDirectory({ tags }: { tags: TagDirectoryItem[] }) {
   const filtered = useMemo(() => {
     if (!trimmed) return tags;
     return tags.filter((tag) => {
-      const haystack = `${tag.name} ${tag.slug} ${tag.description ?? ''}`.toLowerCase();
+      const haystack =
+        `${tag.name} ${tag.slug} ${tag.description ?? ''}`.toLowerCase();
       return haystack.includes(trimmed);
     });
   }, [tags, trimmed]);
@@ -49,17 +57,24 @@ export function TagDirectory({ tags }: { tags: TagDirectoryItem[] }) {
       ) : (
         <ol className={tagStyles.list}>
           {filtered.map((tag) => (
-            <li key={tag.id} className={tagStyles.item}>
+            <li key={tag.slug} className={tagStyles.item}>
               <div className={tagStyles.itemTitleRow}>
-                <Link className={tagStyles.itemTitle} href={`/tags/${tag.slug}`}>
+                <Link
+                  className={tagStyles.itemTitle}
+                  href={`/tags/${tag.slug}`}
+                >
                   {tag.name}
                 </Link>
-                <span className={tagStyles.itemSlug}>
-                  {tag.count.toLocaleString()}
-                  {tag.countIsApproximate ? '+' : ''} entries
+                <span
+                  className={tagStyles.itemSlug}
+                  title={`${tag.editorialCount.toLocaleString()} assigned by an editor, ${tag.autoCount.toLocaleString()} by the tagging model`}
+                >
+                  {countLabel(tag)}
                 </span>
               </div>
-              {tag.description ? <p className={tagStyles.itemDesc}>{tag.description}</p> : null}
+              {tag.description ? (
+                <p className={tagStyles.itemDesc}>{tag.description}</p>
+              ) : null}
             </li>
           ))}
         </ol>

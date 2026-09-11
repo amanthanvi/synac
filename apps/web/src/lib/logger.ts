@@ -18,7 +18,12 @@ function shouldRedactKey(key: string): boolean {
 function sanitize(value: unknown, depth = 0): unknown {
   if (depth > 6) return '[Truncated]';
   if (!value) return value;
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  )
+    return value;
   if (value instanceof Date) return value.toISOString();
   if (Array.isArray(value)) return value.map((v) => sanitize(v, depth + 1));
   if (typeof value === 'object') {
@@ -31,7 +36,11 @@ function sanitize(value: unknown, depth = 0): unknown {
   return String(value);
 }
 
-function write(level: LogLevel, message: string, fields?: Record<string, unknown>): void {
+function write(
+  level: LogLevel,
+  message: string,
+  fields?: Record<string, unknown>,
+): void {
   const entry = {
     level,
     time: new Date().toISOString(),
@@ -46,9 +55,12 @@ function write(level: LogLevel, message: string, fields?: Record<string, unknown
 }
 
 export const logger = {
-  debug: (message: string, fields?: Record<string, unknown>) => write('debug', message, fields),
-  info: (message: string, fields?: Record<string, unknown>) => write('info', message, fields),
-  warn: (message: string, fields?: Record<string, unknown>) => write('warn', message, fields),
-  error: (message: string, fields?: Record<string, unknown>) => write('error', message, fields),
+  debug: (message: string, fields?: Record<string, unknown>) =>
+    write('debug', message, fields),
+  info: (message: string, fields?: Record<string, unknown>) =>
+    write('info', message, fields),
+  warn: (message: string, fields?: Record<string, unknown>) =>
+    write('warn', message, fields),
+  error: (message: string, fields?: Record<string, unknown>) =>
+    write('error', message, fields),
 };
-

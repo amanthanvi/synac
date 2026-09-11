@@ -13,8 +13,16 @@ export default defineConfig({
   },
   test: {
     env: {
-      NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+      NEXT_PUBLIC_SITE_URL:
+        process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
     },
+    setupFiles: ['./src/test.setup.ts'],
     fileParallelism: false,
+    coverage: {
+      provider: 'v8',
+      include: ['src/lib/**'],
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+    },
   },
 });

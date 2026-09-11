@@ -18,7 +18,13 @@ export function renderHeadline(headline: string): ReactNode {
       continue;
     }
 
-    pieces.push(highlight ? <mark key={key++}>{token}</mark> : <span key={key++}>{token}</span>);
+    pieces.push(
+      highlight ? (
+        <mark key={key++}>{token}</mark>
+      ) : (
+        <span key={key++}>{token}</span>
+      ),
+    );
   }
 
   return <>{pieces}</>;

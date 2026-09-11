@@ -2,7 +2,7 @@
 .letters {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: var(--space-1);
   padding: var(--space-2) 0;
 }
 
@@ -32,126 +32,6 @@
   background: var(--bg-2);
   color: var(--fg);
   font-weight: var(--weight-semibold);
-}
-
-/* Legacy list/card classes — still consumed by admin and Phase-5 pages. */
-.list {
-  list-style: none;
-  display: grid;
-  gap: var(--space-2);
-  padding: 0;
-  margin: 0;
-}
-
-.item {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--bg-1);
-  padding: var(--space-4);
-  display: grid;
-  gap: var(--space-2);
-  transition: border-color var(--dur-hover) var(--ease);
-}
-
-.item:hover {
-  border-color: var(--border-hover);
-}
-
-.itemTitleRow {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  justify-content: space-between;
-}
-
-.itemTitleLeft {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.itemTitle {
-  font-size: var(--text-body);
-  font-weight: var(--weight-medium);
-  letter-spacing: var(--tracking-tight);
-  line-height: 1.3;
-  color: var(--fg);
-  text-decoration: none;
-}
-
-a.itemTitle:hover {
-  color: var(--accent);
-}
-
-.itemSlug {
-  font-size: var(--text-sm);
-  color: var(--fg-subtle);
-}
-
-.itemSummary {
-  margin: 0;
-  color: var(--fg-muted);
-  line-height: 1.55;
-  font-size: var(--text-ui);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.itemTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-2);
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  color: var(--fg-muted);
-  font-size: var(--text-sm);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-color: var(--border-strong);
-  transition: color var(--dur-hover) var(--ease);
-}
-
-.tag:hover {
-  color: var(--fg);
-}
-
-.typeBadge {
-  display: inline-flex;
-  align-items: center;
-  font-size: var(--text-xs);
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.02em;
-  color: var(--fg-subtle);
-  text-transform: lowercase;
-  user-select: none;
-}
-
-.typeBadgeTerm {
-  color: var(--fg-subtle);
-}
-
-.typeBadgeAcronym {
-  color: var(--fg-subtle);
-}
-
-.metaStrong {
-  color: var(--fg);
-}
-
-.metaMuted {
-  color: var(--fg-muted);
-}
-
-.metaSep {
-  padding: 0 var(--space-1);
-  opacity: 0.55;
 }
 
 .empty {

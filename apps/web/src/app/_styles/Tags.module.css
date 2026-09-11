@@ -29,6 +29,7 @@
   font-weight: var(--weight-medium);
   letter-spacing: var(--tracking-tight);
   color: var(--fg);
+  overflow-wrap: anywhere;
   transition: color var(--dur-hover) var(--ease);
 }
 
@@ -37,7 +38,9 @@
 }
 
 .itemSlug {
+  flex: none;
   font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
   color: var(--fg-subtle);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -46,6 +49,7 @@
 .itemDesc {
   margin: 0;
   max-width: var(--measure);
+  overflow-wrap: anywhere;
   color: var(--fg-muted);
   line-height: 1.55;
   font-size: var(--text-ui);
@@ -67,6 +71,8 @@
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: var(--border-strong);
+  /* Inline padding only: lifts the pointer target to 24px without moving text. */
+  padding-block: var(--space-1);
 }
 
 .empty a:hover {

@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 
+import { getSiteUrl } from '@/lib/sitemap';
 import { PageShell } from '@/components/PageShell';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
@@ -23,17 +24,32 @@ const themeInitScript = `(() => {
   }
 })();`;
 
+const description =
+  'A public, internet-facing cybersecurity glossary with strong provenance and attribution.';
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: 'SynAc',
     template: '%s · SynAc',
   },
-  description:
-    'A public, internet-facing cybersecurity glossary with strong provenance and attribution.',
+  description,
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',
+  },
+  /* Images come from the opengraph-image / twitter-image file conventions. */
+  openGraph: {
+    type: 'website',
+    siteName: 'SynAc',
+    locale: 'en_US',
+    title: 'SynAc',
+    description,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'SynAc',
+    description,
   },
 };
 
