@@ -48,9 +48,11 @@ jobs:
         run: |
           CONVEX_AGENT_MODE=anonymous npx convex dev > convex-dev.log 2>&1 &
           echo $! > convex-dev.pid
-          for i in $(seq 1 90); do
-            if curl -fsS http://127.0.0.1:3210/version > /dev/null 2>&1; then
-              echo "Convex backend is up."
+          # The backend answers /version before the first function push has
+          # committed; wait for the push so later mutations do not race it.
+          for i in $(seq 1 120); do
+            if grep -q "Convex functions ready" convex-dev.log; then
+              echo "Convex backend is up and functions are deployed."
               exit 0
             fi
             sleep 2
@@ -60,7 +62,14 @@ jobs:
           exit 1
 
       - name: Configure the service key
-        run: npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev
+        run: |
+          for i in 1 2 3 4 5; do
+            if npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev; then
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
 
       - name: Sync content into the local backend
         run: pnpm --filter @synac/content-tools sync
