@@ -2,7 +2,13 @@ import { convexTest } from 'convex-test';
 import { describe, expect, test } from 'vitest';
 import { api } from '../../convex/_generated/api';
 import schema from '../../convex/schema';
-import { makeEntryRow, modules, seedDataset, stageDataset } from './helpers';
+import {
+  makeEntryRow,
+  makeSenseRow,
+  modules,
+  seedDataset,
+  stageDataset,
+} from './helpers';
 
 async function seeded() {
   const t = convexTest(schema, modules);
@@ -74,12 +80,19 @@ describe('publicEntries', () => {
       key: 'TERM:back-door',
       title: 'Back Door',
       aliases: ['trapdoor'],
-      tags: [{ slug: 'malware', name: 'Malware' }],
+      tags: [{ slug: 'malware', name: 'Malware', assignedBy: 'EDITORIAL' }],
     });
     expect(page?.entry.senses).toHaveLength(1);
+    expect(page?.entry.senses[0]).toMatchObject({
+      labelFallback: 'RFC 4949',
+      disambiguationNote: null,
+    });
+    expect(page?.entry.senses[0].attestations).toEqual([]);
     expect(page?.entry.senses[0].citations[0]).toMatchObject({
       sourceSlug: 'rfc4949',
       attributionText: 'RFC 4949, IETF',
+      contentMode: 'QUOTED',
+      documentSha256: 'a'.repeat(64),
     });
     expect(page?.relationships).toEqual([
       {
@@ -148,12 +161,15 @@ describe('publicBrowse', () => {
 describe('search', () => {
   test('ranks exact title matches first and filters by type', async () => {
     const t = await seeded();
-    const results = await t.query(api.search.search, {
+    const page = await t.query(api.search.search, {
       query: 'back door',
       page: 1,
       pageSize: 20,
     });
-    expect(results[0]).toMatchObject({ key: 'TERM:back-door', bucket: 1 });
+    expect(page.results[0]).toMatchObject({ key: 'TERM:back-door' });
+    expect(page).toMatchObject({ total: 1, hasMore: false });
+    expect(page.results[0]).not.toHaveProperty('bucket');
+    expect(page.results[0]).not.toHaveProperty('score');
 
     const acronymOnly = await t.query(api.search.search, {
       query: 'ids',
@@ -161,14 +177,89 @@ describe('search', () => {
       page: 1,
       pageSize: 20,
     });
-    expect(acronymOnly[0]).toMatchObject({
+    expect(acronymOnly.results[0]).toMatchObject({
       key: 'ACRONYM:ids',
+      senseCount: 1,
       senseSummary: 'Intrusion Detection System',
     });
 
     expect(
       await t.query(api.search.search, { query: 'the', page: 1, pageSize: 20 }),
-    ).toEqual([]);
+    ).toEqual({ results: [], total: 0, hasMore: false });
+  });
+
+  test('matches expansions and aliases, and keeps snippets free of titles', async () => {
+    const t = await seeded();
+    const byExpansion = await t.query(api.search.search, {
+      query: 'intrusion detection',
+      page: 1,
+      pageSize: 20,
+    });
+    expect(byExpansion.results.map((result) => result.key)).toContain(
+      'ACRONYM:ids',
+    );
+
+    const byAlias = await t.query(api.search.search, {
+      query: 'trapdoor',
+      page: 1,
+      pageSize: 20,
+    });
+    expect(byAlias.results[0]?.key).toBe('TERM:back-door');
+    expect(byAlias.results[0]?.snippet).toBe('A hidden access mechanism.');
+  });
+
+  test('consults the full-text index for two-character queries', async () => {
+    const t = await seeded();
+    const page = await t.query(api.search.search, {
+      query: 'monitors',
+      page: 1,
+      pageSize: 20,
+    });
+    expect(page.results.map((result) => result.key)).toEqual(['ACRONYM:ids']);
+    expect(page.results[0]?.snippet).toBe('Intrusion detection system.');
+  });
+
+  test('gathers tag-filtered candidates through the tag index', async () => {
+    const t = await seeded();
+    const tagged = await t.query(api.search.search, {
+      query: 'hidden',
+      tagSlug: 'malware',
+      page: 1,
+      pageSize: 20,
+    });
+    expect(tagged.results.map((result) => result.key)).toEqual([
+      'TERM:back-door',
+    ]);
+    expect(
+      await t.query(api.search.search, {
+        query: 'hidden',
+        tagSlug: 'nonexistent',
+        page: 1,
+        pageSize: 20,
+      }),
+    ).toEqual({ results: [], total: 0, hasMore: false });
+  });
+
+  test('senses search returns anchors, sources, and highlighted snippets', async () => {
+    const t = await seeded();
+    const page = await t.query(api.search.senses, {
+      query: 'bypasses',
+      page: 1,
+      pageSize: 20,
+    });
+    expect(page.total).toBe(1);
+    expect(page.results[0]).toEqual({
+      entryType: 'TERM',
+      slug: 'back-door',
+      title: 'Back Door',
+      senseKey: 'rfc4949:back-door',
+      anchor: 'sense-rfc4949-back-door',
+      label: null,
+      expandedForm: null,
+      labelFallback: 'RFC 4949',
+      sourceNames: ['RFC 4949'],
+      snippet: 'A hidden mechanism that <<bypasses>> authentication.',
+    });
   });
 });
 
@@ -177,7 +268,14 @@ describe('tags and sources', () => {
     const t = await seeded();
     const directory = await t.query(api.tags.directory, {});
     expect(directory).toEqual([
-      { slug: 'malware', name: 'Malware', description: null, entryCount: 1 },
+      {
+        slug: 'malware',
+        name: 'Malware',
+        description: null,
+        entryCount: 1,
+        editorialCount: 1,
+        autoCount: 0,
+      },
     ]);
 
     const tagEntries = await t.query(api.tags.entriesForTag, {
@@ -202,7 +300,12 @@ describe('tags and sources', () => {
     });
 
     const source = await t.query(api.sources.bySlug, { slug: 'rfc4949' });
-    expect(source).toMatchObject({ slug: 'rfc4949', citedEntryCount: 2 });
+    expect(source).toMatchObject({
+      slug: 'rfc4949',
+      citedEntryCount: 2,
+      contentMode: 'QUOTED',
+      publicStatement: null,
+    });
 
     const cited = await t.query(api.sources.citedEntries, {
       sourceSlug: ' RFC4949 ',
@@ -225,17 +328,16 @@ describe('tags and sources', () => {
         normalizedTitle: `tagged ${index}`,
         updatedAt: Date.parse('2026-07-02T00:00:00Z') + index,
         searchDocument: `tagged ${index}`,
+        snippetText: `Tagged definition ${index}.`,
         senses: [
-          {
+          makeSenseRow({
             key: `test:tagged-${index}`,
-            order: 0,
+            normalizedLabel: `tagged ${index}`,
             definitionMd: `Tagged definition ${index}.`,
             definitionText: `Tagged definition ${index}.`,
-            isEditorial: false,
-            isPreferred: true,
-            examples: [],
+            attestations: [],
             citations: [],
-          },
+          }),
         ],
       }),
     );
@@ -317,30 +419,25 @@ describe('tags and sources', () => {
   });
 });
 
-describe('views', () => {
-  test('trackView requires the service key and dedupes within the window', async () => {
+describe('rateLimit', () => {
+  // Spending a token needs the rate limiter component, which convex-test does
+  // not mount; both guards reject before the handler reaches it.
+  test('rejects a wrong service key and an unhashed bucket key', async () => {
     process.env.SYNAC_CONVEX_SERVICE_KEY = 'test-service-key';
     const t = await seeded();
     const args = {
       serviceKey: 'test-service-key',
-      entryKey: 'TERM:back-door',
-      sessionHash: 'a'.repeat(32),
+      scope: 'api_v1_search' as const,
+      key: `ip:${'a'.repeat(64)}`,
     };
     await expect(
-      t.mutation(api.views.trackView, { ...args, serviceKey: 'wrong' }),
+      t.mutation(api.rateLimit.consume, { ...args, serviceKey: 'wrong' }),
     ).rejects.toThrow(/Unauthorized/);
-
-    expect(await t.mutation(api.views.trackView, args)).toEqual({
-      counted: true,
-    });
-    expect(await t.mutation(api.views.trackView, args)).toEqual({
-      counted: false,
-    });
-    expect(
-      await t.mutation(api.views.trackView, {
-        ...args,
-        entryKey: 'TERM:unknown',
-      }),
-    ).toEqual({ counted: false });
+    await expect(
+      t.mutation(api.rateLimit.consume, { ...args, key: 'session:anything' }),
+    ).rejects.toThrow(/Invalid rate limit key/);
+    await expect(
+      t.mutation(api.rateLimit.consume, { ...args, key: 'ip:not-a-digest' }),
+    ).rejects.toThrow(/Invalid rate limit key/);
   });
 });

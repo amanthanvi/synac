@@ -3,6 +3,7 @@ import { describe, expect, test } from 'vitest';
 import type { CompiledDataset } from './model.js';
 import {
   ENTRY_SYNC_CHUNK,
+  ENTRY_SYNC_MAX_BYTES,
   MAX_SYNC_BATCHES,
   REDIRECT_SYNC_CHUNK,
   RELATIONSHIP_SYNC_CHUNK,
@@ -27,6 +28,8 @@ function dataset(): CompiledDataset {
         licenseType: 'OTHER',
         licenseUrl: undefined,
         licenseNotes: undefined,
+        publicStatement: undefined,
+        contentMode: 'QUOTED',
         allowedUse: 'Attribution',
         attributionRequirements: 'Example',
         trustTier: 'TIER1',
@@ -41,6 +44,8 @@ function dataset(): CompiledDataset {
         name: 'Malware',
         description: undefined,
         entryCount: 1,
+        editorialCount: 1,
+        autoCount: 0,
       },
     ],
     entries: [
@@ -53,11 +58,20 @@ function dataset(): CompiledDataset {
         aliases: [],
         summaryMd: undefined,
         summaryText: undefined,
+        snippetText: 'Definition.',
+        matchTerms: [],
         editorialNotes: undefined,
         updatedAt: 1,
         senseCount: 1,
         senseSummary: undefined,
         searchDocument: 'test',
+        tags: [
+          {
+            slug: 'malware',
+            assignedBy: 'EDITORIAL' as const,
+            score: undefined,
+          },
+        ],
         tagSlugs: ['malware'],
         citedSourceSlugs: ['source'],
       },
@@ -68,6 +82,10 @@ function dataset(): CompiledDataset {
         key: 'source:test',
         order: 0,
         label: undefined,
+        labelFallback: 'Source',
+        disambiguationNote: undefined,
+        needsLabel: false,
+        normalizedLabel: 'test',
         definitionMd: 'Definition.',
         definitionText: 'Definition.',
         expandedForm: undefined,
@@ -75,6 +93,7 @@ function dataset(): CompiledDataset {
         editorialRationale: undefined,
         isPreferred: true,
         examples: [],
+        attestations: [],
         citations: [],
       },
     ],
@@ -190,6 +209,29 @@ describe('createSyncPlan', () => {
     for (const kind of Object.keys(limits)) {
       expect(plan.batches.filter((batch) => batch.kind === kind)).toHaveLength(
         2,
+      );
+    }
+  });
+
+  test('splits entry batches that would exceed the exec argument budget', () => {
+    const value = dataset();
+    const [entry] = value.entries;
+    if (!entry) throw new Error('fixture rows missing');
+    // Three entries whose serialized size only lets two share a batch.
+    const filler = 'x'.repeat(Math.floor(ENTRY_SYNC_MAX_BYTES / 2.5));
+    value.entries = Array.from({ length: 3 }, (_unused, index) => ({
+      ...entry,
+      key: `TERM:test-${index}`,
+      searchDocument: filler,
+    }));
+    value.senses = [];
+    const entryBatches = createSyncPlan(value).batches.filter(
+      (batch) => batch.kind === 'entries',
+    );
+    expect(entryBatches).toHaveLength(2);
+    for (const batch of entryBatches) {
+      expect(JSON.stringify(batch.rows).length).toBeLessThanOrEqual(
+        ENTRY_SYNC_MAX_BYTES,
       );
     }
   });

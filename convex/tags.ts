@@ -23,6 +23,8 @@ export const directory = query({
       name: tag.name,
       description: tag.description ?? null,
       entryCount: tag.entryCount,
+      editorialCount: tag.editorialCount,
+      autoCount: tag.autoCount,
     }));
   },
 });
@@ -119,7 +121,7 @@ export const entriesForTag = query({
         summaryText: entry.summaryText ?? null,
         senseSummary: entry.senseSummary ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tags),
       });
     }
     return { entries, hasMore: links.length > page * pageSize };

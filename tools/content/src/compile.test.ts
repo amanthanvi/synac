@@ -17,6 +17,16 @@ import {
   tagTaxonomyHash,
 } from './tagging.js';
 
+// Fixtures in this file always produce the element each assertion indexes, so a
+// missing one means the fixture broke rather than a real runtime possibility.
+function at<T>(items: readonly T[], index: number): T {
+  const item = items[index];
+  if (item === undefined) {
+    throw new Error(`expected an element at index ${index}`);
+  }
+  return item;
+}
+
 function makeSource(overrides: Partial<SourceFile> = {}): SourceFile {
   return {
     slug: 'rfc4949',
@@ -26,6 +36,8 @@ function makeSource(overrides: Partial<SourceFile> = {}): SourceFile {
       type: 'OTHER',
       allowedUse: 'Reproduction with attribution',
       attributionRequirements: 'RFC 4949, IETF',
+      contentMode: 'QUOTED',
+      publicStatement: undefined,
       notes: undefined,
       url: undefined,
     },
@@ -109,6 +121,10 @@ const emptyOverride: OverrideFile = {
   addRelationships: [],
   suppressSenses: [],
   preferredSense: undefined,
+  labelSenses: {},
+  disambiguationNotes: {},
+  groupSenses: [],
+  splitSenses: [],
   editorialSenses: [],
 };
 
@@ -117,7 +133,7 @@ describe('compileContent', () => {
     const result = compileContent(makeInput());
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    const [entry] = result.dataset.entries;
+    const entry = at(result.dataset.entries, 0);
     expect(entry).toMatchObject({
       key: 'TERM:back-door',
       title: 'Back Door',
@@ -127,12 +143,12 @@ describe('compileContent', () => {
       citedSourceSlugs: ['rfc4949'],
     });
     expect(entry.searchDocument).toContain('hidden mechanism');
-    const [sense] = result.dataset.senses;
+    const sense = at(result.dataset.senses, 0);
     expect(sense.definitionText).toBe(
       'A hidden mechanism that bypasses normal authentication.',
     );
     expect(sense.isPreferred).toBe(true);
-    expect(sense.citations[0]).toMatchObject({
+    expect(at(sense.citations, 0)).toMatchObject({
       sourceSlug: 'rfc4949',
       url: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
       attributionText: 'RFC 4949, IETF',
@@ -161,7 +177,7 @@ describe('compileContent', () => {
   it('suppresses entries via override and drops relationships pointing at them', () => {
     const bundle = makeBundle();
     bundle.entries.push({
-      ...bundle.entries[0],
+      ...at(bundle.entries, 0),
       slug: 'related-term',
       title: 'Related Term',
       aliases: [],
@@ -195,7 +211,7 @@ describe('compileContent', () => {
       source: 'niccs-glossary',
       entries: [
         {
-          ...makeBundle().entries[0],
+          ...at(makeBundle().entries, 0),
           senses: [
             {
               key: 'n1',
@@ -239,7 +255,7 @@ describe('compileContent', () => {
       'niccs-glossary:n1',
       'rfc4949:s1',
     ]);
-    expect(result.dataset.senses[0].isPreferred).toBe(true);
+    expect(at(result.dataset.senses, 0).isPreferred).toBe(true);
   });
 
   it('creates editorial-only entries and rejects orphan overrides', () => {
@@ -292,8 +308,8 @@ describe('compileContent', () => {
 
   it('fails on referential errors: unknown tags, unknown relationship targets, bad redirects', () => {
     const bundle = makeBundle();
-    bundle.entries[0].tags = ['not-a-tag'];
-    bundle.entries[0].relationships = [
+    at(bundle.entries, 0).tags = ['not-a-tag'];
+    at(bundle.entries, 0).relationships = [
       { toType: 'TERM', toSlug: 'missing', type: 'RELATED' },
     ];
     const result = compileContent(
@@ -428,7 +444,7 @@ describe('compileContent', () => {
     );
 
     const bundle = makeBundle();
-    bundle.entries[0].tags = [];
+    at(bundle.entries, 0).tags = [];
     const before = compileContent(makeInput({ tags, bundles: [bundle] }), {
       allowUnreleasedTagging: true,
     });
@@ -448,8 +464,8 @@ describe('compileContent', () => {
     expect(before.ok).toBe(true);
     expect(after.ok).toBe(true);
     if (before.ok && after.ok) {
-      expect(after.dataset.entries[0].tagSlugs).toEqual(
-        before.dataset.entries[0].tagSlugs,
+      expect(at(after.dataset.entries, 0).tagSlugs).toEqual(
+        at(before.dataset.entries, 0).tagSlugs,
       );
       expect(after.dataset.contentVersion).not.toBe(
         before.dataset.contentVersion,
@@ -459,7 +475,7 @@ describe('compileContent', () => {
 
   it('merges accepted assignments before authoritative manual add/remove overrides', () => {
     const bundle = makeBundle();
-    bundle.entries[0].tags = [];
+    at(bundle.entries, 0).tags = [];
     const tags: TagsFile = {
       taxonomyVersion: '2',
       tags: [
@@ -477,7 +493,7 @@ describe('compileContent', () => {
     });
     expect(baseline.ok).toBe(true);
     if (!baseline.ok) return;
-    const entry = baseline.dataset.entries[0];
+    const entry = at(baseline.dataset.entries, 0);
     const entryHash = classificationEntryHash(
       entry,
       baseline.dataset.senses.filter((sense) => sense.entryKey === entry.key),
@@ -539,7 +555,9 @@ describe('compileContent', () => {
     );
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.dataset.entries[0].tagSlugs).toEqual(['incident-response']);
+    expect(at(result.dataset.entries, 0).tagSlugs).toEqual([
+      'incident-response',
+    ]);
     expect(result.dataset.contentVersion).not.toBe(
       baseline.dataset.contentVersion,
     );
@@ -582,8 +600,8 @@ describe('compileContent', () => {
     );
     expect(provenanceOnly.ok).toBe(true);
     if (provenanceOnly.ok) {
-      expect(provenanceOnly.dataset.entries[0].tagSlugs).toEqual(
-        result.dataset.entries[0].tagSlugs,
+      expect(at(provenanceOnly.dataset.entries, 0).tagSlugs).toEqual(
+        at(result.dataset.entries, 0).tagSlugs,
       );
       expect(provenanceOnly.dataset.contentVersion).not.toBe(
         result.dataset.contentVersion,
@@ -593,7 +611,7 @@ describe('compileContent', () => {
 
   it('rejects raw bundle tags under taxonomy v2', () => {
     const bundle = makeBundle();
-    bundle.entries[0].tags = ['malware'];
+    at(bundle.entries, 0).tags = ['malware'];
     const tags: TagsFile = {
       taxonomyVersion: '2',
       tags: [{ slug: 'malware', name: 'Malware', lifecycle: 'PUBLISHED' }],
@@ -611,7 +629,7 @@ describe('compileContent', () => {
 
   it('rejects stale manual removal slugs under taxonomy v2', () => {
     const bundle = makeBundle();
-    bundle.entries[0].tags = [];
+    at(bundle.entries, 0).tags = [];
     const tags: TagsFile = {
       taxonomyVersion: '2',
       tags: [{ slug: 'malware', name: 'Malware', lifecycle: 'PUBLISHED' }],
@@ -723,7 +741,7 @@ describe('compileContent', () => {
 
   it('hard-fails stale, duplicate, foreign-run, unknown-entry, and non-published assignments', () => {
     const bundle = makeBundle();
-    bundle.entries[0].tags = [];
+    at(bundle.entries, 0).tags = [];
     const tags: TagsFile = {
       taxonomyVersion: '2',
       tags: [
@@ -805,10 +823,10 @@ describe('compileContent', () => {
 
   it('enforces release coverage and per-published-tag population floors', () => {
     const bundle = makeBundle();
-    bundle.entries[0].tags = [];
+    at(bundle.entries, 0).tags = [];
     for (const suffix of ['two', 'three', 'four']) {
       bundle.entries.push({
-        ...bundle.entries[0],
+        ...at(bundle.entries, 0),
         slug: `back-door-${suffix}`,
         title: `Back Door ${suffix}`,
       });
@@ -823,7 +841,7 @@ describe('compileContent', () => {
     });
     expect(baseline.ok).toBe(true);
     if (!baseline.ok) return;
-    const entry = baseline.dataset.entries[0];
+    const entry = at(baseline.dataset.entries, 0);
     const entryHash = classificationEntryHash(
       entry,
       baseline.dataset.senses.filter((sense) => sense.entryKey === entry.key),
@@ -879,5 +897,259 @@ describe('compileContent', () => {
         error.includes('malware has 1 entries; at least 25 required'),
       ),
     ).toBe(true);
+  });
+});
+
+const BASE_DEFINITION =
+  'A **hidden** mechanism that bypasses normal authentication.';
+const NEAR_DUPLICATE =
+  'A hidden mechanism that bypasses normal authentication controls.';
+const RELATED_DEFINITION = 'A hidden mechanism that skips login checks.';
+
+/** The same entry contributed by a TIER1 and a TIER2 source. */
+function twoSourceInput(
+  secondDefinition: string,
+  override?: Partial<OverrideFile>,
+): ContentInput {
+  const second = makeBundle({
+    source: 'niccs-glossary',
+    documents: [
+      {
+        key: 'doc-2',
+        url: 'https://niccs.cisa.gov/vocabulary',
+        title: 'NICCS Vocabulary',
+        contentType: 'text/html',
+        contentSha256: 'b'.repeat(64),
+        fetchedAt: '2026-07-02T00:00:00Z',
+      },
+    ],
+    entries: [
+      {
+        entryType: 'TERM',
+        slug: 'back-door',
+        title: 'Back Door',
+        aliases: [],
+        tags: [],
+        summaryMd: undefined,
+        updatedAt: '2026-06-02',
+        senses: [
+          {
+            key: 's1',
+            label: undefined,
+            definitionMd: secondDefinition,
+            expandedForm: undefined,
+            examples: [],
+            citation: {
+              documentKey: 'doc-2',
+              citationText: undefined,
+              locator: undefined,
+            },
+          },
+        ],
+        relationships: [],
+      },
+    ],
+  });
+  return makeInput({
+    sources: [
+      makeSource(),
+      makeSource({
+        slug: 'niccs-glossary',
+        name: 'NICCS Vocabulary',
+        trustTier: 'TIER2',
+        license: {
+          type: 'US_GOV_PD',
+          url: 'https://www.dhs.gov/website-policies',
+          notes: 'U.S. Government work.',
+          publicStatement: 'Public domain (U.S. Government work).',
+          contentMode: 'SUMMARIZED',
+          allowedUse: 'Reproduce with attribution',
+          attributionRequirements: 'NICCS, CISA',
+        },
+      }),
+    ],
+    bundles: [makeBundle(), second],
+    overrides: override
+      ? new Map([['TERM:back-door', { ...emptyOverride, ...override }]])
+      : new Map(),
+  });
+}
+
+describe('sense attestations', () => {
+  it('merges near-duplicate definitions into one sense with both citations', () => {
+    const result = compileContent(twoSourceInput(NEAR_DUPLICATE));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.dataset.senses).toHaveLength(1);
+    const sense = at(result.dataset.senses, 0);
+    expect(sense.key).toBe('rfc4949:s1');
+    // The sense itself carries the primary source's wording, so only the
+    // further sources appear as attestations.
+    expect(sense.attestations.map((a) => a.key)).toEqual(['niccs-glossary:s1']);
+    expect(at(sense.attestations, 0).definitionText).toBe(
+      'A hidden mechanism that bypasses normal authentication controls.',
+    );
+    expect(sense.citations.map((c) => c.sourceSlug)).toEqual([
+      'rfc4949',
+      'niccs-glossary',
+    ]);
+    expect(sense.labelFallback).toBe('RFC 4949');
+    expect(sense.needsLabel).toBe(false);
+  });
+
+  it('keeps merely similar definitions apart and asks for labels', () => {
+    const result = compileContent(twoSourceInput(RELATED_DEFINITION));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.dataset.senses).toHaveLength(2);
+    expect(result.dataset.senses.every((sense) => sense.needsLabel)).toBe(true);
+    expect(
+      result.warnings.some((warning) =>
+        warning.startsWith(
+          'entry TERM:back-door: senses rfc4949:s1, niccs-glossary:s1 need labels (similarity 0.57); ' +
+            'add labelSenses in content/overrides/term/back-door.json',
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it('honours groupSenses, splitSenses, labelSenses, and disambiguationNotes', () => {
+    const merged = compileContent(
+      twoSourceInput(RELATED_DEFINITION, {
+        groupSenses: [['niccs-glossary:s1', 'rfc4949:s1']],
+      }),
+    );
+    expect(merged.ok).toBe(true);
+    if (!merged.ok) return;
+    expect(merged.dataset.senses).toHaveLength(1);
+    expect(at(merged.dataset.senses, 0).key).toBe('niccs-glossary:s1');
+
+    const split = compileContent(
+      twoSourceInput(NEAR_DUPLICATE, { splitSenses: ['niccs-glossary:s1'] }),
+    );
+    expect(split.ok).toBe(true);
+    if (!split.ok) return;
+    expect(split.dataset.senses).toHaveLength(2);
+
+    const labelled = compileContent(
+      twoSourceInput(RELATED_DEFINITION, {
+        labelSenses: {
+          'rfc4949:s1': 'Authentication bypass',
+          'niccs-glossary:s1': 'Login bypass',
+        },
+        disambiguationNotes: { 'rfc4949:s1': 'Protocol wording.' },
+      }),
+    );
+    expect(labelled.ok).toBe(true);
+    if (!labelled.ok) return;
+    expect(labelled.dataset.senses.map((sense) => sense.label)).toEqual([
+      'Authentication bypass',
+      'Login bypass',
+    ]);
+    expect(labelled.dataset.senses.every((sense) => sense.needsLabel)).toBe(
+      false,
+    );
+    expect(at(labelled.dataset.senses, 0).disambiguationNote).toBe(
+      'Protocol wording.',
+    );
+    expect(at(labelled.dataset.senses, 0).normalizedLabel).toBe(
+      'authentication bypass',
+    );
+    expect(at(labelled.dataset.entries, 0).senseSummary).toBe(
+      'Authentication bypass · Login bypass',
+    );
+  });
+
+  it('rejects override sense keys that match nothing', () => {
+    const result = compileContent(
+      twoSourceInput(RELATED_DEFINITION, {
+        labelSenses: { 'rfc4949:missing': 'Nope' },
+        splitSenses: ['rfc4949:s1'],
+        groupSenses: [['rfc4949:s1', 'niccs-glossary:s1']],
+      }),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors).toContain(
+      'override TERM:back-door: labelSenses key rfc4949:missing matches no sense',
+    );
+    expect(result.errors).toContain(
+      'override TERM:back-door: sense rfc4949:s1 is in both groupSenses and splitSenses',
+    );
+  });
+});
+
+describe('entry presentation fields', () => {
+  it('drops a derived summary that repeats the first sense and keeps an override summary', () => {
+    const bundle = makeBundle();
+    at(bundle.entries, 0).summaryMd = BASE_DEFINITION;
+    const derived = compileContent(makeInput({ bundles: [bundle] }));
+    expect(derived.ok).toBe(true);
+    if (!derived.ok) return;
+    expect(at(derived.dataset.entries, 0).summaryMd).toBeUndefined();
+    expect(at(derived.dataset.entries, 0).summaryText).toBeUndefined();
+    expect(at(derived.dataset.entries, 0).snippetText).toBe(
+      'A hidden mechanism that bypasses normal authentication.',
+    );
+
+    const overridden = compileContent(
+      makeInput({
+        bundles: [bundle],
+        overrides: new Map([
+          ['TERM:back-door', { ...emptyOverride, summaryMd: BASE_DEFINITION }],
+        ]),
+      }),
+    );
+    expect(overridden.ok).toBe(true);
+    if (!overridden.ok) return;
+    expect(at(overridden.dataset.entries, 0).summaryMd).toBe(BASE_DEFINITION);
+  });
+
+  it('carries license provenance and the document digest on every citation', () => {
+    const result = compileContent(makeInput());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(at(at(result.dataset.senses, 0).citations, 0)).toMatchObject({
+      contentMode: 'QUOTED',
+      documentSha256: 'a'.repeat(64),
+      licenseUrl: undefined,
+      publicStatement: undefined,
+    });
+    expect(result.dataset.sources[0]).toMatchObject({
+      contentMode: 'QUOTED',
+      publicStatement: undefined,
+    });
+  });
+
+  it('records tag provenance and counts each lane', () => {
+    const result = compileContent(
+      makeInput({
+        overrides: new Map([
+          ['TERM:back-door', { ...emptyOverride, addTags: ['malware'] }],
+        ]),
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(at(result.dataset.entries, 0).tags).toEqual([
+      { slug: 'malware', assignedBy: 'EDITORIAL', score: undefined },
+    ]);
+    expect(result.dataset.tags[0]).toMatchObject({
+      entryCount: 1,
+      editorialCount: 1,
+      autoCount: 0,
+    });
+  });
+
+  it('collects aliases and expansions into matchTerms', () => {
+    const bundle = makeBundle();
+    at(at(bundle.entries, 0).senses, 0).expandedForm = 'Maintenance Hook';
+    const result = compileContent(makeInput({ bundles: [bundle] }));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(at(result.dataset.entries, 0).matchTerms).toEqual([
+      'trapdoor',
+      'maintenance hook',
+    ]);
   });
 });

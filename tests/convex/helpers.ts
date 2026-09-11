@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test';
+import type { FunctionArgs } from 'convex/server';
 import { internal } from '../../convex/_generated/api';
 import type { CompiledDataset } from '../../tools/content/src/model';
 import {
@@ -9,7 +10,12 @@ import {
 
 export const modules = import.meta.glob('../../convex/**/*.ts');
 
-export function makeEntryRow(overrides: Record<string, unknown> = {}) {
+type EntryRow = FunctionArgs<
+  typeof internal.sync.upsertEntries
+>['rows'][number];
+type SenseRow = EntryRow['senses'][number];
+
+export function makeEntryRow(overrides: Partial<EntryRow> = {}): EntryRow {
   return {
     key: 'TERM:back-door',
     entryType: 'TERM' as const,
@@ -18,38 +24,58 @@ export function makeEntryRow(overrides: Record<string, unknown> = {}) {
     normalizedTitle: 'back door',
     aliases: ['trapdoor'],
     summaryText: 'A hidden access mechanism.',
+    snippetText: 'A hidden access mechanism.',
+    matchTerms: ['trapdoor'],
     updatedAt: Date.parse('2026-07-01T00:00:00Z'),
     senseCount: 1,
     searchDocument:
       'Back Door back door back-door trapdoor a hidden mechanism that bypasses authentication',
+    tags: [{ slug: 'malware', assignedBy: 'EDITORIAL' as const }],
     tagSlugs: ['malware'],
     citedSourceSlugs: ['rfc4949'],
-    senses: [
-      {
-        key: 'rfc4949:back-door',
-        order: 0,
-        definitionMd: 'A **hidden** mechanism that bypasses authentication.',
-        definitionText: 'A hidden mechanism that bypasses authentication.',
-        isEditorial: false,
-        isPreferred: true,
-        examples: [],
-        citations: [
-          {
-            sourceSlug: 'rfc4949',
-            sourceName: 'RFC 4949',
-            url: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
-            attributionText: 'RFC 4949, IETF',
-            accessedAt: Date.parse('2026-07-01T00:00:00Z'),
-          },
-        ],
-      },
-    ],
+    senses: [makeSenseRow()],
     ...overrides,
   };
 }
 
+export function makeSenseRow(overrides: Partial<SenseRow> = {}): SenseRow {
+  return {
+    key: 'rfc4949:back-door',
+    order: 0,
+    labelFallback: 'RFC 4949',
+    needsLabel: false,
+    normalizedLabel: 'back door',
+    definitionMd: 'A **hidden** mechanism that bypasses authentication.',
+    definitionText: 'A hidden mechanism that bypasses authentication.',
+    isEditorial: false,
+    isPreferred: true,
+    examples: [],
+    attestations: [],
+    citations: [makeCitation()],
+    ...overrides,
+  };
+}
+
+function makeCitation(): SenseRow['citations'][number] {
+  return {
+    sourceSlug: 'rfc4949',
+    sourceName: 'RFC 4949',
+    url: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+    contentMode: 'QUOTED' as const,
+    documentSha256: 'a'.repeat(64),
+    attributionText: 'RFC 4949, IETF',
+    accessedAt: Date.parse('2026-07-01T00:00:00Z'),
+  };
+}
+
 export type SeedDatasetOptions = {
-  tags?: Array<{ slug: string; name: string; entryCount: number }>;
+  tags?: Array<{
+    slug: string;
+    name: string;
+    entryCount: number;
+    editorialCount?: number;
+    autoCount?: number;
+  }>;
   sources?: Array<{
     slug: string;
     name: string;
@@ -83,23 +109,29 @@ export async function stageDataset(
   syncVersion = 'v1',
   options: SeedDatasetOptions = {},
 ) {
-  const tags = options.tags ?? [
-    { slug: 'malware', name: 'Malware', entryCount: 1 },
-  ];
-  const sources = options.sources ?? [
-    {
-      slug: 'rfc4949',
-      name: 'RFC 4949',
-      baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
-      licenseType: 'OTHER',
-      allowedUse: 'Reproduce with attribution',
-      attributionRequirements: 'RFC 4949, IETF',
-      trustTier: 'TIER1',
-      enabled: true,
-      lastVerifiedAt: Date.parse('2026-01-15T00:00:00Z'),
-      citedEntryCount: 2,
-    },
-  ];
+  const tags = (
+    options.tags ?? [{ slug: 'malware', name: 'Malware', entryCount: 1 }]
+  ).map((tag) => ({
+    editorialCount: tag.entryCount,
+    autoCount: 0,
+    ...tag,
+  }));
+  const sources = (
+    options.sources ?? [
+      {
+        slug: 'rfc4949',
+        name: 'RFC 4949',
+        baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+        licenseType: 'OTHER',
+        allowedUse: 'Reproduce with attribution',
+        attributionRequirements: 'RFC 4949, IETF',
+        trustTier: 'TIER1',
+        enabled: true,
+        lastVerifiedAt: Date.parse('2026-01-15T00:00:00Z'),
+        citedEntryCount: 2,
+      },
+    ]
+  ).map((source) => ({ contentMode: 'QUOTED' as const, ...source }));
   const entries = options.entries ?? [
     makeEntryRow(),
     makeEntryRow({
@@ -110,23 +142,25 @@ export async function stageDataset(
       normalizedTitle: 'ids',
       aliases: [],
       summaryText: 'Intrusion detection system.',
+      snippetText: 'Intrusion detection system.',
+      matchTerms: ['intrusion detection system'],
       senseSummary: 'Intrusion Detection System',
       searchDocument:
         'IDS ids intrusion detection system monitors network traffic',
+      tags: [],
       tagSlugs: [],
       citedSourceSlugs: ['rfc4949'],
       senses: [
-        {
+        makeSenseRow({
           key: 'rfc4949:ids',
-          order: 0,
+          labelFallback: 'RFC 4949',
+          normalizedLabel: 'intrusion detection system',
           definitionMd: 'A system that monitors for intrusions.',
           definitionText: 'A system that monitors for intrusions.',
           expandedForm: 'Intrusion Detection System',
-          isEditorial: false,
-          isPreferred: true,
-          examples: [],
+          attestations: [],
           citations: [],
-        },
+        }),
       ],
     }),
   ];
@@ -221,6 +255,7 @@ export async function stageDataset(
       ...source,
       licenseUrl: undefined,
       licenseNotes: undefined,
+      publicStatement: undefined,
     })),
     tags: tags.map((tag) => ({ ...tag, description: undefined })),
     entries: entries.map(({ senses: _senses, ...entry }) => entry),

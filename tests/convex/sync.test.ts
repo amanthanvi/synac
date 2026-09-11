@@ -19,7 +19,7 @@ async function runScheduled(t: ReturnType<typeof convexTest>) {
 const emptyGeneration = {
   tags: [{ slug: 'malware', name: 'Malware', entryCount: 0 }],
   sources: [],
-  entries: [makeEntryRow({ tagSlugs: [], citedSourceSlugs: [] })],
+  entries: [makeEntryRow({ tags: [], tagSlugs: [], citedSourceSlugs: [] })],
   relationships: [],
   redirects: [],
   tagRedirects: [],
@@ -83,13 +83,22 @@ describe('atomic content sync', () => {
 
   test('binds staged tag and source rows to manifest keys and counts', async () => {
     const t = convexTest(schema, modules);
-    const tagRows = [{ slug: 'malware', name: 'Malware', entryCount: 1 }];
+    const tagRows = [
+      {
+        slug: 'malware',
+        name: 'Malware',
+        entryCount: 1,
+        editorialCount: 1,
+        autoCount: 0,
+      },
+    ];
     const sourceRows = [
       {
         slug: 'rfc4949',
         name: 'RFC 4949',
         baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
         licenseType: 'OTHER',
+        contentMode: 'QUOTED' as const,
         allowedUse: 'Reproduce with attribution',
         attributionRequirements: 'RFC 4949, IETF',
         trustTier: 'TIER1',
@@ -176,6 +185,71 @@ describe('atomic content sync', () => {
     ).rejects.toThrow(/not in the manifest/);
   });
 
+  test('carries tag provenance into entryTags and binds the tag lane split', async () => {
+    const t = convexTest(schema, modules);
+    await seedDataset(t, 'v1', {
+      tags: [
+        {
+          slug: 'malware',
+          name: 'Malware',
+          entryCount: 1,
+          editorialCount: 0,
+          autoCount: 1,
+        },
+      ],
+      sources: [
+        {
+          slug: 'rfc4949',
+          name: 'RFC 4949',
+          baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+          licenseType: 'OTHER',
+          allowedUse: 'Reproduce with attribution',
+          attributionRequirements: 'RFC 4949, IETF',
+          trustTier: 'TIER1',
+          enabled: true,
+          lastVerifiedAt: Date.parse('2026-01-15T00:00:00Z'),
+          citedEntryCount: 1,
+        },
+      ],
+      entries: [
+        makeEntryRow({
+          tags: [{ slug: 'malware', assignedBy: 'AUTO' as const, score: 0.99 }],
+        }),
+      ],
+      relationships: [],
+    });
+    const links = await t.run(
+      async (ctx) => await ctx.db.query('entryTags').collect(),
+    );
+    expect(links).toMatchObject([{ assignedBy: 'AUTO', score: 0.99 }]);
+
+    const second = convexTest(schema, modules);
+    await expect(
+      seedDataset(second, 'v2', {
+        tags: [
+          {
+            slug: 'malware',
+            name: 'Malware',
+            entryCount: 1,
+            editorialCount: 1,
+            autoCount: 1,
+          },
+        ],
+        relationships: [],
+      }),
+    ).rejects.toThrow(/splits 1 editorial \+ 1 auto; expected 1/);
+  });
+
+  test('rejects an entry whose tags and tagSlugs disagree', async () => {
+    const t = convexTest(schema, modules);
+    await expect(
+      seedDataset(t, 'v1', {
+        entries: [makeEntryRow({ tagSlugs: ['other'] })],
+        relationships: [],
+      }),
+    ).rejects.toThrow(/tags do not match tagSlugs/);
+  });
+
   test('re-running the active manifest is idempotent', async () => {
     const t = convexTest(schema, modules);
     await seedDataset(t, 'v1');
@@ -256,7 +330,14 @@ describe('atomic content sync', () => {
     });
     expect(page?.entry.title).toBe('Back Door');
     expect(await t.query(api.tags.directory, {})).toEqual([
-      { slug: 'malware', name: 'Malware', description: null, entryCount: 1 },
+      {
+        slug: 'malware',
+        name: 'Malware',
+        description: null,
+        entryCount: 1,
+        editorialCount: 1,
+        autoCount: 0,
+      },
     ]);
     expect(
       (await t.query(api.sources.list, {})).map((source) => source.slug),
@@ -267,7 +348,7 @@ describe('atomic content sync', () => {
         page: 1,
         pageSize: 20,
       }),
-    ).toEqual([]);
+    ).toEqual({ results: [], total: 0, hasMore: false });
     expect(
       await t.query(api.sitemap.entrySlugsPage, {
         entryType: 'TERM',

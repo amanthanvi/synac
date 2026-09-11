@@ -5,6 +5,12 @@ import type { CompiledDataset, CompiledSense } from './model.js';
 export const SOURCE_SYNC_CHUNK = 100;
 export const TAG_SYNC_CHUNK = 100;
 export const ENTRY_SYNC_CHUNK = 25;
+/**
+ * Entry batches are bounded by serialized size as well as row count: the sync
+ * tool hands each batch to `npx convex run` as a single exec argument, and
+ * Linux caps one argument at 128 KiB. Anything above that fails with E2BIG.
+ */
+export const ENTRY_SYNC_MAX_BYTES = 96_000;
 export const RELATIONSHIP_SYNC_CHUNK = 200;
 export const REDIRECT_SYNC_CHUNK = 200;
 export const TAG_REDIRECT_SYNC_CHUNK = 200;
@@ -99,6 +105,28 @@ function makeBatch(kind: SyncBatchKind, rows: unknown[]): SyncBatch {
   };
 }
 
+function makeEntryBatches<Row>(rows: readonly Row[]): SyncBatch[] {
+  const batches: SyncBatch[] = [];
+  let current: Row[] = [];
+  let bytes = 0;
+  for (const row of rows) {
+    const rowBytes = JSON.stringify(row).length + 1;
+    if (
+      current.length > 0 &&
+      (current.length >= ENTRY_SYNC_CHUNK ||
+        bytes + rowBytes > ENTRY_SYNC_MAX_BYTES)
+    ) {
+      batches.push(makeBatch('entries', current));
+      current = [];
+      bytes = 0;
+    }
+    current.push(row);
+    bytes += rowBytes;
+  }
+  if (current.length > 0) batches.push(makeBatch('entries', current));
+  return batches;
+}
+
 function makeBatches(
   kind: SyncBatchKind,
   rows: unknown[],
@@ -135,7 +163,7 @@ export function createSyncPlan(dataset: CompiledDataset): SyncPlan {
   const batches: SyncBatch[] = [
     ...makeBatches('sources', dataset.sources, SOURCE_SYNC_CHUNK, true),
     ...makeBatches('tags', dataset.tags, TAG_SYNC_CHUNK, true),
-    ...makeBatches('entries', entryRows, ENTRY_SYNC_CHUNK, false),
+    ...makeEntryBatches(entryRows),
     ...makeBatches(
       'relationships',
       dataset.relationships,

@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as crons from "../crons.js";
 import type * as lib_contentGeneration from "../lib/contentGeneration.js";
 import type * as lib_serviceKey from "../lib/serviceKey.js";
 import type * as publicBrowse from "../publicBrowse.js";
@@ -19,7 +18,6 @@ import type * as sitemap from "../sitemap.js";
 import type * as sources from "../sources.js";
 import type * as sync from "../sync.js";
 import type * as tags from "../tags.js";
-import type * as views from "../views.js";
 
 import type {
   ApiFromModules,
@@ -28,7 +26,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  crons: typeof crons;
   "lib/contentGeneration": typeof lib_contentGeneration;
   "lib/serviceKey": typeof lib_serviceKey;
   publicBrowse: typeof publicBrowse;
@@ -39,7 +36,6 @@ declare const fullApi: ApiFromModules<{
   sources: typeof sources;
   sync: typeof sync;
   tags: typeof tags;
-  views: typeof views;
 }>;
 
 /**

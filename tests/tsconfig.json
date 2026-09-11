@@ -1,0 +1,18 @@
+{
+  /* Typechecks the convex-test suite. `convex/tsconfig.json` does not include
+   * this directory, so without this project neither `tsc` nor the ESLint
+   * project service can see these files. */
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["./**/*.ts"]
+}

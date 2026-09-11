@@ -15,13 +15,28 @@ import {
   type OverrideFile,
 } from './model.js';
 
-async function writeSnapshot(tables: Record<string, object[]>): Promise<string> {
+async function writeSnapshot(
+  tables: Record<string, object[]>,
+): Promise<string> {
   const dir = await mkdtemp(path.join(tmpdir(), 'synac-snapshot-'));
   for (const [table, rows] of Object.entries(tables)) {
     await mkdir(path.join(dir, table), { recursive: true });
-    await writeFile(path.join(dir, table, 'documents.jsonl'), rows.map((row) => JSON.stringify(row)).join('\n'));
+    await writeFile(
+      path.join(dir, table, 'documents.jsonl'),
+      rows.map((row) => JSON.stringify(row)).join('\n'),
+    );
   }
   return dir;
+}
+
+// Fixtures and regex groups below are built by this test, so a missing element
+// means the fixture broke rather than a real runtime possibility.
+function at<T>(items: readonly T[], index: number): T {
+  const item = items[index];
+  if (item === undefined) {
+    throw new Error(`expected an element at index ${index}`);
+  }
+  return item;
 }
 
 const JULY = Date.parse('2026-07-01T00:00:00Z');
@@ -55,29 +70,121 @@ describe('bootstrapFromExport', () => {
         },
       ],
       citations: [
-        { id: 'cit-1', sourceId: 'src-1', sourceDocumentId: 'doc-1', url: 'https://www.rfc-editor.org/rfc/rfc4949.txt', citationText: 'RFC 4949 §attack' },
+        {
+          id: 'cit-1',
+          sourceId: 'src-1',
+          sourceDocumentId: 'doc-1',
+          url: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+          citationText: 'RFC 4949 §attack',
+        },
       ],
       fieldProvenance: [
-        { id: 'prov-1', entityType: 'SENSE', entityId: 'sense-1', fieldName: 'definitionMd', citationId: 'cit-1', contentMode: 'VERBATIM', extractionMethod: 'parse', extractorVersion: '1' },
+        {
+          id: 'prov-1',
+          entityType: 'SENSE',
+          entityId: 'sense-1',
+          fieldName: 'definitionMd',
+          citationId: 'cit-1',
+          contentMode: 'VERBATIM',
+          extractionMethod: 'parse',
+          extractorVersion: '1',
+        },
       ],
       entries: [
-        { id: 'entry-1', entryType: 'TERM', primarySlug: 'attack', displayTitle: 'Attack', normalizedTitle: 'attack', status: 'PUBLISHED', updatedAt: JULY },
-        { id: 'entry-2', entryType: 'TERM', primarySlug: 'draft-entry', displayTitle: 'Draft', normalizedTitle: 'draft', status: 'DRAFT', updatedAt: JULY },
-        { id: 'entry-3', entryType: 'TERM', primarySlug: 'house-rules', displayTitle: 'House Rules', normalizedTitle: 'house rules', status: 'PUBLISHED', updatedAt: JULY },
+        {
+          id: 'entry-1',
+          entryType: 'TERM',
+          primarySlug: 'attack',
+          displayTitle: 'Attack',
+          normalizedTitle: 'attack',
+          status: 'PUBLISHED',
+          updatedAt: JULY,
+        },
+        {
+          id: 'entry-2',
+          entryType: 'TERM',
+          primarySlug: 'draft-entry',
+          displayTitle: 'Draft',
+          normalizedTitle: 'draft',
+          status: 'DRAFT',
+          updatedAt: JULY,
+        },
+        {
+          id: 'entry-3',
+          entryType: 'TERM',
+          primarySlug: 'house-rules',
+          displayTitle: 'House Rules',
+          normalizedTitle: 'house rules',
+          status: 'PUBLISHED',
+          updatedAt: JULY,
+        },
       ],
       senses: [
-        { id: 'sense-1', entryId: 'entry-1', senseOrder: 0, definitionMd: 'An intentional act that attempts to violate the security policy of a system.', status: 'PUBLISHED' },
-        { id: 'sense-2', entryId: 'entry-3', senseOrder: 0, definitionMd: 'An editorial definition with no source.', status: 'PUBLISHED', isEditorial: true, editorialRationale: 'House terminology.' },
+        {
+          id: 'sense-1',
+          entryId: 'entry-1',
+          senseOrder: 0,
+          definitionMd:
+            'An intentional act that attempts to violate the security policy of a system.',
+          status: 'PUBLISHED',
+        },
+        {
+          id: 'sense-2',
+          entryId: 'entry-3',
+          senseOrder: 0,
+          definitionMd: 'An editorial definition with no source.',
+          status: 'PUBLISHED',
+          isEditorial: true,
+          editorialRationale: 'House terminology.',
+        },
       ],
       senseExamples: [
-        { id: 'ex-1', senseId: 'sense-1', exampleMd: 'A brute-force attack against a password.', exampleOrder: 0 },
-        { id: 'ex-2', senseId: 'sense-2', exampleText: 'An internal house-rules example.', exampleOrder: 0 },
+        {
+          id: 'ex-1',
+          senseId: 'sense-1',
+          exampleMd: 'A brute-force attack against a password.',
+          exampleOrder: 0,
+        },
+        {
+          id: 'ex-2',
+          senseId: 'sense-2',
+          exampleText: 'An internal house-rules example.',
+          exampleOrder: 0,
+        },
       ],
-      entryVariants: [{ id: 'var-1', entryId: 'entry-1', variantText: 'assault', normalizedVariant: 'assault', variantType: 'SYNONYM' }],
-      tags: [{ id: 'tag-1', slug: 'threat-intelligence', name: 'Threat intelligence' }],
+      entryVariants: [
+        {
+          id: 'var-1',
+          entryId: 'entry-1',
+          variantText: 'assault',
+          normalizedVariant: 'assault',
+          variantType: 'SYNONYM',
+        },
+      ],
+      tags: [
+        {
+          id: 'tag-1',
+          slug: 'threat-intelligence',
+          name: 'Threat intelligence',
+        },
+      ],
       entryTags: [{ id: 'et-1', entryId: 'entry-1', tagId: 'tag-1' }],
-      entryRelationships: [{ id: 'rel-1', fromEntryId: 'entry-1', toEntryId: 'entry-3', relationshipType: 'SEE_ALSO' }],
-      entrySlugHistory: [{ id: 'hist-1', entryId: 'entry-1', entryType: 'TERM', slug: 'attack-old' }],
+      entryRelationships: [
+        {
+          id: 'rel-1',
+          fromEntryId: 'entry-1',
+          toEntryId: 'entry-3',
+          relationshipType: 'SEE_ALSO',
+        },
+      ],
+      entrySlugHistory: [
+        {
+          id: 'hist-1',
+          entryId: 'entry-1',
+          entryType: 'TERM',
+          slug: 'attack-old',
+        },
+      ],
     });
 
     const { files, report } = await bootstrapFromExport(snapshotDir);
@@ -87,23 +194,43 @@ describe('bootstrapFromExport', () => {
 
     const bundle = bundleFileSchema.parse(files.get('generated/rfc4949.json'));
     expect(bundle.entries).toHaveLength(1);
-    expect(bundle.entries[0]).toMatchObject({ slug: 'attack', aliases: ['assault'], tags: ['threat-intelligence'] });
-    expect(bundle.entries[0].senses[0].examples).toEqual(['A brute-force attack against a password.']);
-    expect(bundle.entries[0].relationships).toEqual([{ toType: 'TERM', toSlug: 'house-rules', type: 'SEE_ALSO' }]);
+    expect(at(bundle.entries, 0)).toMatchObject({
+      slug: 'attack',
+      aliases: ['assault'],
+      tags: ['threat-intelligence'],
+    });
+    expect(at(at(bundle.entries, 0).senses, 0).examples).toEqual([
+      'A brute-force attack against a password.',
+    ]);
+    expect(at(bundle.entries, 0).relationships).toEqual([
+      { toType: 'TERM', toSlug: 'house-rules', type: 'SEE_ALSO' },
+    ]);
 
-    const override = overrideFileSchema.parse(files.get('overrides/term/house-rules.json'));
+    const override = overrideFileSchema.parse(
+      files.get('overrides/term/house-rules.json'),
+    );
     expect(override.title).toBe('House Rules');
-    expect(override.editorialSenses[0].rationale).toBe('House terminology.');
-    expect(override.editorialSenses[0].examples).toEqual(['An internal house-rules example.']);
+    expect(at(override.editorialSenses, 0).rationale).toBe(
+      'House terminology.',
+    );
+    expect(at(override.editorialSenses, 0).examples).toEqual([
+      'An internal house-rules example.',
+    ]);
 
     const redirects = redirectsFileSchema.parse(files.get('redirects.json'));
-    expect(redirects.redirects).toEqual([{ entryType: 'TERM', fromSlug: 'attack-old', toSlug: 'attack' }]);
+    expect(redirects.redirects).toEqual([
+      { entryType: 'TERM', fromSlug: 'attack-old', toSlug: 'attack' },
+    ]);
 
     // The full bootstrapped output must compile cleanly.
     const overrides = new Map<string, OverrideFile>();
     for (const [filePath, value] of files) {
       const match = filePath.match(/^overrides\/(term|acronym)\/(.+)\.json$/);
-      if (match) overrides.set(entryKey(match[1] === 'term' ? 'TERM' : 'ACRONYM', match[2]), overrideFileSchema.parse(value));
+      if (match)
+        overrides.set(
+          entryKey(at(match, 1) === 'term' ? 'TERM' : 'ACRONYM', at(match, 2)),
+          overrideFileSchema.parse(value),
+        );
     }
     const compiled = compileContent({
       sources: [source],
@@ -114,7 +241,10 @@ describe('bootstrapFromExport', () => {
     });
     expect(compiled.ok).toBe(true);
     if (compiled.ok) {
-      expect(compiled.dataset.entries.map((entry) => entry.key)).toEqual(['TERM:attack', 'TERM:house-rules']);
+      expect(compiled.dataset.entries.map((entry) => entry.key)).toEqual([
+        'TERM:attack',
+        'TERM:house-rules',
+      ]);
     }
 
     expect(report.some((line) => line.startsWith('bootstrapped:'))).toBe(true);

@@ -10,6 +10,8 @@ function publicSource(source: {
   licenseType: string;
   licenseUrl?: string;
   licenseNotes?: string;
+  publicStatement?: string;
+  contentMode: 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
   allowedUse: string;
   attributionRequirements: string;
   trustTier: string;
@@ -24,6 +26,8 @@ function publicSource(source: {
     licenseType: source.licenseType,
     licenseUrl: source.licenseUrl ?? null,
     licenseNotes: source.licenseNotes ?? null,
+    publicStatement: source.publicStatement ?? null,
+    contentMode: source.contentMode,
     allowedUse: source.allowedUse,
     attributionRequirements: source.attributionRequirements,
     trustTier: source.trustTier,
@@ -91,7 +95,7 @@ export const citedEntries = query({
         title: entry.title,
         summaryText: entry.summaryText ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tags),
       });
     }
     return { entries, hasMore: links.length > page * pageSize };

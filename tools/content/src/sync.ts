@@ -43,7 +43,12 @@ function runConvex(
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     if (result.status === 0) return result.stdout?.toString().trim() ?? '';
-    lastError = result.stderr?.toString() ?? '';
+    // A spawn failure (rather than a non-zero exit) leaves stderr empty, so
+    // fall back to stdout and the spawn error itself.
+    lastError =
+      result.stderr?.toString() ||
+      result.stdout?.toString() ||
+      String(result.error ?? 'no output');
     if (options.reconcile) {
       try {
         if (options.reconcile()) return '';

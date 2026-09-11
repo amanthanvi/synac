@@ -26,6 +26,7 @@ function nistSource(maxItems: number) {
     baseUrl: 'https://csrc.nist.gov/glossary',
     license: {
       type: 'US_GOV_PD',
+      contentMode: 'QUOTED',
       allowedUse: 'Reproduce definitions with citation.',
       attributionRequirements: 'NIST CSRC Glossary',
     },
