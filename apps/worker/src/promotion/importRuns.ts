@@ -1,40 +1,47 @@
 import type { Prisma, PrismaClient } from '@synac/db';
 
-import type { ProposedChange } from './types.js';
+/**
+ * Prisma hands back `Json` columns as `Prisma.JsonValue`. Narrowing to an
+ * object happens here once per read so the promotion logic below works with
+ * keyed values rather than repeating `typeof` checks.
+ */
+function asJsonObject(
+  value: Prisma.JsonValue | undefined,
+): Prisma.JsonObject | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return value;
+}
 
-export function extractNormalizedProposedChange(item: {
-  proposedChange: unknown;
-  stageOutputs: unknown;
-}): ProposedChange | null {
-  const stageOutputs = item.stageOutputs;
-  if (stageOutputs && typeof stageOutputs === 'object') {
-    const normalized = (stageOutputs as Record<string, unknown>).normalized;
-    if (normalized && typeof normalized === 'object') {
-      const proposed = (normalized as Record<string, unknown>).proposedChange;
-      if (proposed && typeof proposed === 'object') {
-        const kind = (proposed as Record<string, unknown>).kind;
-        if (kind === 'CREATE_ENTRY' || kind === 'ADD_SENSES') {
-          return proposed as ProposedChange;
-        }
-      }
-    }
-  }
+function isSupportedProposedChange(
+  value: Prisma.JsonObject | null,
+): value is Prisma.JsonObject {
+  return value?.kind === 'CREATE_ENTRY' || value?.kind === 'ADD_SENSES';
+}
 
-  if (item.proposedChange && typeof item.proposedChange === 'object') {
-    const kind = (item.proposedChange as Record<string, unknown>).kind;
-    if (kind === 'CREATE_ENTRY' || kind === 'ADD_SENSES') {
-      return item.proposedChange as ProposedChange;
-    }
-  }
+/**
+ * Staging records the normalized proposal under `stageOutputs.normalized`; the
+ * item's own `proposedChange` column is the fallback for rows written before
+ * that stage existed.
+ */
+function extractNormalizedProposedChange(item: {
+  proposedChange: Prisma.JsonValue;
+  stageOutputs: Prisma.JsonValue;
+}): Prisma.JsonObject | null {
+  const normalized = asJsonObject(asJsonObject(item.stageOutputs)?.normalized);
+  const fromStageOutputs = asJsonObject(normalized?.proposedChange);
+  if (isSupportedProposedChange(fromStageOutputs)) return fromStageOutputs;
+
+  const fromColumn = asJsonObject(item.proposedChange);
+  if (isSupportedProposedChange(fromColumn)) return fromColumn;
 
   return null;
 }
 
-function withoutDeduped(stageOutputs: unknown): Prisma.InputJsonValue | undefined {
-  if (!stageOutputs || typeof stageOutputs !== 'object' || Array.isArray(stageOutputs)) return undefined;
-  const rest = { ...(stageOutputs as Record<string, unknown>) };
+/** `deduped` is staging bookkeeping and carries no meaning in prod. */
+function withoutDeduped(stageOutputs: Prisma.JsonValue): Prisma.JsonObject {
+  const rest = { ...asJsonObject(stageOutputs) };
   delete rest.deduped;
-  return rest as Prisma.InputJsonValue;
+  return rest;
 }
 
 async function getOrCreateSourceDocument(
@@ -54,7 +61,11 @@ async function getOrCreateSourceDocument(
   },
 ): Promise<string> {
   const existing = await prod.sourceDocument.findFirst({
-    where: { sourceId: input.prodSourceId, url: input.url, contentSha256: input.contentSha256 },
+    where: {
+      sourceId: input.prodSourceId,
+      url: input.url,
+      contentSha256: input.contentSha256,
+    },
     select: { id: true },
   });
   if (existing) return existing.id;
@@ -110,17 +121,27 @@ export async function importEligibleStagingRuns(
     });
     if (!prodSource) continue;
 
+    // Prisma types a Json write as `InputJsonValue`, which excludes `null`, yet the
+    // runtime accepts a plain `null` and writes SQL NULL. `Prisma.DbNull` is not
+    // reachable here because `@synac/db` re-exports `Prisma` as a type only, so the
+    // snapshot is passed through unchanged rather than being rewritten to `{}`.
+    const configSnapshot = run.configSnapshot as Prisma.InputJsonValue;
+    const promotedStats: Prisma.JsonObject = {
+      ...asJsonObject(run.stats),
+      promotedFrom: {
+        environment: 'staging',
+        promotedAt: new Date().toISOString(),
+      },
+    };
+
     await prod.ingestRun.upsert({
       where: { id: run.id },
       update: {
         sourceId: prodSource.id,
         finishedAt: run.finishedAt,
         status: 'SUCCESS',
-        configSnapshot: run.configSnapshot as Prisma.InputJsonValue,
-        stats: {
-          ...(run.stats && typeof run.stats === 'object' ? (run.stats as Record<string, unknown>) : {}),
-          promotedFrom: { environment: 'staging', promotedAt: new Date().toISOString() },
-        } satisfies Prisma.InputJsonValue,
+        configSnapshot,
+        stats: promotedStats,
       },
       create: {
         id: run.id,
@@ -130,11 +151,8 @@ export async function importEligibleStagingRuns(
         status: 'SUCCESS',
         triggeredBy: run.triggeredBy,
         triggeredByUserId: null,
-        configSnapshot: run.configSnapshot as Prisma.InputJsonValue,
-        stats: {
-          ...(run.stats && typeof run.stats === 'object' ? (run.stats as Record<string, unknown>) : {}),
-          promotedFrom: { environment: 'staging', promotedAt: new Date().toISOString() },
-        } satisfies Prisma.InputJsonValue,
+        configSnapshot,
+        stats: promotedStats,
       },
       select: { id: true },
     });
@@ -176,20 +194,17 @@ export async function importEligibleStagingRuns(
     });
 
     for (const item of items) {
-      const existingItem = await prod.ingestItem.findFirst({ where: { id: item.id }, select: { id: true } });
-      const normalizedProposedChange = extractNormalizedProposedChange(item);
-      if (
-        !shouldImportStagingIngestItem({
-          item: {
-            error: item.error,
-            sourceDocument: { doNotUse: item.sourceDocument.doNotUse },
-          },
-          normalizedProposedChange,
-          alreadyExistsInProd: Boolean(existingItem),
-        })
-      ) {
-        continue;
-      }
+      if (item.sourceDocument.doNotUse) continue;
+      if (item.error?.trim()) continue;
+
+      const proposedChange = extractNormalizedProposedChange(item);
+      if (!proposedChange) continue;
+
+      const existingItem = await prod.ingestItem.findFirst({
+        where: { id: item.id },
+        select: { id: true },
+      });
+      if (existingItem) continue;
 
       const prodSourceDocumentId = await getOrCreateSourceDocument(prod, {
         prodSourceId: prodSource.id,
@@ -205,12 +220,6 @@ export async function importEligibleStagingRuns(
         snapshotStorageUri: item.sourceDocument.snapshotStorageUri,
       });
 
-      const stageOutputs = withoutDeduped(item.stageOutputs);
-      const promotedStageOutputs = {
-        ...(stageOutputs && typeof stageOutputs === 'object' ? (stageOutputs as Record<string, unknown>) : {}),
-        promotedFrom: { environment: 'staging', stagingIngestItemId: item.id },
-      } satisfies Prisma.InputJsonValue;
-
       await prod.ingestItem.create({
         data: {
           id: item.id,
@@ -218,8 +227,14 @@ export async function importEligibleStagingRuns(
           sourceDocumentId: prodSourceDocumentId,
           itemKey: item.itemKey,
           stage: 'VALIDATED',
-          proposedChange: normalizedProposedChange as Prisma.InputJsonValue,
-          stageOutputs: promotedStageOutputs,
+          proposedChange,
+          stageOutputs: {
+            ...withoutDeduped(item.stageOutputs),
+            promotedFrom: {
+              environment: 'staging',
+              stagingIngestItemId: item.id,
+            },
+          },
           confidenceScore: item.confidenceScore,
           licenseGate: item.licenseGate,
           licenseGateReason: item.licenseGateReason,
@@ -235,19 +250,4 @@ export async function importEligibleStagingRuns(
   }
 
   return { runsImported, itemsImported };
-}
-
-export function shouldImportStagingIngestItem(input: {
-  item: {
-    error: string | null;
-    sourceDocument: { doNotUse: boolean };
-  };
-  normalizedProposedChange: ProposedChange | null;
-  alreadyExistsInProd: boolean;
-}): boolean {
-  if (input.alreadyExistsInProd) return false;
-  if (input.item.sourceDocument.doNotUse) return false;
-  if (input.item.error?.trim()) return false;
-  if (!input.normalizedProposedChange) return false;
-  return true;
 }

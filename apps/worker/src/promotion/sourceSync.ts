@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import type { PrismaClient } from '@synac/db';
 
 export async function syncSourcesToStaging(
   prod: PrismaClient,
@@ -33,53 +33,38 @@ export async function syncSourcesToStaging(
   let disabledByAllowlist = 0;
 
   for (const src of sources) {
-    const allowlisted = !hasAllowlist || input.enabledAllowlistSlugs.has(src.sourceSlug.toLowerCase());
+    const allowlisted =
+      !hasAllowlist ||
+      input.enabledAllowlistSlugs.has(src.sourceSlug.toLowerCase());
     const enabled = Boolean(src.enabled && allowlisted);
-    const cronSchedule = enabled ? src.cronSchedule : null;
 
     if (src.enabled && !allowlisted) disabledByAllowlist += 1;
 
+    const fields = {
+      name: src.name,
+      baseUrl: src.baseUrl,
+      // A source that staging must not run has no schedule to run on.
+      cronSchedule: enabled ? src.cronSchedule : null,
+      licenseType: src.licenseType,
+      licenseNotes: src.licenseNotes,
+      allowedUse: src.allowedUse,
+      attributionRequirements: src.attributionRequirements,
+      accessMethod: src.accessMethod,
+      robotsPolicy: src.robotsPolicy,
+      // `undefined` leaves the column untouched; a JSON `null` would have to go
+      // through `Prisma.DbNull`, which `@synac/db` does not re-export as a value.
+      rateLimitPolicy: src.rateLimitPolicy || undefined,
+      contact: src.contact,
+      lastVerifiedAt: src.lastVerifiedAt,
+      trustTier: src.trustTier,
+      enabled,
+      notesInternal: src.notesInternal,
+    };
+
     await staging.source.upsert({
       where: { sourceSlug: src.sourceSlug },
-      update: {
-        name: src.name,
-        baseUrl: src.baseUrl,
-        cronSchedule,
-        licenseType: src.licenseType,
-        licenseNotes: src.licenseNotes,
-        allowedUse: src.allowedUse,
-        attributionRequirements: src.attributionRequirements,
-        accessMethod: src.accessMethod,
-        robotsPolicy: src.robotsPolicy,
-        rateLimitPolicy: src.rateLimitPolicy
-          ? (src.rateLimitPolicy as unknown as Prisma.InputJsonValue)
-          : undefined,
-        contact: src.contact,
-        lastVerifiedAt: src.lastVerifiedAt,
-        trustTier: src.trustTier,
-        enabled,
-        notesInternal: src.notesInternal,
-      },
-      create: {
-        name: src.name,
-        sourceSlug: src.sourceSlug,
-        baseUrl: src.baseUrl,
-        cronSchedule,
-        licenseType: src.licenseType,
-        licenseNotes: src.licenseNotes,
-        allowedUse: src.allowedUse,
-        attributionRequirements: src.attributionRequirements,
-        accessMethod: src.accessMethod,
-        robotsPolicy: src.robotsPolicy,
-        rateLimitPolicy: src.rateLimitPolicy
-          ? (src.rateLimitPolicy as unknown as Prisma.InputJsonValue)
-          : undefined,
-        contact: src.contact,
-        lastVerifiedAt: src.lastVerifiedAt,
-        trustTier: src.trustTier,
-        enabled,
-        notesInternal: src.notesInternal,
-      },
+      update: fields,
+      create: { ...fields, sourceSlug: src.sourceSlug },
       select: { id: true },
     });
 

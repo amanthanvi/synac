@@ -1,3 +1,5 @@
+import { parseCsv } from '@synac/db';
+
 export type WorkerMode = 'ingest' | 'promotion' | 'all';
 
 function normalize(value: string | undefined): string {
@@ -7,7 +9,12 @@ function normalize(value: string | undefined): string {
 export function getWorkerMode(): WorkerMode {
   const explicit = normalize(process.env.SYNAC_WORKER_MODE);
   if (explicit === 'ingest' || explicit === 'staging') return 'ingest';
-  if (explicit === 'promotion' || explicit === 'prod' || explicit === 'production') return 'promotion';
+  if (
+    explicit === 'promotion' ||
+    explicit === 'prod' ||
+    explicit === 'production'
+  )
+    return 'promotion';
   if (explicit === 'all') return 'all';
 
   return process.env.SYNAC_STAGING_DATABASE_URL ? 'promotion' : 'ingest';
@@ -26,21 +33,40 @@ export function getStagingDatabaseUrl(): string | null {
   return url ? url : null;
 }
 
-export function parseCsv(value: string | undefined): string[] {
-  if (!value) return [];
-  return value
-    .split(',')
-    .map((v) => v.trim())
-    .filter(Boolean);
-}
-
 export function getStagingSourceAllowlist(): Set<string> {
-  return new Set(parseCsv(process.env.SYNAC_STAGING_SOURCE_ALLOWLIST).map((s) => s.toLowerCase()));
+  return new Set(
+    parseCsv(process.env.SYNAC_STAGING_SOURCE_ALLOWLIST).map((s) =>
+      s.toLowerCase(),
+    ),
+  );
 }
 
+function parseBooleanEnv(
+  value: string | undefined,
+  fallback: boolean,
+): boolean {
+  const raw = normalize(value);
+  if (!raw) return fallback;
+  if (raw === 'true' || raw === '1' || raw === 'yes') return true;
+  if (raw === 'false' || raw === '0' || raw === 'no') return false;
+  return fallback;
+}
+
+/**
+ * Tier-1 auto-publish writes to the public corpus without a human in the loop,
+ * so it fails closed: unset means OFF. Set `SYNAC_AUTOPUBLISH_TIER1=true` to
+ * enable it.
+ */
 export function isTier1AutopublishEnabled(): boolean {
-  const raw = normalize(process.env.SYNAC_AUTOPUBLISH_TIER1);
-  if (!raw) return true;
-  return raw === 'true' || raw === '1' || raw === 'yes';
+  return parseBooleanEnv(process.env.SYNAC_AUTOPUBLISH_TIER1, false);
 }
 
+/**
+ * Whether an ingest item whose `licenseGate` is WARN may be auto-published.
+ * Defaults to OFF: a WARN means the licence or content-mode needs a human look,
+ * so those items are applied but left at `REVIEWED` instead of going public.
+ * Set `SYNAC_AUTOPUBLISH_WARN=true` to override.
+ */
+export function isWarnAutopublishEnabled(): boolean {
+  return parseBooleanEnv(process.env.SYNAC_AUTOPUBLISH_WARN, false);
+}

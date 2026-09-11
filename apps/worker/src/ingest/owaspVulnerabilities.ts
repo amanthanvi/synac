@@ -1,78 +1,93 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import { normalizeTitle, normalizeWhitespace } from '@synac/db';
 
-import { safeFetch } from '../net/safeFetch.js';
-import { evaluateLicenseGate } from './licenseGate.js';
+import { logger } from '../logger.js';
+import { buildExtractorVersion } from '../version.js';
+import type {
+  AdapterContext,
+  IngestAdapter,
+  JsonObject,
+  ParseOutcome,
+  ParsedEntry,
+} from './adapter.js';
+import {
+  fetchWithPolicy,
+  resolveContentMode,
+  upsertSourceDocument,
+} from './adapter.js';
 import {
   decodeHtmlEntities,
   extractFirstInnerHtmlByClass,
   extractHrefPaths,
   stripHtmlTags,
 } from './html.js';
+import { normalizeMaxItems } from './textHeuristics.js';
 
-function normalizeMaxItems(value: number): number {
-  if (!Number.isFinite(value)) return 100;
-  return Math.max(1, Math.min(1000, Math.floor(value)));
-}
-
-function normalizeText(value: string): string {
-  return value.replace(/\s+/g, ' ').trim();
-}
-
-function normalizeTitle(value: string): string {
-  return normalizeText(value).toLowerCase();
-}
+export const ADAPTER_SLUG = 'owasp-vulnerabilities';
+export const ADAPTER_VERSION = 'owasp@2';
 
 function htmlToText(value: string): string {
-  return normalizeText(decodeHtmlEntities(stripHtmlTags(value)));
+  return normalizeWhitespace(decodeHtmlEntities(stripHtmlTags(value)));
 }
 
-function extractOverviewParagraph(html: string): string | null {
-  const section = html.match(/<h2[^>]*\bid=["']overview["'][^>]*>[\s\S]*?<\/h2>([\s\S]*?)(<h2|$)/i);
+export function extractOverviewParagraph(html: string): string | null {
+  const section = html.match(
+    /<h2[^>]*\bid=["']overview["'][^>]*>[\s\S]*?<\/h2>([\s\S]*?)(<h2|$)/i,
+  );
   const block = section?.[1];
   if (!block) return null;
   const p = block.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-  if (!p?.[1]) return null;
-  return htmlToText(p[1]);
+  const inner = p?.[1];
+  if (!inner) return null;
+  const text = htmlToText(inner);
+  return text || null;
 }
 
-export async function ingestOwaspVulnerabilities(
-  prisma: PrismaClient,
-  input: {
-    ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
-    maxItems: number;
-    forceReprocess: boolean;
-  },
-): Promise<{ itemsCreated: number }> {
-  const base = new URL(input.source.baseUrl);
+export function extractOwaspTitle(html: string): string | null {
+  const titleHtml = extractFirstInnerHtmlByClass(html, 'h1', 'page-title');
+  if (!titleHtml) return null;
+  const title = htmlToText(titleHtml);
+  return title || null;
+}
+
+async function parse(ctx: AdapterContext): Promise<ParseOutcome> {
+  const base = new URL(ctx.source.baseUrl);
   const origin = base.origin;
   const allowedHosts = [base.hostname];
+  const maxItems = normalizeMaxItems(ctx.maxItems);
 
-  const maxItems = normalizeMaxItems(input.maxItems);
-  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
-    licenseType: input.source.licenseType,
-    lastVerifiedAt: input.source.lastVerifiedAt,
+  const contentMode = resolveContentMode({
+    defaultContentMode: ctx.source.defaultContentMode,
+    verbatimOnly: true,
   });
+  const extractorVersion = buildExtractorVersion(ADAPTER_VERSION);
+
+  const entries: ParsedEntry[] = [];
+  let skipped = 0;
+  let failed = 0;
 
   const indexUrl = new URL('/www-community/vulnerabilities', origin).toString();
-  const indexRes = await safeFetch({
+  const indexFetch = await fetchWithPolicy({
     url: indexUrl,
+    source: ctx.source,
     allowedHosts,
     allowedContentTypePrefixes: ['text/html'],
-    maxRedirects: 3,
-    timeoutMs: 15_000,
     maxBytes: 5 * 1024 * 1024,
-    headers: {
-      'user-agent': 'synac-worker/0.0.0 (+https://github.com/amanthanvi/synac)',
-    },
+    timeoutMs: 15_000,
   });
 
-  if (indexRes.status !== 200) {
-    throw new Error(`OWASP vulnerabilities index fetch failed (${indexRes.status}) for ${indexUrl}`);
+  if (!indexFetch.ok) {
+    return { entries: [], skipped: 1, failed: 0 };
+  }
+  if (indexFetch.response.status !== 200) {
+    throw new Error(
+      `OWASP vulnerabilities index fetch failed (${indexFetch.response.status}) for ${indexUrl}`,
+    );
   }
 
-  const indexHtml = indexRes.body.toString('utf8');
-  const hrefs = extractHrefPaths(indexHtml, '/www-community/vulnerabilities/');
+  const hrefs = extractHrefPaths(
+    indexFetch.response.body.toString('utf8'),
+    '/www-community/vulnerabilities/',
+  );
 
   const seen = new Set<string>();
   const pageUrls: string[] = [];
@@ -84,179 +99,93 @@ export async function ingestOwaspVulnerabilities(
     if (pageUrls.length >= maxItems) break;
   }
 
-  let itemsCreated = 0;
-
   for (const pageUrl of pageUrls) {
     const fetchedAt = new Date();
-    const res = await safeFetch({
+
+    const fetched = await fetchWithPolicy({
       url: pageUrl,
+      source: ctx.source,
       allowedHosts,
       allowedContentTypePrefixes: ['text/html'],
-      maxRedirects: 3,
-      timeoutMs: 15_000,
       maxBytes: 5 * 1024 * 1024,
-      headers: {
-        'user-agent': 'synac-worker/0.0.0 (+https://github.com/amanthanvi/synac)',
-      },
+      timeoutMs: 15_000,
     });
 
-    if (res.status !== 200) continue;
+    if (!fetched.ok) {
+      skipped += 1;
+      continue;
+    }
+
+    const res = fetched.response;
+    if (res.status !== 200) {
+      skipped += 1;
+      continue;
+    }
 
     const html = res.body.toString('utf8');
-    const titleHtml = extractFirstInnerHtmlByClass(html, 'h1', 'page-title');
-    const title = titleHtml ? htmlToText(titleHtml) : null;
-    if (!title) continue;
+    const title = extractOwaspTitle(html);
+    const overview = title ? extractOverviewParagraph(html) : null;
 
-    const overview = extractOverviewParagraph(html);
-    if (!overview) continue;
+    if (!title || !overview) {
+      failed += 1;
+      logger.debug('ingest.owasp.unparsable_page', {
+        url: pageUrl,
+        hasTitle: Boolean(title),
+      });
+      continue;
+    }
 
-    const normalizedTitle = normalizeTitle(title);
-    const extracted = {
+    const document = await upsertSourceDocument(ctx.prisma, {
+      sourceId: ctx.source.id,
+      url: pageUrl,
+      canonicalUrl: res.url,
+      title,
+      contentType: res.contentType,
+      etag: res.etag,
+      lastModified: res.lastModified,
+      fetchedAt,
+      contentSha256: res.sha256,
+      snapshotAllowed: false,
+    });
+
+    const sourceLocator = { headingId: 'overview' };
+
+    const extracted: JsonObject = {
       title,
       overviewMd: overview,
       fetchedAt: fetchedAt.toISOString(),
       url: pageUrl,
       canonicalUrl: res.url,
       contentType: res.contentType,
-      ...(res.etag ? { etag: res.etag } : {}),
-      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
       sha256: res.sha256,
-      sourceLocator: { headingId: 'overview' },
-    } satisfies Prisma.InputJsonObject;
+      sourceLocator,
+    };
+    if (res.etag) extracted.etag = res.etag;
+    if (res.lastModified) extracted.lastModified = res.lastModified;
 
-    let sourceDocumentId: string;
-    let sourceDocumentCreated = false;
-    try {
-      const created = await prisma.sourceDocument.create({
-        data: {
-          sourceId: input.source.id,
-          url: pageUrl,
-          canonicalUrl: res.url,
-          title,
-          contentType: res.contentType,
-          etag: res.etag,
-          lastModified: res.lastModified,
-          fetchedAt,
-          contentSha256: res.sha256,
-          snapshotAllowed: false,
-          snapshotStorageUri: null,
-        },
-        select: { id: true },
-      });
-      sourceDocumentId = created.id;
-      sourceDocumentCreated = true;
-    } catch (err) {
-      const existing = await prisma.sourceDocument.findFirst({
-        where: { sourceId: input.source.id, url: pageUrl, contentSha256: res.sha256 },
-        select: { id: true },
-      });
-      if (!existing) throw err;
-      sourceDocumentId = existing.id;
-    }
-
-    if (!sourceDocumentCreated && !input.forceReprocess) {
-      const prior = await prisma.ingestItem.findFirst({
-        where: { sourceDocumentId, stage: { not: 'FAILED' } },
-        select: { id: true },
-      });
-      if (prior) continue;
-    }
-
-    const createEntryProposedChange = {
-      kind: 'CREATE_ENTRY',
+    entries.push({
+      itemKey: pageUrl,
+      sourceDocumentId: document.id,
+      fetchedAt,
       entryType: 'TERM',
       displayTitle: title,
+      normalizedTitle: normalizeTitle(title),
       summaryMd: overview,
-      senses: [
-        {
-          definitionMd: overview,
-          contentMode: 'QUOTED',
-          extractionMethod: 'HTML',
-          extractorVersion: 'synac-worker/0.0.0',
-          sourceLocator: { headingId: 'overview' },
-        },
-      ],
-    };
-
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
-
-    const ingestItem = await prisma.ingestItem.create({
-      data: {
-        ingestRunId: input.ingestRunId,
-        sourceDocumentId,
-        itemKey: pageUrl,
-        stage: 'EXTRACTED',
-        stageOutputs,
-        confidenceScore: 0.85,
-        licenseGate,
-        licenseGateReason,
-      },
-      select: { id: true },
+      senses: [{ definitionMd: overview, sourceLocator }],
+      contentMode,
+      // HTML pages scraped from owasp.org.
+      extractionMethod: 'HTML',
+      extractorVersion,
+      confidenceScore: 0.85,
+      extracted,
     });
-
-    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'NORMALIZED',
-        proposedChange: createEntryProposedChange,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    const existingEntry = await prisma.entry.findFirst({
-      where: { entryType: 'TERM', normalizedTitle, deletedAt: null },
-      select: { id: true, displayTitle: true },
-    });
-
-    const proposedChange = existingEntry
-      ? {
-          kind: 'ADD_SENSES',
-          entryId: existingEntry.id,
-          entryType: 'TERM',
-          displayTitle: existingEntry.displayTitle,
-          senses: createEntryProposedChange.senses,
-        }
-      : createEntryProposedChange;
-
-    stageOutputs.deduped = existingEntry
-      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
-      : { action: 'CREATE_ENTRY' };
-
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'DEDUPED',
-        proposedChange,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.enriched = {};
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'ENRICHED',
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.validated = { ok: true };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'VALIDATED',
-        error: null,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    itemsCreated += 1;
   }
 
-  return { itemsCreated };
+  return { entries, skipped, failed };
 }
+
+export const owaspVulnerabilitiesAdapter: IngestAdapter = {
+  slug: ADAPTER_SLUG,
+  version: ADAPTER_VERSION,
+  parse,
+};

@@ -1,102 +1,194 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import { normalizeTitle, normalizeWhitespace } from '@synac/db';
 
-import { safeFetch } from '../net/safeFetch.js';
-import { evaluateLicenseGate } from './licenseGate.js';
-import { extractAllByIdPrefix, extractFirstById, extractHrefPaths } from './html.js';
+import { logger } from '../logger.js';
+import { buildExtractorVersion } from '../version.js';
+import type {
+  AdapterContext,
+  IngestAdapter,
+  JsonObject,
+  ParseOutcome,
+  ParsedEntry,
+  ParsedSense,
+} from './adapter.js';
+import {
+  fetchWithPolicy,
+  resolveContentMode,
+  upsertSourceDocument,
+} from './adapter.js';
+import {
+  extractAllByIdPrefix,
+  extractFirstById,
+  extractHrefPaths,
+} from './html.js';
+import {
+  buildVariants,
+  inferEntryTypeFromTitle,
+  normalizeMaxItems,
+} from './textHeuristics.js';
 
-function normalizeMaxItems(value: number): number {
-  if (!Number.isFinite(value)) return 100;
-  return Math.max(1, Math.min(1000, Math.floor(value)));
+export const ADAPTER_SLUG = 'nist-csrc-glossary';
+export const ADAPTER_VERSION = 'nist@2';
+
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+/**
+ * NIST renders a per-definition provenance line such as
+ * `Source(s): NIST SP 800-53 Rev. 5 under Access Control`.
+ * The upstream publication is what disambiguates the definitions from one
+ * another, so it becomes the sense label.
+ */
+export function parseNistSourceLabel(raw: string | undefined): string | null {
+  if (!raw) return null;
+
+  let text = normalizeWhitespace(raw);
+  if (!text) return null;
+
+  text = text
+    .replace(/^Sources?\s*\(s\)\s*:\s*/i, '')
+    .replace(/^Sources?\s*:\s*/i, '');
+  // "NIST SP 800-53 Rev. 5 under Access Control" -> "NIST SP 800-53 Rev. 5"
+  text = text.split(/\s+under\s+/i)[0] ?? text;
+  // Several publications may be listed; the first is the primary attribution.
+  text = text.split(/\s+from\s+/i)[0] ?? text;
+  text = normalizeWhitespace(text.replace(/[;,]\s*$/, ''));
+
+  if (!text || text.length > 200) return null;
+  return text;
 }
 
-function normalizeTitle(value: string): string {
-  return value
-    .trim()
-    .replace(/\s+/g, ' ')
-    .toLowerCase();
+/**
+ * Pairs definition spans with their source lines positionally. NIST emits
+ * `#term-def-text-N` and `#term-def-source-N` in matching document order, but
+ * an occasional definition carries no source line; in that case the counts
+ * disagree and every label is left null rather than mis-attributed.
+ */
+export function pairDefinitionsWithSources(
+  definitions: string[],
+  sources: string[],
+): Array<{ definition: string; senseLabel: string | null; index: number }> {
+  const aligned = sources.length === definitions.length;
+
+  return definitions.map((definition, index) => ({
+    definition,
+    senseLabel: aligned ? parseNistSourceLabel(sources[index]) : null,
+    index,
+  }));
 }
 
-function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
-  const v = value.trim();
-  if (!v) return 'ALIAS';
-  if (v.includes(' ')) return 'SYNONYM';
+export function parseNistTermPage(html: string): {
+  title: string;
+  entryType: 'TERM' | 'ACRONYM';
+  senses: Array<{
+    definitionMd: string;
+    senseLabel: string | null;
+    selector: string;
+  }>;
+  variants: Array<{
+    variantText: string;
+    variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' | 'MISSPELLING';
+  }>;
+} | null {
+  const title = extractFirstById(html, 'h3', 'term-text');
+  if (!title) return null;
 
-  const compact = v.replace(/[.\-_/]/g, '');
-  const isAllCaps =
-    compact.length >= 2 &&
-    compact === compact.toUpperCase() &&
-    /[A-Z]/.test(compact) &&
-    /^[A-Z0-9]+$/.test(compact);
-  if (isAllCaps && v.length <= 24) return 'ABBREVIATION';
+  const definitions = extractAllByIdPrefix(html, 'span', 'term-def-text-');
+  if (definitions.length === 0) return null;
 
-  return 'ALIAS';
+  // The source line's element varies between div and span across NIST templates.
+  const sourcesFromDiv = extractAllByIdPrefix(html, 'div', 'term-def-source-');
+  const sourcesFromSpan = extractAllByIdPrefix(
+    html,
+    'span',
+    'term-def-source-',
+  );
+  const sources =
+    sourcesFromDiv.length >= sourcesFromSpan.length
+      ? sourcesFromDiv
+      : sourcesFromSpan;
+
+  const normalizedTitle = normalizeTitle(title);
+  const variants = buildVariants(
+    [
+      ...extractAllByIdPrefix(html, 'a', 'term-abbr-link-'),
+      ...extractAllByIdPrefix(html, 'span', 'term-abbr-text-'),
+    ],
+    normalizedTitle,
+  );
+
+  const senses = pairDefinitionsWithSources(definitions, sources).flatMap(
+    (d) => {
+      const definitionMd = d.definition.trim();
+      if (!definitionMd) return [];
+      return [
+        {
+          definitionMd,
+          senseLabel: d.senseLabel,
+          selector: `#term-def-text-${d.index}`,
+        },
+      ];
+    },
+  );
+
+  if (senses.length === 0) return null;
+
+  return {
+    title,
+    entryType: inferEntryTypeFromTitle(title),
+    senses,
+    variants,
+  };
 }
 
-function inferEntryTypeFromTitle(value: string): 'TERM' | 'ACRONYM' {
-  const v = value.trim();
-  if (!v) return 'TERM';
-  if (v.includes(' ')) return 'TERM';
-  if (v.length < 2 || v.length > 24) return 'TERM';
-
-  const letters = v.replace(/[^A-Za-z]/g, '');
-  if (letters.length < 1) return 'TERM';
-
-  const uppercase = letters.replace(/[^A-Z]/g, '').length;
-  const lowercase = letters.replace(/[^a-z]/g, '').length;
-  const digits = v.replace(/[^0-9]/g, '').length;
-
-  // Classic initialisms (AAD, TLS, AES, S/MIME, etc.)
-  if (uppercase >= 2 && lowercase <= 2) return 'ACRONYM';
-
-  // Short forms like "C2" (Command and Control) have one letter + digits.
-  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return 'ACRONYM';
-
-  return 'TERM';
-}
-
-export async function ingestNistGlossary(
-  prisma: PrismaClient,
-  input: {
-    ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
-    maxItems: number;
-    forceReprocess: boolean;
-  },
-): Promise<{ itemsCreated: number }> {
-  const base = new URL(input.source.baseUrl);
+async function parse(ctx: AdapterContext): Promise<ParseOutcome> {
+  const base = new URL(ctx.source.baseUrl);
   const origin = base.origin;
   const allowedHosts = [base.hostname];
+  const maxItems = normalizeMaxItems(ctx.maxItems);
 
-  const maxItems = normalizeMaxItems(input.maxItems);
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const contentMode = resolveContentMode({
+    defaultContentMode: ctx.source.defaultContentMode,
+    verbatimOnly: true,
+  });
+  const extractorVersion = buildExtractorVersion(ADAPTER_VERSION);
+
+  const entries: ParsedEntry[] = [];
+  let skipped = 0;
+  let failed = 0;
 
   const termUrls: string[] = [];
   const seen = new Set<string>();
 
-  const indexUrls = [new URL('/glossary', origin).toString(), ...letters.map((l) => new URL(`/glossary?index=${l}`, origin).toString())];
+  const indexUrls = [
+    new URL('/glossary', origin).toString(),
+    ...LETTERS.map((l) => new URL(`/glossary?index=${l}`, origin).toString()),
+  ];
 
   for (const indexUrl of indexUrls) {
     if (seen.size >= maxItems) break;
 
-    const res = await safeFetch({
+    const fetched = await fetchWithPolicy({
       url: indexUrl,
+      source: ctx.source,
       allowedHosts,
       allowedContentTypePrefixes: ['text/html'],
-      maxRedirects: 3,
-      timeoutMs: 15_000,
       maxBytes: 5 * 1024 * 1024,
-      headers: {
-        'user-agent': 'synac-worker/0.0.0 (+https://github.com/amanthanvi/synac)',
-      },
+      timeoutMs: 15_000,
     });
 
-    if (res.status !== 200) {
-      throw new Error(`NIST glossary index fetch failed (${res.status}) for ${indexUrl}`);
+    if (!fetched.ok) {
+      skipped += 1;
+      continue;
+    }
+    if (fetched.response.status !== 200) {
+      throw new Error(
+        `NIST glossary index fetch failed (${fetched.response.status}) for ${indexUrl}`,
+      );
     }
 
-    const html = res.body.toString('utf8');
-    const hrefs = extractHrefPaths(html, '/glossary/term/');
-    for (const href of hrefs) {
+    for (const href of extractHrefPaths(
+      fetched.response.body.toString('utf8'),
+      '/glossary/term/',
+    )) {
       const abs = new URL(href, origin).toString();
       if (seen.has(abs)) continue;
       seen.add(abs);
@@ -105,225 +197,103 @@ export async function ingestNistGlossary(
     }
   }
 
-  let itemsCreated = 0;
-  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
-    licenseType: input.source.licenseType,
-    lastVerifiedAt: input.source.lastVerifiedAt,
-  });
-
   for (const termUrl of termUrls.slice(0, maxItems)) {
     const fetchedAt = new Date();
 
-    const res = await safeFetch({
+    const fetched = await fetchWithPolicy({
       url: termUrl,
+      source: ctx.source,
       allowedHosts,
       allowedContentTypePrefixes: ['text/html'],
-      maxRedirects: 3,
-      timeoutMs: 15_000,
       maxBytes: 5 * 1024 * 1024,
-      headers: {
-        'user-agent': 'synac-worker/0.0.0 (+https://github.com/amanthanvi/synac)',
-      },
+      timeoutMs: 15_000,
     });
 
-    if (res.status !== 200) {
+    if (!fetched.ok) {
+      skipped += 1;
       continue;
     }
 
-    const html = res.body.toString('utf8');
-    const title = extractFirstById(html, 'h3', 'term-text');
-    const definitions = extractAllByIdPrefix(html, 'span', 'term-def-text-');
-    const definition = definitions[0] ?? null;
+    const res = fetched.response;
+    if (res.status !== 200) {
+      skipped += 1;
+      continue;
+    }
 
-    if (!title || !definition) continue;
+    const parsed = parseNistTermPage(res.body.toString('utf8'));
+    if (!parsed) {
+      failed += 1;
+      logger.debug('ingest.nist.unparsable_page', { url: termUrl });
+      continue;
+    }
 
-    const entryType = inferEntryTypeFromTitle(title);
-    const normalizedTitle = normalizeTitle(title);
-    const variantsRaw = [
-      ...extractAllByIdPrefix(html, 'a', 'term-abbr-link-'),
-      ...extractAllByIdPrefix(html, 'span', 'term-abbr-text-'),
-    ];
-    const seenVariants = new Set<string>();
-    const variants = variantsRaw
-      .map((v) => v.trim())
-      .filter((v) => v.length > 0 && normalizeTitle(v) !== normalizedTitle)
-      .filter((v) => {
-        const key = normalizeTitle(v);
-        if (seenVariants.has(key)) return false;
-        seenVariants.add(key);
-        return true;
-      })
-      .map((variantText) => ({
-        variantText,
-        variantType: inferVariantType(variantText),
-      }));
+    const document = await upsertSourceDocument(ctx.prisma, {
+      sourceId: ctx.source.id,
+      url: termUrl,
+      canonicalUrl: res.url,
+      title: parsed.title,
+      contentType: res.contentType,
+      etag: res.etag,
+      lastModified: res.lastModified,
+      fetchedAt,
+      contentSha256: res.sha256,
+      snapshotAllowed: false,
+    });
 
-    const extracted = {
-      title,
-      definitionMd: definition,
-      variants,
+    const senses: ParsedSense[] = parsed.senses.map((s) => ({
+      senseLabel: s.senseLabel,
+      definitionMd: s.definitionMd,
+      sourceLocator: { selector: s.selector },
+    }));
+
+    const firstSense = senses[0];
+    if (!firstSense) {
+      failed += 1;
+      continue;
+    }
+
+    const extracted: JsonObject = {
+      title: parsed.title,
+      definitions: parsed.senses.map((s) => ({
+        definitionMd: s.definitionMd,
+        senseLabel: s.senseLabel,
+        selector: s.selector,
+      })),
+      variants: parsed.variants,
       fetchedAt: fetchedAt.toISOString(),
       url: termUrl,
       canonicalUrl: res.url,
       contentType: res.contentType,
-      ...(res.etag ? { etag: res.etag } : {}),
-      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
       sha256: res.sha256,
       sourceLocator: { selector: '#term-def-text-0' },
-    } satisfies Prisma.InputJsonObject;
-
-    const createEntryProposedChange = {
-      kind: 'CREATE_ENTRY',
-      entryType,
-      displayTitle: title,
-      summaryMd: definition,
-      variants,
-      senses: [
-        {
-          definitionMd: definition,
-          contentMode: 'QUOTED',
-          extractionMethod: 'HTML',
-          extractorVersion: 'synac-worker/0.0.0',
-          sourceLocator: { selector: '#term-def-text-0' },
-        },
-      ],
     };
+    if (res.etag) extracted.etag = res.etag;
+    if (res.lastModified) extracted.lastModified = res.lastModified;
 
-    let sourceDocumentId: string;
-    let sourceDocumentCreated = false;
-    try {
-      const created = await prisma.sourceDocument.create({
-        data: {
-          sourceId: input.source.id,
-          url: termUrl,
-          canonicalUrl: res.url,
-          title,
-          contentType: res.contentType,
-          etag: res.etag,
-          lastModified: res.lastModified,
-          fetchedAt,
-          contentSha256: res.sha256,
-          snapshotAllowed: false,
-          snapshotStorageUri: null,
-        },
-        select: { id: true },
-      });
-      sourceDocumentId = created.id;
-      sourceDocumentCreated = true;
-    } catch (err) {
-      const existing = await prisma.sourceDocument.findFirst({
-        where: { sourceId: input.source.id, url: termUrl, contentSha256: res.sha256 },
-        select: { id: true },
-      });
-      if (!existing) throw err;
-      sourceDocumentId = existing.id;
-    }
-
-    if (!sourceDocumentCreated && !input.forceReprocess) {
-      const prior = await prisma.ingestItem.findFirst({
-        where: { sourceDocumentId, stage: { not: 'FAILED' } },
-        select: { id: true },
-      });
-      if (prior) continue;
-    }
-
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
-
-    const ingestItem = await prisma.ingestItem.create({
-      data: {
-        ingestRunId: input.ingestRunId,
-        sourceDocumentId,
-        itemKey: termUrl,
-        stage: 'EXTRACTED',
-        stageOutputs,
-        confidenceScore: 0.9,
-        licenseGate,
-        licenseGateReason,
-      },
-      select: { id: true },
+    entries.push({
+      itemKey: termUrl,
+      sourceDocumentId: document.id,
+      fetchedAt,
+      entryType: parsed.entryType,
+      displayTitle: parsed.title,
+      normalizedTitle: normalizeTitle(parsed.title),
+      summaryMd: firstSense.definitionMd,
+      senses,
+      variants: parsed.variants,
+      contentMode,
+      // HTML pages scraped from csrc.nist.gov.
+      extractionMethod: 'HTML',
+      extractorVersion,
+      confidenceScore: 0.9,
+      extracted,
     });
-
-    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'NORMALIZED',
-        proposedChange: createEntryProposedChange,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    const existingEntry = await prisma.entry.findFirst({
-      where: { entryType, normalizedTitle, deletedAt: null },
-      select: { id: true, displayTitle: true },
-    });
-
-    const proposedChange = existingEntry
-      ? {
-          kind: 'ADD_SENSES',
-          entryId: existingEntry.id,
-          entryType,
-          displayTitle: existingEntry.displayTitle,
-          senses: createEntryProposedChange.senses,
-        }
-      : createEntryProposedChange;
-
-    stageOutputs.deduped = existingEntry
-      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
-      : { action: 'CREATE_ENTRY' };
-
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'DEDUPED',
-        proposedChange,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.enriched = {};
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'ENRICHED',
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    const hasDefinition = Array.isArray((proposedChange as Record<string, unknown>).senses)
-      ? (proposedChange as { senses: Array<{ definitionMd: string }> }).senses.some((s) => Boolean(s.definitionMd?.trim()))
-      : false;
-
-    if (!hasDefinition) {
-      stageOutputs.validated = { ok: false, error: 'Missing sense definition' };
-      await prisma.ingestItem.update({
-        where: { id: ingestItem.id },
-        data: {
-          stage: 'FAILED',
-          error: 'Missing sense definition',
-          stageOutputs,
-        },
-        select: { id: true },
-      });
-      continue;
-    }
-
-    stageOutputs.validated = { ok: true };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'VALIDATED',
-        error: null,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    itemsCreated += 1;
   }
 
-  return { itemsCreated };
+  return { entries, skipped, failed };
 }
+
+export const nistGlossaryAdapter: IngestAdapter = {
+  slug: ADAPTER_SLUG,
+  version: ADAPTER_VERSION,
+  parse,
+};

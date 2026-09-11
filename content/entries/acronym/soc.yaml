@@ -1,0 +1,40 @@
+# Editorial metadata for the SOC acronym entry.
+# Applied by the worker's editorial sync job against the PUBLISHED entry with
+# entryType ACRONYM and primarySlug "soc". Unknown slugs are skipped, not failed.
+entryType: ACRONYM
+slug: soc
+
+senses:
+  - slug: security-operations-center
+    label: Security Operations Center
+    disambiguationNote: >-
+      The staffed facility or function that monitors, detects, and responds to
+      security events. This is the sense intended in defensive operations
+      contexts unless a compliance report is being discussed.
+    preferred: true
+    confusedWith:
+      - slug: noc
+        entryType: ACRONYM
+        note: >-
+          A NOC watches availability and performance; a SOC watches security
+          events. Many organizations run both, sometimes from the same room.
+
+  - slug: system-and-organization-controls
+    label: System and Organization Controls
+    disambiguationNote: >-
+      The AICPA audit reporting framework (SOC 1, SOC 2, SOC 3). Used in
+      compliance and vendor assurance contexts, not operations.
+
+tags:
+  - slug: operations
+    assignedBy: EDITORIAL
+
+relationships:
+  - type: RELATED
+    targetSlug: incident-response
+    targetEntryType: TERM
+    note: A SOC is the usual operational home of the incident response process.
+  - type: SEE_ALSO
+    targetSlug: siem
+    targetEntryType: ACRONYM
+    note: SIEM platforms are the primary tooling a SOC operates.

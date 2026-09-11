@@ -1,0 +1,84 @@
+{
+  "type": "bundle",
+  "id": "bundle--0000-test",
+  "objects": [
+    {
+      "type": "x-mitre-tactic",
+      "id": "x-mitre-tactic--1",
+      "name": "Defense Evasion",
+      "x_mitre_shortname": "defense-evasion"
+    },
+    {
+      "type": "x-mitre-tactic",
+      "id": "x-mitre-tactic--2",
+      "name": "Privilege Escalation",
+      "x_mitre_shortname": "privilege-escalation"
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--aaaa",
+      "name": "Access Token Manipulation",
+      "description": "Adversaries may modify access tokens to operate under a different user or system security context. (Citation: Microsoft Access Tokens)\n\nAn adversary can use built-in Windows API functions to copy access tokens. (Citation: Pentestlab Token Manipulation)",
+      "kill_chain_phases": [
+        { "kill_chain_name": "mitre-attack", "phase_name": "defense-evasion" },
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "privilege-escalation"
+        }
+      ],
+      "external_references": [
+        { "source_name": "mitre-attack", "external_id": "T1134" },
+        {
+          "source_name": "Microsoft Access Tokens",
+          "url": "https://example.invalid/tokens"
+        }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--bbbb",
+      "name": "Deprecated Technique",
+      "description": "Should never be ingested.",
+      "x_mitre_deprecated": true,
+      "external_references": [
+        { "source_name": "mitre-attack", "external_id": "T9999" }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--cccc",
+      "name": "Revoked Technique",
+      "description": "Should never be ingested.",
+      "revoked": true,
+      "external_references": [
+        { "source_name": "mitre-attack", "external_id": "T9998" }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--dddd",
+      "name": "No External Id",
+      "description": "Missing the mitre-attack external reference.",
+      "external_references": [
+        { "source_name": "capec", "external_id": "CAPEC-100" }
+      ]
+    },
+    {
+      "type": "attack-pattern",
+      "id": "attack-pattern--eeee",
+      "name": "Unknown Tactic Technique",
+      "description": "Maps to a tactic with no x-mitre-tactic object in this bundle.",
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "credential-access"
+        },
+        { "kill_chain_name": "some-other-chain", "phase_name": "ignored-phase" }
+      ],
+      "external_references": [
+        { "source_name": "mitre-attack", "external_id": "T1555" }
+      ]
+    },
+    { "type": "marking-definition", "id": "marking-definition--1" }
+  ]
+}

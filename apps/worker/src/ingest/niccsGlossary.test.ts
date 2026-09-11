@@ -35,4 +35,3 @@ describe('niccs csv parsing', () => {
     expect(records[1]).toEqual(['X', 'line1\nline2']);
   });
 });
-

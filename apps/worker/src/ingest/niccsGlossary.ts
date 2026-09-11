@@ -1,60 +1,27 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import { normalizeTitle, normalizeWhitespace } from '@synac/db';
 
-import { safeFetch } from '../net/safeFetch.js';
-import { evaluateLicenseGate } from './licenseGate.js';
+import { buildExtractorVersion } from '../version.js';
+import type {
+  AdapterContext,
+  IngestAdapter,
+  JsonObject,
+  ParseOutcome,
+  ParsedEntry,
+  ParsedRelationship,
+} from './adapter.js';
+import {
+  fetchWithPolicy,
+  resolveContentMode,
+  upsertSourceDocument,
+} from './adapter.js';
+import {
+  buildVariants,
+  inferEntryTypeFromTitle,
+  normalizeMaxItems,
+} from './textHeuristics.js';
 
-function normalizeMaxItems(value: number): number {
-  if (!Number.isFinite(value)) return 100;
-  return Math.max(1, Math.min(1000, Math.floor(value)));
-}
-
-function normalizeWhitespace(value: string): string {
-  return value.trim().replace(/\s+/g, ' ');
-}
-
-function normalizeTitle(value: string): string {
-  return normalizeWhitespace(value).toLowerCase();
-}
-
-function inferEntryTypeFromTitle(value: string, input: { acronymExpansion?: string }): 'TERM' | 'ACRONYM' {
-  const v = value.trim();
-  if (!v) return 'TERM';
-
-  if (input.acronymExpansion?.trim()) {
-    return v.includes(' ') ? 'TERM' : 'ACRONYM';
-  }
-
-  if (v.includes(' ')) return 'TERM';
-  if (v.length < 2 || v.length > 24) return 'TERM';
-
-  const letters = v.replace(/[^A-Za-z]/g, '');
-  if (letters.length < 1) return 'TERM';
-
-  const uppercase = letters.replace(/[^A-Z]/g, '').length;
-  const lowercase = letters.replace(/[^a-z]/g, '').length;
-  const digits = v.replace(/[^0-9]/g, '').length;
-
-  if (uppercase >= 2 && lowercase <= 2) return 'ACRONYM';
-  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return 'ACRONYM';
-
-  return 'TERM';
-}
-
-function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
-  const v = value.trim();
-  if (!v) return 'ALIAS';
-  if (v.includes(' ')) return 'SYNONYM';
-
-  const compact = v.replace(/[.\-_/]/g, '');
-  const isAllCaps =
-    compact.length >= 2 &&
-    compact === compact.toUpperCase() &&
-    /[A-Z]/.test(compact) &&
-    /^[A-Z0-9]+$/.test(compact);
-  if (isAllCaps && v.length <= 24) return 'ABBREVIATION';
-
-  return 'ALIAS';
-}
+const ADAPTER_SLUG = 'niccs-cisa-glossary';
+const ADAPTER_VERSION = 'niccs@2';
 
 export function parseCsvRecords(input: string): string[][] {
   const csv = input.replace(/^\uFEFF/, '');
@@ -65,12 +32,11 @@ export function parseCsvRecords(input: string): string[][] {
   let inQuotes = false;
 
   for (let i = 0; i < csv.length; i += 1) {
-    const ch = csv[i]!;
+    const ch = csv[i] ?? '';
 
     if (inQuotes) {
       if (ch === '"') {
-        const next = csv[i + 1];
-        if (next === '"') {
+        if (csv[i + 1] === '"') {
           field += '"';
           i += 1;
           continue;
@@ -97,9 +63,7 @@ export function parseCsvRecords(input: string): string[][] {
       if (ch === '\r' && csv[i + 1] === '\n') i += 1;
       row.push(field);
       field = '';
-      if (row.some((v) => v.length > 0)) {
-        records.push(row);
-      }
+      if (row.some((v) => v.length > 0)) records.push(row);
       row = [];
       continue;
     }
@@ -108,15 +72,16 @@ export function parseCsvRecords(input: string): string[][] {
   }
 
   row.push(field);
-  if (row.some((v) => v.length > 0)) {
-    records.push(row);
-  }
+  if (row.some((v) => v.length > 0)) records.push(row);
 
   return records;
 }
 
 function normalizeHeaderKey(value: string): string {
-  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
 }
 
 function findHeaderIndex(headers: string[], names: string[]): number {
@@ -143,6 +108,7 @@ type NiccsRow = {
   extendedDefinition: string;
   relatedTerms: string;
   synonyms: string;
+  /** Upstream publication the definition was taken from; becomes the sense label. */
   from: string;
 };
 
@@ -152,14 +118,24 @@ function parseNiccsRows(csv: string): NiccsRow[] {
   const rows = records.slice(1);
 
   const termIdx = findHeaderIndex(header, ['term']);
-  const acronymIdx = findHeaderIndex(header, ['acronym expansion', 'acronymexpansion']);
+  const acronymIdx = findHeaderIndex(header, [
+    'acronym expansion',
+    'acronymexpansion',
+  ]);
   const defIdx = findHeaderIndex(header, ['definition']);
-  const extIdx = findHeaderIndex(header, ['extended definition', 'extendeddefinition']);
-  const relIdx = findHeaderIndex(header, ['related term(s)', 'related terms', 'relatedterms']);
+  const extIdx = findHeaderIndex(header, [
+    'extended definition',
+    'extendeddefinition',
+  ]);
+  const relIdx = findHeaderIndex(header, [
+    'related term(s)',
+    'related terms',
+    'relatedterms',
+  ]);
   const synIdx = findHeaderIndex(header, ['synonym(s)', 'synonyms']);
   const fromIdx = findHeaderIndex(header, ['from']);
 
-  const required = [
+  const missing = [
     { name: 'Term', idx: termIdx },
     { name: 'Acronym Expansion', idx: acronymIdx },
     { name: 'Definition', idx: defIdx },
@@ -169,8 +145,10 @@ function parseNiccsRows(csv: string): NiccsRow[] {
     { name: 'From', idx: fromIdx },
   ].filter((c) => c.idx < 0);
 
-  if (required.length) {
-    throw new Error(`NICCS CSV missing columns: ${required.map((c) => c.name).join(', ')}`);
+  if (missing.length) {
+    throw new Error(
+      `NICCS CSV missing columns: ${missing.map((c) => c.name).join(', ')}`,
+    );
   }
 
   return rows.map((r) => ({
@@ -184,127 +162,121 @@ function parseNiccsRows(csv: string): NiccsRow[] {
   }));
 }
 
-export async function ingestNiccsGlossary(
-  prisma: PrismaClient,
-  input: {
-    ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
-    maxItems: number;
-    forceReprocess: boolean;
-  },
-): Promise<{ itemsCreated: number }> {
-  const base = new URL(input.source.baseUrl);
+/**
+ * The NICCS "From" column names the upstream authority the definition was
+ * lifted from (for example "NIST SP 800-160 Vol. 2 Rev. 1"). That provenance is
+ * what distinguishes one meaning from another, so it becomes the sense label.
+ */
+function parseNiccsSenseLabel(from: string): string | null {
+  const text = normalizeWhitespace(from);
+  if (!text || text.length > 200) return null;
+  return text;
+}
+
+function buildRelatedTermRelationships(
+  relatedTerms: string,
+  term: string,
+): ParsedRelationship[] {
+  const normalizedTerm = normalizeTitle(term);
+  const out: ParsedRelationship[] = [];
+  const seen = new Set<string>();
+
+  for (const related of splitList(relatedTerms)) {
+    const key = normalizeTitle(related);
+    if (!key || key === normalizedTerm || seen.has(key)) continue;
+    seen.add(key);
+    out.push({ type: 'RELATED', targetTitle: related });
+  }
+
+  return out;
+}
+
+async function parse(ctx: AdapterContext): Promise<ParseOutcome> {
+  const base = new URL(ctx.source.baseUrl);
   const origin = base.origin;
   const allowedHosts = [base.hostname];
   const exportUrl = new URL('/rest/vocab/export-csv', origin).toString();
-
-  const maxItems = normalizeMaxItems(input.maxItems);
-
+  const maxItems = normalizeMaxItems(ctx.maxItems);
   const fetchedAt = new Date();
-  const res = await safeFetch({
+
+  const contentMode = resolveContentMode({
+    defaultContentMode: ctx.source.defaultContentMode,
+    verbatimOnly: true,
+  });
+  const extractorVersion = buildExtractorVersion(ADAPTER_VERSION);
+
+  const fetched = await fetchWithPolicy({
     url: exportUrl,
+    source: ctx.source,
     allowedHosts,
     allowedContentTypePrefixes: ['text/csv'],
-    maxRedirects: 3,
-    timeoutMs: 20_000,
     maxBytes: 5 * 1024 * 1024,
-    headers: {
-      'user-agent': 'synac-worker/0.0.0 (+https://github.com/amanthanvi/synac)',
-    },
+    timeoutMs: 20_000,
   });
 
+  if (!fetched.ok) {
+    return { entries: [], skipped: 1, failed: 0 };
+  }
+
+  const res = fetched.response;
   if (res.status !== 200) {
-    throw new Error(`NICCS glossary export fetch failed (${res.status}) for ${exportUrl}`);
+    throw new Error(
+      `NICCS glossary export fetch failed (${res.status}) for ${exportUrl}`,
+    );
   }
 
-  let sourceDocumentId: string;
-  let sourceDocumentCreated = false;
-  const sourceDocumentTitle = 'NICCS glossary export (CSV)';
-  try {
-    const created = await prisma.sourceDocument.create({
-      data: {
-        sourceId: input.source.id,
-        url: exportUrl,
-        canonicalUrl: res.url,
-        title: sourceDocumentTitle,
-        contentType: res.contentType,
-        etag: res.etag,
-        lastModified: res.lastModified,
-        fetchedAt,
-        contentSha256: res.sha256,
-        snapshotAllowed: false,
-        snapshotStorageUri: null,
-      },
-      select: { id: true },
-    });
-    sourceDocumentId = created.id;
-    sourceDocumentCreated = true;
-  } catch (err) {
-    const existing = await prisma.sourceDocument.findFirst({
-      where: { sourceId: input.source.id, url: exportUrl, contentSha256: res.sha256 },
-      select: { id: true },
-    });
-    if (!existing) throw err;
-    sourceDocumentId = existing.id;
-  }
-
-  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
-    licenseType: input.source.licenseType,
-    lastVerifiedAt: input.source.lastVerifiedAt,
+  const document = await upsertSourceDocument(ctx.prisma, {
+    sourceId: ctx.source.id,
+    url: exportUrl,
+    canonicalUrl: res.url,
+    title: 'NICCS glossary export (CSV)',
+    contentType: res.contentType,
+    etag: res.etag,
+    lastModified: res.lastModified,
+    fetchedAt,
+    contentSha256: res.sha256,
+    snapshotAllowed: false,
   });
 
-  const csv = res.body.toString('utf8');
-  const parsedRows = parseNiccsRows(csv).filter((r) => Boolean(r.term));
+  const parsedRows = parseNiccsRows(res.body.toString('utf8')).filter((r) =>
+    Boolean(r.term),
+  );
 
-  let itemsCreated = 0;
-  const seenItemKeys = new Set<string>();
+  const entries: ParsedEntry[] = [];
+  let failed = 0;
 
-  for (let i = 0; i < Math.min(parsedRows.length, maxItems); i += 1) {
-    const row = parsedRows[i]!;
-    const itemKey = `term:${normalizeTitle(row.term)}`;
-    if (seenItemKeys.has(itemKey)) continue;
-    seenItemKeys.add(itemKey);
-
-    const expandedForm = row.acronymExpansion?.trim() ? row.acronymExpansion.trim() : null;
-    const entryType = inferEntryTypeFromTitle(row.term, { acronymExpansion: row.acronymExpansion });
-    const normalizedTitle = normalizeTitle(row.term);
+  for (let i = 0; i < parsedRows.length && entries.length < maxItems; i += 1) {
+    const row = parsedRows[i];
+    if (!row) continue;
 
     const definitionMd = (() => {
-      if (row.definition && row.extendedDefinition) return `${row.definition}\n\n${row.extendedDefinition}`;
+      if (row.definition && row.extendedDefinition) {
+        return `${row.definition}\n\n${row.extendedDefinition}`;
+      }
       return row.definition || row.extendedDefinition || '';
     })();
 
     if (!definitionMd.trim()) {
+      failed += 1;
       continue;
     }
 
+    const normalizedTitle = normalizeTitle(row.term);
+    const expandedForm = row.acronymExpansion.trim()
+      ? row.acronymExpansion.trim()
+      : null;
+    const entryType = inferEntryTypeFromTitle(row.term, {
+      acronymExpansion: row.acronymExpansion,
+    });
     const synonyms = splitList(row.synonyms);
-    const variants = (() => {
-      const out: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' }> = [];
-      const seen = new Set<string>();
+    const variants = buildVariants(synonyms, normalizedTitle);
+    const relationships = buildRelatedTermRelationships(
+      row.relatedTerms,
+      row.term,
+    );
+    const sourceLocator = { row: i + 2, term: row.term };
 
-      for (const s of synonyms) {
-        const text = s.trim();
-        if (!text) continue;
-        if (normalizeTitle(text) === normalizedTitle) continue;
-        const key = normalizeTitle(text);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        out.push({ variantText: text, variantType: inferVariantType(text) });
-      }
-
-      return out;
-    })();
-
-    if (!sourceDocumentCreated && !input.forceReprocess) {
-      const prior = await prisma.ingestItem.findFirst({
-        where: { sourceDocumentId, itemKey, stage: { not: 'FAILED' } },
-        select: { id: true },
-      });
-      if (prior) continue;
-    }
-
-    const extracted = {
+    const extracted: JsonObject = {
       term: row.term,
       acronymExpansion: row.acronymExpansion,
       definition: row.definition,
@@ -316,111 +288,46 @@ export async function ingestNiccsGlossary(
       url: exportUrl,
       canonicalUrl: res.url,
       contentType: res.contentType,
-      ...(res.etag ? { etag: res.etag } : {}),
-      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
       sha256: res.sha256,
-      sourceLocator: { row: i + 2, term: row.term },
-    } satisfies Prisma.InputJsonObject;
+      sourceLocator,
+    };
+    if (res.etag) extracted.etag = res.etag;
+    if (res.lastModified) extracted.lastModified = res.lastModified;
 
-    const createEntryProposedChange = {
-      kind: 'CREATE_ENTRY',
+    const parsed: ParsedEntry = {
+      itemKey: `term:${normalizedTitle}`,
+      sourceDocumentId: document.id,
+      fetchedAt,
       entryType,
       displayTitle: row.term,
+      normalizedTitle,
       summaryMd: row.definition || row.extendedDefinition || definitionMd,
-      ...(variants.length ? { variants } : {}),
       senses: [
         {
-          ...(expandedForm ? { expandedForm } : {}),
+          senseLabel: parseNiccsSenseLabel(row.from),
+          expandedForm,
           definitionMd,
-          contentMode: 'QUOTED',
-          extractionMethod: 'API',
-          extractorVersion: 'synac-worker/0.0.0',
-          sourceLocator: { row: i + 2, term: row.term },
+          sourceLocator,
         },
       ],
+      contentMode,
+      // A CSV export endpoint, not HTML scraping.
+      extractionMethod: 'API',
+      extractorVersion,
+      confidenceScore: 0.8,
+      extracted,
     };
+    if (variants.length) parsed.variants = variants;
+    if (relationships.length) parsed.relationships = relationships;
 
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
-
-    const ingestItem = await prisma.ingestItem.create({
-      data: {
-        ingestRunId: input.ingestRunId,
-        sourceDocumentId,
-        itemKey,
-        stage: 'EXTRACTED',
-        stageOutputs,
-        confidenceScore: 0.8,
-        licenseGate,
-        licenseGateReason,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'NORMALIZED',
-        proposedChange: createEntryProposedChange as Prisma.InputJsonValue,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    const existingEntry = await prisma.entry.findFirst({
-      where: { entryType, normalizedTitle, deletedAt: null },
-      select: { id: true, displayTitle: true },
-    });
-
-    const proposedChange = existingEntry
-      ? {
-          kind: 'ADD_SENSES',
-          entryId: existingEntry.id,
-          entryType,
-          displayTitle: existingEntry.displayTitle,
-          ...(variants.length ? { variants } : {}),
-          senses: createEntryProposedChange.senses,
-        }
-      : createEntryProposedChange;
-
-    stageOutputs.deduped = existingEntry
-      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
-      : { action: 'CREATE_ENTRY' };
-
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'DEDUPED',
-        proposedChange: proposedChange as Prisma.InputJsonValue,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.enriched = {};
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'ENRICHED',
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.validated = { ok: true };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'VALIDATED',
-        error: null,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    itemsCreated += 1;
+    entries.push(parsed);
   }
 
-  return { itemsCreated };
+  return { entries, skipped: 0, failed };
 }
 
+export const niccsGlossaryAdapter: IngestAdapter = {
+  slug: ADAPTER_SLUG,
+  version: ADAPTER_VERSION,
+  parse,
+};

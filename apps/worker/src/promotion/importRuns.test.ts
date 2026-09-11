@@ -4,7 +4,7 @@ import {
   createIntegrationStagingTestClient,
   createIntegrationTestClient,
   resetIntegrationDatabase,
-} from '@synac/db';
+} from '@synac/db/testing';
 
 import { importEligibleStagingRuns } from './importRuns.js';
 
@@ -122,7 +122,9 @@ describe('promotion import runs integration', () => {
       maxItemsPerRun: 1000,
     });
 
-    const importedRun = await prod.ingestRun.findUnique({ where: { id: run.id } });
+    const importedRun = await prod.ingestRun.findUnique({
+      where: { id: run.id },
+    });
     const importedItems = await prod.ingestItem.findMany({
       where: { ingestRunId: run.id },
       select: { itemKey: true },

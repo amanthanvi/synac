@@ -15,7 +15,8 @@ export function isForbiddenIp(address: string): boolean {
   if (ipVersion === 4) {
     const o = parseIpv4(address);
     if (!o) return true;
-    const [a, b] = o;
+    const a = o[0] ?? -1;
+    const b = o[1] ?? -1;
 
     // 0.0.0.0/8
     if (a === 0) return true;
@@ -63,11 +64,13 @@ export function isForbiddenHostname(hostname: string): boolean {
   return false;
 }
 
-export function isAllowedHostname(hostname: string, allowedHosts: string[]): boolean {
+export function isAllowedHostname(
+  hostname: string,
+  allowedHosts: string[],
+): boolean {
   const h = hostname.trim().toLowerCase();
   return allowedHosts.some((allowed) => {
     const a = allowed.trim().toLowerCase();
     return h === a || h.endsWith(`.${a}`);
   });
 }
-

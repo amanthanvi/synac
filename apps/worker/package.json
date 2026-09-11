@@ -1,7 +1,7 @@
 {
   "name": "@synac/worker",
   "private": true,
-  "version": "0.1.5",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "test": "vitest run --dir src",
     "format": "prettier . --check --ignore-path ../../.prettierignore",
-    "format:write": "prettier . --write --ignore-path ../../.prettierignore"
+    "format:write": "prettier . --write --ignore-path ../../.prettierignore",
+    "editorial:sync": "tsx src/editorial/sync.cli.ts"
   },
   "devDependencies": {
     "@types/node": "^25.2.3",
@@ -23,6 +24,8 @@
   },
   "dependencies": {
     "@synac/db": "workspace:*",
-    "pg-boss": "^12.12.0"
+    "cheerio": "^1.2.0",
+    "pg-boss": "^12.12.0",
+    "yaml": "^2.9.0"
   }
 }

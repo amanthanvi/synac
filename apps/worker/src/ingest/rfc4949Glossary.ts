@@ -1,40 +1,58 @@
-import type { Prisma, PrismaClient } from '@synac/db';
+import { normalizeTitle } from '@synac/db';
 
-import { safeFetch } from '../net/safeFetch.js';
-import { evaluateLicenseGate } from './licenseGate.js';
+import { buildExtractorVersion } from '../version.js';
+import type {
+  AdapterContext,
+  IngestAdapter,
+  JsonObject,
+  ParseOutcome,
+  ParsedEntry,
+  ParsedRelationship,
+  VariantType,
+} from './adapter.js';
+import {
+  fetchWithPolicy,
+  resolveContentMode,
+  upsertSourceDocument,
+} from './adapter.js';
+import {
+  firstParagraph,
+  inferEntryTypeFromTitle,
+  inferVariantType,
+  normalizeMaxItems,
+} from './textHeuristics.js';
+
+const ADAPTER_SLUG = 'ietf-rfc4949-glossary';
+const ADAPTER_VERSION = 'rfc4949@2';
 
 type DefinitionType = 'I' | 'N' | 'O' | 'D';
 
-type ParsedSense = {
+type ParsedRfcSense = {
   definitionType: DefinitionType;
   senseLabel: string | null;
   definitionMd: string;
   expandedForm: string | null;
 };
 
-type ParsedEntry = {
+type ParsedRfcEntry = {
   title: string;
   normalizedTitle: string;
   entryType: 'TERM' | 'ACRONYM';
   summaryMd: string;
-  senses: ParsedSense[];
-  variants: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' }>;
+  senses: ParsedRfcSense[];
+  variants: Array<{ variantText: string; variantType: VariantType }>;
+  /** `SEE_ALSO` targets harvested from the entry's `See:` lines. */
+  seeAlso: string[];
   sourceLocator: { line: number; title: string };
 };
 
 const BASE_INDENT = '      ';
 
-function normalizeMaxItems(value: number): number {
-  if (!Number.isFinite(value)) return 200;
-  return Math.max(1, Math.min(1000, Math.floor(value)));
-}
+/** RFC 4949 is one large document, so a run reads more of it than the shared default. */
+const MAX_ITEMS_FALLBACK = 200;
 
-function normalizeTitle(value: string): string {
-  return value
-    .trim()
-    .replace(/\s+/g, ' ')
-    .toLowerCase();
-}
+/** Single-token titles in this document run longer than the shared default cap. */
+const MAX_ACRONYM_TITLE_LENGTH = 32;
 
 function stripBaseIndent(value: string): string {
   if (value.startsWith(BASE_INDENT)) return value.slice(BASE_INDENT.length);
@@ -76,42 +94,10 @@ function normalizeDefinitionWhitespace(value: string): string {
   return out.join('\n').trim();
 }
 
-function inferEntryTypeFromTitle(value: string): 'TERM' | 'ACRONYM' {
-  const v = value.trim();
-  if (!v) return 'TERM';
-  if (v.includes(' ')) return 'TERM';
-  if (v.length < 2 || v.length > 32) return 'TERM';
-
-  const letters = v.replace(/[^A-Za-z]/g, '');
-  if (letters.length < 1) return 'TERM';
-
-  const uppercase = letters.replace(/[^A-Z]/g, '').length;
-  const lowercase = letters.replace(/[^a-z]/g, '').length;
-  const digits = v.replace(/[^0-9]/g, '').length;
-
-  if (uppercase >= 2 && lowercase <= 2) return 'ACRONYM';
-  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return 'ACRONYM';
-
-  return 'TERM';
-}
-
-function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
-  const v = value.trim();
-  if (!v) return 'ALIAS';
-  if (v.includes(' ')) return 'SYNONYM';
-
-  const compact = v.replace(/[.\-_/]/g, '');
-  const isAllCaps =
-    compact.length >= 2 &&
-    compact === compact.toUpperCase() &&
-    /[A-Z]/.test(compact) &&
-    /^[A-Z0-9]+$/.test(compact);
-  if (isAllCaps && v.length <= 24) return 'ABBREVIATION';
-
-  return 'ALIAS';
-}
-
-function stripTrailingAbbreviation(title: string): { mainTitle: string; abbreviation: string | null } {
+function stripTrailingAbbreviation(title: string): {
+  mainTitle: string;
+  abbreviation: string | null;
+} {
   const trimmed = title.trim();
   const match = trimmed.match(/^(.*)\s+\(([^)]+)\)\s*$/);
   if (!match) return { mainTitle: trimmed, abbreviation: null };
@@ -120,9 +106,16 @@ function stripTrailingAbbreviation(title: string): { mainTitle: string; abbrevia
   const abbr = (match[2] ?? '').trim();
 
   if (!main) return { mainTitle: trimmed, abbreviation: null };
-  if (!abbr || abbr.includes(' ') || abbr.length > 32) return { mainTitle: trimmed, abbreviation: null };
+  if (!abbr || abbr.includes(' ') || abbr.length > 32)
+    return { mainTitle: trimmed, abbreviation: null };
 
   return { mainTitle: main, abbreviation: abbr };
+}
+
+function parseDefinitionType(value: string | undefined): DefinitionType | null {
+  if (value === 'I' || value === 'N' || value === 'O' || value === 'D')
+    return value;
+  return null;
 }
 
 function parseDefinitionHeader(line: string): {
@@ -136,17 +129,22 @@ function parseDefinitionHeader(line: string): {
   if (!match) return null;
 
   const indexLabel = match[1] ? match[1] : null;
-  const definitionType = match[2] as DefinitionType;
+  const definitionType = parseDefinitionType(match[2]);
+  if (!definitionType) return null;
   const afterType = (match[3] ?? '').trim();
 
   const ctxMatch = afterType.match(/^\/([^/]+)\/\s*(.*)$/);
-  const context = ctxMatch ? ctxMatch[1]!.trim() : null;
-  const rest = (ctxMatch ? ctxMatch[2] : afterType).trim();
+  const context = ctxMatch?.[1]?.trim() ?? null;
+  const rest = (ctxMatch ? (ctxMatch[2] ?? '') : afterType).trim();
 
   return { indexLabel, definitionType, context: context || null, rest };
 }
 
-function buildSenseLabel(input: { indexLabel: string | null; definitionType: DefinitionType; context: string | null }): string {
+function buildSenseLabel(input: {
+  indexLabel: string | null;
+  definitionType: DefinitionType;
+  context: string | null;
+}): string {
   const parts: string[] = [];
   if (input.indexLabel) parts.push(input.indexLabel);
   parts.push(`(${input.definitionType})`);
@@ -162,7 +160,9 @@ function inferExpandedFormFromDefinition(input: {
 
   const text = input.definitionMd.trim();
   const seeMatch = text.match(/^See:\s*([^.\n]+)\./i);
-  const synonymMatch = text.match(/^(?:Synonym|Abbreviation)\s+for\s+"([^"]+)"/i);
+  const synonymMatch = text.match(
+    /^(?:Synonym|Abbreviation)\s+for\s+"([^"]+)"/i,
+  );
 
   const candidate = (synonymMatch?.[1] ?? seeMatch?.[1] ?? '').trim();
   if (!candidate) return null;
@@ -173,12 +173,58 @@ function inferExpandedFormFromDefinition(input: {
   return candidate;
 }
 
-export function parseRfc4949Entries(input: string): ParsedEntry[] {
+const SEE_LIST_STOPWORDS =
+  /^(?:deprecated|usage|tutorial|example|note|also|the|a|an)$/i;
+
+/**
+ * RFC 4949 cross-references read `See: cryptographic key, key management.` and
+ * may wrap across lines. Only `See:` is harvested: `(C)` commentary about
+ * confusable terms is prose, not a machine-readable field, so
+ * `OFTEN_CONFUSED_WITH` cannot be derived reliably, and the document offers
+ * nothing from which `BROADER_THAN`/`NARROWER_THAN` could be inferred.
+ */
+export function parseSeeAlsoTargets(definitionMd: string): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+
+  const matches = definitionMd.matchAll(
+    /\bSee:\s*([\s\S]*?)(?:\.\s|\.$|\n\s*\n|$)/g,
+  );
+
+  for (const match of matches) {
+    const list = match[1];
+    if (!list || list.length > 300) continue;
+
+    for (const rawCandidate of list.split(/,|\band\b/g)) {
+      const candidate = rawCandidate
+        .replace(/\s+/g, ' ')
+        .replace(/^[\s\-–—)]+/, '')
+        .replace(/[.\s]+$/, '')
+        .trim();
+
+      if (!candidate || candidate.length > 120) continue;
+      if (!/[A-Za-z]/.test(candidate)) continue;
+      if (SEE_LIST_STOPWORDS.test(candidate)) continue;
+
+      const key = normalizeTitle(candidate);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(candidate);
+      if (out.length >= 12) return out;
+    }
+  }
+
+  return out;
+}
+
+export function parseRfc4949Entries(input: string): ParsedRfcEntry[] {
   const text = input.replace(/\r\n/g, '\n');
   const lines = text.split('\n');
 
-  const entries: Array<{ title: string; startLine: number; lines: string[] }> = [];
-  let current: { title: string; startLine: number; lines: string[] } | null = null;
+  const entries: Array<{ title: string; startLine: number; lines: string[] }> =
+    [];
+  let current: { title: string; startLine: number; lines: string[] } | null =
+    null;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i] ?? '';
@@ -193,40 +239,40 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
   }
   if (current) entries.push(current);
 
-  const parsed: ParsedEntry[] = [];
+  const parsed: ParsedRfcEntry[] = [];
 
   for (const entry of entries) {
     const { mainTitle, abbreviation } = stripTrailingAbbreviation(entry.title);
     const normalized = normalizeTitle(mainTitle);
     if (!normalized) continue;
 
-    const variants = (() => {
-      const out: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' }> = [];
-      const seen = new Set<string>();
+    const variants: ParsedRfcEntry['variants'] = [];
+    if (abbreviation && normalizeTitle(abbreviation) !== normalized) {
+      variants.push({
+        variantText: abbreviation,
+        variantType: inferVariantType(abbreviation),
+      });
+    }
 
-      if (abbreviation) {
-        const key = normalizeTitle(abbreviation);
-        if (!seen.has(key) && key !== normalized) {
-          seen.add(key);
-          out.push({ variantText: abbreviation, variantType: inferVariantType(abbreviation) });
-        }
-      }
-
-      return out;
-    })();
-
-    const entryType = inferEntryTypeFromTitle(mainTitle);
+    const entryType = inferEntryTypeFromTitle(mainTitle, {
+      maxLength: MAX_ACRONYM_TITLE_LENGTH,
+    });
 
     const cleanedLines = entry.lines.filter((line) => !isPageNoiseLine(line));
 
-    const senses: ParsedSense[] = [];
+    const senses: ParsedRfcSense[] = [];
     let currentHeader: ReturnType<typeof parseDefinitionHeader> | null = null;
     let currentLines: string[] = [];
 
     const flush = () => {
       if (!currentHeader) return;
-      const definitionMd = normalizeDefinitionWhitespace(currentLines.join('\n'));
-      const expandedForm = inferExpandedFormFromDefinition({ entryType, definitionMd });
+      const definitionMd = normalizeDefinitionWhitespace(
+        currentLines.join('\n'),
+      );
+      const expandedForm = inferExpandedFormFromDefinition({
+        entryType,
+        definitionMd,
+      });
       senses.push({
         definitionType: currentHeader.definitionType,
         senseLabel: buildSenseLabel({
@@ -256,12 +302,19 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
     flush();
     if (senses.length === 0) continue;
 
-    const summaryMd = (() => {
-      const first = senses[0]!;
-      const firstParagraph = first.definitionMd.split(/\n\s*\n/)[0]?.trim() ?? '';
-      return firstParagraph || first.definitionMd;
-    })();
+    const summaryMd = firstParagraph(senses[0]!.definitionMd);
     if (!summaryMd.trim()) continue;
+
+    const seenSeeAlso = new Set<string>();
+    const seeAlso: string[] = [];
+    for (const sense of senses) {
+      for (const target of parseSeeAlsoTargets(sense.definitionMd)) {
+        const key = normalizeTitle(target);
+        if (!key || key === normalized || seenSeeAlso.has(key)) continue;
+        seenSeeAlso.add(key);
+        seeAlso.push(target);
+      }
+    }
 
     parsed.push({
       title: mainTitle,
@@ -270,6 +323,7 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
       summaryMd,
       senses,
       variants,
+      seeAlso,
       sourceLocator: { line: entry.startLine, title: mainTitle },
     });
   }
@@ -277,198 +331,118 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
   return parsed;
 }
 
-export async function ingestRfc4949Glossary(
-  prisma: PrismaClient,
-  input: {
-    ingestRunId: string;
-    source: { id: string; baseUrl: string; licenseType: string; lastVerifiedAt: Date | null };
-    maxItems: number;
-    forceReprocess: boolean;
-  },
-): Promise<{ itemsCreated: number }> {
-  const url = new URL(input.source.baseUrl);
+async function parse(ctx: AdapterContext): Promise<ParseOutcome> {
+  const url = new URL(ctx.source.baseUrl);
   const allowedHosts = [url.hostname];
-
-  const maxItems = normalizeMaxItems(input.maxItems);
+  const maxItems = normalizeMaxItems(ctx.maxItems, MAX_ITEMS_FALLBACK);
   const fetchedAt = new Date();
 
-  const res = await safeFetch({
+  const contentMode = resolveContentMode({
+    defaultContentMode: ctx.source.defaultContentMode,
+    verbatimOnly: true,
+  });
+  const extractorVersion = buildExtractorVersion(ADAPTER_VERSION);
+
+  const fetched = await fetchWithPolicy({
     url: url.toString(),
+    source: ctx.source,
     allowedHosts,
     allowedContentTypePrefixes: ['text/plain'],
-    maxRedirects: 3,
-    timeoutMs: 30_000,
     maxBytes: 10 * 1024 * 1024,
-    headers: {
-      'user-agent': 'synac-worker/0.0.0 (+https://github.com/amanthanvi/synac)',
-    },
+    timeoutMs: 30_000,
   });
 
+  if (!fetched.ok) {
+    return { entries: [], skipped: 1, failed: 0 };
+  }
+
+  const res = fetched.response;
   if (res.status !== 200) {
-    throw new Error(`RFC 4949 fetch failed (${res.status}) for ${url.toString()}`);
+    throw new Error(
+      `RFC 4949 fetch failed (${res.status}) for ${url.toString()}`,
+    );
   }
 
-  let sourceDocumentId: string;
-  let sourceDocumentCreated = false;
-  try {
-    const created = await prisma.sourceDocument.create({
-      data: {
-        sourceId: input.source.id,
-        url: url.toString(),
-        canonicalUrl: res.url,
-        title: 'RFC 4949 — Internet Security Glossary (Version 2)',
-        contentType: res.contentType,
-        etag: res.etag,
-        lastModified: res.lastModified,
-        fetchedAt,
-        contentSha256: res.sha256,
-        snapshotAllowed: false,
-        snapshotStorageUri: null,
-      },
-      select: { id: true },
-    });
-    sourceDocumentId = created.id;
-    sourceDocumentCreated = true;
-  } catch (err) {
-    const existing = await prisma.sourceDocument.findFirst({
-      where: { sourceId: input.source.id, url: url.toString(), contentSha256: res.sha256 },
-      select: { id: true },
-    });
-    if (!existing) throw err;
-    sourceDocumentId = existing.id;
-  }
-
-  if (!sourceDocumentCreated && !input.forceReprocess) {
-    return { itemsCreated: 0 };
-  }
-
-  const { licenseGate, licenseGateReason } = evaluateLicenseGate({
-    licenseType: input.source.licenseType,
-    lastVerifiedAt: input.source.lastVerifiedAt,
+  const document = await upsertSourceDocument(ctx.prisma, {
+    sourceId: ctx.source.id,
+    url: url.toString(),
+    canonicalUrl: res.url,
+    title: 'RFC 4949 \u2014 Internet Security Glossary (Version 2)',
+    contentType: res.contentType,
+    etag: res.etag,
+    lastModified: res.lastModified,
+    fetchedAt,
+    contentSha256: res.sha256,
+    snapshotAllowed: false,
   });
 
-  const text = res.body.toString('utf8');
-  const parsedEntries = parseRfc4949Entries(text);
+  const parsedEntries = parseRfc4949Entries(res.body.toString('utf8'));
 
-  let itemsCreated = 0;
-  const seenItemKeys = new Set<string>();
+  const entries: ParsedEntry[] = [];
+  let failed = 0;
 
-  for (const entry of parsedEntries.slice(0, maxItems)) {
-    const itemKey = `term:${entry.normalizedTitle}`;
-    if (seenItemKeys.has(itemKey)) continue;
-    seenItemKeys.add(itemKey);
+  for (const entry of parsedEntries) {
+    if (entries.length >= maxItems) break;
 
-    const extracted = {
+    const senses = entry.senses.filter((s) => Boolean(s.definitionMd.trim()));
+    if (senses.length === 0) {
+      failed += 1;
+      continue;
+    }
+
+    const relationships: ParsedRelationship[] = entry.seeAlso.map(
+      (targetTitle) => ({
+        type: 'SEE_ALSO',
+        targetTitle,
+      }),
+    );
+
+    const extracted: JsonObject = {
       title: entry.title,
+      senseCount: senses.length,
+      seeAlso: entry.seeAlso,
       fetchedAt: fetchedAt.toISOString(),
       url: url.toString(),
       canonicalUrl: res.url,
       contentType: res.contentType,
-      ...(res.etag ? { etag: res.etag } : {}),
-      ...(res.lastModified ? { lastModified: res.lastModified } : {}),
       sha256: res.sha256,
       sourceLocator: entry.sourceLocator,
-    } satisfies Prisma.InputJsonObject;
+    };
+    if (res.etag) extracted.etag = res.etag;
+    if (res.lastModified) extracted.lastModified = res.lastModified;
 
-    const variants = entry.variants;
-
-    const createEntryProposedChange = {
-      kind: 'CREATE_ENTRY',
+    const parsed: ParsedEntry = {
+      itemKey: `term:${entry.normalizedTitle}`,
+      sourceDocumentId: document.id,
+      fetchedAt,
       entryType: entry.entryType,
       displayTitle: entry.title,
+      normalizedTitle: entry.normalizedTitle,
       summaryMd: entry.summaryMd,
-      ...(variants.length ? { variants } : {}),
-      senses: entry.senses.map((s) => ({
-        ...(s.senseLabel ? { senseLabel: s.senseLabel } : {}),
-        ...(s.expandedForm ? { expandedForm: s.expandedForm } : {}),
+      senses: senses.map((s) => ({
+        senseLabel: s.senseLabel,
+        expandedForm: s.expandedForm,
         definitionMd: s.definitionMd,
-        contentMode: 'QUOTED',
-        extractionMethod: 'HTML',
-        extractorVersion: 'synac-worker/0.0.0',
-        sourceLocator: entry.sourceLocator,
+        sourceLocator: { ...entry.sourceLocator, senseLabel: s.senseLabel },
       })),
+      contentMode,
+      // RFC 4949 is a plain-text RFC fetched whole; it is not HTML scraping.
+      extractionMethod: 'API',
+      extractorVersion,
+      confidenceScore: 0.85,
+      extracted,
     };
+    if (entry.variants.length) parsed.variants = entry.variants;
+    if (relationships.length) parsed.relationships = relationships;
 
-    const stageOutputs: Record<string, Prisma.InputJsonValue> = { extracted };
-
-    const ingestItem = await prisma.ingestItem.create({
-      data: {
-        ingestRunId: input.ingestRunId,
-        sourceDocumentId,
-        itemKey,
-        stage: 'EXTRACTED',
-        stageOutputs,
-        confidenceScore: 0.85,
-        licenseGate,
-        licenseGateReason,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.normalized = { proposedChange: createEntryProposedChange };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'NORMALIZED',
-        proposedChange: createEntryProposedChange as Prisma.InputJsonValue,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    const existingEntry = await prisma.entry.findFirst({
-      where: { entryType: entry.entryType, normalizedTitle: entry.normalizedTitle, deletedAt: null },
-      select: { id: true, displayTitle: true },
-    });
-
-    const proposedChange = existingEntry
-      ? {
-          kind: 'ADD_SENSES',
-          entryId: existingEntry.id,
-          entryType: entry.entryType,
-          displayTitle: existingEntry.displayTitle,
-          ...(variants.length ? { variants } : {}),
-          senses: createEntryProposedChange.senses,
-        }
-      : createEntryProposedChange;
-
-    stageOutputs.deduped = existingEntry
-      ? { matchedEntryId: existingEntry.id, matchType: 'NORMALIZED_TITLE_EXACT', action: 'ADD_SENSES' }
-      : { action: 'CREATE_ENTRY' };
-
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'DEDUPED',
-        proposedChange: proposedChange as Prisma.InputJsonValue,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.enriched = {};
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'ENRICHED',
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    stageOutputs.validated = { ok: true };
-    await prisma.ingestItem.update({
-      where: { id: ingestItem.id },
-      data: {
-        stage: 'VALIDATED',
-        error: null,
-        stageOutputs,
-      },
-      select: { id: true },
-    });
-
-    itemsCreated += 1;
+    entries.push(parsed);
   }
 
-  return { itemsCreated };
+  return { entries, skipped: 0, failed };
 }
+
+export const rfc4949GlossaryAdapter: IngestAdapter = {
+  slug: ADAPTER_SLUG,
+  version: ADAPTER_VERSION,
+  parse,
+};

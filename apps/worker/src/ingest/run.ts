@@ -1,26 +1,101 @@
+import type { Prisma } from '@synac/db';
 import { getPrismaClient } from '@synac/db';
 
-import { ingestNistGlossary } from './nistGlossary.js';
-import { ingestMitreAttackCti } from './mitreAttackCti.js';
-import { ingestOwaspVulnerabilities } from './owaspVulnerabilities.js';
-import { ingestNiccsGlossary } from './niccsGlossary.js';
-import { ingestRfc4949Glossary } from './rfc4949Glossary.js';
 import { logger } from '../logger.js';
+import type {
+  AdapterContext,
+  AdapterSource,
+  IngestAdapter,
+} from './adapter.js';
+import { persistParsedEntries } from './adapter.js';
+import { normalizeMaxItems } from './textHeuristics.js';
+import { mitreAttackCtiAdapters } from './mitreAttackCti.js';
+import { niccsGlossaryAdapter } from './niccsGlossary.js';
+import { nistGlossaryAdapter } from './nistGlossary.js';
+import { owaspVulnerabilitiesAdapter } from './owaspVulnerabilities.js';
+import { rfc4949GlossaryAdapter } from './rfc4949Glossary.js';
 
-function parseMaxItems(configSnapshot: unknown): number {
-  if (!configSnapshot || typeof configSnapshot !== 'object') return 100;
-  const v = (configSnapshot as Record<string, unknown>).maxItems;
-  const n = typeof v === 'number' ? v : Number(v);
-  if (!Number.isFinite(n)) return 100;
-  return Math.max(1, Math.min(1000, Math.floor(n)));
+const ADAPTERS: IngestAdapter[] = [
+  nistGlossaryAdapter,
+  niccsGlossaryAdapter,
+  owaspVulnerabilitiesAdapter,
+  rfc4949GlossaryAdapter,
+  ...mitreAttackCtiAdapters,
+];
+
+/** Primary registry: `Source.sourceSlug` -> adapter. */
+export const ADAPTER_REGISTRY: ReadonlyMap<string, IngestAdapter> = new Map(
+  ADAPTERS.map((adapter) => [adapter.slug, adapter]),
+);
+
+/**
+ * Fallback for sources whose slug predates the registry. Matched against the
+ * `baseUrl` hostname; the registry is always consulted first.
+ */
+const HOSTNAME_FALLBACKS: ReadonlyArray<{
+  matches: (host: string) => boolean;
+  adapter: IngestAdapter;
+}> = [
+  { matches: (h) => h === 'csrc.nist.gov', adapter: nistGlossaryAdapter },
+  { matches: (h) => h === 'niccs.cisa.gov', adapter: niccsGlossaryAdapter },
+  {
+    matches: (h) => h === 'owasp.org' || h.endsWith('.owasp.org'),
+    adapter: owaspVulnerabilitiesAdapter,
+  },
+  {
+    matches: (h) => h === 'rfc-editor.org' || h === 'www.rfc-editor.org',
+    adapter: rfc4949GlossaryAdapter,
+  },
+  {
+    matches: (h) => h === 'raw.githubusercontent.com',
+    adapter: mitreAttackCtiAdapters[0] ?? nistGlossaryAdapter,
+  },
+];
+
+export function resolveAdapter(input: {
+  sourceSlug: string;
+  baseUrl: string;
+}): IngestAdapter | null {
+  const bySlug = ADAPTER_REGISTRY.get(input.sourceSlug.trim().toLowerCase());
+  if (bySlug) return bySlug;
+
+  let host: string;
+  try {
+    host = new URL(input.baseUrl).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+
+  for (const fallback of HOSTNAME_FALLBACKS) {
+    if (fallback.matches(host)) return fallback.adapter;
+  }
+
+  return null;
 }
 
-function parseForceReprocess(configSnapshot: unknown): boolean {
-  if (!configSnapshot || typeof configSnapshot !== 'object') return false;
-  const v = (configSnapshot as Record<string, unknown>).forceReprocess;
-  if (typeof v === 'boolean') return v;
-  const s = typeof v === 'string' ? v : String(v ?? '');
-  return s.trim().toLowerCase() === 'true' || s.trim() === '1';
+type IngestRunConfig = { maxItems: number; forceReprocess: boolean };
+
+/** Narrows `IngestRun.configSnapshot` once, so the run body never sees raw JSON. */
+function parseIngestRunConfig(
+  configSnapshot: Prisma.JsonValue,
+): IngestRunConfig {
+  const raw =
+    configSnapshot &&
+    typeof configSnapshot === 'object' &&
+    !Array.isArray(configSnapshot)
+      ? configSnapshot
+      : {};
+
+  const force = raw.forceReprocess;
+  const forceText = typeof force === 'string' ? force.trim().toLowerCase() : '';
+
+  return {
+    maxItems: normalizeMaxItems(Number(raw.maxItems)),
+    forceReprocess:
+      typeof force === 'boolean'
+        ? force
+        : forceText === 'true' || forceText === '1',
+  };
 }
 
 export async function runIngestRun(ingestRunId: string): Promise<void> {
@@ -34,116 +109,99 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
       status: true,
       startedAt: true,
       configSnapshot: true,
-      source: { select: { id: true, baseUrl: true, licenseType: true, lastVerifiedAt: true } },
+      source: {
+        select: {
+          id: true,
+          name: true,
+          sourceSlug: true,
+          baseUrl: true,
+          licenseType: true,
+          lastVerifiedAt: true,
+          accessMethod: true,
+          defaultContentMode: true,
+          robotsPolicy: true,
+          rateLimitPolicy: true,
+        },
+      },
     },
   });
 
-  if (!run) {
-    throw new Error(`Ingest run not found: ${ingestRunId}`);
-  }
+  if (!run) throw new Error(`Ingest run not found: ${ingestRunId}`);
+  if (run.status !== 'RUNNING') return;
 
-  if (run.status !== 'RUNNING') {
-    return;
-  }
+  const { maxItems, forceReprocess } = parseIngestRunConfig(run.configSnapshot);
 
-  const maxItems = parseMaxItems(run.configSnapshot);
-  const forceReprocess = parseForceReprocess(run.configSnapshot);
+  const source: AdapterSource = {
+    id: run.source.id,
+    name: run.source.name,
+    sourceSlug: run.source.sourceSlug,
+    baseUrl: run.source.baseUrl,
+    licenseType: run.source.licenseType,
+    lastVerifiedAt: run.source.lastVerifiedAt,
+    accessMethod: run.source.accessMethod,
+    defaultContentMode: run.source.defaultContentMode,
+    robotsPolicy: run.source.robotsPolicy,
+    rateLimitPolicy: run.source.rateLimitPolicy,
+  };
 
   try {
+    const adapter = resolveAdapter({
+      sourceSlug: source.sourceSlug,
+      baseUrl: source.baseUrl,
+    });
+    if (!adapter) {
+      throw new Error(
+        `No ingest adapter configured for source: sourceSlug=${source.sourceSlug} baseUrl=${source.baseUrl}`,
+      );
+    }
+
     logger.info('ingest.run.start', {
       ingestRunId: run.id,
-      sourceId: run.source.id,
-      baseUrl: run.source.baseUrl,
+      sourceId: source.id,
+      sourceSlug: source.sourceSlug,
+      adapter: adapter.slug,
+      adapterVersion: adapter.version,
+      baseUrl: source.baseUrl,
       maxItems,
       forceReprocess,
     });
 
-    const host = new URL(run.source.baseUrl).hostname.toLowerCase();
-    const isOwaspHost = host === 'owasp.org' || host.endsWith('.owasp.org');
+    const ctx: AdapterContext = {
+      prisma,
+      ingestRunId: run.id,
+      source,
+      maxItems,
+      forceReprocess,
+    };
 
-    let itemsCreated = 0;
-    if (host === 'csrc.nist.gov') {
-      const res = await ingestNistGlossary(prisma, {
-        ingestRunId: run.id,
-        source: {
-          id: run.source.id,
-          baseUrl: run.source.baseUrl,
-          licenseType: run.source.licenseType,
-          lastVerifiedAt: run.source.lastVerifiedAt,
-        },
-        maxItems,
-        forceReprocess,
-      });
-      itemsCreated = res.itemsCreated;
-    } else if (host === 'niccs.cisa.gov') {
-      const res = await ingestNiccsGlossary(prisma, {
-        ingestRunId: run.id,
-        source: {
-          id: run.source.id,
-          baseUrl: run.source.baseUrl,
-          licenseType: run.source.licenseType,
-          lastVerifiedAt: run.source.lastVerifiedAt,
-        },
-        maxItems,
-        forceReprocess,
-      });
-      itemsCreated = res.itemsCreated;
-    } else if (isOwaspHost) {
-      const res = await ingestOwaspVulnerabilities(prisma, {
-        ingestRunId: run.id,
-        source: {
-          id: run.source.id,
-          baseUrl: run.source.baseUrl,
-          licenseType: run.source.licenseType,
-          lastVerifiedAt: run.source.lastVerifiedAt,
-        },
-        maxItems,
-        forceReprocess,
-      });
-      itemsCreated = res.itemsCreated;
-    } else if (host === 'raw.githubusercontent.com') {
-      const res = await ingestMitreAttackCti(prisma, {
-        ingestRunId: run.id,
-        source: {
-          id: run.source.id,
-          baseUrl: run.source.baseUrl,
-          licenseType: run.source.licenseType,
-          lastVerifiedAt: run.source.lastVerifiedAt,
-        },
-        maxItems,
-        forceReprocess,
-      });
-      itemsCreated = res.itemsCreated;
-    } else if (host === 'www.rfc-editor.org' || host === 'rfc-editor.org') {
-      const res = await ingestRfc4949Glossary(prisma, {
-        ingestRunId: run.id,
-        source: {
-          id: run.source.id,
-          baseUrl: run.source.baseUrl,
-          licenseType: run.source.licenseType,
-          lastVerifiedAt: run.source.lastVerifiedAt,
-        },
-        maxItems,
-        forceReprocess,
-      });
-      itemsCreated = res.itemsCreated;
-    } else {
-      throw new Error(`No ingest adapter configured for source baseUrl: ${run.source.baseUrl}`);
-    }
+    const parsed = await adapter.parse(ctx);
+    const persisted = await persistParsedEntries(prisma, ctx, parsed.entries);
+
+    const itemsFailed = parsed.failed + persisted.itemsFailed;
+    const itemsSkipped = parsed.skipped;
+    // Items already ingested under the same itemKey are the normal steady
+    // state, so they do NOT downgrade the run; anomalies do.
+    const status = itemsFailed > 0 || itemsSkipped > 0 ? 'PARTIAL' : 'SUCCESS';
+
+    const stats = {
+      itemsCreated: persisted.itemsCreated,
+      itemsDeduped: persisted.itemsDeduped,
+      itemsFailed,
+      itemsSkipped,
+      adapter: adapter.slug,
+      adapterVersion: adapter.version,
+    };
 
     await prisma.ingestRun.update({
       where: { id: run.id },
-      data: {
-        status: 'SUCCESS',
-        finishedAt: new Date(),
-        stats: { itemsCreated },
-      },
+      data: { status, finishedAt: new Date(), stats },
     });
 
-    logger.info('ingest.run.success', {
+    logger.info('ingest.run.finished', {
       ingestRunId: run.id,
-      sourceId: run.source.id,
-      itemsCreated,
+      sourceId: source.id,
+      status,
+      ...stats,
       durationMs: Date.now() - startMs,
     });
   } catch (err) {
@@ -159,7 +217,7 @@ export async function runIngestRun(ingestRunId: string): Promise<void> {
 
     logger.error('ingest.run.failed', {
       ingestRunId: run.id,
-      sourceId: run.source.id,
+      sourceId: source.id,
       durationMs: Date.now() - startMs,
       error: message,
     });

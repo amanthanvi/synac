@@ -1,0 +1,40 @@
+# Editorial metadata for the "authentication" term entry.
+# Applied by the worker's editorial sync job against the PUBLISHED entry with
+# entryType TERM and primarySlug "authentication".
+entryType: TERM
+slug: authentication
+
+senses:
+  - slug: identity-verification
+    label: Identity verification
+    disambiguationNote: >-
+      Establishing that a principal is who it claims to be, by verifying one or
+      more factors. Authentication answers "who are you"; authorization answers
+      "what may you do".
+    preferred: true
+    confusedWith:
+      - slug: authorization
+        entryType: TERM
+        note: >-
+          Authentication proves identity, authorization grants access. A system
+          can authenticate a user and still deny every request.
+
+  - slug: message-authentication
+    label: Message authentication
+    disambiguationNote: >-
+      Verifying the origin and integrity of a message, typically with a MAC or a
+      digital signature, rather than verifying an interactive principal.
+
+tags:
+  - slug: identity
+    assignedBy: EDITORIAL
+
+relationships:
+  - type: OFTEN_CONFUSED_WITH
+    targetSlug: authorization
+    targetEntryType: TERM
+    note: The two are routinely used interchangeably in product documentation.
+  - type: SEE_ALSO
+    targetSlug: mfa
+    targetEntryType: ACRONYM
+    note: Multi-factor authentication is the common strengthening of this control.
