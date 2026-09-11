@@ -1,6 +1,6 @@
 # SynAc — Execution Plan (PLAN.md)
 
-Last updated: 2026-02-10
+Last updated: 2026-09-10
 
 This is the living implementation tracker for `SPEC.md`.
 
@@ -142,6 +142,7 @@ Goal: Complete public-facing UI redesign. Replace “Signal Ledger” aesthetic 
 Goal: push the public UI into a memorable, reference-first “signal + paper” aesthetic — instrument-panel header over archival paper, tuned for fast scanning and high trust.
 
 Design direction:
+
 - Typography stack: **Instrument Sans** (body) + **Fraunces** (display) + **IBM Plex Mono** (metadata).
 - Default theme: **light** (archival paper + dot grid + grain); auto dark via `prefers-color-scheme: dark`.
 - Keep UX rules from v0.1.4: **single visible header search** + **keyboard command palette** (`⌘K` / `Ctrl+K`).
@@ -149,6 +150,7 @@ Design direction:
 - Entry pages: **left rail** at-a-glance + references; senses as “evidence cards” with accent spine; citations remain per-sense.
 
 Plan:
+
 - [x] Tokens: refresh `globals.css` (dot-grid paper + grain overlay; tighter tokens for borders/shadows/easing).
 - [x] Typography: introduce Fraunces as display font; keep Instrument Sans + IBM Plex Mono.
 - [x] Header/Footer: instrument-panel styling; unify search and command palette affordances.
@@ -163,6 +165,7 @@ Plan:
 Goal: make the public UI feel fast, obvious, and calm to use — less “componenty”, more “reference work”.
 
 Design direction:
+
 - Keep typography stack: **Instrument Sans + Instrument Serif + IBM Plex Mono**.
 - Default theme: **light** (paper/ink), auto dark via `prefers-color-scheme: dark`.
 - Enforce a **single visible search box** (global header).
@@ -171,6 +174,7 @@ Design direction:
 - High‑sense entries (10+): **accordion/collapsible by default** (first sense open; hash opens targeted sense).
 
 Plan:
+
 - [x] Docs: update `SPEC.md` to lock the v0.1.4 UX rules and component conventions.
 - [x] Header: redesign `SiteHeader` + search UX; add `CommandPalette` and global hotkeys.
 - [x] Browse/search: redesign `/terms`, `/acronyms`, `/tags`, `/sources`, `/search` results layout + density.
@@ -182,12 +186,14 @@ Plan:
 ## v0.1.3 — Frontend design overhaul (“field manual”)
 
 Design direction:
+
 - Default theme: **light “paper + ink” field manual** (with subtle grid/texture).
 - Auto dark mode via `prefers-color-scheme: dark`.
 - Typography: keep **Instrument Sans + Instrument Serif + IBM Plex Mono**; use mono for metadata, serif for titles.
 - Layout motif: **side-rail + footnotes** (references feel like citations, not “cards”).
 
 Plan:
+
 - [x] Tokens: redesign `apps/web/src/app/globals.css` into a real token set (color, type scale, spacing, radii, shadows).
 - [x] Motion + a11y: add `prefers-reduced-motion` guardrails and tighten focus styles.
 - [x] Primitives: add `apps/web/src/components/ui/*` (Button, Panel/Card, Badge, Chip/Pill, Divider, EmptyState, KeyValue list).
@@ -231,8 +237,8 @@ Plan:
 - [x] Fix manual ingest trigger queue name (`ingest_run`) so Admin → Ingest runs actually execute
 - [x] Seed starter public content (dev+prod): sources + tags + initial published entries (`pnpm db:seed:content`)
 - [x] Fix Clerk prod custom-domain DNS (Clerk lives under `synac.app`)
-    - Prod Clerk custom domains: `clerk.synac.app` + `accounts.synac.app` (DNS verified in Cloudflare).
-    - Verified Clerk JS loads on `synac.app` and `/admin` redirects to `accounts.synac.app`.
+  - Prod Clerk custom domains: `clerk.synac.app` + `accounts.synac.app` (DNS verified in Cloudflare).
+  - Verified Clerk JS loads on `synac.app` and `/admin` redirects to `accounts.synac.app`.
 - [x] Smoke test (Chrome DevTools MCP): prod ✅ (public browse, admin, ingest approve→publish→public page), dev ✅ (public browse/search)
 
 ## v0.1.0-dev2 — Staging-first ingest + auto-promote (Tier-1 auto-publish)
@@ -301,6 +307,160 @@ Plan:
 - [x] Backups + restore drill checklist
 - [x] CI: lint/typecheck/tests + CodeQL + dependency scan + SBOM artifact
 - [x] Release: bump versions + tag `v0.1.0`
+
+## 2026-09 audit remediation
+
+A full-repo audit produced 54 items across five workstreams. They are grouped
+below by theme rather than by audit number; every box is checked against work
+that is actually in the branch. Open follow-ups are listed at the end and are
+mirrored in `ROADMAP.md`.
+
+### 1. Senses as meanings in the data model
+
+- [x] `Sense.slug` + stable `#s-<slug>` fragment links
+- [x] `sense_definitions` as per-source attestations (many sources, one meaning)
+- [x] Conflict detection: `needsLabel` set on disagreement, auto-publish blocked
+- [x] `Sense.disambiguationNote` + `confusedWith` relationships
+- [x] Migration `20260910120000_audit_wave1`
+- [x] `db:migrate:drift` drift check against an empty shadow database
+
+### 2. Tag governance
+
+- [x] `Tag.kind` (`DOMAIN` / `FACET`) and `Tag.parentId` hierarchy
+- [x] `EntryTag.assignedBy` (`EDITORIAL` / `AUTO` / `INGEST`)
+- [x] Auto-tagging made additive-only behind a hit threshold; editorial
+      assignments are never removed
+- [x] Tag add/rename/merge rules documented (`docs/content/taxonomy.md`)
+
+### 3. Search
+
+- [x] Meaning-level search (`scope=senses`)
+- [x] Entry search retained, ranking and pagination unchanged
+- [x] Search coverage audit switch (`SYNAC_SEARCH_COVERAGE_AUDIT_FIRST_PAGE`)
+
+### 4. Public read API, caching, dataset
+
+- [x] Public read API under `/api/v1` (entries, terms, acronyms, tags,
+      sources, per-sense citations, search)
+- [x] `openapi.json`
+- [x] Dataset export (`export/entries.json`, `export/entries.csv`) with an
+      explicit license split
+- [x] `GET /api/healthz`
+- [x] Tag-scoped `unstable_cache` loaders + ETag / `If-None-Match` → 304
+- [x] `POST /api/v1/internal/revalidate` (Bearer `SYNAC_REVALIDATE_SECRET`)
+- [x] API reference (`docs/api.md`)
+
+### 5. Editorial layer
+
+- [x] `content/entries/**/*.yaml` schema + examples
+- [x] Worker `editorial_sync` job (idempotent, editorial provenance, never
+      overwrites source attestations)
+- [x] Contributor workflow documented (`docs/content/editorial-layer.md`)
+- [x] Contribution boundary widened to `content/**` (`CONTRIBUTING.md`,
+      `README.md`)
+
+### 6. Licensing and safety
+
+- [x] License-type → PASS/WARN/FAIL gate mapping documented and enforced
+- [x] QUOTED content from non-permissive sources escalated; QUOTED +
+      PROPRIETARY fails
+- [x] Missing/stale (>180d) license verification downgraded to WARN
+- [x] `SYNAC_AUTOPUBLISH_TIER1` defaults to false; WARN requires
+      `SYNAC_AUTOPUBLISH_WARN=true`
+- [x] Editorial layer licensed CC BY 4.0; trademark disclaimer
+- [x] Takedown SLA published (acknowledge 3 business days, resolve 7)
+
+### 7. Privacy
+
+- [x] Anonymous `synac_session` cookie removed
+- [x] `entry_views` table and `/api/v1/view` removed
+- [x] Salted hashing for rate-limit and session identifiers
+      (`SYNAC_RATE_LIMIT_SALT`)
+- [x] Explicit trusted-proxy depth (`SYNAC_TRUSTED_PROXY_HOPS`)
+
+### 8. Worker
+
+- [x] `src/index.ts` entrypoint stub fixed
+- [x] `worker.ingest_cron.skip` logged with a `reason`
+- [x] robots/rate-limit handling for ingest fetches
+- [x] `maintenance_cleanup` and `editorial_sync` queues
+
+### 9. Testing
+
+- [x] Integration tests against `synac_test` / `synac_staging_test`
+- [x] `@synac/db/testing` split into its own export subpath
+- [x] Coverage enabled everywhere; thresholds on the `packages/db` query layer
+      (lines 60, functions 60, branches 50)
+- [x] `apps/e2e`: Playwright + axe (search flow, redirects, a11y, read API)
+
+### 10. CI, tooling, hygiene
+
+- [x] `pnpm format` (check) added to `gate` and CI
+- [x] `pnpm lint:strict` (`--max-warnings=0`) added; advisory until the
+      `apps/worker` backlog clears
+- [x] Type-aware ESLint (`recommendedTypeChecked`, `projectService`)
+- [x] "No TS suppression" rule enforced (`ban-ts-comment`,
+      `no-explicit-any`, `no-floating-promises`)
+- [x] `noUncheckedIndexedAccess`, `noImplicitOverride`,
+      `noFallthroughCasesInSwitch` in `tsconfig.base.json`
+- [x] All GitHub Actions pinned by commit SHA; minimal `permissions`;
+      concurrency groups
+- [x] CodeQL `security-extended`
+- [x] SBOM via pnpm-aware `cdxgen`
+- [x] Dependabot groups minor/patch weekly (npm + github-actions)
+- [x] `quality.yml`: e2e + axe + Lighthouse budgets
+- [x] Prisma `validate` + migration drift in CI
+- [x] `pnpm version:check` (`scripts/checkVersions.mjs`) in CI
+- [x] `.gitignore` / `.env.example` completed; secret placeholders left empty
+
+### 11. Infrastructure
+
+- [x] `docker-compose.yml` + `scripts/db/init.sql` (four databases,
+      `pg_trgm` + `citext`)
+- [x] `Dockerfile.web` / `Dockerfile.worker` (multi-stage, node:22-alpine)
+- [x] `railway.json`: `/api/healthz` health check + restart policy
+
+### 12. Docs, community, governance
+
+- [x] `docs/contributing/local-dev.md` rewritten
+- [x] `docs/contributing/public-web.md`: WCAG 2.2 AA target + a11y checklist
+- [x] Runbooks corrected (real levers only; Clerk session revocation added)
+- [x] `docs/community/triage.md` labels realigned with the templates
+- [x] `docs/BACKUPS.md` corrected (per-source snapshots, no object-storage
+      versioning claim)
+- [x] `docs/architecture/overview.md`: Mermaid diagram + caching model
+- [x] `docs/RELEASING.md`: version-agnostic, rollback, cache purge, env vars,
+      required checks
+- [x] New issue templates (term proposal, sense disambiguation); existing
+      templates extended
+- [x] PR template: related issue, a11y checklist, provenance attestation,
+      Conventional Commits
+- [x] `CODEOWNERS` widened to the high-risk config surface
+- [x] `CHANGELOG.md` / `ROADMAP.md` / `PLAN.md` version story corrected
+
+### Follow-ups (not closed in this branch)
+
+- [ ] Tag `v0.1.5` retroactively. This is a maintainer git action, see
+      `ROADMAP.md`
+- [ ] Clear the last 2 advisory type-aware lint warnings in `apps/worker`
+      (`no-unsafe-argument`, `no-base-to-string`), promote both rules to
+      `error`, and make `pnpm lint:strict` blocking in CI
+- [ ] Give `apps/web` type-aware linting too. It runs its own
+      `eslint-config-next` flat config, so the root type-checked rules never
+      reach it (9 findings are visible when the root config is pointed at it)
+- [ ] Make `apps/web/tsconfig.json` extend `tsconfig.base.json` so the web app
+      inherits the stricter flags
+- [ ] Align `@vitest/coverage-v8` (root, `4.1.11`) with the workspaces'
+      `vitest` (`4.0.18`). They are a minor apart, which breaks
+      `pnpm test:coverage` at load time. Bump the workspaces to `vitest`
+      `^4.1.11` or pin coverage-v8 to `4.0.x`, then `pnpm install`. The vitest
+      coverage config and the CI job are already in place and correct.
+- [ ] Move `pnpm.overrides` out of `package.json`. pnpm 10.27 ignores it there
+      and warns on every command; it belongs in `pnpm-workspace.yaml`
+- [ ] Run `pnpm -r format:write`: `prettier --check` is now part of `gate`, and
+      ~210 pre-existing files under `apps/web`, `apps/worker`, `packages/db`
+      and `packages/shared` do not match the repo's Prettier config
+- [ ] Bump every workspace manifest + `CITATION.cff` to `0.2.0` at release
 
 ## Spec deltas log (keep short)
 

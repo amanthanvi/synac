@@ -7,15 +7,22 @@ This directory contains operational docs, runbooks, and contributor guidance.
 - Local dev: `docs/contributing/local-dev.md`
 - Public web UI: `docs/contributing/public-web.md`
 - Docs writing: `docs/contributing/docs.md`
+- Editorial YAML (`content/**`): `docs/content/editorial-layer.md`
 - Writing tone: `docs/voice.md`
 
 ## Architecture
 
 - System overview: `docs/architecture/overview.md`
 
+## API
+
+- Public read API + dataset export: `docs/api.md`
+
 ## Content + licensing
 
-- Policy: `docs/content/licensing.md`
+- Licensing, trademarks, takedowns: `docs/content/licensing.md`
+- Tag taxonomy + auto-tagging: `docs/content/taxonomy.md`
+- Editorial layer (`content/**` YAML): `docs/content/editorial-layer.md`
 
 ## Community
 
@@ -33,4 +40,3 @@ This directory contains operational docs, runbooks, and contributor guidance.
   - `docs/runbooks/ingest-halted.md`
   - `docs/runbooks/ingest-bad-content.md`
   - `docs/runbooks/ingest-promotion.md`
-
