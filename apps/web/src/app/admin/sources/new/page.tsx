@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { PageHeader } from '@/components/PageHeader';
-import { requireAdminActor } from '@/lib/admin';
+import { requireActionRole } from '@/lib/admin';
 import { createSource } from '@/lib/adminSources';
 
 export const dynamic = 'force-dynamic';
@@ -9,9 +9,16 @@ export const dynamic = 'force-dynamic';
 export default function AdminNewSourcePage() {
   return (
     <>
-      <PageHeader badge="Admin" title="New source" subtitle="Create a source registry entry." />
+      <PageHeader
+        badge="Admin"
+        title="New source"
+        subtitle="Create a source registry entry."
+      />
 
-      <form action={create} style={{ maxWidth: 760, marginTop: 14, display: 'grid', gap: 12 }}>
+      <form
+        action={create}
+        style={{ maxWidth: 760, marginTop: 14, display: 'grid', gap: 12 }}
+      >
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Name</div>
           <input name="name" placeholder="e.g., MITRE ATT&CK" required />
@@ -24,10 +31,20 @@ export default function AdminNewSourcePage() {
 
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Base URL (https)</div>
-          <input name="baseUrl" placeholder="https://attack.mitre.org" required />
+          <input
+            name="baseUrl"
+            placeholder="https://attack.mitre.org"
+            required
+          />
         </label>
 
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: 12,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          }}
+        >
           <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>License type</div>
             <select name="licenseType" defaultValue="OTHER" required>
@@ -81,7 +98,9 @@ export default function AdminNewSourcePage() {
         </label>
 
         <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Attribution requirements (verified)</div>
+          <div style={{ opacity: 0.85 }}>
+            Attribution requirements (verified)
+          </div>
           <textarea
             name="attributionRequirements"
             required
@@ -95,7 +114,13 @@ export default function AdminNewSourcePage() {
           <textarea name="licenseNotes" rows={2} />
         </label>
 
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+        <div
+          style={{
+            display: 'grid',
+            gap: 12,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          }}
+        >
           <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>Last verified at (optional)</div>
             <input name="lastVerifiedAt" type="date" />
@@ -121,6 +146,64 @@ export default function AdminNewSourcePage() {
           />
         </label>
 
+        <h2 style={{ margin: '16px 0 0', fontSize: 16 }}>
+          Public licence &amp; attribution
+        </h2>
+        <div style={{ opacity: 0.7, fontSize: 12 }}>
+          Served verbatim by the public API, so consumers inherit this
+          source&rsquo;s terms.
+        </div>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>License URL (https, optional)</div>
+          <input name="licenseUrl" type="url" />
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>
+            Public licence statement (shown to readers)
+          </div>
+          <textarea name="licensePublicStatement" rows={2} />
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>
+            Attribution HTML (rendered on the source page)
+          </div>
+          <textarea name="attributionHtml" rows={2} />
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>
+            Trust tier rationale (why this tier?)
+          </div>
+          <textarea name="tierRationale" rows={2} />
+        </label>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: 12,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          }}
+        >
+          <label style={{ display: 'grid', gap: 6 }}>
+            <div style={{ opacity: 0.85 }}>Default content mode</div>
+            <select name="defaultContentMode" defaultValue="SUMMARIZED">
+              <option value="SUMMARIZED">SUMMARIZED</option>
+              <option value="PARAPHRASED">PARAPHRASED</option>
+              <option value="QUOTED">QUOTED</option>
+            </select>
+          </label>
+
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input name="snapshotAllowed" type="checkbox" />
+            <div style={{ opacity: 0.85 }}>
+              Snapshots of fetched documents may be stored
+            </div>
+          </label>
+        </div>
+
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Internal notes (optional)</div>
           <textarea name="notesInternal" rows={2} />
@@ -135,7 +218,9 @@ export default function AdminNewSourcePage() {
 
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <button type="submit">Create source</button>
-          <div style={{ opacity: 0.7, fontSize: 12 }}>You can keep it disabled until verification is complete.</div>
+          <div style={{ opacity: 0.7, fontSize: 12 }}>
+            You can keep it disabled until verification is complete.
+          </div>
         </div>
       </form>
     </>
@@ -145,10 +230,7 @@ export default function AdminNewSourcePage() {
 async function create(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage sources');
-  }
+  const actor = await requireActionRole('ADMIN');
 
   const { sourceId } = await createSource({
     actorUserId: actor.dbUserId,
@@ -159,7 +241,9 @@ async function create(formData: FormData) {
     licenseType: String(formData.get('licenseType') ?? ''),
     licenseNotes: String(formData.get('licenseNotes') ?? ''),
     allowedUse: String(formData.get('allowedUse') ?? ''),
-    attributionRequirements: String(formData.get('attributionRequirements') ?? ''),
+    attributionRequirements: String(
+      formData.get('attributionRequirements') ?? '',
+    ),
     accessMethod: String(formData.get('accessMethod') ?? ''),
     robotsPolicy: String(formData.get('robotsPolicy') ?? ''),
     rateLimitPolicy: String(formData.get('rateLimitPolicy') ?? ''),
@@ -168,6 +252,14 @@ async function create(formData: FormData) {
     trustTier: String(formData.get('trustTier') ?? ''),
     enabled: Boolean(formData.get('enabled')),
     notesInternal: String(formData.get('notesInternal') ?? ''),
+    licenseUrl: String(formData.get('licenseUrl') ?? ''),
+    licensePublicStatement: String(
+      formData.get('licensePublicStatement') ?? '',
+    ),
+    attributionHtml: String(formData.get('attributionHtml') ?? ''),
+    tierRationale: String(formData.get('tierRationale') ?? ''),
+    snapshotAllowed: formData.get('snapshotAllowed') === 'on',
+    defaultContentMode: String(formData.get('defaultContentMode') ?? ''),
   });
 
   redirect(`/admin/sources/${sourceId}`);

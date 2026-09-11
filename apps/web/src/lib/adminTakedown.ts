@@ -1,19 +1,30 @@
-import { getPrismaClient, type Prisma } from '@synac/db';
+import { getPrismaClient, toJsonSafe, type Prisma } from '@synac/db';
 
-function toJsonSafe<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
+type TakedownAction = { at: string; actorUserId: string; note: string };
 
-function toInputJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
-
-function parseActions(value: unknown): Array<Record<string, unknown>> {
-  if (!value) return [];
+/**
+ * `TakedownCase.actions` is a Json column we write ourselves, but it has been
+ * through the database and possibly an older shape. Keep only the rows that
+ * still match what we write, so the rest of the flow works with real types.
+ */
+function parseActions(value: Prisma.JsonValue): TakedownAction[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .map((v) => (v && typeof v === 'object' ? (v as Record<string, unknown>) : null))
-    .filter((v): v is Record<string, unknown> => Boolean(v));
+
+  const actions: TakedownAction[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+
+    const { at, actorUserId, note } = item;
+    if (
+      typeof at === 'string' &&
+      typeof actorUserId === 'string' &&
+      typeof note === 'string'
+    ) {
+      actions.push({ at, actorUserId, note });
+    }
+  }
+
+  return actions;
 }
 
 export async function markSourceDocumentDoNotUse(input: {
@@ -27,7 +38,13 @@ export async function markSourceDocumentDoNotUse(input: {
 
   const before = await prisma.sourceDocument.findFirst({
     where: { id: input.sourceDocumentId },
-    select: { id: true, doNotUse: true, doNotUseReason: true, doNotUseAt: true, doNotUseByUserId: true },
+    select: {
+      id: true,
+      doNotUse: true,
+      doNotUseReason: true,
+      doNotUseAt: true,
+      doNotUseByUserId: true,
+    },
   });
   if (!before) throw new Error('SourceDocument not found');
 
@@ -39,7 +56,13 @@ export async function markSourceDocumentDoNotUse(input: {
       doNotUseAt: new Date(),
       doNotUseByUserId: input.actorUserId,
     },
-    select: { id: true, doNotUse: true, doNotUseReason: true, doNotUseAt: true, doNotUseByUserId: true },
+    select: {
+      id: true,
+      doNotUse: true,
+      doNotUseReason: true,
+      doNotUseAt: true,
+      doNotUseByUserId: true,
+    },
   });
 
   await prisma.auditEvent.create({
@@ -106,13 +129,19 @@ export async function purgeDerivedContentForSourceDocument(input: {
     const entriesToArchive: string[] = [];
 
     for (const entryId of affectedEntryIds) {
-      const remaining = await tx.sense.count({ where: { entryId, deletedAt: null } });
+      const remaining = await tx.sense.count({
+        where: { entryId, deletedAt: null },
+      });
       if (remaining === 0) entriesToArchive.push(entryId);
     }
 
     const entriesArchivedRes = entriesToArchive.length
       ? await tx.entry.updateMany({
-          where: { id: { in: entriesToArchive }, status: 'PUBLISHED', deletedAt: null },
+          where: {
+            id: { in: entriesToArchive },
+            status: 'PUBLISHED',
+            deletedAt: null,
+          },
           data: { status: 'ARCHIVED' },
         })
       : { count: 0 };
@@ -122,7 +151,13 @@ export async function purgeDerivedContentForSourceDocument(input: {
 
     const docBefore = await tx.sourceDocument.findFirst({
       where: { id: input.sourceDocumentId },
-      select: { id: true, doNotUse: true, doNotUseReason: true, doNotUseAt: true, doNotUseByUserId: true },
+      select: {
+        id: true,
+        doNotUse: true,
+        doNotUseReason: true,
+        doNotUseAt: true,
+        doNotUseByUserId: true,
+      },
     });
     if (docBefore) {
       await tx.sourceDocument.update({
@@ -184,17 +219,29 @@ export async function createTakedownCase(input: {
     data: {
       status: input.status ?? 'OPEN',
       sourceId: input.sourceId?.trim() ? input.sourceId.trim() : null,
-      sourceDocumentId: input.sourceDocumentId?.trim() ? input.sourceDocumentId.trim() : null,
+      sourceDocumentId: input.sourceDocumentId?.trim()
+        ? input.sourceDocumentId.trim()
+        : null,
       entryId: input.entryId?.trim() ? input.entryId.trim() : null,
-      requesterContact: input.requesterContact?.trim() ? input.requesterContact.trim() : null,
+      requesterContact: input.requesterContact?.trim()
+        ? input.requesterContact.trim()
+        : null,
       requestText,
-      internalNotes: input.internalNotes?.trim() ? input.internalNotes.trim() : null,
+      internalNotes: input.internalNotes?.trim()
+        ? input.internalNotes.trim()
+        : null,
       createdByUserId: input.actorUserId,
       actions: [],
       affectedEntityIds: [],
       closedAt: input.status === 'CLOSED' ? new Date() : null,
     },
-    select: { id: true, status: true, sourceId: true, sourceDocumentId: true, entryId: true },
+    select: {
+      id: true,
+      status: true,
+      sourceId: true,
+      sourceDocumentId: true,
+      entryId: true,
+    },
   });
 
   await prisma.auditEvent.create({
@@ -222,14 +269,25 @@ export async function updateTakedownCase(input: {
 
   const before = await prisma.takedownCase.findFirst({
     where: { id: input.takedownCaseId },
-    select: { id: true, status: true, internalNotes: true, actions: true, affectedEntityIds: true, closedAt: true },
+    select: {
+      id: true,
+      status: true,
+      internalNotes: true,
+      actions: true,
+      affectedEntityIds: true,
+      closedAt: true,
+    },
   });
   if (!before) throw new Error('Takedown case not found');
 
   const actions = parseActions(before.actions);
   const append = input.appendAction?.trim();
   if (append) {
-    actions.push({ at: new Date().toISOString(), actorUserId: input.actorUserId, note: append });
+    actions.push({
+      at: new Date().toISOString(),
+      actorUserId: input.actorUserId,
+      note: append,
+    });
   }
 
   const internalNotes = (() => {
@@ -244,11 +302,21 @@ export async function updateTakedownCase(input: {
     data: {
       status,
       internalNotes,
-      actions: toInputJson(actions),
-      affectedEntityIds: input.affectedEntityIds === undefined ? undefined : input.affectedEntityIds,
+      actions,
+      affectedEntityIds:
+        input.affectedEntityIds === undefined
+          ? undefined
+          : input.affectedEntityIds,
       closedAt: status === 'CLOSED' ? (before.closedAt ?? new Date()) : null,
     },
-    select: { id: true, status: true, internalNotes: true, actions: true, affectedEntityIds: true, closedAt: true },
+    select: {
+      id: true,
+      status: true,
+      internalNotes: true,
+      actions: true,
+      affectedEntityIds: true,
+      closedAt: true,
+    },
   });
 
   await prisma.auditEvent.create({

@@ -1,25 +1,24 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { archiveEntry } from '@/lib/adminEntries';
+import { withApiHandler } from '@/lib/apiErrors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const POST = withApiHandler<Context>(
+  'api.admin.entries.archive',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: entryId } = await context.params;
+    const { id: entryId } = await context.params;
 
-  await archiveEntry({
-    actorUserId: actor.dbUserId,
-    entryId,
-  });
+    await archiveEntry({ actorUserId: actor.dbUserId, entryId });
 
-  return NextResponse.json({ ok: true });
-}
+    return NextResponse.json({ ok: true });
+  },
+);

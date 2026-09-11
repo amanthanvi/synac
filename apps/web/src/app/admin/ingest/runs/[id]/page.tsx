@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
-import { getPrismaClient } from '@synac/db';
+import { getPrismaClient, type Prisma } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { requireAdminActor } from '@/lib/admin';
+import { requireActionRole } from '@/lib/admin';
 import { approveIngestItem, rejectIngestItem } from '@/lib/adminIngest';
+import { formatDateTime } from '@/app/admin/_format';
 
 import styles from './page.module.css';
 
@@ -17,53 +18,64 @@ type AdminIngestRunPageProps = {
   searchParams?: Promise<{ approved?: string; rejected?: string }>;
 };
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(value);
+type IngestItemJson = {
+  proposedChange: Prisma.JsonValue;
+  stageOutputs: Prisma.JsonValue;
+  diff: Prisma.JsonValue;
+};
+
+type IngestItemDetails = {
+  title: string;
+  appliedEntryId: string | null;
+  matchedEntryId: string | null;
+  extractedText: string | null;
+};
+
+function jsonObject(value: Prisma.JsonValue | undefined): Prisma.JsonObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value
+    : {};
 }
 
-function getProposedTitle(value: unknown): string | null {
-  if (!value || typeof value !== 'object') return null;
-  const v = value as Record<string, unknown>;
-  return typeof v.displayTitle === 'string' ? v.displayTitle : null;
+function jsonString(value: Prisma.JsonValue | undefined): string | null {
+  return typeof value === 'string' ? value : null;
 }
 
-function getAppliedEntryId(value: unknown): string | null {
-  if (!value || typeof value !== 'object') return null;
-  const v = value as Record<string, unknown>;
-  return typeof v.appliedEntryId === 'string' ? v.appliedEntryId : null;
-}
-
-function getMatchedEntryId(stageOutputs: unknown): string | null {
-  if (!stageOutputs || typeof stageOutputs !== 'object') return null;
-  const v = stageOutputs as Record<string, unknown>;
-  const deduped = v.deduped;
-  if (!deduped || typeof deduped !== 'object') return null;
-  const d = deduped as Record<string, unknown>;
-  return typeof d.matchedEntryId === 'string' ? d.matchedEntryId : null;
-}
-
-function getExtractedText(stageOutputs: unknown): string | null {
-  if (!stageOutputs || typeof stageOutputs !== 'object') return null;
-  const v = stageOutputs as Record<string, unknown>;
-  const extracted = v.extracted;
-  if (!extracted || typeof extracted !== 'object') return null;
-  const e = extracted as Record<string, unknown>;
-  const def = e.definitionMd;
-  if (typeof def === 'string' && def.trim()) return def.trim();
-  const overview = e.overviewMd;
-  if (typeof overview === 'string' && overview.trim()) return overview.trim();
-  const desc = e.descriptionMd;
-  if (typeof desc === 'string' && desc.trim()) return desc.trim();
+function firstNonEmpty(
+  ...values: Array<Prisma.JsonValue | undefined>
+): string | null {
+  for (const value of values) {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
   return null;
 }
 
-export default async function AdminIngestRunPage({ params, searchParams }: AdminIngestRunPageProps) {
+/**
+ * The three JSON columns on an ingest item are shaped by the worker pipeline
+ * and are untyped at the database boundary. Narrow them once, here, so the
+ * markup below only ever sees strings.
+ */
+function readIngestItemDetails(item: IngestItemJson): IngestItemDetails {
+  const stages = jsonObject(item.stageOutputs);
+  const extracted = jsonObject(stages.extracted);
+
+  return {
+    title:
+      jsonString(jsonObject(item.proposedChange).displayTitle) ?? 'Untitled',
+    appliedEntryId: jsonString(jsonObject(item.diff).appliedEntryId),
+    matchedEntryId: jsonString(jsonObject(stages.deduped).matchedEntryId),
+    extractedText: firstNonEmpty(
+      extracted.definitionMd,
+      extracted.overviewMd,
+      extracted.descriptionMd,
+    ),
+  };
+}
+
+export default async function AdminIngestRunPage({
+  params,
+  searchParams,
+}: AdminIngestRunPageProps) {
   const { id } = await params;
   const qp = searchParams ? await searchParams : {};
 
@@ -121,9 +133,10 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
       ) : null}
 
       <div className={styles.meta}>
-        Started {formatDate(run.startedAt)}
-        {run.finishedAt ? ` · Finished ${formatDate(run.finishedAt)}` : ''}
-        · {run.items.length} items (showing up to 200)
+        Started {formatDateTime(run.startedAt)}
+        {run.finishedAt
+          ? ` · Finished ${formatDateTime(run.finishedAt)}`
+          : ''}· {run.items.length} items (showing up to 200)
       </div>
 
       {run.items.length === 0 ? (
@@ -131,18 +144,19 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
       ) : (
         <ol className={styles.itemList}>
           {run.items.map((item) => {
-            const title = getProposedTitle(item.proposedChange) ?? 'Untitled';
-            const docUrl = item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
-            const appliedEntryId = getAppliedEntryId(item.diff);
-            const matchedEntryId = getMatchedEntryId(item.stageOutputs);
-            const extractedText = getExtractedText(item.stageOutputs);
+            const { title, appliedEntryId, matchedEntryId, extractedText } =
+              readIngestItemDetails(item);
+            const docUrl =
+              item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
 
             return (
               <li key={item.id} className={styles.itemCard}>
                 <div className={styles.itemHeader}>
                   <span className={styles.itemMeta}>
                     {item.stage} · {item.licenseGate}
-                    {item.confidenceScore != null ? ` · score ${item.confidenceScore}` : ''}
+                    {item.confidenceScore != null
+                      ? ` · score ${item.confidenceScore}`
+                      : ''}
                   </span>
                   <span className={styles.itemTitle}>{title}</span>
                   <a
@@ -154,12 +168,18 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                     Source doc
                   </a>
                   {matchedEntryId ? (
-                    <Link className={styles.inlineLink} href={`/admin/entries/${matchedEntryId}`}>
+                    <Link
+                      className={styles.inlineLink}
+                      href={`/admin/entries/${matchedEntryId}`}
+                    >
                       Matched entry
                     </Link>
                   ) : null}
                   {appliedEntryId ? (
-                    <Link className={styles.inlineLink} href={`/admin/entries/${appliedEntryId}`}>
+                    <Link
+                      className={styles.inlineLink}
+                      href={`/admin/entries/${appliedEntryId}`}
+                    >
                       Entry
                     </Link>
                   ) : null}
@@ -173,7 +193,8 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
 
                 {item.licenseGateReason ? (
                   <div className={styles.itemError}>
-                    <span className={styles.label}>License:</span> {item.licenseGateReason}
+                    <span className={styles.label}>License:</span>{' '}
+                    {item.licenseGateReason}
                   </div>
                 ) : null}
 
@@ -184,7 +205,9 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                       type="submit"
                       variant="primary"
                       size="sm"
-                      disabled={item.stage === 'APPLIED' || item.stage === 'REJECTED'}
+                      disabled={
+                        item.stage === 'APPLIED' || item.stage === 'REJECTED'
+                      }
                     >
                       Approve
                     </Button>
@@ -193,11 +216,17 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                   <form action={reject} className={styles.rejectForm}>
                     <input type="hidden" name="runId" value={run.id} />
                     <input type="hidden" name="ingestItemId" value={item.id} />
-                    <input className={styles.input} name="reason" placeholder="Reject reason" />
+                    <input
+                      className={styles.input}
+                      name="reason"
+                      placeholder="Reject reason"
+                    />
                     <Button
                       type="submit"
                       size="sm"
-                      disabled={item.stage === 'APPLIED' || item.stage === 'REJECTED'}
+                      disabled={
+                        item.stage === 'APPLIED' || item.stage === 'REJECTED'
+                      }
                     >
                       Reject
                     </Button>
@@ -205,7 +234,9 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                 </div>
 
                 <details className={styles.details}>
-                  <summary className={styles.summary}>Proposed change JSON</summary>
+                  <summary className={styles.summary}>
+                    Proposed change JSON
+                  </summary>
                   <pre className={styles.pre}>
                     {JSON.stringify(item.proposedChange, null, 2)}
                   </pre>
@@ -214,14 +245,14 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
                 {extractedText ? (
                   <details className={styles.details}>
                     <summary className={styles.summary}>Extracted text</summary>
-                    <pre className={styles.pre}>
-                      {extractedText}
-                    </pre>
+                    <pre className={styles.pre}>{extractedText}</pre>
                   </details>
                 ) : null}
 
                 <details className={styles.details}>
-                  <summary className={styles.summary}>Stage outputs JSON</summary>
+                  <summary className={styles.summary}>
+                    Stage outputs JSON
+                  </summary>
                   <pre className={styles.pre}>
                     {JSON.stringify(item.stageOutputs, null, 2)}
                   </pre>
@@ -238,13 +269,13 @@ export default async function AdminIngestRunPage({ params, searchParams }: Admin
 async function approve(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    throw new Error('Not authorized');
-  }
+  const actor = await requireActionRole('ADMIN', 'EDITOR');
 
   const ingestItemId = String(formData.get('ingestItemId') ?? '');
-  const { entryId } = await approveIngestItem({ actorUserId: actor.dbUserId, ingestItemId });
+  const { entryId } = await approveIngestItem({
+    actorUserId: actor.dbUserId,
+    ingestItemId,
+  });
 
   redirect(`/admin/entries/${entryId}`);
 }
@@ -252,10 +283,7 @@ async function approve(formData: FormData) {
 async function reject(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    throw new Error('Not authorized');
-  }
+  const actor = await requireActionRole('ADMIN', 'EDITOR');
 
   const runId = String(formData.get('runId') ?? '');
   const ingestItemId = String(formData.get('ingestItemId') ?? '');

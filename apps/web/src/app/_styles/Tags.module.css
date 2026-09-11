@@ -57,14 +57,6 @@
   overflow: hidden;
 }
 
-.empty {
-  margin-top: 10px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px;
-  color: var(--fg-muted);
-}
-
 .filters {
   display: flex;
   flex-wrap: wrap;

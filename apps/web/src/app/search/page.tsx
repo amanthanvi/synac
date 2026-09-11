@@ -1,35 +1,54 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
+import { headers } from 'next/headers';
+import { Suspense, type ReactNode } from 'react';
 
-import { getPrismaClient, searchPublishedEntries } from '@synac/db';
-
+import { EntryListItem } from '@/components/EntryListItem';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
-import { FocusSearchButton } from '@/components/FocusSearchButton';
+import { SearchForm } from '@/components/SearchForm';
 import { ButtonLink } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Panel } from '@/components/ui/Panel';
+import { getSearchFallbacks, getSearchResults } from '@/lib/publicData';
+import { enforcePageRateLimit } from '@/lib/rateLimit';
 
 import styles from '../_styles/Browse.module.css';
 import layoutStyles from '../_styles/Layout.module.css';
 import pageStyles from './page.module.css';
 
+// Reads searchParams (q, page, type).
 export const dynamic = 'force-dynamic';
+
+const PAGE_SIZE = 20;
 
 type SearchPageProps = {
   searchParams?: Promise<{ q?: string; page?: string; type?: string }>;
 };
+
+export async function generateMetadata({
+  searchParams,
+}: SearchPageProps): Promise<Metadata> {
+  const params = (await searchParams) ?? {};
+  const query = (params.q ?? '').trim();
+
+  return {
+    title: query ? `Search: ${query}` : 'Search',
+    description:
+      'Search published SynAc entries by title, alias, expansion, summary, or definition.',
+    // Search result pages are thin, near-duplicate, and infinite in number.
+    robots: { index: false, follow: true },
+  };
+}
+
+const IGNORED_QUERIES = new Set(['a', 'an', 'and', 'or', 'the']);
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = (await searchParams) ?? {};
   const query = (params.q ?? '').trim();
   const normalizedQuery = query.toLowerCase().replace(/\s+/g, ' ').trim();
   const isIgnoredQuery =
-    normalizedQuery.length <= 1 ||
-    normalizedQuery === 'a' ||
-    normalizedQuery === 'an' ||
-    normalizedQuery === 'and' ||
-    normalizedQuery === 'or' ||
-    normalizedQuery === 'the';
+    normalizedQuery.length <= 1 || IGNORED_QUERIES.has(normalizedQuery);
   const page = Math.max(1, Number(params.page ?? 1) || 1);
   const entryType =
     params.type?.toUpperCase() === 'TERM'
@@ -48,18 +67,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       <Panel className={layoutStyles.narrow}>
         <div className={pageStyles.queryPanel}>
-          <div className={pageStyles.queryRow}>
-            <div className={pageStyles.queryLabel}>Query</div>
-            <div className={pageStyles.queryValue}>{query || '—'}</div>
-          </div>
-          <div className={pageStyles.queryActions}>
-            <FocusSearchButton size="sm" variant="primary">
-              Change query <span className={pageStyles.kbdInline}>/</span>
-            </FocusSearchButton>
-            <span className={pageStyles.queryHint}>
-              Tip: <span className={pageStyles.kbdInline}>⌘K</span> for commands.
-            </span>
-          </div>
+          {/* The form is seeded with the current query so refining it does not
+              mean retyping from scratch. */}
+          <SearchForm defaultValue={query} placeholder="Refine your search…" />
+          <span className={pageStyles.queryHint}>
+            Tip: <span className={pageStyles.kbdInline}>⌘K</span> for commands,{' '}
+            <span className={pageStyles.kbdInline}>/</span> to focus the header
+            search.
+          </span>
         </div>
       </Panel>
 
@@ -108,10 +123,91 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </ButtonLink>
           </div>
 
-          <Results query={query} page={page} entryType={entryType} />
+          <Suspense
+            key={`${query}:${page}:${entryType ?? 'ALL'}`}
+            fallback={<ResultsSkeleton />}
+          >
+            <Results query={query} page={page} entryType={entryType} />
+          </Suspense>
         </>
       )}
     </>
+  );
+}
+
+function ResultsSkeleton() {
+  return (
+    <div
+      className={pageStyles.resultsList}
+      aria-busy="true"
+      aria-label="Loading results"
+    >
+      <div className={pageStyles.skeletonList} aria-hidden="true">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className={pageStyles.skeletonItem}>
+            <div className={`skeleton ${pageStyles.skeletonTitle}`} />
+            <div className={`skeleton ${pageStyles.skeletonLine}`} />
+            <div className={`skeleton ${pageStyles.skeletonLineShort}`} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+async function NoResults({
+  query,
+  entryType,
+}: {
+  query: string;
+  entryType?: 'TERM' | 'ACRONYM';
+}) {
+  const { suggestion, tags } = await getSearchFallbacks({ query, entryType });
+
+  return (
+    <EmptyState
+      className={pageStyles.resultsEmpty}
+      title={`No results for “${query}”`}
+      actions={
+        <>
+          <ButtonLink href="/terms?letter=a" size="sm">
+            Browse terms
+          </ButtonLink>
+          <ButtonLink href="/acronyms?letter=a" size="sm">
+            Browse acronyms
+          </ButtonLink>
+        </>
+      }
+    >
+      {suggestion ? (
+        <p className={pageStyles.suggestion}>
+          Did you mean{' '}
+          <Link href={`/search?q=${encodeURIComponent(suggestion)}`}>
+            {suggestion}
+          </Link>
+          ?
+        </p>
+      ) : (
+        <p>Try a different spelling, a shorter query, or browse by letter.</p>
+      )}
+
+      {tags.length ? (
+        <div className={pageStyles.relatedTags}>
+          <span className={pageStyles.relatedTagsLabel}>Related tags</span>
+          <div className={styles.itemTags}>
+            {tags.map((tag) => (
+              <Link
+                key={tag.id}
+                href={`/tags/${tag.slug}`}
+                className={styles.tag}
+              >
+                {tag.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </EmptyState>
   );
 }
 
@@ -124,21 +220,24 @@ async function Results({
   page: number;
   entryType?: 'TERM' | 'ACRONYM';
 }) {
-  const prisma = getPrismaClient();
-  const pageSize = 20;
-  const results = await searchPublishedEntries(prisma, {
+  const rate = await enforcePageRateLimit(await headers());
+  if (!rate.allowed) {
+    return (
+      <EmptyState title="Too many searches">
+        Try again in {rate.retryAfterSeconds} seconds.
+      </EmptyState>
+    );
+  }
+
+  const { items, total } = await getSearchResults({
     query,
     page,
-    pageSize,
+    pageSize: PAGE_SIZE,
     entryType,
   });
 
-  if (results.length === 0) {
-    return (
-      <div className={`${styles.empty} ${pageStyles.resultsEmpty}`}>
-        No results for <strong>{query}</strong>. Try a different spelling or browse by letter.
-      </div>
-    );
+  if (items.length === 0) {
+    return <NoResults query={query} entryType={entryType} />;
   }
 
   const baseHref = `/search?q=${encodeURIComponent(query)}${
@@ -146,58 +245,51 @@ async function Results({
   }`;
   const prevHref = page > 1 ? `${baseHref}&page=${page - 1}` : undefined;
   const nextHref =
-    results.length === pageSize ? `${baseHref}&page=${page + 1}` : undefined;
+    page * PAGE_SIZE < total ? `${baseHref}&page=${page + 1}` : undefined;
 
   return (
     <>
       <ol className={`${styles.list} ${pageStyles.resultsList}`}>
-        {results.map((r) => (
-          <li key={r.id} className={styles.item}>
-            <div className={styles.itemTitleRow}>
-              <div className={styles.itemTitleLeft}>
-                <span
-                  className={`${styles.typeBadge} ${
-                    r.entryType === 'TERM' ? styles.typeBadgeTerm : styles.typeBadgeAcronym
-                  }`}
-                >
-                  {r.entryType}
-                </span>
-                <Link
-                  className={styles.itemTitle}
-                  href={
-                    r.entryType === 'TERM'
-                      ? `/term/${r.primarySlug}`
-                      : `/acronym/${r.primarySlug}`
-                  }
-                >
-                  {r.displayTitle}
-                </Link>
-              </div>
-              <span className={styles.itemSlug}>
-                /{r.entryType === 'TERM' ? 'term' : 'acronym'}/{r.primarySlug}
-              </span>
-            </div>
-            {r.entryType === 'ACRONYM' && (r.senseCount ?? 0) > 1 ? (
+        {items.map((result) => (
+          <EntryListItem
+            key={result.id}
+            entryType={result.entryType}
+            title={result.displayTitle}
+            href={
+              result.entryType === 'TERM'
+                ? `/term/${result.primarySlug}`
+                : `/acronym/${result.primarySlug}`
+            }
+            meta={`/${result.entryType === 'TERM' ? 'term' : 'acronym'}/${result.primarySlug}`}
+            summary={
+              result.snippet
+                ? renderHeadline(result.snippet)
+                : result.summaryText
+            }
+          >
+            {result.entryType === 'ACRONYM' && (result.senseCount ?? 0) > 1 ? (
               <p className={pageStyles.senseSummary}>
-                <strong>Meanings ({r.senseCount}):</strong>{' '}
-                {r.senseSummary ?? 'Multiple published senses.'}
+                <strong>Meanings ({result.senseCount}):</strong>{' '}
+                {result.senseSummary ?? 'Multiple published senses.'}
               </p>
             ) : null}
-            {r.snippet ? (
-              <p className={styles.itemSummary}>{renderHeadline(r.snippet)}</p>
-            ) : r.summaryText ? (
-              <p className={styles.itemSummary}>{r.summaryText}</p>
-            ) : null}
-          </li>
+          </EntryListItem>
         ))}
       </ol>
-      <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
+      <Pagination
+        page={page}
+        total={total}
+        pageSize={PAGE_SIZE}
+        prevHref={prevHref}
+        nextHref={nextHref}
+      />
     </>
   );
 }
 
+/** `ts_headline` marks matches with `<<`/`>>`; turn those into `<mark>`. */
 function renderHeadline(headline: string): ReactNode {
-  const pieces: React.ReactNode[] = [];
+  const pieces: ReactNode[] = [];
   const tokens = headline.split(/(<<|>>)/g);
   let highlight = false;
   let key = 0;
@@ -213,7 +305,13 @@ function renderHeadline(headline: string): ReactNode {
       continue;
     }
 
-    pieces.push(highlight ? <mark key={key++}>{token}</mark> : <span key={key++}>{token}</span>);
+    pieces.push(
+      highlight ? (
+        <mark key={key++}>{token}</mark>
+      ) : (
+        <span key={key++}>{token}</span>
+      ),
+    );
   }
 
   return <>{pieces}</>;

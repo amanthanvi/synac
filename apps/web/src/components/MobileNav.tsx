@@ -43,13 +43,13 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
     if (!panel) return;
 
     const focusable = panel.querySelectorAll<HTMLElement>(
-      'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])',
     );
     if (focusable.length === 0) return;
 
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-    const active = document.activeElement as HTMLElement | null;
+    const active = document.activeElement;
 
     if (e.shiftKey) {
       if (!active || active === first) {
@@ -75,7 +75,12 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
-        <svg className={styles.icon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg
+          className={styles.icon}
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
           <path
             d="M5 7h14M5 12h14M5 17h14"
             stroke="currentColor"
@@ -141,7 +146,8 @@ export function MobileNav({ links }: { links: MobileNavLink[] }) {
                 </nav>
 
                 <div className={styles.hint}>
-                  Tip: press <strong>/</strong> to search · <strong>⌘K</strong> for commands.
+                  Tip: press <strong>/</strong> to search · <strong>⌘K</strong>{' '}
+                  for commands.
                 </div>
               </div>
             </div>,

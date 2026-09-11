@@ -1,49 +1,39 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
-
+import { EntryListItem } from '@/components/EntryListItem';
 import { SearchForm } from '@/components/SearchForm';
 import { ButtonLink } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getRecentEntries } from '@/lib/publicData';
+import { formatDate } from '@/lib/publicFormat';
 
 import browseStyles from './_styles/Browse.module.css';
 import styles from './page.module.css';
 
+// DB-backed with no searchParams. Kept dynamic because `next build` runs in
+// environments without DATABASE_URL (e.g. the CodeQL workflow), so this route
+// must not be prerendered. Freshness still comes from the `unstable_cache`
+// tags in lib/publicData.ts, which `revalidateTag` invalidates on publish.
 export const dynamic = 'force-dynamic';
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
+export const metadata: Metadata = {
+  title: 'SynAc: cybersecurity terms and acronyms',
+  description:
+    'A cybersecurity reference for terms and acronyms, with per-sense provenance and source attribution.',
+  alternates: { canonical: '/' },
+};
 
 export default async function Home() {
-  const prisma = getPrismaClient();
-  const recent = await listRecentPublishedEntries(prisma, { page: 1, pageSize: 8 });
-
-  const entryIds = recent.map((e) => e.id);
-  const entryTags = entryIds.length
-    ? await prisma.entryTag.findMany({
-        where: { entryId: { in: entryIds }, tag: { deletedAt: null } },
-        select: { entryId: true, tag: { select: { id: true, name: true, slug: true } } },
-        orderBy: [{ tag: { name: 'asc' } }],
-      })
-    : [];
-
-  const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();
-  for (const row of entryTags) {
-    const list = tagsByEntryId.get(row.entryId) ?? [];
-    list.push(row.tag);
-    tagsByEntryId.set(row.entryId, list);
-  }
+  const { items } = await getRecentEntries({ page: 1, pageSize: 8 });
 
   return (
     <div className={styles.wrap}>
       <section className={styles.hero} aria-label="Glossary search">
         <h1 className={styles.title}>Search SynAc</h1>
         <p className={styles.subtitle}>
-          Cybersecurity reference for terms and acronyms — with provenance and attribution.
+          Cybersecurity reference for terms and acronyms, with provenance and
+          attribution.
         </p>
 
         <div className={styles.search}>
@@ -71,53 +61,27 @@ export default async function Home() {
           </Link>
         </div>
 
-        {recent.length === 0 ? (
-          <div className={browseStyles.empty}>No published entries yet.</div>
+        {items.length === 0 ? (
+          <EmptyState title="Nothing published yet">
+            Entries appear here as soon as the first ones are published.
+          </EmptyState>
         ) : (
           <ol className={browseStyles.list}>
-            {recent.map((entry) => {
-              const href =
-                entry.entryType === 'TERM'
-                  ? `/term/${entry.primarySlug}`
-                  : `/acronym/${entry.primarySlug}`;
-              const entryTags = tagsByEntryId.get(entry.id) ?? [];
-
-              return (
-                <li key={entry.id} className={browseStyles.item}>
-                  <div className={browseStyles.itemTitleRow}>
-                    <div className={browseStyles.itemTitleLeft}>
-                      <span
-                        className={`${browseStyles.typeBadge} ${
-                          entry.entryType === 'TERM'
-                            ? browseStyles.typeBadgeTerm
-                            : browseStyles.typeBadgeAcronym
-                        }`}
-                      >
-                        {entry.entryType}
-                      </span>
-                      <Link className={browseStyles.itemTitle} href={href}>
-                        {entry.displayTitle}
-                      </Link>
-                    </div>
-                    <span className={browseStyles.itemSlug}>Updated {formatDate(entry.updatedAt)}</span>
-                  </div>
-
-                  {entry.summaryText ? (
-                    <p className={browseStyles.itemSummary}>{entry.summaryText}</p>
-                  ) : null}
-
-                  {entryTags.length ? (
-                    <div className={browseStyles.itemTags}>
-                      {entryTags.map((tag) => (
-                        <Link key={tag.id} href={`/tags/${tag.slug}`} className={browseStyles.tag}>
-                          {tag.name}
-                        </Link>
-                      ))}
-                    </div>
-                  ) : null}
-                </li>
-              );
-            })}
+            {items.map((entry) => (
+              <EntryListItem
+                key={entry.id}
+                entryType={entry.entryType}
+                title={entry.displayTitle}
+                href={
+                  entry.entryType === 'TERM'
+                    ? `/term/${entry.primarySlug}`
+                    : `/acronym/${entry.primarySlug}`
+                }
+                meta={`Updated ${formatDate(entry.updatedAt)}`}
+                summary={entry.summaryText}
+                tags={entry.tags}
+              />
+            ))}
           </ol>
         )}
       </section>

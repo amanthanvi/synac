@@ -1,6 +1,11 @@
+import '../test.setup';
+
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { createIntegrationTestClient, resetIntegrationDatabase } from '@synac/db';
+import {
+  createIntegrationTestClient,
+  resetIntegrationDatabase,
+} from '@synac/db/testing';
 
 import { publishEntry } from './adminEntries';
 
@@ -137,7 +142,9 @@ describe('publish entry workflow integration', () => {
 
     await expect(
       publishEntry({ actorUserId, entryId: entry.id }),
-    ).rejects.toThrow('Publishing requires citations per sense (or Editorial rationale)');
+    ).rejects.toThrow(
+      'Publishing requires citations per sense (or Editorial rationale)',
+    );
   });
 
   it('publishes a real entry and keeps auto-tagging non-destructive', async () => {
@@ -166,8 +173,11 @@ describe('publish entry workflow integration', () => {
     const entry = await createDraftEntry({
       slug: 'authentication-test',
       title: 'Authentication Test',
-      summaryMd: 'Authentication and token handling.',
-      definitionMd: 'A vulnerability can expose authentication tokens.',
+      // Auto-tagging is weighted: a generic word like "authentication" only
+      // corroborates, so the fixture also carries a decisive term (SAML) to
+      // clear the threshold. See AUTO_TAG_THRESHOLD in @synac/db.
+      summaryMd: 'SAML authentication and token handling.',
+      definitionMd: 'A vulnerability can expose SAML authentication tokens.',
     });
 
     const sense = await prisma.sense.findFirstOrThrow({
@@ -214,7 +224,11 @@ describe('publish entry workflow integration', () => {
       select: { tagId: true },
     });
 
-    expect(result).toEqual({ publishedSenseCount: 1 });
+    expect(result).toEqual({
+      publishedSenseCount: 1,
+      entryType: 'TERM',
+      primarySlug: 'authentication-test',
+    });
     expect(publishedEntry.status).toBe('PUBLISHED');
     expect(publishedSense.status).toBe('PUBLISHED');
     expect(identityTag).toEqual({
@@ -222,6 +236,8 @@ describe('publish entry workflow integration', () => {
       description: 'Keep me intact',
     });
     expect(appSecActive).toHaveLength(0);
-    expect(entryTagLinks.map((row) => row.tagId)).toContain(activeIdentityTag.id);
+    expect(entryTagLinks.map((row) => row.tagId)).toContain(
+      activeIdentityTag.id,
+    );
   });
 });

@@ -4,8 +4,13 @@ import { getPrismaClient, type Prisma } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { Button, ButtonLink } from '@/components/ui/Button';
-import { requireAdminActor } from '@/lib/admin';
-import { markSourceDocumentDoNotUse, purgeDerivedContentForSourceDocument, updateTakedownCase } from '@/lib/adminTakedown';
+import { requireActionRole } from '@/lib/admin';
+import {
+  markSourceDocumentDoNotUse,
+  purgeDerivedContentForSourceDocument,
+  updateTakedownCase,
+} from '@/lib/adminTakedown';
+import { formatDateTime } from '@/app/admin/_format';
 
 import styles from './page.module.css';
 
@@ -16,35 +21,50 @@ type AdminTakedownCasePageProps = {
   searchParams?: Promise<{ saved?: string; dnu?: string; purged?: string }>;
 };
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(value);
-}
-
 function parseJsonInput(value: string): Prisma.InputJsonValue | undefined {
   const trimmed = value.trim();
   if (!trimmed) return undefined;
+  // The field is a free-form JSON textarea, so anything `JSON.parse` accepts is
+  // by definition a valid JSON input value.
   return JSON.parse(trimmed) as Prisma.InputJsonValue;
 }
 
-function parseAffectedEntityIds(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== 'object') return {};
-  if (Array.isArray(value)) return {};
-  return value as Record<string, unknown>;
+type AffectedEntityIds = {
+  sourceDocuments: string[];
+  senses: string[];
+  entriesSummaryCleared: string[];
+  entriesArchived: string[];
+};
+
+function stringArray(value: Prisma.JsonValue | undefined): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (v): v is string => typeof v === 'string' && v.trim().length > 0,
+  );
 }
 
-function normalizeStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((v): v is string => typeof v === 'string' && v.trim().length > 0);
+/**
+ * `affectedEntityIds` is an untyped JSON column that older cases may have
+ * written by hand. Read it once into the four id lists this page maintains.
+ */
+function readAffectedEntityIds(
+  value: Prisma.JsonValue | undefined,
+): AffectedEntityIds {
+  const object: Prisma.JsonObject =
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+      ? value
+      : {};
+
+  return {
+    sourceDocuments: stringArray(object.sourceDocuments),
+    senses: stringArray(object.senses),
+    entriesSummaryCleared: stringArray(object.entriesSummaryCleared),
+    entriesArchived: stringArray(object.entriesArchived),
+  };
 }
 
 function mergeAffectedEntityIds(
-  before: Record<string, unknown>,
+  before: AffectedEntityIds,
   delta: {
     sourceDocumentId?: string;
     senseIds?: string[];
@@ -52,14 +72,16 @@ function mergeAffectedEntityIds(
     entriesArchived?: string[];
   },
 ): Prisma.InputJsonValue {
-  const sourceDocuments = new Set(normalizeStringArray(before.sourceDocuments));
-  const senses = new Set(normalizeStringArray(before.senses));
-  const entriesSummaryCleared = new Set(normalizeStringArray(before.entriesSummaryCleared));
-  const entriesArchived = new Set(normalizeStringArray(before.entriesArchived));
+  const sourceDocuments = new Set(before.sourceDocuments);
+  const senses = new Set(before.senses);
+  const entriesSummaryCleared = new Set(before.entriesSummaryCleared);
+  const entriesArchived = new Set(before.entriesArchived);
 
-  if (delta.sourceDocumentId?.trim()) sourceDocuments.add(delta.sourceDocumentId.trim());
+  if (delta.sourceDocumentId?.trim())
+    sourceDocuments.add(delta.sourceDocumentId.trim());
   for (const id of delta.senseIds ?? []) senses.add(id);
-  for (const id of delta.entriesSummaryCleared ?? []) entriesSummaryCleared.add(id);
+  for (const id of delta.entriesSummaryCleared ?? [])
+    entriesSummaryCleared.add(id);
   for (const id of delta.entriesArchived ?? []) entriesArchived.add(id);
 
   return {
@@ -70,11 +92,14 @@ function mergeAffectedEntityIds(
   };
 }
 
-export default async function AdminTakedownCasePage({ params, searchParams }: AdminTakedownCasePageProps) {
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage takedown');
-  }
+export default async function AdminTakedownCasePage({
+  params,
+  searchParams,
+}: AdminTakedownCasePageProps) {
+  // Gate the page itself: a takedown case names the complainant and the
+  // disputed material, so viewing one is an ADMIN-only act even though this
+  // component performs no writes.
+  await requireActionRole('ADMIN');
 
   const { id } = await params;
   const qp = searchParams ? await searchParams : {};
@@ -98,7 +123,14 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
       entryId: true,
       createdByUser: { select: { email: true } },
       source: { select: { id: true, name: true } },
-      entry: { select: { id: true, entryType: true, displayTitle: true, primarySlug: true } },
+      entry: {
+        select: {
+          id: true,
+          entryType: true,
+          displayTitle: true,
+          primarySlug: true,
+        },
+      },
       sourceDocument: {
         select: {
           id: true,
@@ -145,7 +177,12 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
           </ButtonLink>
         ) : null}
         {entryUrl ? (
-          <a className={styles.inlineLink} href={entryUrl} target="_blank" rel="noopener noreferrer">
+          <a
+            className={styles.inlineLink}
+            href={entryUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Public
           </a>
         ) : null}
@@ -160,13 +197,16 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
       ) : null}
 
       <div className={styles.meta}>
-        Created {formatDate(c.createdAt)} · Updated {formatDate(c.updatedAt)}
-        {c.closedAt ? ` · Closed ${formatDate(c.closedAt)}` : ''}
+        Created {formatDateTime(c.createdAt)} · Updated{' '}
+        {formatDateTime(c.updatedAt)}
+        {c.closedAt ? ` · Closed ${formatDateTime(c.closedAt)}` : ''}
       </div>
 
       <div className={styles.infoBlock}>
         <div className={styles.infoLabel}>Requester contact</div>
-        <div className={styles.infoValue}>{c.requesterContact?.trim() ? c.requesterContact : '—'}</div>
+        <div className={styles.infoValue}>
+          {c.requesterContact?.trim() ? c.requesterContact : '—'}
+        </div>
       </div>
 
       <div className={styles.infoBlock}>
@@ -179,7 +219,12 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
 
         <label className={styles.field}>
           <div className={styles.label}>Status</div>
-          <select className={styles.select} name="status" defaultValue={c.status} required>
+          <select
+            className={styles.select}
+            name="status"
+            defaultValue={c.status}
+            required
+          >
             <option value="OPEN">OPEN</option>
             <option value="IN_PROGRESS">IN_PROGRESS</option>
             <option value="CLOSED">CLOSED</option>
@@ -206,12 +251,18 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
         </label>
 
         <label className={styles.field}>
-          <div className={styles.label}>Affected entity IDs JSON (optional)</div>
+          <div className={styles.label}>
+            Affected entity IDs JSON (optional)
+          </div>
           <textarea
             className={styles.textarea}
             name="affectedEntityIds"
             rows={5}
-            defaultValue={c.affectedEntityIds ? JSON.stringify(c.affectedEntityIds, null, 2) : ''}
+            defaultValue={
+              c.affectedEntityIds
+                ? JSON.stringify(c.affectedEntityIds, null, 2)
+                : ''
+            }
             placeholder='e.g. {"sourceDocuments":["..."],"senses":["..."],"entriesArchived":["..."]}'
           />
         </label>
@@ -236,7 +287,9 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
       <details className={styles.details}>
         <summary className={styles.summary}>Affected entity IDs JSON</summary>
         <div className={styles.detailsBody}>
-          <pre className={styles.pre}>{JSON.stringify(c.affectedEntityIds, null, 2)}</pre>
+          <pre className={styles.pre}>
+            {JSON.stringify(c.affectedEntityIds, null, 2)}
+          </pre>
         </div>
       </details>
 
@@ -255,16 +308,24 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
             </a>
             <span className={styles.meta}>
               {c.sourceDocument.doNotUse ? 'DO_NOT_USE' : 'ALLOW_USE'}
-              {c.sourceDocument.doNotUseAt ? ` · set ${formatDate(c.sourceDocument.doNotUseAt)}` : ''}
+              {c.sourceDocument.doNotUseAt
+                ? ` · set ${formatDateTime(c.sourceDocument.doNotUseAt)}`
+                : ''}
             </span>
             {c.sourceDocument.doNotUseReason?.trim() ? (
-              <span className={styles.note}>· {c.sourceDocument.doNotUseReason}</span>
+              <span className={styles.note}>
+                · {c.sourceDocument.doNotUseReason}
+              </span>
             ) : null}
           </div>
 
           <form action={markDnu} className={styles.actionForm}>
             <input type="hidden" name="takedownCaseId" value={c.id} />
-            <input type="hidden" name="sourceDocumentId" value={c.sourceDocument.id} />
+            <input
+              type="hidden"
+              name="sourceDocumentId"
+              value={c.sourceDocument.id}
+            />
             <input
               className={`${styles.input} ${styles.reasonInput}`}
               name="reason"
@@ -277,12 +338,17 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
 
           <form action={purge} className={styles.actionForm}>
             <input type="hidden" name="takedownCaseId" value={c.id} />
-            <input type="hidden" name="sourceDocumentId" value={c.sourceDocument.id} />
+            <input
+              type="hidden"
+              name="sourceDocumentId"
+              value={c.sourceDocument.id}
+            />
             <Button type="submit" size="sm">
               Purge derived content
             </Button>
             <span className={styles.note}>
-              Archives senses + clears derived summaries + archives empty published entries.
+              Archives senses + clears derived summaries + archives empty
+              published entries.
             </span>
           </form>
         </>
@@ -294,13 +360,15 @@ export default async function AdminTakedownCasePage({ params, searchParams }: Ad
 async function saveCase(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage takedown');
-  }
+  const actor = await requireActionRole('ADMIN');
 
   const takedownCaseId = String(formData.get('takedownCaseId') ?? '');
-  const status = String(formData.get('status') ?? 'OPEN') as 'OPEN' | 'IN_PROGRESS' | 'CLOSED';
+  // The only producer is the three-option select above, and the column is
+  // a Postgres enum, so a forged value fails the write rather than storing.
+  const status = String(formData.get('status') ?? 'OPEN') as
+    | 'OPEN'
+    | 'IN_PROGRESS'
+    | 'CLOSED';
   const internalNotes = String(formData.get('internalNotes') ?? '');
   const appendAction = String(formData.get('appendAction') ?? '');
   const affectedEntityIdsRaw = String(formData.get('affectedEntityIds') ?? '');
@@ -320,16 +388,17 @@ async function saveCase(formData: FormData) {
 async function markDnu(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage takedown');
-  }
+  const actor = await requireActionRole('ADMIN');
 
   const takedownCaseId = String(formData.get('takedownCaseId') ?? '');
   const sourceDocumentId = String(formData.get('sourceDocumentId') ?? '');
   const reason = String(formData.get('reason') ?? '');
 
-  await markSourceDocumentDoNotUse({ actorUserId: actor.dbUserId, sourceDocumentId, reason });
+  await markSourceDocumentDoNotUse({
+    actorUserId: actor.dbUserId,
+    sourceDocumentId,
+    reason,
+  });
 
   const prisma = getPrismaClient();
   const existing = await prisma.takedownCase.findFirst({
@@ -341,7 +410,10 @@ async function markDnu(formData: FormData) {
     actorUserId: actor.dbUserId,
     takedownCaseId,
     appendAction: `Marked SourceDocument ${sourceDocumentId} do-not-use: ${reason.trim()}`,
-    affectedEntityIds: mergeAffectedEntityIds(parseAffectedEntityIds(existing?.affectedEntityIds), { sourceDocumentId }),
+    affectedEntityIds: mergeAffectedEntityIds(
+      readAffectedEntityIds(existing?.affectedEntityIds),
+      { sourceDocumentId },
+    ),
   });
 
   redirect(`/admin/takedown/${takedownCaseId}?dnu=1`);
@@ -350,10 +422,7 @@ async function markDnu(formData: FormData) {
 async function purge(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage takedown');
-  }
+  const actor = await requireActionRole('ADMIN');
 
   const takedownCaseId = String(formData.get('takedownCaseId') ?? '');
   const sourceDocumentId = String(formData.get('sourceDocumentId') ?? '');
@@ -369,12 +438,15 @@ async function purge(formData: FormData) {
     select: { affectedEntityIds: true },
   });
 
-  const merged = mergeAffectedEntityIds(parseAffectedEntityIds(existing?.affectedEntityIds), {
-    sourceDocumentId,
-    senseIds: result.senseIdsArchived,
-    entriesSummaryCleared: result.entryIdsSummaryCleared,
-    entriesArchived: result.entryIdsArchived,
-  });
+  const merged = mergeAffectedEntityIds(
+    readAffectedEntityIds(existing?.affectedEntityIds),
+    {
+      sourceDocumentId,
+      senseIds: result.senseIdsArchived,
+      entriesSummaryCleared: result.entryIdsSummaryCleared,
+      entriesArchived: result.entryIdsArchived,
+    },
+  );
 
   await updateTakedownCase({
     actorUserId: actor.dbUserId,

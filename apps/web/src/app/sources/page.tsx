@@ -1,44 +1,31 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { getPrismaClient, listPublicSources } from '@synac/db';
-
 import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getSourceDirectory } from '@/lib/publicData';
+import { formatDate } from '@/lib/publicFormat';
+import { formatLicenseType, formatTrustTierShort } from '@/lib/publicLabels';
 
 import styles from '../_styles/Browse.module.css';
 
+// DB-backed with no searchParams. Kept dynamic because `next build` runs in
+// environments without DATABASE_URL (e.g. the CodeQL workflow), so this route
+// must not be prerendered. Freshness still comes from the `unstable_cache`
+// tags in lib/publicData.ts, which `revalidateTag` invalidates on publish.
 export const dynamic = 'force-dynamic';
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
+export const metadata: Metadata = {
+  title: 'Sources',
+  description:
+    'Registered SynAc sources with their licences, attribution requirements, and trust tiers.',
+  alternates: { canonical: '/sources' },
+};
 
 export default async function SourcesPage() {
-  const prisma = getPrismaClient();
-  const sources = await listPublicSources(prisma);
-  const sourceIds = sources.map((s) => s.id);
-  const citationAgg = sourceIds.length
-    ? await prisma.citation.groupBy({
-        by: ['sourceId'],
-        where: { sourceId: { in: sourceIds } },
-        _count: { sourceId: true },
-        _max: { accessedAt: true },
-      })
-    : [];
+  const { sources, stats } = await getSourceDirectory();
 
-  const citationBySourceId = new Map<
-    string,
-    { count: number; maxAccessedAt: Date | null }
-  >();
-  for (const row of citationAgg) {
-    citationBySourceId.set(row.sourceId, {
-      count: row._count.sourceId,
-      maxAccessedAt: row._max.accessedAt ?? null,
-    });
-  }
+  const statsBySourceId = new Map(stats.map((row) => [row.id, row] as const));
 
   return (
     <>
@@ -49,27 +36,28 @@ export default async function SourcesPage() {
       />
 
       {sources.length === 0 ? (
-        <div className={styles.empty}>
-          No sources yet. Once ingest is configured, this page will list attribution requirements
-          per source.
-        </div>
+        <EmptyState title="No sources yet">
+          Once ingest is configured, this page will list attribution
+          requirements per source.
+        </EmptyState>
       ) : (
         <ol className={styles.list}>
           {sources.map((source) => {
-            const stats = citationBySourceId.get(source.id) ?? {
-              count: 0,
-              maxAccessedAt: null as Date | null,
-            };
+            const stat = statsBySourceId.get(source.id);
+            const citedCount = stat?.citedCount ?? 0;
 
             return (
               <li key={source.id} className={styles.item}>
                 <div className={styles.itemTitleRow}>
-                  <Link className={styles.itemTitle} href={`/sources/${source.sourceSlug}`}>
+                  <Link
+                    className={styles.itemTitle}
+                    href={`/sources/${source.sourceSlug}`}
+                  >
                     {source.name}
                   </Link>
                   <span className={styles.itemSlug}>
-                    {stats.maxAccessedAt ? (
-                      <>Latest {formatDate(stats.maxAccessedAt)}</>
+                    {stat?.latestAccessedAt ? (
+                      <>Latest {formatDate(stat.latestAccessedAt)}</>
                     ) : (
                       <>No citations yet</>
                     )}
@@ -78,11 +66,18 @@ export default async function SourcesPage() {
                 <p className={styles.itemSummary}>
                   <span className={styles.metaStrong}>{source.baseUrl}</span>
                   <span className={styles.metaSep}>·</span>
-                  <span className={styles.metaMuted}>{source.licenseType}</span>
+                  <span className={styles.metaMuted}>
+                    {formatLicenseType(source.licenseType)}
+                  </span>
                 </p>
                 <div className={styles.itemTags}>
-                  <span className={styles.tag}>{source.trustTier.replace('_', ' ')}</span>
-                  <span className={styles.tag}>{stats.count.toLocaleString()} citations</span>
+                  <span className={styles.tag}>
+                    {formatTrustTierShort(source.trustTier)}
+                  </span>
+                  <span className={styles.tag}>
+                    {citedCount.toLocaleString()} cited{' '}
+                    {citedCount === 1 ? 'entry' : 'entries'}
+                  </span>
                   <span className={styles.tag}>
                     {source.lastVerifiedAt
                       ? `Verified ${formatDate(source.lastVerifiedAt)}`

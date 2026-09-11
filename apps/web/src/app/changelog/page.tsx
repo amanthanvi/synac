@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+
 import { PageHeader } from '@/components/PageHeader';
 import { CHANGELOG } from '@/lib/changelog';
 import { ButtonLink } from '@/components/ui/Button';
@@ -6,7 +8,11 @@ import { Panel } from '@/components/ui/Panel';
 import layoutStyles from '../_styles/Layout.module.css';
 import styles from './page.module.css';
 
-export const dynamic = 'force-dynamic';
+export const metadata: Metadata = {
+  title: 'Changelog',
+  description: 'Versioned changes to SynAc.',
+  alternates: { canonical: '/changelog' },
+};
 
 export default function ChangelogPage() {
   return (
@@ -50,7 +56,9 @@ export default function ChangelogPage() {
                     <div className={styles.sections}>
                       {entry.sections.map((section) => (
                         <section key={section.title} className={styles.section}>
-                          <div className={styles.sectionLabel}>{section.title}</div>
+                          <div className={styles.sectionLabel}>
+                            {section.title}
+                          </div>
                           {section.items.length ? (
                             <ul className={styles.items}>
                               {section.items.map((item) => (

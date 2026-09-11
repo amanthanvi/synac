@@ -127,18 +127,6 @@
   user-select: none;
 }
 
-.badgeTerm {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  color: color-mix(in srgb, var(--accent) 84%, var(--fg));
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-}
-
-.badgeAcronym {
-  border-color: color-mix(in srgb, var(--accent-2) 55%, var(--border));
-  color: color-mix(in srgb, var(--accent-2) 84%, var(--fg));
-  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
-}
-
 .optionBody {
   min-width: 0;
   display: grid;

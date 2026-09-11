@@ -100,25 +100,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kicker,
-  .title,
-  .lede,
-  .actions,
-  .metaHint,
-  .sidebar,
-  .cards {
+  .hero,
+  .recent {
     animation: none;
-  }
-
-  .card {
-    transition: none;
-  }
-
-  .card:hover {
-    transform: none;
-  }
-
-  .hero::before {
-    transform: none;
   }
 }

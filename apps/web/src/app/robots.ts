@@ -1,17 +1,20 @@
 import type { MetadataRoute } from 'next';
 
+import { getSiteUrl } from '@/lib/sitemap';
+
 export default function robots(): MetadataRoute.Robots {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? 'https://synac.example';
+  const siteUrl = getSiteUrl();
 
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/api'],
+        // /search is infinite and near-duplicate; the auth routes have nothing
+        // to index. Both are also absent from the sitemaps.
+        disallow: ['/admin', '/api', '/search', '/sign-in', '/sign-up'],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
   };
 }
-

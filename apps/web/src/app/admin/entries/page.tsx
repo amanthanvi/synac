@@ -4,19 +4,12 @@ import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { ButtonLink } from '@/components/ui/Button';
+import { formatDate } from '@/app/admin/_format';
 
 import browseStyles from '@/app/_styles/Browse.module.css';
 import layoutStyles from '@/app/_styles/Layout.module.css';
 
 export const dynamic = 'force-dynamic';
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function AdminEntriesPage() {
   const prisma = getPrismaClient();
@@ -36,7 +29,11 @@ export default async function AdminEntriesPage() {
 
   return (
     <>
-      <PageHeader badge="Admin" title="Entries" subtitle="Create, edit, and publish entries." />
+      <PageHeader
+        badge="Admin"
+        title="Entries"
+        subtitle="Create, edit, and publish entries."
+      />
 
       <div className={layoutStyles.stack}>
         <div className={layoutStyles.row}>
@@ -52,7 +49,10 @@ export default async function AdminEntriesPage() {
             {entries.map((e) => (
               <li key={e.id} className={browseStyles.item}>
                 <div className={browseStyles.itemTitleRow}>
-                  <Link className={browseStyles.itemTitle} href={`/admin/entries/${e.id}`}>
+                  <Link
+                    className={browseStyles.itemTitle}
+                    href={`/admin/entries/${e.id}`}
+                  >
                     {e.displayTitle}
                   </Link>
                   <span className={browseStyles.itemSlug}>
@@ -60,8 +60,8 @@ export default async function AdminEntriesPage() {
                   </span>
                 </div>
                 <p className={browseStyles.itemSummary}>
-                  /{e.entryType === 'TERM' ? 'term' : 'acronym'}/{e.primarySlug} · updated{' '}
-                  {formatDate(e.updatedAt)}
+                  /{e.entryType === 'TERM' ? 'term' : 'acronym'}/{e.primarySlug}{' '}
+                  · updated {formatDate(e.updatedAt)}
                 </p>
               </li>
             ))}

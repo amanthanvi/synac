@@ -6,7 +6,7 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
   height: 26px;
   padding: 0 10px;
   border-radius: var(--radius-md);
@@ -18,6 +18,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
+  cursor: pointer;
   transition:
     border-color var(--dur-hover) var(--ease),
     color var(--dur-hover) var(--ease),
@@ -30,6 +31,27 @@
   background: var(--bg-2);
 }
 
+.pill[aria-expanded='true'] {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  color: var(--fg);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.pillText {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 22ch;
+}
+
+.pillIcon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.pill[aria-expanded='true'] .pillIcon {
+  transform: rotate(180deg);
+}
+
 .popover {
   position: absolute;
   left: 0;
@@ -40,19 +62,10 @@
   background: var(--bg-1);
   box-shadow: var(--shadow-md);
   padding: 12px;
-  opacity: 0;
-  transform: translateY(4px);
-  pointer-events: none;
   z-index: 30;
-  transition:
-    opacity 150ms var(--ease),
-    transform 150ms var(--ease-out);
-}
-
-.wrap:hover .popover,
-.wrap:focus-within .popover {
-  opacity: 1;
-  transform: translateY(0);
+  display: grid;
+  gap: 8px;
+  text-transform: none;
 }
 
 .title {
@@ -63,14 +76,12 @@
 }
 
 .doc {
-  margin-top: 6px;
   color: var(--fg-muted);
   line-height: 1.45;
   font-size: 12px;
 }
 
 .meta {
-  margin-top: 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -81,23 +92,24 @@
 }
 
 .url {
-  margin-top: 8px;
   color: color-mix(in srgb, var(--accent) 84%, var(--fg));
   font-family: var(--font-mono);
   font-size: 11px;
   word-break: break-word;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .note {
-  margin-top: 10px;
   color: var(--fg-muted);
   font-size: 12px;
   line-height: 1.5;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .popover {
-    transition: none;
-  }
+.sourceLink {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: color-mix(in srgb, var(--accent) 84%, var(--fg));
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-

@@ -1,12 +1,15 @@
 import styles from './Panel.module.css';
 import type { ReactNode } from 'react';
 
-export type PanelProps = {
-  as?: 'div' | 'section' | 'article';
+type PanelProps = {
   className?: string;
   children: ReactNode;
 };
 
-export function Panel({ as: Tag = 'div', className, children }: PanelProps) {
-  return <Tag className={[styles.panel, className].filter(Boolean).join(' ')}>{children}</Tag>;
+export function Panel({ className, children }: PanelProps) {
+  return (
+    <div className={[styles.panel, className].filter(Boolean).join(' ')}>
+      {children}
+    </div>
+  );
 }

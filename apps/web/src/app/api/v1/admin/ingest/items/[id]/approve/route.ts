@@ -1,25 +1,36 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { approveIngestItem } from '@/lib/adminIngest';
+import { withApiHandler } from '@/lib/apiErrors';
+import { approveIngestItemBodySchema, parseBody } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const POST = withApiHandler<Context>(
+  'api.admin.ingest.items.approve',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN', 'EDITOR');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: ingestItemId } = await context.params;
+    const { id: ingestItemId } = await context.params;
 
-  const { entryId } = await approveIngestItem({
-    actorUserId: actor.dbUserId,
-    ingestItemId,
-  });
+    const body = await parseBody(request, approveIngestItemBodySchema);
+    if (!body.ok) return body.response;
 
-  return NextResponse.json({ ok: true, entryId });
-}
+    const input: Parameters<typeof approveIngestItem>[0] = {
+      actorUserId: actor.dbUserId,
+      ingestItemId,
+    };
+    if (body.data.attachThreshold !== undefined) {
+      input.attachThreshold = body.data.attachThreshold;
+    }
+
+    const result = await approveIngestItem(input);
+
+    return NextResponse.json({ ok: true, ...result });
+  },
+);

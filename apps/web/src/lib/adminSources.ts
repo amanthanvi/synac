@@ -1,14 +1,12 @@
-import { getPrismaClient } from '@synac/db';
+import {
+  getPrismaClient,
+  normalizeWhitespace,
+  requireNonEmpty,
+  slugify,
+  toJsonSafe,
+} from '@synac/db';
 
-import { slugify } from '@/lib/text';
-
-function normalizeWhitespace(value: string): string {
-  return value.trim().replace(/\s+/g, ' ');
-}
-
-function toJsonSafe<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
+import { revalidateSource } from '@/lib/cacheTags';
 
 type LicenseType =
   | 'PUBLIC_DOMAIN'
@@ -21,6 +19,32 @@ type LicenseType =
 type SourceTrustTier = 'TIER_1' | 'TIER_2' | 'TIER_3' | 'TIER_4';
 type SourceAccessMethod = 'API' | 'RSS' | 'HTML' | 'PDF' | 'OTHER';
 type SourceRobotsPolicy = 'RESPECT' | 'EXPLICIT_PERMISSION';
+type ContentModeValue = 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
+
+function parseContentMode(
+  value: string | undefined,
+): ContentModeValue | undefined {
+  const v = value?.trim().toUpperCase();
+  if (v === 'QUOTED' || v === 'SUMMARIZED' || v === 'PARAPHRASED') return v;
+  return undefined;
+}
+
+/** Optional https URL: blank clears it, anything present must be a real https URL. */
+function optionalHttpsUrl(
+  label: string,
+  value: string | null | undefined,
+): string | null {
+  const v = value?.trim();
+  if (!v) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(v);
+  } catch {
+    throw new Error(`${label} must be a valid URL`);
+  }
+  if (parsed.protocol !== 'https:') throw new Error(`${label} must use https`);
+  return parsed.toString();
+}
 
 function parseLicenseType(value: string): LicenseType {
   const v = value.toUpperCase();
@@ -39,13 +63,21 @@ function parseLicenseType(value: string): LicenseType {
 
 function parseTrustTier(value: string): SourceTrustTier {
   const v = value.toUpperCase();
-  if (v === 'TIER_1' || v === 'TIER_2' || v === 'TIER_3' || v === 'TIER_4') return v;
+  if (v === 'TIER_1' || v === 'TIER_2' || v === 'TIER_3' || v === 'TIER_4')
+    return v;
   return 'TIER_4';
 }
 
 function parseAccessMethod(value: string): SourceAccessMethod {
   const v = value.toUpperCase();
-  if (v === 'API' || v === 'RSS' || v === 'HTML' || v === 'PDF' || v === 'OTHER') return v;
+  if (
+    v === 'API' ||
+    v === 'RSS' ||
+    v === 'HTML' ||
+    v === 'PDF' ||
+    v === 'OTHER'
+  )
+    return v;
   return 'OTHER';
 }
 
@@ -58,17 +90,33 @@ function parseRobotsPolicy(value: string): SourceRobotsPolicy {
 function parseDateInput(value: string): Date | null {
   const v = value.trim();
   if (!v) return null;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) throw new Error('Invalid date format (expected YYYY-MM-DD)');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v))
+    throw new Error('Invalid date format (expected YYYY-MM-DD)');
   return new Date(`${v}T00:00:00.000Z`);
 }
 
-type JsonInputValue = string | number | boolean | JsonInputValue[] | { [key: string]: JsonInputValue };
+type JsonInputValue =
+  | string
+  | number
+  | boolean
+  | JsonInputValue[]
+  | { [key: string]: JsonInputValue };
 
 function isJsonInputValue(value: unknown): value is JsonInputValue {
   if (value === null) return false;
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return true;
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  )
+    return true;
   if (Array.isArray(value)) return value.every(isJsonInputValue);
-  if (typeof value === 'object') return Object.values(value as Record<string, unknown>).every(isJsonInputValue);
+  // Narrowed to a non-null, non-array object above, so every own value is an
+  // `unknown` this predicate then checks in turn.
+  if (typeof value === 'object')
+    return Object.values(value as Record<string, unknown>).every(
+      isJsonInputValue,
+    );
   return false;
 }
 
@@ -80,12 +128,6 @@ function parseJsonInput(value: string): JsonInputValue {
     throw new Error('JSON must not contain null values');
   }
   return parsed;
-}
-
-function requireNonEmpty(label: string, value: string): string {
-  const v = normalizeWhitespace(value);
-  if (!v) throw new Error(`${label} is required`);
-  return v;
 }
 
 function requireHttpsUrl(label: string, value: string): string {
@@ -118,18 +160,31 @@ export async function createSource(input: {
   trustTier: string;
   enabled: boolean;
   notesInternal?: string | null;
+  licenseUrl?: string | null;
+  licensePublicStatement?: string | null;
+  attributionHtml?: string | null;
+  tierRationale?: string | null;
+  snapshotAllowed?: boolean;
+  defaultContentMode?: string | null;
 }): Promise<{ sourceId: string }> {
   const prisma = getPrismaClient();
 
   const sourceSlug = slugify(requireNonEmpty('Source slug', input.sourceSlug));
   const baseUrl = requireHttpsUrl('Base URL', input.baseUrl);
 
-  const existing = await prisma.source.findFirst({ where: { sourceSlug }, select: { id: true } });
+  const existing = await prisma.source.findFirst({
+    where: { sourceSlug },
+    select: { id: true },
+  });
   if (existing) throw new Error(`Source slug already exists: ${sourceSlug}`);
 
-  const lastVerifiedAt = input.lastVerifiedAt ? parseDateInput(input.lastVerifiedAt) : null;
+  const lastVerifiedAt = input.lastVerifiedAt
+    ? parseDateInput(input.lastVerifiedAt)
+    : null;
   if (input.enabled && !lastVerifiedAt) {
-    throw new Error('Cannot enable a source until it has been manually verified (set lastVerifiedAt)');
+    throw new Error(
+      'Cannot enable a source until it has been manually verified (set lastVerifiedAt)',
+    );
   }
 
   const created = await prisma.source.create({
@@ -137,9 +192,13 @@ export async function createSource(input: {
       name: requireNonEmpty('Name', input.name),
       sourceSlug,
       baseUrl,
-      cronSchedule: input.cronSchedule?.trim() ? normalizeWhitespace(input.cronSchedule) : null,
+      cronSchedule: input.cronSchedule?.trim()
+        ? normalizeWhitespace(input.cronSchedule)
+        : null,
       licenseType: parseLicenseType(input.licenseType),
-      licenseNotes: input.licenseNotes?.trim() ? normalizeWhitespace(input.licenseNotes) : null,
+      licenseNotes: input.licenseNotes?.trim()
+        ? normalizeWhitespace(input.licenseNotes)
+        : null,
       allowedUse: requireNonEmpty('Allowed use', input.allowedUse),
       attributionRequirements: requireNonEmpty(
         'Attribution requirements',
@@ -147,12 +206,36 @@ export async function createSource(input: {
       ),
       accessMethod: parseAccessMethod(input.accessMethod),
       robotsPolicy: parseRobotsPolicy(input.robotsPolicy),
-      rateLimitPolicy: input.rateLimitPolicy?.trim() ? parseJsonInput(input.rateLimitPolicy) : undefined,
-      contact: input.contact?.trim() ? normalizeWhitespace(input.contact) : null,
+      rateLimitPolicy: input.rateLimitPolicy?.trim()
+        ? parseJsonInput(input.rateLimitPolicy)
+        : undefined,
+      contact: input.contact?.trim()
+        ? normalizeWhitespace(input.contact)
+        : null,
       lastVerifiedAt,
       trustTier: parseTrustTier(input.trustTier),
       enabled: Boolean(input.enabled),
-      notesInternal: input.notesInternal?.trim() ? normalizeWhitespace(input.notesInternal) : null,
+      notesInternal: input.notesInternal?.trim()
+        ? normalizeWhitespace(input.notesInternal)
+        : null,
+      licenseUrl: optionalHttpsUrl('License URL', input.licenseUrl),
+      licensePublicStatement: input.licensePublicStatement?.trim()
+        ? input.licensePublicStatement.trim()
+        : null,
+      attributionHtml: input.attributionHtml?.trim()
+        ? input.attributionHtml.trim()
+        : null,
+      tierRationale: input.tierRationale?.trim()
+        ? input.tierRationale.trim()
+        : null,
+      snapshotAllowed: Boolean(input.snapshotAllowed),
+      ...(parseContentMode(input.defaultContentMode ?? undefined)
+        ? {
+            defaultContentMode: parseContentMode(
+              input.defaultContentMode ?? undefined,
+            ),
+          }
+        : {}),
     },
     select: {
       id: true,
@@ -172,6 +255,12 @@ export async function createSource(input: {
       trustTier: true,
       enabled: true,
       notesInternal: true,
+      licenseUrl: true,
+      licensePublicStatement: true,
+      attributionHtml: true,
+      tierRationale: true,
+      snapshotAllowed: true,
+      defaultContentMode: true,
     },
   });
 
@@ -184,6 +273,8 @@ export async function createSource(input: {
       after: toJsonSafe(created),
     },
   });
+
+  revalidateSource({ slug: created.sourceSlug });
 
   return { sourceId: created.id };
 }
@@ -206,6 +297,12 @@ export async function updateSource(input: {
   lastVerifiedAt?: string | null;
   trustTier: string;
   notesInternal?: string | null;
+  licenseUrl?: string | null;
+  licensePublicStatement?: string | null;
+  attributionHtml?: string | null;
+  tierRationale?: string | null;
+  snapshotAllowed?: boolean;
+  defaultContentMode?: string | null;
 }): Promise<void> {
   const prisma = getPrismaClient();
 
@@ -229,6 +326,12 @@ export async function updateSource(input: {
       trustTier: true,
       enabled: true,
       notesInternal: true,
+      licenseUrl: true,
+      licensePublicStatement: true,
+      attributionHtml: true,
+      tierRationale: true,
+      snapshotAllowed: true,
+      defaultContentMode: true,
     },
   });
   if (!before) throw new Error('Source not found');
@@ -244,9 +347,13 @@ export async function updateSource(input: {
     if (existing) throw new Error(`Source slug already exists: ${sourceSlug}`);
   }
 
-  const lastVerifiedAt = input.lastVerifiedAt ? parseDateInput(input.lastVerifiedAt) : null;
+  const lastVerifiedAt = input.lastVerifiedAt
+    ? parseDateInput(input.lastVerifiedAt)
+    : null;
   if (before.enabled && !lastVerifiedAt) {
-    throw new Error('Enabled sources must have been manually verified (set lastVerifiedAt)');
+    throw new Error(
+      'Enabled sources must have been manually verified (set lastVerifiedAt)',
+    );
   }
 
   const after = await prisma.source.update({
@@ -255,9 +362,13 @@ export async function updateSource(input: {
       name: requireNonEmpty('Name', input.name),
       sourceSlug,
       baseUrl,
-      cronSchedule: input.cronSchedule?.trim() ? normalizeWhitespace(input.cronSchedule) : null,
+      cronSchedule: input.cronSchedule?.trim()
+        ? normalizeWhitespace(input.cronSchedule)
+        : null,
       licenseType: parseLicenseType(input.licenseType),
-      licenseNotes: input.licenseNotes?.trim() ? normalizeWhitespace(input.licenseNotes) : null,
+      licenseNotes: input.licenseNotes?.trim()
+        ? normalizeWhitespace(input.licenseNotes)
+        : null,
       allowedUse: requireNonEmpty('Allowed use', input.allowedUse),
       attributionRequirements: requireNonEmpty(
         'Attribution requirements',
@@ -265,11 +376,35 @@ export async function updateSource(input: {
       ),
       accessMethod: parseAccessMethod(input.accessMethod),
       robotsPolicy: parseRobotsPolicy(input.robotsPolicy),
-      rateLimitPolicy: input.rateLimitPolicy?.trim() ? parseJsonInput(input.rateLimitPolicy) : undefined,
-      contact: input.contact?.trim() ? normalizeWhitespace(input.contact) : null,
+      rateLimitPolicy: input.rateLimitPolicy?.trim()
+        ? parseJsonInput(input.rateLimitPolicy)
+        : undefined,
+      contact: input.contact?.trim()
+        ? normalizeWhitespace(input.contact)
+        : null,
       lastVerifiedAt,
       trustTier: parseTrustTier(input.trustTier),
-      notesInternal: input.notesInternal?.trim() ? normalizeWhitespace(input.notesInternal) : null,
+      notesInternal: input.notesInternal?.trim()
+        ? normalizeWhitespace(input.notesInternal)
+        : null,
+      licenseUrl: optionalHttpsUrl('License URL', input.licenseUrl),
+      licensePublicStatement: input.licensePublicStatement?.trim()
+        ? input.licensePublicStatement.trim()
+        : null,
+      attributionHtml: input.attributionHtml?.trim()
+        ? input.attributionHtml.trim()
+        : null,
+      tierRationale: input.tierRationale?.trim()
+        ? input.tierRationale.trim()
+        : null,
+      snapshotAllowed: Boolean(input.snapshotAllowed),
+      ...(parseContentMode(input.defaultContentMode ?? undefined)
+        ? {
+            defaultContentMode: parseContentMode(
+              input.defaultContentMode ?? undefined,
+            ),
+          }
+        : {}),
     },
     select: {
       id: true,
@@ -289,6 +424,12 @@ export async function updateSource(input: {
       trustTier: true,
       enabled: true,
       notesInternal: true,
+      licenseUrl: true,
+      licensePublicStatement: true,
+      attributionHtml: true,
+      tierRationale: true,
+      snapshotAllowed: true,
+      defaultContentMode: true,
     },
   });
 
@@ -302,6 +443,9 @@ export async function updateSource(input: {
       after: toJsonSafe(after),
     },
   });
+
+  revalidateSource({ slug: before.sourceSlug });
+  if (sourceSlug !== before.sourceSlug) revalidateSource({ slug: sourceSlug });
 }
 
 export async function setSourceEnabled(input: {
@@ -315,6 +459,7 @@ export async function setSourceEnabled(input: {
     where: { id: input.sourceId },
     select: {
       id: true,
+      sourceSlug: true,
       enabled: true,
       lastVerifiedAt: true,
     },
@@ -322,27 +467,35 @@ export async function setSourceEnabled(input: {
   if (!before) throw new Error('Source not found');
 
   if (input.enabled && !before.lastVerifiedAt) {
-    throw new Error('Cannot enable a source until it has been manually verified (set lastVerifiedAt)');
+    throw new Error(
+      'Cannot enable a source until it has been manually verified (set lastVerifiedAt)',
+    );
   }
 
-  const after = await prisma.source.update({
-    where: { id: before.id },
-    data: { enabled: Boolean(input.enabled) },
-    select: {
-      id: true,
-      enabled: true,
-      lastVerifiedAt: true,
-    },
+  await prisma.$transaction(async (tx) => {
+    const after = await tx.source.update({
+      where: { id: before.id },
+      data: { enabled: Boolean(input.enabled) },
+      select: {
+        id: true,
+        sourceSlug: true,
+        enabled: true,
+        lastVerifiedAt: true,
+      },
+    });
+
+    await tx.auditEvent.create({
+      data: {
+        actorUserId: input.actorUserId,
+        action: input.enabled ? 'SOURCE_ENABLE' : 'SOURCE_DISABLE',
+        entityType: 'SOURCE',
+        entityId: before.id,
+        before: toJsonSafe(before),
+        after: toJsonSafe(after),
+      },
+    });
   });
 
-  await prisma.auditEvent.create({
-    data: {
-      actorUserId: input.actorUserId,
-      action: input.enabled ? 'SOURCE_ENABLE' : 'SOURCE_DISABLE',
-      entityType: 'SOURCE',
-      entityId: before.id,
-      before: toJsonSafe(before),
-      after: toJsonSafe(after),
-    },
-  });
+  // The sources index and the source page both filter on `enabled`.
+  revalidateSource({ slug: before.sourceSlug });
 }

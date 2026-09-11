@@ -1,37 +1,38 @@
 import { NextResponse } from 'next/server';
 
-import { getString, normalizeOptional } from '@synac/shared';
-
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { updateTag } from '@/lib/adminTags';
+import { withApiHandler } from '@/lib/apiErrors';
+import { parseBody, patchTagBodySchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const PATCH = withApiHandler<Context>(
+  'api.admin.tags.patch',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: tagId } = await context.params;
+    const { id: tagId } = await context.params;
 
-  const body = (await request.json()) as unknown;
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
-  }
+    const body = await parseBody(request, patchTagBodySchema);
+    if (!body.ok) return body.response;
 
-  const data = body as Record<string, unknown>;
+    const input: Parameters<typeof updateTag>[0] = {
+      actorUserId: actor.dbUserId,
+      tagId,
+      name: body.data.name,
+      slug: body.data.slug,
+      description: body.data.description ?? null,
+      parentId: body.data.parentId ?? null,
+    };
+    if (body.data.kind) input.kind = body.data.kind;
 
-  await updateTag({
-    actorUserId: actor.dbUserId,
-    tagId,
-    name: getString(data, 'name'),
-    slug: getString(data, 'slug'),
-    description: getString(data, 'description') || null,
-  });
+    await updateTag(input);
 
-  return NextResponse.json({ ok: true });
-}
+    return NextResponse.json({ ok: true });
+  },
+);

@@ -1,38 +1,35 @@
 import { NextResponse } from 'next/server';
 
-import { getString } from '@synac/shared';
-
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { updateEntry } from '@/lib/adminEntries';
+import { withApiHandler } from '@/lib/apiErrors';
+import { parseBody, patchEntryBodySchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const PATCH = withApiHandler<Context>(
+  'api.admin.entries.patch',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN', 'EDITOR');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: entryId } = await context.params;
+    const { id: entryId } = await context.params;
 
-  const body = (await request.json()) as unknown;
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
-  }
+    const body = await parseBody(request, patchEntryBodySchema);
+    if (!body.ok) return body.response;
 
-  const data = body as Record<string, unknown>;
+    await updateEntry({
+      actorUserId: actor.dbUserId,
+      entryId,
+      displayTitle: body.data.displayTitle,
+      primarySlug: body.data.primarySlug,
+      summaryMd: body.data.summaryMd,
+      editorialNotes: body.data.editorialNotes,
+    });
 
-  await updateEntry({
-    actorUserId: actor.dbUserId,
-    entryId,
-    displayTitle: getString(data, 'displayTitle'),
-    primarySlug: getString(data, 'primarySlug'),
-    summaryMd: getString(data, 'summaryMd'),
-    editorialNotes: getString(data, 'editorialNotes'),
-  });
-
-  return NextResponse.json({ ok: true });
-}
+    return NextResponse.json({ ok: true });
+  },
+);

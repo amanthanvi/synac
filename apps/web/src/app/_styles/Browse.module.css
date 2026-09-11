@@ -70,14 +70,6 @@
   justify-content: space-between;
 }
 
-.itemTitleLeft {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 10px;
-  min-width: 0;
-}
-
 .itemTitle {
   font-family: var(--font-mono);
   font-size: 16px;
@@ -135,33 +127,6 @@
   border-color: var(--border-hover);
   color: var(--fg);
   background: var(--bg-1);
-}
-
-.typeBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  color: var(--fg-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  user-select: none;
-}
-
-.typeBadgeTerm {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  color: color-mix(in srgb, var(--accent) 84%, var(--fg));
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-}
-
-.typeBadgeAcronym {
-  border-color: color-mix(in srgb, var(--accent-2) 55%, var(--border));
-  color: color-mix(in srgb, var(--accent-2) 84%, var(--fg));
-  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
 }
 
 .metaStrong {

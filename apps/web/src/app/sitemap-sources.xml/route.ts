@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getPrismaClient } from '@synac/db';
-
+import { getSitemapSources } from '@/lib/publicData';
 import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
@@ -9,18 +8,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const siteUrl = getSiteUrl();
-  const prisma = getPrismaClient();
-
-  const sources = await prisma.source.findMany({
-    where: { enabled: true },
-    select: { sourceSlug: true, updatedAt: true },
-    orderBy: [{ sourceSlug: 'asc' }],
-  });
+  const sources = await getSitemapSources();
 
   const xml = renderUrlSet(
-    sources.map((s) => ({
-      loc: `${siteUrl}/sources/${s.sourceSlug}`,
-      lastmod: s.updatedAt,
+    sources.map((source) => ({
+      loc: `${siteUrl}/sources/${source.sourceSlug}`,
+      lastmod: source.updatedAt,
     })),
   );
 
@@ -31,4 +24,3 @@ export async function GET() {
     },
   });
 }
-

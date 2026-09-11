@@ -233,3 +233,87 @@
   display: inline;
   margin-left: 10px;
 }
+
+/* Per-source attestations shown above each sense's edit form. */
+.attestations {
+  margin: 0 0 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-1);
+}
+
+.attestationsTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 0.5rem;
+}
+
+.attestationList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.attestation {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.attestationMain {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.attestationSource {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.attestationMeta {
+  font-size: 0.8rem;
+  color: var(--fg-muted);
+}
+
+.attestationText {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.attestationActions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.primaryBadge,
+.needsLabelBadge,
+.assignedByBadge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+
+.needsLabelBadge {
+  margin-left: 0.5rem;
+}
+
+.assignedByBadge {
+  margin-left: 0.4rem;
+}

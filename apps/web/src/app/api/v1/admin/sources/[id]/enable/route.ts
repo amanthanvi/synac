@@ -1,26 +1,28 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { setSourceEnabled } from '@/lib/adminSources';
+import { withApiHandler } from '@/lib/apiErrors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const POST = withApiHandler<Context>(
+  'api.admin.sources.enable',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: sourceId } = await context.params;
+    const { id: sourceId } = await context.params;
 
-  await setSourceEnabled({
-    actorUserId: actor.dbUserId,
-    sourceId,
-    enabled: true,
-  });
+    await setSourceEnabled({
+      actorUserId: actor.dbUserId,
+      sourceId,
+      enabled: true,
+    });
 
-  return NextResponse.json({ ok: true });
-}
+    return NextResponse.json({ ok: true });
+  },
+);

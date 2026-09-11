@@ -5,30 +5,29 @@ import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * Indexable, hand-maintained routes only.
+ *
+ * `/search` and the sign-in/sign-up routes are deliberately absent: they are
+ * disallowed in robots.txt and carry `robots: { index: false }`.
+ */
+const PATHS = [
+  '/',
+  '/terms',
+  '/acronyms',
+  '/tags',
+  '/sources',
+  '/recent',
+  '/about',
+  '/legal/privacy',
+  '/legal/terms',
+  '/changelog',
+];
+
 export async function GET() {
   const siteUrl = getSiteUrl();
-  const now = new Date();
 
-  const paths = [
-    '/',
-    '/terms',
-    '/acronyms',
-    '/tags',
-    '/sources',
-    '/search',
-    '/recent',
-    '/about',
-    '/legal/privacy',
-    '/legal/terms',
-    '/changelog',
-  ];
-
-  const xml = renderUrlSet(
-    paths.map((p) => ({
-      loc: `${siteUrl}${p}`,
-      lastmod: now,
-    })),
-  );
+  const xml = renderUrlSet(PATHS.map((path) => ({ loc: `${siteUrl}${path}` })));
 
   return new NextResponse(xml, {
     headers: {

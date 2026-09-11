@@ -144,12 +144,6 @@
   font-size: 12px;
 }
 
-.empty {
-  padding: 14px 12px 18px;
-  color: var(--fg-muted);
-  line-height: 1.6;
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .overlay {
     animation: overlayIn 140ms var(--ease) both;

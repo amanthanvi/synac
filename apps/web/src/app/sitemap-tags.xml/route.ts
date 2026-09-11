@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getPrismaClient } from '@synac/db';
-
+import { getSitemapTags } from '@/lib/publicData';
 import { getSiteUrl, renderUrlSet } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
@@ -9,18 +8,14 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const siteUrl = getSiteUrl();
-  const prisma = getPrismaClient();
-
-  const tags = await prisma.tag.findMany({
-    where: { deletedAt: null },
-    select: { slug: true, updatedAt: true },
-    orderBy: [{ slug: 'asc' }],
-  });
+  // Only tags with at least one published entry, because an empty tag page is
+  // a soft 404 as far as a crawler is concerned.
+  const tags = await getSitemapTags();
 
   const xml = renderUrlSet(
-    tags.map((t) => ({
-      loc: `${siteUrl}/tags/${t.slug}`,
-      lastmod: t.updatedAt,
+    tags.map((tag) => ({
+      loc: `${siteUrl}/tags/${tag.slug}`,
+      lastmod: tag.updatedAt,
     })),
   );
 
@@ -31,4 +26,3 @@ export async function GET() {
     },
   });
 }
-

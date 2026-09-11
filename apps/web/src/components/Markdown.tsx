@@ -10,17 +10,25 @@ type MarkdownProps = {
 function safeUrl(url: string): string {
   const trimmed = url.trim();
 
-  if (trimmed.startsWith('/') || trimmed.startsWith('#') || trimmed.startsWith('?')) {
+  if (
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('#') ||
+    trimmed.startsWith('?')
+  ) {
     return trimmed;
   }
 
   try {
     const parsed = new URL(trimmed);
-    if (parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'mailto:') {
+    if (
+      parsed.protocol === 'http:' ||
+      parsed.protocol === 'https:' ||
+      parsed.protocol === 'mailto:'
+    ) {
       return trimmed;
     }
   } catch {
-    // ignore
+    // Not a parseable absolute URL, so it falls through to the safe default.
   }
 
   return '#';
@@ -71,4 +79,3 @@ export function Markdown({ children }: MarkdownProps) {
     </div>
   );
 }
-

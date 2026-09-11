@@ -1,5 +1,5 @@
 // Curated, site-facing changelog entries. Repo-canonical changelog lives in `CHANGELOG.md`.
-export type ChangelogEntry = {
+type ChangelogEntry = {
   version: string;
   date: string; // YYYY-MM-DD
   title: string;
@@ -8,44 +8,45 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: 'Unreleased',
-    date: '2026-03-24',
-    title: 'Correctness and operational hardening',
-    sections: [
-      {
-        title: 'Reliability',
-        items: [
-          'Added focused automated coverage for publish gating, promotion parsing, and search-index helpers.',
-          'Added search-index integrity reporting and rebuild tooling for the Postgres-backed entry_search system.',
-        ],
-      },
-      {
-        title: 'Content lifecycle',
-        items: [
-          'Integrated curated auto-tagging into entry publish flow so newly published content stays discoverable.',
-          'Improved promotion safeguards for malformed staged ingest payloads.',
-        ],
-      },
-      {
-        title: 'Maintainability',
-        items: [
-          'Refactored duplicated term/acronym entry rendering into shared public entry components and loaders.',
-          'Refactored duplicated browse-page data loading for terms and acronyms.',
-        ],
-      },
-    ],
-  },
-  {
     version: 'v0.2.0',
-    date: '2026-02-10',
-    title: 'Clinical Reference UI overhaul',
+    date: '2026-09-10',
+    title: 'Clinical Reference UI and the audit remediation',
     sections: [
+      {
+        title: 'Content model',
+        items: [
+          'Senses are meanings: each sense carries per-source attestations, a stable slug for deep links, and a concordance view when sources differ.',
+          'Ingest matches new definitions to existing senses by similarity and holds ambiguous cases for review instead of publishing them.',
+          'Tags record whether an editor or a heuristic assigned them; auto-tagging only adds and never removes editorial tags.',
+        ],
+      },
+      {
+        title: 'Search',
+        items: [
+          'Expansions and aliases rank above full-text matches, results carry totals and a spelling suggestion, and meanings can be searched directly.',
+          'Restored the trigram index so fuzzy matching no longer scans the whole table.',
+        ],
+      },
+      {
+        title: 'Provenance and licensing',
+        items: [
+          'Every citation shows a user-facing license statement and links to the license; each sense has a "How this was sourced" disclosure and a citation record download.',
+          'Content whose license gate is WARN no longer auto-publishes.',
+        ],
+      },
+      {
+        title: 'Public API',
+        items: [
+          'Added a read API with OpenAPI, ETags, and CORS, plus a dataset export.',
+        ],
+      },
       {
         title: 'Public UI',
         items: [
           'Replaced Signal Ledger with the Clinical Reference visual system: dark-leaning, monospace-forward, and documentation-inspired.',
           'Introduced stacked entry pages with sticky sense navigation, richer metadata, and hover previews.',
-          'Removed /trending and aligned navigation, sitemap, and public routes to the new product direction.',
+          'Citation popovers and previews work on touch and with a keyboard; the sense index is available on phones.',
+          'Removed /trending and the anonymous session cookie.',
         ],
       },
       {
@@ -67,12 +68,14 @@ export const CHANGELOG: ChangelogEntry[] = [
         items: [
           'New visual system: instrument-panel header over archival paper (dot-grid + grain).',
           'Browse listings redesigned as ledger sheets for faster scanning.',
-          'Entry pages: left-rail layout and restyled sense “evidence cards”.',
+          "Entry pages: left-rail layout and restyled sense 'evidence cards'.",
         ],
       },
       {
         title: 'Typography',
-        items: ['Typography refresh: Fraunces display with Instrument Sans + IBM Plex Mono.'],
+        items: [
+          'Typography refresh: Fraunces display with Instrument Sans + IBM Plex Mono.',
+        ],
       },
     ],
   },
@@ -97,7 +100,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       {
         title: 'Admin',
-        items: ['Admin UI consistency pass for key workflows (entries, ingest review, audit, takedown).'],
+        items: [
+          'Admin UI consistency pass for key workflows (entries, ingest review, audit, takedown).',
+        ],
       },
     ],
   },
@@ -109,7 +114,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       {
         title: 'Public UI',
         items: [
-          'Default light “field manual” theme with automatic dark mode.',
+          "Default light 'field manual' theme with automatic dark mode.",
           'Entry pages: at-a-glance rail, sense TOC, footnote-style references.',
           'Explore dropdown navigation and refreshed home page.',
         ],

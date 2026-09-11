@@ -1,20 +1,27 @@
-import { getPrismaClient } from '@synac/db';
+import {
+  getPrismaClient,
+  normalizeTitle,
+  slugify,
+  toJsonSafe,
+} from '@synac/db';
 
-import { normalizeTitle, slugify } from '@/lib/text';
+import { revalidateEntry } from '@/lib/cacheTags';
+import {
+  entryRollbackSnapshotSchema,
+  type EntryRollbackSnapshot,
+} from '@/lib/validation';
 
-function toJsonSafe<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
-
-type EntrySnapshot = {
-  displayTitle?: unknown;
-  normalizedTitle?: unknown;
-  primarySlug?: unknown;
-  status?: unknown;
-  summaryMd?: unknown;
-  summaryText?: unknown;
-  editorialNotes?: unknown;
-  publishedAt?: unknown;
+/** The columns a rollback may restore. Everything else on the row is left alone. */
+type EntryRollbackUpdate = {
+  updatedByUserId: string;
+  summaryMd: string | null;
+  summaryText: string | null;
+  editorialNotes: string | null;
+  displayTitle?: string;
+  normalizedTitle?: string;
+  primarySlug?: string;
+  status?: NonNullable<EntryRollbackSnapshot['status']>;
+  publishedAt?: Date | null;
 };
 
 export async function rollbackEntryToAuditEvent(input: {
@@ -24,7 +31,9 @@ export async function rollbackEntryToAuditEvent(input: {
 }): Promise<void> {
   const prisma = getPrismaClient();
 
-  await prisma.$transaction(async (tx) => {
+  let previousSlug = '';
+
+  const result = await prisma.$transaction(async (tx) => {
     const entry = await tx.entry.findFirst({
       where: { id: input.entryId, deletedAt: null },
       select: {
@@ -42,40 +51,54 @@ export async function rollbackEntryToAuditEvent(input: {
       },
     });
     if (!entry) throw new Error('Entry not found');
+    previousSlug = entry.primarySlug;
 
     const auditEvent = await tx.auditEvent.findFirst({
-      where: { id: input.auditEventId, entityType: 'ENTRY', entityId: entry.id },
+      where: {
+        id: input.auditEventId,
+        entityType: 'ENTRY',
+        entityId: entry.id,
+      },
       select: { id: true, action: true, before: true },
     });
     if (!auditEvent?.before) throw new Error('No rollback snapshot available');
 
-    const before = auditEvent.before as EntrySnapshot;
-    const data: Record<string, unknown> = { updatedByUserId: input.actorUserId };
-
-    const nextDisplayTitle = typeof before.displayTitle === 'string' ? before.displayTitle : null;
-    const nextPrimarySlug = typeof before.primarySlug === 'string' ? before.primarySlug : null;
-    const nextSummaryMd = typeof before.summaryMd === 'string' ? before.summaryMd : null;
-    const nextSummaryText = typeof before.summaryText === 'string' ? before.summaryText : null;
-    const nextEditorialNotes = typeof before.editorialNotes === 'string' ? before.editorialNotes : null;
-    const nextStatus = typeof before.status === 'string' ? before.status : null;
-    const nextPublishedAt =
-      typeof before.publishedAt === 'string'
-        ? new Date(before.publishedAt)
-        : before.publishedAt === null
-          ? null
-          : undefined;
-
-    if (nextDisplayTitle !== null) {
-      data.displayTitle = nextDisplayTitle;
-      data.normalizedTitle =
-        typeof before.normalizedTitle === 'string' ? before.normalizedTitle : normalizeTitle(nextDisplayTitle);
+    // An audit snapshot is data we wrote, but it has been through a JSON column
+    // and possibly an older schema: validate it before feeding it back into an
+    // update. In particular an unrecognised `status` string used to be written
+    // straight through, which Prisma would reject at runtime with an opaque
+    // error (or, worse, a future enum value would silently change meaning).
+    const parsed = entryRollbackSnapshotSchema.safeParse(auditEvent.before);
+    if (!parsed.success) {
+      throw new Error('Rollback snapshot is not a valid entry snapshot');
     }
 
-    if (nextPrimarySlug !== null) {
-      const desiredSlug = slugify(nextPrimarySlug);
-      const conflict =
-        desiredSlug !== entry.primarySlug &&
-        (await tx.entry.findFirst({
+    const before = parsed.data;
+    const data: EntryRollbackUpdate = {
+      updatedByUserId: input.actorUserId,
+      summaryMd: before.summaryMd ?? null,
+      summaryText: before.summaryText ?? null,
+      editorialNotes: before.editorialNotes ?? null,
+    };
+
+    if (before.displayTitle !== undefined) {
+      data.displayTitle = before.displayTitle;
+      data.normalizedTitle =
+        before.normalizedTitle ?? normalizeTitle(before.displayTitle);
+    }
+
+    if (before.status) data.status = before.status;
+
+    if (before.publishedAt !== undefined) {
+      data.publishedAt =
+        before.publishedAt === null ? null : new Date(before.publishedAt);
+    }
+
+    if (before.primarySlug !== undefined) {
+      const desiredSlug = slugify(before.primarySlug);
+
+      if (desiredSlug !== entry.primarySlug) {
+        const conflict = await tx.entry.findFirst({
           where: {
             entryType: entry.entryType,
             primarySlug: desiredSlug,
@@ -83,38 +106,40 @@ export async function rollbackEntryToAuditEvent(input: {
             NOT: { id: entry.id },
           },
           select: { id: true },
-        }));
-      const historyConflict =
-        desiredSlug !== entry.primarySlug &&
-        (await tx.entrySlugHistory.findFirst({
+        });
+        const historyConflict = await tx.entrySlugHistory.findFirst({
           where: {
             entryType: entry.entryType,
             slug: desiredSlug,
             NOT: { entryId: entry.id },
           },
           select: { id: true },
-        }));
+        });
 
-      if (conflict || historyConflict) {
-        throw new Error(`Cannot roll back slug; slug already taken: ${desiredSlug}`);
-      }
+        if (conflict || historyConflict) {
+          throw new Error(
+            `Cannot roll back slug; slug already taken: ${desiredSlug}`,
+          );
+        }
 
-      if (desiredSlug !== entry.primarySlug) {
         await tx.entrySlugHistory.upsert({
-          where: { entryType_slug: { entryType: entry.entryType, slug: entry.primarySlug } },
+          where: {
+            entryType_slug: {
+              entryType: entry.entryType,
+              slug: entry.primarySlug,
+            },
+          },
           update: {},
-          create: { entryId: entry.id, entryType: entry.entryType, slug: entry.primarySlug },
+          create: {
+            entryId: entry.id,
+            entryType: entry.entryType,
+            slug: entry.primarySlug,
+          },
         });
       }
 
       data.primarySlug = desiredSlug;
     }
-
-    data.summaryMd = nextSummaryMd ?? null;
-    data.summaryText = nextSummaryText ?? null;
-    data.editorialNotes = nextEditorialNotes ?? null;
-    if (nextStatus) data.status = nextStatus;
-    if (nextPublishedAt !== undefined) data.publishedAt = nextPublishedAt;
 
     const updated = await tx.entry.update({
       where: { id: entry.id },
@@ -143,6 +168,15 @@ export async function rollbackEntryToAuditEvent(input: {
         after: toJsonSafe(updated),
       },
     });
+
+    return updated;
+  });
+
+  // A rollback can move the slug, so invalidate both the slug it had and the
+  // slug it now has.
+  revalidateEntry({
+    entryType: result.entryType,
+    slug: result.primarySlug,
+    previousSlugs: [previousSlug],
   });
 }
-

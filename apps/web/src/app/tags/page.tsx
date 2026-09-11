@@ -1,25 +1,24 @@
-import { getPrismaClient, listTags } from '@synac/db';
+import type { Metadata } from 'next';
 
 import { TagDirectory } from '@/components/TagDirectory';
 import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getTagDirectory } from '@/lib/publicData';
 
-import styles from '../_styles/Tags.module.css';
-
+// DB-backed with no searchParams. Kept dynamic because `next build` runs in
+// environments without DATABASE_URL (e.g. the CodeQL workflow), so this route
+// must not be prerendered. Freshness still comes from the `unstable_cache`
+// tags in lib/publicData.ts, which `revalidateTag` invalidates on publish.
 export const dynamic = 'force-dynamic';
 
-export default async function TagsPage() {
-  const prisma = getPrismaClient();
-  const tags = await listTags(prisma);
-  const counts = await prisma.entryTag.groupBy({
-    by: ['tagId'],
-    where: { tag: { deletedAt: null }, entry: { status: 'PUBLISHED', deletedAt: null } },
-    _count: { tagId: true },
-  });
+export const metadata: Metadata = {
+  title: 'Tags',
+  description: 'Curated tags for browsing and filtering SynAc entries.',
+  alternates: { canonical: '/tags' },
+};
 
-  const countByTagId = new Map<string, number>();
-  for (const row of counts) {
-    countByTagId.set(row.tagId, row._count.tagId);
-  }
+export default async function TagsPage() {
+  const tags = await getTagDirectory();
 
   return (
     <>
@@ -30,7 +29,9 @@ export default async function TagsPage() {
       />
 
       {tags.length === 0 ? (
-        <div className={styles.empty}>No tags yet.</div>
+        <EmptyState title="No tags yet">
+          Tags appear here once entries have been categorised.
+        </EmptyState>
       ) : (
         <TagDirectory
           tags={tags.map((tag) => ({
@@ -38,7 +39,7 @@ export default async function TagsPage() {
             name: tag.name,
             slug: tag.slug,
             description: tag.description,
-            count: countByTagId.get(tag.id) ?? 0,
+            count: tag.entryCount,
           }))}
         />
       )}

@@ -12,6 +12,7 @@
 
 .title {
   font-family: var(--font-mono);
+  font-weight: 500;
   font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -60,3 +61,61 @@
   }
 }
 
+/* Small-screen chip row. Mirrors the rail; hidden once the rail is visible. */
+.chipNav {
+  display: none;
+  margin-bottom: 12px;
+}
+
+.chipList {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chipItem {
+  flex: 0 0 auto;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    border-color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-2);
+  color: var(--fg);
+}
+
+.chipActive {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+@media (max-width: 920px) {
+  .chipNav {
+    display: block;
+  }
+}

@@ -1,19 +1,18 @@
 import styles from './KeyValue.module.css';
 import type { ReactNode } from 'react';
 
-export type KeyValueItemProps = {
+type KeyValueItemProps = {
   label: string;
   value: ReactNode;
 };
 
-export type KeyValueListProps = {
+type KeyValueListProps = {
   items: KeyValueItemProps[];
-  className?: string;
 };
 
-export function KeyValueList({ items, className }: KeyValueListProps) {
+export function KeyValueList({ items }: KeyValueListProps) {
   return (
-    <div className={[styles.list, className].filter(Boolean).join(' ')}>
+    <div className={styles.list}>
       {items.map((item) => (
         <div key={item.label} className={styles.row}>
           <div className={styles.key}>{item.label}</div>

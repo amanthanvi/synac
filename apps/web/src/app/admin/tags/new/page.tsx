@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { PageHeader } from '@/components/PageHeader';
-import { requireAdminActor } from '@/lib/admin';
+import { requireActionRole } from '@/lib/admin';
 import { createTag } from '@/lib/adminTags';
 
 export const dynamic = 'force-dynamic';
@@ -10,13 +10,20 @@ export const dynamic = 'force-dynamic';
 export default function AdminNewTagPage() {
   return (
     <>
-      <PageHeader badge="Admin" title="New tag" subtitle="Create a curated tag for entry browsing." />
+      <PageHeader
+        badge="Admin"
+        title="New tag"
+        subtitle="Create a curated tag for entry browsing."
+      />
 
       <div style={{ marginTop: 10 }}>
         <Link href="/admin/tags">Back to tags</Link>
       </div>
 
-      <form action={create} style={{ marginTop: 14, display: 'grid', gap: 12, maxWidth: 720 }}>
+      <form
+        action={create}
+        style={{ marginTop: 14, display: 'grid', gap: 12, maxWidth: 720 }}
+      >
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Name</div>
           <input name="name" required placeholder="e.g., Identity" />
@@ -29,7 +36,11 @@ export default function AdminNewTagPage() {
 
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Description (optional)</div>
-          <textarea name="description" rows={3} placeholder="Shown on public tag page." />
+          <textarea
+            name="description"
+            rows={3}
+            placeholder="Shown on public tag page."
+          />
         </label>
 
         <div style={{ display: 'flex', gap: 10 }}>
@@ -43,10 +54,7 @@ export default function AdminNewTagPage() {
 async function create(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can create tags');
-  }
+  const actor = await requireActionRole('ADMIN');
 
   const name = String(formData.get('name') ?? '');
   const slug = String(formData.get('slug') ?? '');
@@ -61,4 +69,3 @@ async function create(formData: FormData) {
 
   redirect(`/admin/tags/${tagId}?created=1`);
 }
-

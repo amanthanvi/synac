@@ -4,20 +4,12 @@ import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { ButtonLink } from '@/components/ui/Button';
+import { formatDate } from '@/app/admin/_format';
 
 import browseStyles from '@/app/_styles/Browse.module.css';
 import layoutStyles from '@/app/_styles/Layout.module.css';
 
 export const dynamic = 'force-dynamic';
-
-function formatDate(value: Date | null): string {
-  if (!value) return '—';
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function AdminSourcesPage() {
   const prisma = getPrismaClient();
@@ -38,7 +30,11 @@ export default async function AdminSourcesPage() {
 
   return (
     <>
-      <PageHeader badge="Admin" title="Sources" subtitle="Manage source registry and policies." />
+      <PageHeader
+        badge="Admin"
+        title="Sources"
+        subtitle="Manage source registry and policies."
+      />
 
       <div className={layoutStyles.stack}>
         <div className={layoutStyles.row}>
@@ -54,7 +50,10 @@ export default async function AdminSourcesPage() {
             {sources.map((s) => (
               <li key={s.id} className={browseStyles.item}>
                 <div className={browseStyles.itemTitleRow}>
-                  <Link className={browseStyles.itemTitle} href={`/admin/sources/${s.id}`}>
+                  <Link
+                    className={browseStyles.itemTitle}
+                    href={`/admin/sources/${s.id}`}
+                  >
                     {s.name}
                   </Link>
                   <span className={browseStyles.itemSlug}>
@@ -63,7 +62,8 @@ export default async function AdminSourcesPage() {
                 </div>
                 <p className={browseStyles.itemSummary}>
                   {s.licenseType} · slug <code>{s.sourceSlug}</code> · verified{' '}
-                  {formatDate(s.lastVerifiedAt)} · updated {formatDate(s.updatedAt)}
+                  {formatDate(s.lastVerifiedAt)} · updated{' '}
+                  {formatDate(s.updatedAt)}
                 </p>
               </li>
             ))}

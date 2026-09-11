@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { PageHeader } from '@/components/PageHeader';
-import { requireAdminActor } from '@/lib/admin';
+import { requireActionRole } from '@/lib/admin';
 import { createDraftEntry } from '@/lib/adminEntries';
 
 export const dynamic = 'force-dynamic';
@@ -15,7 +15,10 @@ export default function AdminNewEntryPage() {
         subtitle="Create a draft entry. You can add senses + references before publishing."
       />
 
-      <form action={create} style={{ maxWidth: 720, marginTop: 14, display: 'grid', gap: 12 }}>
+      <form
+        action={create}
+        style={{ maxWidth: 720, marginTop: 14, display: 'grid', gap: 12 }}
+      >
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Entry type</div>
           <select name="entryType" defaultValue="TERM" required>
@@ -26,12 +29,19 @@ export default function AdminNewEntryPage() {
 
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Display title</div>
-          <input name="displayTitle" placeholder="e.g., Security Operations Center" required />
+          <input
+            name="displayTitle"
+            placeholder="e.g., Security Operations Center"
+            required
+          />
         </label>
 
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Slug (optional)</div>
-          <input name="primarySlug" placeholder="e.g., security-operations-center" />
+          <input
+            name="primarySlug"
+            placeholder="e.g., security-operations-center"
+          />
         </label>
 
         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -48,10 +58,7 @@ export default function AdminNewEntryPage() {
 async function create(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    throw new Error('Not authorized');
-  }
+  const actor = await requireActionRole('ADMIN', 'EDITOR');
 
   const entryTypeRaw = String(formData.get('entryType') ?? '').toUpperCase();
   const entryType = entryTypeRaw === 'ACRONYM' ? 'ACRONYM' : 'TERM';
@@ -68,4 +75,3 @@ async function create(formData: FormData) {
 
   redirect(`/admin/entries/${entryId}`);
 }
-

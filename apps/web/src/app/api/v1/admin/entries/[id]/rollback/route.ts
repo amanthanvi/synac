@@ -1,45 +1,46 @@
 import { NextResponse } from 'next/server';
 
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { rollbackEntryToAuditEvent } from '@/lib/adminEntryRollback';
+import { getRequestId, withApiHandler } from '@/lib/apiErrors';
+import { parseBody, rollbackEntryBodySchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const POST = withApiHandler<Context>(
+  'api.admin.entries.rollback',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: entryId } = await context.params;
+    const { id: entryId } = await context.params;
 
-  const url = new URL(request.url);
-  const revision = url.searchParams.get('revision') ?? url.searchParams.get('auditEventId');
+    // The revision may arrive as `?revision=`, `?auditEventId=`, or in the body.
+    const url = new URL(request.url);
+    const fromQuery =
+      url.searchParams.get('revision')?.trim() ||
+      url.searchParams.get('auditEventId')?.trim();
 
-  let bodyAuditEventId: string | undefined;
-  try {
-    const body = (await request.json()) as unknown;
-    if (body && typeof body === 'object') {
-      const v = (body as Record<string, unknown>).auditEventId;
-      if (typeof v === 'string') bodyAuditEventId = v;
+    const body = await parseBody(request, rollbackEntryBodySchema);
+    if (!body.ok) return body.response;
+
+    const auditEventId = fromQuery || body.data.auditEventId;
+    if (!auditEventId) {
+      return NextResponse.json(
+        { error: 'missing_revision', requestId: getRequestId(request) },
+        { status: 400 },
+      );
     }
-  } catch {
-    // ignore
-  }
 
-  const auditEventId = revision?.trim() || bodyAuditEventId?.trim();
-  if (!auditEventId) {
-    return NextResponse.json({ error: 'missing_revision', requestId }, { status: 400 });
-  }
+    await rollbackEntryToAuditEvent({
+      actorUserId: actor.dbUserId,
+      entryId,
+      auditEventId,
+    });
 
-  await rollbackEntryToAuditEvent({
-    actorUserId: actor.dbUserId,
-    entryId,
-    auditEventId,
-  });
-
-  return NextResponse.json({ ok: true });
-}
+    return NextResponse.json({ ok: true });
+  },
+);

@@ -1,14 +1,15 @@
 import { randomUUID } from 'node:crypto';
 
-import { getPrismaClient, getPrismaClientForUrl, type Prisma } from '@synac/db';
+import {
+  applyProposedChange,
+  getPrismaClient,
+  getPrismaClientForUrl,
+  toJsonSafe,
+} from '@synac/db';
 
+import { publishEntry } from '@/lib/adminEntries';
 import { getBoss, getBossForDatabaseUrl } from '@/lib/boss';
-import { createDraftEntry, createDraftSense, updateEntry, updateSense } from '@/lib/adminEntries';
-import { normalizeTitle } from '@/lib/text';
-
-function toJsonSafe<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
+import { proposedChangeSchema, sourceLocatorSchema } from '@/lib/validation';
 
 function normalizeMaxItems(value: number): number {
   if (!Number.isFinite(value)) return 100;
@@ -37,8 +38,10 @@ export async function createIngestRun(input: {
   if (!source) throw new Error('Source not found');
   if (!source.enabled) throw new Error('Source is disabled');
   if (!source.allowedUse.trim()) throw new Error('Source missing allowedUse');
-  if (!source.attributionRequirements.trim()) throw new Error('Source missing attributionRequirements');
-  if (!source.lastVerifiedAt) throw new Error('Source must be verified (lastVerifiedAt) before ingest');
+  if (!source.attributionRequirements.trim())
+    throw new Error('Source missing attributionRequirements');
+  if (!source.lastVerifiedAt)
+    throw new Error('Source must be verified (lastVerifiedAt) before ingest');
 
   const maxItems = normalizeMaxItems(input.maxItems);
   const forceReprocess = Boolean(input.forceReprocess);
@@ -49,15 +52,28 @@ export async function createIngestRun(input: {
 
     const stagingSource = await staging.source.findFirst({
       where: { sourceSlug: source.sourceSlug },
-      select: { id: true, enabled: true, allowedUse: true, attributionRequirements: true, lastVerifiedAt: true },
+      select: {
+        id: true,
+        enabled: true,
+        allowedUse: true,
+        attributionRequirements: true,
+        lastVerifiedAt: true,
+      },
     });
     if (!stagingSource) {
-      throw new Error(`Staging source not found (sourceSlug=${source.sourceSlug}). Wait for promotion sync.`);
+      throw new Error(
+        `Staging source not found (sourceSlug=${source.sourceSlug}). Wait for promotion sync.`,
+      );
     }
     if (!stagingSource.enabled) throw new Error('Staging source is disabled');
-    if (!stagingSource.allowedUse.trim()) throw new Error('Staging source missing allowedUse');
-    if (!stagingSource.attributionRequirements.trim()) throw new Error('Staging source missing attributionRequirements');
-    if (!stagingSource.lastVerifiedAt) throw new Error('Staging source must be verified (lastVerifiedAt) before ingest');
+    if (!stagingSource.allowedUse.trim())
+      throw new Error('Staging source missing allowedUse');
+    if (!stagingSource.attributionRequirements.trim())
+      throw new Error('Staging source missing attributionRequirements');
+    if (!stagingSource.lastVerifiedAt)
+      throw new Error(
+        'Staging source must be verified (lastVerifiedAt) before ingest',
+      );
 
     const runId = randomUUID();
     const now = new Date();
@@ -86,7 +102,14 @@ export async function createIngestRun(input: {
         configSnapshot: { maxItems, forceReprocess },
         stats: { stagingFirst: true, stagingSourceSlug: source.sourceSlug },
       },
-      select: { id: true, sourceId: true, startedAt: true, status: true, triggeredBy: true, configSnapshot: true },
+      select: {
+        id: true,
+        sourceId: true,
+        startedAt: true,
+        status: true,
+        triggeredBy: true,
+        configSnapshot: true,
+      },
     });
 
     await prisma.auditEvent.create({
@@ -114,7 +137,14 @@ export async function createIngestRun(input: {
       triggeredByUserId: input.actorUserId,
       configSnapshot: { maxItems, forceReprocess },
     },
-    select: { id: true, sourceId: true, startedAt: true, status: true, triggeredBy: true, configSnapshot: true },
+    select: {
+      id: true,
+      sourceId: true,
+      startedAt: true,
+      status: true,
+      triggeredBy: true,
+      configSnapshot: true,
+    },
   });
 
   await prisma.auditEvent.create({
@@ -160,113 +190,30 @@ export async function createIngestRunsForAllSources(input: {
   return { ingestRunIds };
 }
 
-type ProposedChangeCreateEntry = {
-  kind: 'CREATE_ENTRY';
-  entryType: 'TERM' | 'ACRONYM';
-  displayTitle: string;
-  primarySlug?: string;
-  summaryMd: string;
-  variants?: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' | 'MISSPELLING' }>;
-  senses: Array<{
-    senseLabel?: string;
-    expandedForm?: string;
-    definitionMd: string;
-    contentMode?: string;
-    extractionMethod?: string;
-    extractorVersion?: string;
-    sourceLocator?: unknown;
-  }>;
-};
-
-type ProposedChangeAddSenses = {
-  kind: 'ADD_SENSES';
-  entryId: string;
-  entryType: 'TERM' | 'ACRONYM';
-  displayTitle: string;
-  summaryMd?: string;
-  variants?: ProposedChangeCreateEntry['variants'];
-  senses: ProposedChangeCreateEntry['senses'];
-};
-
-type ProposedChange = ProposedChangeCreateEntry | ProposedChangeAddSenses;
-
-function parseVariantType(value: unknown): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' | 'MISSPELLING' {
-  if (value === 'SYNONYM' || value === 'ABBREVIATION' || value === 'MISSPELLING') return value;
-  return 'ALIAS';
-}
-
-function parseProposedChange(value: unknown): ProposedChange {
-  if (!value || typeof value !== 'object') throw new Error('Invalid proposedChange');
-  const v = value as Record<string, unknown>;
-  if (v.kind !== 'CREATE_ENTRY' && v.kind !== 'ADD_SENSES') throw new Error('Unsupported proposedChange.kind');
-  const entryType = v.entryType === 'ACRONYM' ? 'ACRONYM' : 'TERM';
-  const displayTitle = typeof v.displayTitle === 'string' ? v.displayTitle : '';
-  const primarySlug = typeof v.primarySlug === 'string' ? v.primarySlug : undefined;
-  const summaryMd = typeof v.summaryMd === 'string' ? v.summaryMd : '';
-  const sensesRaw = Array.isArray(v.senses) ? v.senses : [];
-  const senses = sensesRaw
-    .map((s) => (s && typeof s === 'object' ? (s as Record<string, unknown>) : null))
-    .filter((s): s is Record<string, unknown> => Boolean(s))
-    .map((s) => ({
-      senseLabel: typeof s.senseLabel === 'string' ? s.senseLabel : undefined,
-      expandedForm: typeof s.expandedForm === 'string' ? s.expandedForm : undefined,
-      definitionMd: typeof s.definitionMd === 'string' ? s.definitionMd : '',
-      contentMode: typeof s.contentMode === 'string' ? s.contentMode : undefined,
-      extractionMethod: typeof s.extractionMethod === 'string' ? s.extractionMethod : undefined,
-      extractorVersion: typeof s.extractorVersion === 'string' ? s.extractorVersion : undefined,
-      sourceLocator: s.sourceLocator,
-    }));
-
-  const variantsRaw = Array.isArray(v.variants) ? v.variants : [];
-  const variants = variantsRaw
-    .map((variant) => (variant && typeof variant === 'object' ? (variant as Record<string, unknown>) : null))
-    .filter((variant): variant is Record<string, unknown> => Boolean(variant))
-    .map((variant) => ({
-      variantText: typeof variant.variantText === 'string' ? variant.variantText.trim() : '',
-      variantType: parseVariantType(variant.variantType),
-    }))
-    .filter((variant) => Boolean(variant.variantText));
-
-  if (v.kind === 'ADD_SENSES') {
-    const entryId = typeof v.entryId === 'string' ? v.entryId : '';
-    return {
-      kind: 'ADD_SENSES',
-      entryId,
-      entryType,
-      displayTitle,
-      summaryMd: summaryMd || undefined,
-      ...(variants.length ? { variants } : {}),
-      senses,
-    };
-  }
-
-  return {
-    kind: 'CREATE_ENTRY',
-    entryType,
-    displayTitle,
-    primarySlug,
-    summaryMd,
-    ...(variants.length ? { variants } : {}),
-    senses,
-  };
-}
-
-function parseExtractionMethod(value: string | undefined): 'API' | 'RSS' | 'HTML' | 'PDF' | 'MANUAL' {
-  const v = value?.toUpperCase();
-  if (v === 'API' || v === 'RSS' || v === 'HTML' || v === 'PDF' || v === 'MANUAL') return v;
-  return 'MANUAL';
-}
-
-function parseContentMode(value: string | undefined): 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED' {
-  const v = value?.toUpperCase();
-  if (v === 'QUOTED' || v === 'SUMMARIZED' || v === 'PARAPHRASED') return v;
-  return 'SUMMARIZED';
-}
-
+/**
+ * Approve a reviewed ingest item.
+ *
+ * The gates here are the licence gates: everything about whether this
+ * material may be published. The actual write is delegated to
+ * `applyProposedChange` in @synac/db, which is the single apply path shared
+ * with the worker's auto-apply: keeping one implementation is what makes
+ * "approved by a human" and "auto-applied" produce identical rows, including
+ * the sense-attachment and `needsLabel` decisions.
+ */
 export async function approveIngestItem(input: {
   actorUserId: string;
   ingestItemId: string;
-}): Promise<{ entryId: string }> {
+  attachThreshold?: number;
+}): Promise<{
+  entryId: string;
+  appliedSenseIds: string[];
+  createdSenseIds: string[];
+  attachedSenseIds: string[];
+  needsLabelSenseIds: string[];
+  citationId: string;
+  published: boolean;
+  publishBlockedReason?: string;
+}> {
   const prisma = getPrismaClient();
 
   const item = await prisma.ingestItem.findFirst({
@@ -280,15 +227,26 @@ export async function approveIngestItem(input: {
       sourceDocumentId: true,
       ingestRun: { select: { sourceId: true } },
       sourceDocument: {
-        select: { url: true, canonicalUrl: true, fetchedAt: true, doNotUse: true, doNotUseReason: true },
+        select: {
+          url: true,
+          canonicalUrl: true,
+          fetchedAt: true,
+          doNotUse: true,
+          doNotUseReason: true,
+        },
       },
     },
   });
   if (!item) throw new Error('Ingest item not found');
-  if (item.licenseGate === 'FAIL') throw new Error('Cannot approve item with licenseGate=FAIL');
+  if (item.licenseGate === 'FAIL')
+    throw new Error('Cannot approve item with licenseGate=FAIL');
   if (item.sourceDocument.doNotUse) {
-    const reason = item.sourceDocument.doNotUseReason?.trim() ? `: ${item.sourceDocument.doNotUseReason}` : '';
-    throw new Error(`Cannot approve item from do-not-use SourceDocument${reason}`);
+    const reason = item.sourceDocument.doNotUseReason?.trim()
+      ? `: ${item.sourceDocument.doNotUseReason}`
+      : '';
+    throw new Error(
+      `Cannot approve item from do-not-use SourceDocument${reason}`,
+    );
   }
   if (item.stage !== 'VALIDATED' && item.stage !== 'REVIEWED') {
     throw new Error(`Cannot approve ingest item in stage ${item.stage}`);
@@ -296,175 +254,93 @@ export async function approveIngestItem(input: {
 
   const source = await prisma.source.findFirst({
     where: { id: item.ingestRun.sourceId },
-    select: {
-      id: true,
-      name: true,
-      licenseNotes: true,
-      attributionRequirements: true,
-      accessMethod: true,
-    },
+    select: { id: true, name: true },
   });
   if (!source) throw new Error('Source not found');
 
-  const proposed = parseProposedChange(item.proposedChange);
-  if (!proposed.displayTitle.trim()) throw new Error('proposedChange.displayTitle is required');
-  const normalizedEntryTitle = normalizeTitle(proposed.displayTitle);
-
-  if (proposed.kind === 'ADD_SENSES' && !proposed.entryId.trim()) {
-    throw new Error('proposedChange.entryId is required for ADD_SENSES');
+  // `proposedChange` and each `sourceLocator` are JSON we are about to persist
+  // into typed columns. Validate before delegating: `applyProposedChange` reads
+  // the row itself, so this is the last point at which a malformed proposal can
+  // be rejected with a message an editor can act on rather than a Prisma error.
+  const parsed = proposedChangeSchema.safeParse(item.proposedChange);
+  if (!parsed.success) {
+    const first = parsed.error.issues[0];
+    const where = first?.path?.length ? ` at ${first.path.join('.')}` : '';
+    throw new Error(
+      `Invalid proposedChange${where}: ${first?.message ?? 'failed validation'}`,
+    );
   }
 
-  const firstSense = proposed.senses[0];
-  if (!firstSense?.definitionMd?.trim()) throw new Error('proposedChange requires at least one sense definition');
+  const proposed = parsed.data;
 
-  let entryId: string;
-  if (proposed.kind === 'CREATE_ENTRY') {
-    const created = await createDraftEntry({
-      actorUserId: input.actorUserId,
-      entryType: proposed.entryType,
-      displayTitle: proposed.displayTitle,
-      primarySlug: proposed.primarySlug,
-    });
-    entryId = created.entryId;
-
-    await updateEntry({
-      actorUserId: input.actorUserId,
-      entryId,
-      displayTitle: proposed.displayTitle,
-      primarySlug: proposed.primarySlug ?? '',
-      summaryMd: proposed.summaryMd ?? '',
-      editorialNotes: '',
-    });
-  } else {
-    const existing = await prisma.entry.findFirst({
-      where: { id: proposed.entryId, deletedAt: null },
-      select: { id: true, entryType: true },
-    });
-    if (!existing) throw new Error('Entry not found for ADD_SENSES');
-    if (existing.entryType !== proposed.entryType) {
-      throw new Error('proposedChange.entryType does not match existing entry type');
+  proposed.senses.forEach((sense, index) => {
+    if (sense.sourceLocator === undefined || sense.sourceLocator === null)
+      return;
+    const locator = sourceLocatorSchema.safeParse(sense.sourceLocator);
+    if (!locator.success) {
+      throw new Error(`Invalid sourceLocator on sense ${index + 1}`);
     }
-    entryId = existing.id;
-  }
-
-  const appliedSenses: Array<{ senseId: string; sense: ProposedChangeCreateEntry['senses'][number] }> = [];
-  for (const sense of proposed.senses) {
-    if (!sense.definitionMd.trim()) continue;
-    const { senseId } = await createDraftSense({ actorUserId: input.actorUserId, entryId });
-    appliedSenses.push({ senseId, sense });
-    await updateSense({
-      actorUserId: input.actorUserId,
-      senseId,
-      senseLabel: sense.senseLabel ?? '',
-      expandedForm: sense.expandedForm ?? '',
-      definitionMd: sense.definitionMd,
-      isEditorial: false,
-      editorialRationale: '',
-    });
-  }
-
-  const citationUrl = item.sourceDocument.canonicalUrl ?? item.sourceDocument.url;
-  const existingCitation = await prisma.citation.findFirst({
-    where: { sourceId: source.id, sourceDocumentId: item.sourceDocumentId, url: citationUrl },
-    select: { id: true },
   });
 
-  const citation =
-    existingCitation ??
-    (await prisma.citation.create({
+  if (!proposed.senses.some((sense) => sense.definitionMd.trim())) {
+    throw new Error('proposedChange requires at least one sense definition');
+  }
+
+  const applyInput: Parameters<typeof applyProposedChange>[1] = {
+    actorUserId: input.actorUserId,
+    ingestItemId: item.id,
+  };
+  if (input.attachThreshold !== undefined)
+    applyInput.attachThreshold = input.attachThreshold;
+
+  const applied = await applyProposedChange(prisma, applyInput);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.ingestItem.update({
+      where: { id: item.id },
       data: {
-        sourceId: source.id,
-        sourceDocumentId: item.sourceDocumentId,
-        url: citationUrl,
-        citationText: source.name,
-        licenseNote: source.licenseNotes,
-        attributionText: source.attributionRequirements,
-        accessedAt: item.sourceDocument.fetchedAt,
+        stage: 'APPLIED',
+        diff: toJsonSafe({
+          appliedEntryId: applied.entryId,
+          appliedSenseIds: applied.appliedSenseIds,
+          createdSenseIds: applied.createdSenseIds,
+          attachedSenseIds: applied.attachedSenseIds,
+          needsLabelSenseIds: applied.needsLabelSenseIds,
+          citationId: applied.citationId,
+        }),
+        error: null,
       },
-      select: { id: true },
-    }));
-
-  const extractionMethod = parseExtractionMethod(firstSense.extractionMethod ?? source.accessMethod);
-  const extractorVersion = firstSense.extractorVersion?.trim() ? firstSense.extractorVersion.trim() : 'synac-web';
-  const contentMode = parseContentMode(firstSense.contentMode);
-
-  const provenance: Array<{
-    entityType: 'ENTRY' | 'SENSE';
-    entityId: string;
-    fieldName: string;
-    citationId: string;
-    contentMode: typeof contentMode;
-    extractionMethod: typeof extractionMethod;
-    extractorVersion: string;
-    extractedAt: Date;
-    sourceLocator?: Prisma.InputJsonValue;
-  }> = [];
-
-  if (proposed.kind === 'CREATE_ENTRY' && proposed.summaryMd?.trim()) {
-    provenance.push({
-      entityType: 'ENTRY',
-      entityId: entryId,
-      fieldName: 'summaryMd',
-      citationId: citation.id,
-      contentMode,
-      extractionMethod,
-      extractorVersion,
-      extractedAt: item.sourceDocument.fetchedAt,
-      sourceLocator: firstSense.sourceLocator as Prisma.InputJsonValue,
     });
-  }
 
-  for (const { senseId, sense } of appliedSenses) {
-    provenance.push({
-      entityType: 'SENSE',
-      entityId: senseId,
-      fieldName: 'definitionMd',
-      citationId: citation.id,
-      contentMode: parseContentMode(sense.contentMode),
-      extractionMethod: parseExtractionMethod(sense.extractionMethod ?? extractionMethod),
-      extractorVersion: sense.extractorVersion?.trim() ? sense.extractorVersion.trim() : extractorVersion,
-      extractedAt: item.sourceDocument.fetchedAt,
-      sourceLocator: sense.sourceLocator as Prisma.InputJsonValue,
+    await tx.auditEvent.create({
+      data: {
+        actorUserId: input.actorUserId,
+        action: 'INGEST_ITEM_APPROVE',
+        entityType: 'INGEST_ITEM',
+        entityId: item.id,
+        after: toJsonSafe({ ...applied, sourceName: source.name }),
+      },
     });
-  }
-
-  await prisma.fieldProvenance.createMany({ data: provenance });
-  const appliedSenseIds = appliedSenses.map((s) => s.senseId);
-
-  const variantsToCreate = (proposed.variants ?? [])
-    .map((v) => ({ variantText: v.variantText.trim(), variantType: v.variantType }))
-    .filter((v) => v.variantText.length > 0 && normalizeTitle(v.variantText) !== normalizedEntryTitle)
-    .map((v) => ({
-      entryId,
-      variantText: v.variantText,
-      normalizedVariant: normalizeTitle(v.variantText),
-      variantType: v.variantType,
-    }));
-
-  if (variantsToCreate.length) {
-    await prisma.entryVariant.createMany({ data: variantsToCreate, skipDuplicates: true });
-  }
-
-  await prisma.ingestItem.update({
-    where: { id: item.id },
-    data: {
-      stage: 'APPLIED',
-      diff: { appliedEntryId: entryId, appliedSenseIds },
-      error: null,
-    },
   });
 
-  await prisma.auditEvent.create({
-    data: {
+  // Publishing is a separate decision with its own preconditions (a summary,
+  // and a citation per sense). The item stays APPLIED either way: an approved
+  // item that cannot yet publish is a normal editorial state, not a failure to
+  // roll back.
+  try {
+    await publishEntry({
       actorUserId: input.actorUserId,
-      action: 'INGEST_ITEM_APPROVE',
-      entityType: 'INGEST_ITEM',
-      entityId: item.id,
-      after: { appliedEntryId: entryId, appliedSenseIds },
-    },
-  });
-
-  return { entryId };
+      entryId: applied.entryId,
+    });
+    return { ...applied, published: true };
+  } catch (error) {
+    return {
+      ...applied,
+      published: false,
+      publishBlockedReason:
+        error instanceof Error ? error.message : 'Publish failed',
+    };
+  }
 }
 
 export async function rejectIngestItem(input: {

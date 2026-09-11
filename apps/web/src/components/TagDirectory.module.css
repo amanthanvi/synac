@@ -30,4 +30,3 @@
 .search:focus-visible {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
 }
-

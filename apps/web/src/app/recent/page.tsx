@@ -1,73 +1,46 @@
-import Link from 'next/link';
+import type { Metadata } from 'next';
 
-import { getPrismaClient, listRecentPublishedEntries } from '@synac/db';
-
+import { EntryListItem } from '@/components/EntryListItem';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { getRecentEntries } from '@/lib/publicData';
+import {
+  formatDate,
+  formatRelativeDate,
+  toIsoString,
+} from '@/lib/publicFormat';
 
 import styles from '../_styles/Browse.module.css';
 
+// Reads searchParams (page).
 export const dynamic = 'force-dynamic';
 
-type RecentPageProps = {
-  searchParams?: Promise<{ page?: string }>;
+export const metadata: Metadata = {
+  title: 'Recently updated',
+  description: 'Published SynAc entries ordered by their most recent update.',
+  alternates: { canonical: '/recent' },
 };
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
+const PAGE_SIZE = 50;
 
-function formatRelativeDate(value: Date, now: Date): string {
-  const diffMs = now.getTime() - value.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 0) return 'Today';
-  if (diffDays === 1) return '1 day ago';
-  if (diffDays < 7) return `${diffDays} days ago`;
-
-  const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks === 1) return '1 week ago';
-  if (diffWeeks < 5) return `${diffWeeks} weeks ago`;
-
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths === 1) return '1 month ago';
-  if (diffMonths < 12) return `${diffMonths} months ago`;
-
-  const diffYears = Math.floor(diffDays / 365);
-  return diffYears <= 1 ? '1 year ago' : `${diffYears} years ago`;
-}
-
-export default async function RecentPage({ searchParams }: RecentPageProps) {
+export default async function RecentPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string }>;
+}) {
   const sp = (await searchParams) ?? {};
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
-  const pageSize = 50;
 
-  const prisma = getPrismaClient();
-  const entries = await listRecentPublishedEntries(prisma, { page, pageSize });
+  const { items, total } = await getRecentEntries({
+    page,
+    pageSize: PAGE_SIZE,
+  });
   const now = new Date();
 
-  const entryIds = entries.map((e) => e.id);
-  const entryTags = entryIds.length
-    ? await prisma.entryTag.findMany({
-        where: { entryId: { in: entryIds }, tag: { deletedAt: null } },
-        select: { entryId: true, tag: { select: { id: true, name: true, slug: true } } },
-        orderBy: [{ tag: { name: 'asc' } }],
-      })
-    : [];
-
-  const tagsByEntryId = new Map<string, Array<(typeof entryTags)[number]['tag']>>();
-  for (const row of entryTags) {
-    const list = tagsByEntryId.get(row.entryId) ?? [];
-    list.push(row.tag);
-    tagsByEntryId.set(row.entryId, list);
-  }
-
   const prevHref = page > 1 ? `/recent?page=${page - 1}` : undefined;
-  const nextHref = entries.length === pageSize ? `/recent?page=${page + 1}` : undefined;
+  const nextHref =
+    page * PAGE_SIZE < total ? `/recent?page=${page + 1}` : undefined;
 
   return (
     <>
@@ -77,57 +50,44 @@ export default async function RecentPage({ searchParams }: RecentPageProps) {
         subtitle="Published entries ordered by most recent updates."
       />
 
-      {entries.length === 0 ? (
-        <div className={styles.empty}>No published entries yet.</div>
+      {items.length === 0 ? (
+        <EmptyState title="Nothing published yet">
+          Entries appear here as soon as the first ones are published.
+        </EmptyState>
       ) : (
         <>
           <ol className={styles.list}>
-            {entries.map((entry) => (
-              <li key={entry.id} className={styles.item}>
-                <div className={styles.itemTitleRow}>
-                  <div className={styles.itemTitleLeft}>
-                    <span
-                      className={`${styles.typeBadge} ${
-                        entry.entryType === 'TERM'
-                          ? styles.typeBadgeTerm
-                          : styles.typeBadgeAcronym
-                      }`}
-                    >
-                      {entry.entryType}
-                    </span>
-                    <Link
-                      className={styles.itemTitle}
-                      href={
-                        entry.entryType === 'TERM'
-                          ? `/term/${entry.primarySlug}`
-                          : `/acronym/${entry.primarySlug}`
-                      }
-                    >
-                      {entry.displayTitle}
-                    </Link>
-                  </div>
-                  <span className={styles.itemSlug}>
-                    <time dateTime={entry.updatedAt.toISOString()} title={formatDate(entry.updatedAt)}>
-                      {formatRelativeDate(entry.updatedAt, now)}
-                    </time>
-                  </span>
-                </div>
-                {entry.summaryText ? (
-                  <p className={styles.itemSummary}>{entry.summaryText}</p>
-                ) : null}
-                {(tagsByEntryId.get(entry.id) ?? []).length ? (
-                  <div className={styles.itemTags}>
-                    {(tagsByEntryId.get(entry.id) ?? []).map((tag) => (
-                      <Link key={tag.id} href={`/tags/${tag.slug}`} className={styles.tag}>
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                ) : null}
-              </li>
+            {items.map((entry) => (
+              <EntryListItem
+                key={entry.id}
+                entryType={entry.entryType}
+                title={entry.displayTitle}
+                href={
+                  entry.entryType === 'TERM'
+                    ? `/term/${entry.primarySlug}`
+                    : `/acronym/${entry.primarySlug}`
+                }
+                meta={
+                  <time
+                    dateTime={toIsoString(entry.updatedAt)}
+                    title={formatDate(entry.updatedAt)}
+                  >
+                    {formatRelativeDate(entry.updatedAt, now)}
+                  </time>
+                }
+                summary={entry.summaryText}
+                tags={entry.tags}
+              />
             ))}
           </ol>
-          <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
+          <Pagination
+            page={page}
+            total={total}
+            pageSize={PAGE_SIZE}
+            prevHref={prevHref}
+            nextHref={nextHref}
+            unit="entries"
+          />
         </>
       )}
     </>

@@ -28,13 +28,13 @@ export function Button({
         styles.button,
         variant === 'primary' ? styles.primary : styles.ghost,
         size === 'sm' ? styles.sm : undefined,
-        className
+        className,
       )}
     />
   );
 }
 
-export type ButtonLinkProps = Omit<ComponentProps<typeof Link>, 'className'> & {
+type ButtonLinkProps = Omit<ComponentProps<typeof Link>, 'className'> & {
   className?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -53,7 +53,7 @@ export function ButtonLink({
         styles.button,
         variant === 'primary' ? styles.primary : styles.ghost,
         size === 'sm' ? styles.sm : undefined,
-        className
+        className,
       )}
     />
   );

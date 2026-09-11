@@ -1,68 +1,106 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 
-import {
-  getPrismaClient,
-  listPublishedRelationshipsForEntry,
-  resolvePublishedEntryBySlug,
-} from '@synac/db';
+import { markdownToText } from '@synac/db';
 
-import { markdownToText } from './text';
+import { getEntryPage, type EntryPageResult } from './publicData';
 
-type PublicEntryType = 'TERM' | 'ACRONYM';
+export type PublicEntryType = 'TERM' | 'ACRONYM';
 
-export type PublicEntryExample = {
+type EntryPageOk = Extract<EntryPageResult, { kind: 'ok' }>['data'];
+
+type PublicSenseDefinition =
+  EntryPageOk['entry']['senses'][number]['definitions'][number];
+
+export type PublicSenseCitation = PublicSenseDefinition['citation'];
+export type PublicSenseProvenanceRow = EntryPageOk['provenance'][number];
+export type PublicEntryRelation = EntryPageOk['relationships'][number];
+export type PublicEntryTagLink = EntryPageOk['entry']['entryTags'][number];
+type PublicEntryExample =
+  EntryPageOk['entry']['senses'][number]['examples'][number];
+
+export type ContentMode = 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
+
+/** One source's account of a sense (a `SenseDefinition` row). */
+export type SenseAttestation = {
   id: string;
-  exampleMd: string | null;
-  exampleText: string | null;
-};
-
-export type PublicEntryTagLink = {
-  tag: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-};
-
-export type PublicEntrySense = {
-  id: string;
-  senseOrder: number;
-  senseLabel: string | null;
-  expandedForm: string | null;
-  definitionMd: string | null;
-  definitionText: string | null;
-  examples: PublicEntryExample[];
-};
-
-export type PublicEntryRecord = {
-  id: string;
-  displayTitle: string;
-  summaryMd: string | null;
-  summaryText: string | null;
-  updatedAt: Date;
-  entryTags: PublicEntryTagLink[];
-  variants: Array<{ variantText: string }>;
-  senses: PublicEntrySense[];
-};
-
-export type PublicSenseCitation = {
-  id: string;
-  sourceId: string;
-  url: string;
-  source: { name: string };
-  sourceDocument: { title: string | null };
-  licenseNote: string | null;
-  attributionText: string | null;
-  accessedAt: Date;
-};
-
-export type PublicSenseProvenance = {
-  entityId: string;
-  contentMode: 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
+  definitionMd: string;
+  definitionText: string;
+  contentMode: ContentMode;
+  isPrimary: boolean;
+  similarityToPrimary: number | null;
+  sourceLocator: PublicSenseDefinition['sourceLocator'];
+  extractorVersion: string | null;
+  extractedAt: string | null;
   citation: PublicSenseCitation;
 };
 
-export type PublicEntryRelation = Awaited<ReturnType<typeof listPublishedRelationshipsForEntry>>[number];
+export type SenseBibliographyEntry = {
+  citation: PublicSenseCitation;
+  contentMode: ContentMode;
+};
+
+export type PublicEntrySenseView = {
+  id: string;
+  slug: string | null;
+  /** DOM id of the card. Always the uuid form, so `#sense-<uuid>` keeps working. */
+  elementId: string;
+  /** Extra anchor rendered inside the card when the sense has a slug. */
+  slugAnchorId: string | null;
+  /** Fragment links should point here: `#s-<slug>` when a slug exists. */
+  fragment: string;
+  senseOrder: number;
+  label: string;
+  needsLabel: boolean;
+  disambiguationNote: string | null;
+  expandedForm: string | null;
+  definitionMd: string | null;
+  definitionText: string | null;
+  excerpt: string;
+  examples: PublicEntryExample[];
+  attestations: SenseAttestation[];
+  bibliography: SenseBibliographyEntry[];
+  provenance: PublicSenseProvenanceRow[];
+};
+
+export type PublicEntryTocItem = {
+  id: string;
+  fragment: string;
+  label: string;
+};
+
+export type PublicEntryPageData = {
+  entryType: PublicEntryType;
+  entry: {
+    id: string;
+    displayTitle: string;
+    primarySlug: string;
+    summaryMd: string | null;
+    summaryText: string | null;
+    updatedAt: string;
+    entryTags: PublicEntryTagLink[];
+  };
+  senses: PublicEntrySenseView[];
+  /** False when the header summary would repeat the first sense's definition. */
+  showHeaderSummary: boolean;
+  relationsByType: Array<{
+    type: string;
+    title: string;
+    items: PublicEntryRelation[];
+  }>;
+  otherSummaryById: Map<string, string | null>;
+  tocItems: PublicEntryTocItem[];
+  standsForPrimary: { primary: string | null; alternates: string[] };
+  alsoKnownAs: string[];
+  canonicalPath: string;
+};
+
+const RELATION_SECTIONS: Array<{ type: string; title: string }> = [
+  { type: 'BROADER_THAN', title: 'Broader' },
+  { type: 'NARROWER_THAN', title: 'Narrower' },
+  { type: 'OFTEN_CONFUSED_WITH', title: 'Often confused with' },
+  { type: 'RELATED', title: 'Related' },
+  { type: 'SEE_ALSO', title: 'See also' },
+];
 
 function normalizeRefUrl(value: string): string {
   return value.trim().replace(/\/+$/, '');
@@ -92,20 +130,6 @@ function scoreByDefinition(expansion: string, definition: string): number {
   return score;
 }
 
-function dedupeVariantTexts(variants: Array<{ variantText: string }>): string[] {
-  const seen = new Set<string>();
-  const values: string[] = [];
-  for (const variant of variants) {
-    const text = variant.variantText.trim();
-    if (!text) continue;
-    const key = text.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    values.push(text);
-  }
-  return values;
-}
-
 function dedupeNormalizedStrings(raw: string[]): string[] {
   const seen = new Set<string>();
   const values: string[] = [];
@@ -120,167 +144,252 @@ function dedupeNormalizedStrings(raw: string[]): string[] {
   return values;
 }
 
-type EntrySummaryForStand = { summaryText: string | null; summaryMd: string | null };
-
 function standsForPrimaryFromCandidates(
   candidates: string[],
-  entry: EntrySummaryForStand,
+  entry: { summaryText: string | null; summaryMd: string | null },
 ): { primary: string | null; alternates: string[] } {
-  if (candidates.length === 0) {
-    return { primary: null, alternates: [] };
-  }
-  if (candidates.length === 1) {
-    return { primary: candidates[0]!, alternates: [] };
-  }
+  const first = candidates[0];
+  if (!first) return { primary: null, alternates: [] };
+  if (candidates.length === 1) return { primary: first, alternates: [] };
+
   const definition = (entry.summaryText ?? entry.summaryMd ?? '').trim();
-  if (!definition) {
-    return { primary: candidates[0]!, alternates: candidates.slice(1) };
-  }
+  if (!definition) return { primary: first, alternates: candidates.slice(1) };
+
   const scored = candidates
-    .map((value) => ({ text: value, score: scoreByDefinition(value, definition) }))
-    .sort((left, right) => right.score - left.score || left.text.localeCompare(right.text));
-  const primary = scored[0]!.text;
+    .map((value) => ({
+      text: value,
+      score: scoreByDefinition(value, definition),
+    }))
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.text.localeCompare(right.text),
+    );
+
+  const primary = scored[0]?.text ?? first;
   return {
     primary,
-    alternates: candidates.filter((value) => value.toLowerCase() !== primary.toLowerCase()),
+    alternates: candidates.filter(
+      (value) => value.toLowerCase() !== primary.toLowerCase(),
+    ),
   };
 }
 
-export function formatEntryDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
+function contentModeRank(mode: ContentMode): number {
+  if (mode === 'QUOTED') return 3;
+  if (mode === 'PARAPHRASED') return 2;
+  return 1;
 }
 
-export type PublicEntryPageData = Awaited<ReturnType<typeof loadPublicEntryPageData>>;
+/**
+ * One bibliography row per (source, url), keeping the strongest content mode
+ * seen for it across both attestations and field provenance.
+ */
+function buildBibliography(
+  attestations: SenseAttestation[],
+  provenance: PublicSenseProvenanceRow[],
+): SenseBibliographyEntry[] {
+  const byKey = new Map<string, SenseBibliographyEntry>();
+
+  const add = (citation: PublicSenseCitation, contentMode: ContentMode) => {
+    const key = `${citation.sourceId}:${normalizeRefUrl(citation.url)}`;
+    const existing = byKey.get(key);
+    if (!existing) {
+      byKey.set(key, { citation, contentMode });
+      return;
+    }
+    if (contentModeRank(contentMode) > contentModeRank(existing.contentMode)) {
+      existing.contentMode = contentMode;
+    }
+  };
+
+  for (const attestation of attestations)
+    add(attestation.citation, attestation.contentMode);
+  for (const row of provenance) add(row.citation, row.contentMode);
+
+  return Array.from(byKey.values());
+}
+
+/** 1.3: label, expansion, first attesting source, then a positional fallback. */
+function senseLabel(
+  sense: EntryPageOk['entry']['senses'][number],
+  attestations: SenseAttestation[],
+): string {
+  const explicit = sense.senseLabel?.trim();
+  if (explicit) return explicit;
+
+  const expanded = sense.expandedForm?.trim();
+  if (expanded) return expanded;
+
+  const sourceName = attestations[0]?.citation.source.name.trim();
+  if (sourceName) return sourceName;
+
+  return `Sense ${sense.senseOrder + 1}`;
+}
+
+/** Rendered definition: the primary attestation, else the first, else legacy fields. */
+function renderedDefinition(
+  sense: EntryPageOk['entry']['senses'][number],
+  attestations: SenseAttestation[],
+): { definitionMd: string | null; definitionText: string | null } {
+  const preferred =
+    attestations.find((item) => item.isPrimary) ?? attestations[0];
+  if (preferred) {
+    return {
+      definitionMd: preferred.definitionMd || null,
+      definitionText: preferred.definitionText || null,
+    };
+  }
+
+  return {
+    definitionMd: sense.definitionMd,
+    definitionText: sense.definitionText,
+  };
+}
+
+function toPlainText(md: string | null, text: string | null): string {
+  const raw = text ? text : md ? markdownToText(md) : '';
+  return raw.replace(/\s+/g, ' ').trim();
+}
+
+export function entryPath(entryType: PublicEntryType, slug: string): string {
+  return entryType === 'TERM' ? `/term/${slug}` : `/acronym/${slug}`;
+}
+
+/** Throws the redirect or 404 for a slug; returns the loaded page otherwise. */
+async function resolveEntryRoute(input: {
+  slug: string;
+  requestedType: PublicEntryType;
+}): Promise<Extract<Awaited<ReturnType<typeof getEntryPage>>, { kind: 'ok' }>> {
+  const result = await getEntryPage(input.requestedType, input.slug);
+
+  if (result.kind === 'redirect') {
+    permanentRedirect(entryPath(result.entryType, result.slug));
+  }
+
+  if (result.kind === 'not-found') {
+    notFound();
+  }
+
+  return result;
+}
 
 export async function loadPublicEntryPageData(input: {
   slug: string;
   requestedType: PublicEntryType;
-}): Promise<{
-  entry: NonNullable<PublicEntryRecord>;
-  related: Awaited<ReturnType<typeof listPublishedRelationshipsForEntry>>;
-  seeAlso: Awaited<ReturnType<typeof listPublishedRelationshipsForEntry>>;
-  otherSummaryById: Map<string, string | null>;
-  provenanceBySenseId: Map<string, PublicSenseProvenance[]>;
-  tocItems: Array<{ id: string; label: string }>;
-  standsForPrimary: { primary: string | null; alternates: string[] };
-  alsoKnownAs: string[];
-}> {
-  const prisma = getPrismaClient();
-  const resolved = await resolvePublishedEntryBySlug(prisma, {
-    entryType: input.requestedType,
-    slug: input.slug,
-  });
+}): Promise<PublicEntryPageData> {
+  const result = await resolveEntryRoute(input);
 
-  if (!resolved) {
-    const fallbackType = input.requestedType === 'TERM' ? 'ACRONYM' : 'TERM';
-    const fallback = await resolvePublishedEntryBySlug(prisma, {
-      entryType: fallbackType,
-      slug: input.slug,
-    });
+  const {
+    entry,
+    provenance,
+    relationships,
+    otherSummaryById: otherSummaries,
+  } = result.data;
 
-    if (fallback) {
-      permanentRedirect(
-        fallbackType === 'TERM'
-          ? `/term/${fallback.canonicalSlug}`
-          : `/acronym/${fallback.canonicalSlug}`,
-      );
-    }
-
-    notFound();
+  const provenanceBySenseId = new Map<string, PublicSenseProvenanceRow[]>();
+  for (const row of provenance) {
+    const list = provenanceBySenseId.get(row.entityId) ?? [];
+    list.push(row);
+    provenanceBySenseId.set(row.entityId, list);
   }
 
-  if (resolved.entry.entryType !== input.requestedType) {
-    permanentRedirect(
-      resolved.entry.entryType === 'TERM'
-        ? `/term/${resolved.canonicalSlug}`
-        : `/acronym/${resolved.canonicalSlug}`,
+  const senses: PublicEntrySenseView[] = entry.senses.map((sense) => {
+    const attestations: SenseAttestation[] = sense.definitions.map(
+      (definition) => ({
+        id: definition.id,
+        definitionMd: definition.definitionMd,
+        definitionText: definition.definitionText,
+        contentMode: definition.contentMode,
+        isPrimary: definition.isPrimary,
+        similarityToPrimary: definition.similarityToPrimary,
+        sourceLocator: definition.sourceLocator,
+        extractorVersion: definition.extractorVersion,
+        extractedAt: definition.extractedAt,
+        citation: definition.citation,
+      }),
     );
-  }
 
-  if (resolved.needsRedirect) {
-    permanentRedirect(
-      input.requestedType === 'TERM'
-        ? `/term/${resolved.canonicalSlug}`
-        : `/acronym/${resolved.canonicalSlug}`,
+    const senseProvenance = provenanceBySenseId.get(sense.id) ?? [];
+    const definition = renderedDefinition(sense, attestations);
+    const excerpt = toPlainText(
+      definition.definitionMd,
+      definition.definitionText,
     );
-  }
 
-  const entry = await prisma.entry.findFirst({
-    where: { id: resolved.entry.id, status: 'PUBLISHED', deletedAt: null },
-    include: {
-      variants: { orderBy: [{ variantType: 'asc' }, { variantText: 'asc' }] },
-      senses: {
-        where: { status: 'PUBLISHED', deletedAt: null },
-        orderBy: [{ senseOrder: 'asc' }],
-        include: { examples: { orderBy: [{ exampleOrder: 'asc' }] } },
-      },
-      entryTags: {
-        where: { tag: { deletedAt: null } },
-        include: { tag: true },
-      },
-    },
+    return {
+      id: sense.id,
+      slug: sense.slug,
+      elementId: `sense-${sense.id}`,
+      slugAnchorId: sense.slug ? `s-${sense.slug}` : null,
+      fragment: sense.slug ? `#s-${sense.slug}` : `#sense-${sense.id}`,
+      senseOrder: sense.senseOrder,
+      label: senseLabel(sense, attestations),
+      needsLabel: sense.needsLabel,
+      disambiguationNote: sense.disambiguationNote,
+      expandedForm: sense.expandedForm,
+      definitionMd: definition.definitionMd,
+      definitionText: definition.definitionText,
+      excerpt: excerpt || 'No definition yet.',
+      examples: sense.examples,
+      attestations,
+      bibliography: buildBibliography(attestations, senseProvenance),
+      provenance: senseProvenance,
+    };
   });
-
-  if (!entry) {
-    notFound();
-  }
-
-  const senseIds = entry.senses.map((sense) => sense.id);
-  const provenance = senseIds.length
-    ? await prisma.fieldProvenance.findMany({
-        where: { entityType: 'SENSE', entityId: { in: senseIds } },
-        include: { citation: { include: { source: true, sourceDocument: true } } },
-        orderBy: [{ extractedAt: 'desc' }],
-      })
-    : [];
-
-  const provenanceBySenseId = new Map<string, Array<(typeof provenance)[number]>>();
-  for (const item of provenance) {
-    if (item.entityType !== 'SENSE') continue;
-    const list = provenanceBySenseId.get(item.entityId) ?? [];
-    list.push(item);
-    provenanceBySenseId.set(item.entityId, list);
-  }
-
-  const relationships = await listPublishedRelationshipsForEntry(prisma, {
-    entryId: entry.id,
-    limit: 50,
-  });
-  const related = relationships.filter((relationship) => relationship.relationshipType === 'RELATED').slice(0, 10);
-  const seeAlso = relationships
-    .filter((relationship) => relationship.relationshipType === 'SEE_ALSO')
-    .slice(0, 10);
-
-  const relatedEntryIds = Array.from(
-    new Set([...related, ...seeAlso].map((relationship) => relationship.otherEntry.id)),
-  );
-  const relatedSummaries = relatedEntryIds.length
-    ? await prisma.entry.findMany({
-        where: { id: { in: relatedEntryIds }, status: 'PUBLISHED', deletedAt: null },
-        select: { id: true, summaryText: true, summaryMd: true },
-      })
-    : [];
 
   const otherSummaryById = new Map<string, string | null>();
-  for (const other of relatedSummaries) {
+  for (const other of otherSummaries) {
     otherSummaryById.set(
       other.id,
-      other.summaryText ?? (other.summaryMd ? markdownToText(other.summaryMd) : null),
+      other.summaryText ??
+        (other.summaryMd ? markdownToText(other.summaryMd) : null),
     );
   }
 
-  const tocItems = entry.senses.map((sense) => ({
+  const relationsByType = RELATION_SECTIONS.map((section) => ({
+    ...section,
+    items: relationships
+      .filter((relation) => relation.relationshipType === section.type)
+      .slice(0, 12),
+  })).filter((section) => section.items.length > 0);
+
+  const tocItems: PublicEntryTocItem[] = senses.map((sense) => ({
     id: sense.id,
-    label: sense.senseLabel ?? `Sense ${sense.senseOrder + 1}`,
+    fragment: sense.fragment,
+    label: sense.label,
   }));
 
-  if (input.requestedType === 'ACRONYM') {
-    const variants = dedupeVariantTexts(entry.variants);
+  // 1.2: the header summary is dropped when it just repeats sense 1.
+  const headerSummary = toPlainText(entry.summaryMd, entry.summaryText);
+  const firstSenseText = senses[0]?.excerpt ?? '';
+  const showHeaderSummary =
+    headerSummary.length > 0 &&
+    headerSummary.toLowerCase() !== firstSenseText.toLowerCase();
 
+  const variants = dedupeNormalizedStrings(
+    entry.variants.map((variant) => variant.variantText),
+  );
+
+  const base = {
+    entryType: input.requestedType,
+    entry: {
+      id: entry.id,
+      displayTitle: entry.displayTitle,
+      primarySlug: entry.primarySlug,
+      summaryMd: entry.summaryMd,
+      summaryText: entry.summaryText,
+      updatedAt: entry.updatedAt,
+      entryTags: entry.entryTags,
+    },
+    senses,
+    showHeaderSummary,
+    relationsByType,
+    otherSummaryById,
+    tocItems,
+    canonicalPath: entryPath(input.requestedType, entry.primarySlug),
+  };
+
+  if (input.requestedType === 'ACRONYM') {
     const expandedForms = dedupeNormalizedStrings([
       ...entry.senses
         .map((sense) => sense.expandedForm)
@@ -288,25 +397,17 @@ export async function loadPublicEntryPageData(input: {
       ...variants.filter((value) => value.includes(' ')),
     ]);
 
-    const standsForPrimary = standsForPrimaryFromCandidates(expandedForms, entry);
-
-    const alsoKnownAs = variants.filter(
-      (variant) => !expandedForms.some((expanded) => expanded.toLowerCase() === variant.toLowerCase()),
-    );
-
     return {
-      entry,
-      related,
-      seeAlso,
-      otherSummaryById,
-      provenanceBySenseId,
-      tocItems,
-      standsForPrimary,
-      alsoKnownAs,
+      ...base,
+      standsForPrimary: standsForPrimaryFromCandidates(expandedForms, entry),
+      alsoKnownAs: variants.filter(
+        (variant) =>
+          !expandedForms.some(
+            (expanded) => expanded.toLowerCase() === variant.toLowerCase(),
+          ),
+      ),
     };
   }
-
-  const variants = dedupeVariantTexts(entry.variants);
 
   const titleIsShortform = (() => {
     const value = entry.displayTitle.trim();
@@ -314,69 +415,20 @@ export async function loadPublicEntryPageData(input: {
     if (value.length < 2 || value.length > 12) return false;
     const letters = value.replace(/[^A-Za-z]/g, '');
     if (letters.length < 2) return false;
-    const uppercase = letters.replace(/[^A-Z]/g, '').length;
-    return uppercase >= 2;
+    return letters.replace(/[^A-Z]/g, '').length >= 2;
   })();
 
   const standsFor = variants.filter((variant) => variant.includes(' '));
-  const alsoKnownAs =
-    titleIsShortform && standsFor.length
-      ? variants.filter((variant) => !variant.includes(' '))
-      : variants;
-
-  const standsForPrimary =
-    titleIsShortform && standsFor.length > 0
-      ? standsForPrimaryFromCandidates(standsFor, entry)
-      : { primary: null, alternates: [] as string[] };
 
   return {
-    entry,
-    related,
-    seeAlso,
-    otherSummaryById,
-    provenanceBySenseId,
-    tocItems,
-    standsForPrimary,
-    alsoKnownAs,
+    ...base,
+    standsForPrimary:
+      titleIsShortform && standsFor.length > 0
+        ? standsForPrimaryFromCandidates(standsFor, entry)
+        : { primary: null, alternates: [] },
+    alsoKnownAs:
+      titleIsShortform && standsFor.length
+        ? variants.filter((variant) => !variant.includes(' '))
+        : variants,
   };
 }
-
-export function buildSenseCitations(
-  provenanceItems: PublicSenseProvenance[],
-): Array<{
-  citation: PublicSenseProvenance['citation'];
-  contentMode: 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
-}> {
-  const rank = (mode: 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED') => {
-    if (mode === 'QUOTED') return 3;
-    if (mode === 'PARAPHRASED') return 2;
-    return 1;
-  };
-
-  const byKey = new Map<
-    string,
-    {
-      citation: (typeof provenanceItems)[number]['citation'];
-      contentMode: (typeof provenanceItems)[number]['contentMode'];
-    }
-  >();
-
-  for (const provenance of provenanceItems) {
-    const key = `${provenance.citation.sourceId}:${normalizeRefUrl(provenance.citation.url)}`;
-    const existing = byKey.get(key);
-    if (!existing) {
-      byKey.set(key, {
-        citation: provenance.citation,
-        contentMode: provenance.contentMode,
-      });
-      continue;
-    }
-
-    if (rank(provenance.contentMode) > rank(existing.contentMode)) {
-      existing.contentMode = provenance.contentMode;
-    }
-  }
-
-  return Array.from(byKey.values());
-}
-

@@ -8,7 +8,11 @@ import styles from './layout.module.css';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const actor = await requireAdminActor();
 
   return (
@@ -39,7 +43,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </nav>
 
         <div className={styles.actor}>
-          <div className={`${layoutStyles.muted} ${layoutStyles.small} ${layoutStyles.mono}`}>
+          <div
+            className={`${layoutStyles.muted} ${layoutStyles.small} ${layoutStyles.mono}`}
+          >
             {actor.email} · {actor.roleNames.join(', ')}
           </div>
           <UserButton afterSignOutUrl="/" />

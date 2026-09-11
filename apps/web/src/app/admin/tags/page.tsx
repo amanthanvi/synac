@@ -4,19 +4,12 @@ import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
 import { ButtonLink } from '@/components/ui/Button';
+import { formatDate } from '@/app/admin/_format';
 
 import browseStyles from '@/app/_styles/Browse.module.css';
 import layoutStyles from '@/app/_styles/Layout.module.css';
 
 export const dynamic = 'force-dynamic';
-
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
 
 export default async function AdminTagsPage() {
   const prisma = getPrismaClient();
@@ -36,7 +29,11 @@ export default async function AdminTagsPage() {
 
   return (
     <>
-      <PageHeader badge="Admin" title="Tags" subtitle="Curated tags used for browsing + filtering." />
+      <PageHeader
+        badge="Admin"
+        title="Tags"
+        subtitle="Curated tags used for browsing + filtering."
+      />
 
       <div className={layoutStyles.stack}>
         <div className={layoutStyles.row}>
@@ -55,7 +52,10 @@ export default async function AdminTagsPage() {
             {tags.map((t) => (
               <li key={t.id} className={browseStyles.item}>
                 <div className={browseStyles.itemTitleRow}>
-                  <Link className={browseStyles.itemTitle} href={`/admin/tags/${t.id}`}>
+                  <Link
+                    className={browseStyles.itemTitle}
+                    href={`/admin/tags/${t.id}`}
+                  >
                     {t.name}
                   </Link>
                   <span className={browseStyles.itemSlug}>

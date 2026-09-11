@@ -1,53 +1,55 @@
 import { NextResponse } from 'next/server';
 
-import { getString, normalizeOptional } from '@synac/shared';
 import { getPrismaClient } from '@synac/db';
 
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { createTag } from '@/lib/adminTags';
+import { withApiHandler } from '@/lib/apiErrors';
+import { createTagBodySchema, parseBody } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
-
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const GET = withApiHandler('api.admin.tags.list', async (request) => {
+  const actor = await requireRole(request, 'ADMIN', 'EDITOR');
+  if (actor instanceof NextResponse) return actor;
 
   const prisma = getPrismaClient();
   const tags = await prisma.tag.findMany({
     where: { deletedAt: null },
-    select: { id: true, name: true, slug: true, description: true, updatedAt: true },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      kind: true,
+      parentId: true,
+      updatedAt: true,
+    },
     orderBy: [{ name: 'asc' }],
     take: 1000,
   });
 
   return NextResponse.json({ tags });
-}
+});
 
-export async function POST(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+export const POST = withApiHandler('api.admin.tags.create', async (request) => {
+  const actor = await requireRole(request, 'ADMIN');
+  if (actor instanceof NextResponse) return actor;
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+  const body = await parseBody(request, createTagBodySchema);
+  if (!body.ok) return body.response;
 
-  const body = (await request.json()) as unknown;
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
-  }
-
-  const data = body as Record<string, unknown>;
-  const result = await createTag({
+  const input: Parameters<typeof createTag>[0] = {
     actorUserId: actor.dbUserId,
-    name: getString(data, 'name'),
-    slug: normalizeOptional(getString(data, 'slug')) ?? null,
-    description: normalizeOptional(getString(data, 'description')) ?? null,
-  });
+    name: body.data.name,
+    slug: body.data.slug ?? null,
+    description: body.data.description ?? null,
+    parentId: body.data.parentId ?? null,
+  };
+  if (body.data.kind) input.kind = body.data.kind;
 
-  return NextResponse.json(result);
-}
+  const result = await createTag(input);
+
+  return NextResponse.json(result, { status: 201 });
+});

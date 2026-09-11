@@ -11,7 +11,7 @@ type BrowseTag = {
   slug: string;
 };
 
-export type BrowseControlsProps = {
+type BrowseControlsProps = {
   basePath: string;
   letter: string;
   sort: 'title' | 'updated';
@@ -57,7 +57,8 @@ export function BrowseControls({
   const normalizedQuery = query.trim();
 
   const tagHrefs = useMemo(() => {
-    const items: Array<{ label: string; slug: string | null; href: string }> = [];
+    const items: Array<{ label: string; slug: string | null; href: string }> =
+      [];
 
     items.push({
       label: 'All tags',
@@ -152,7 +153,8 @@ export function BrowseControls({
                 window.clearTimeout(debounceRef.current);
                 debounceRef.current = null;
               }
-              const nextSort = e.target.value === 'updated' ? 'updated' : 'title';
+              const nextSort =
+                e.target.value === 'updated' ? 'updated' : 'title';
               if (nextSort === sort) return;
 
               router.replace(
@@ -176,7 +178,9 @@ export function BrowseControls({
           <Link
             key={t.slug ?? 'all'}
             className={`${styles.tag} ${
-              (t.slug ?? null) === (activeTagSlug ?? null) ? styles.tagActive : ''
+              (t.slug ?? null) === (activeTagSlug ?? null)
+                ? styles.tagActive
+                : ''
             }`}
             href={t.href}
           >

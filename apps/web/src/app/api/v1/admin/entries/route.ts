@@ -1,40 +1,31 @@
 import { NextResponse } from 'next/server';
 
-import { getString } from '@synac/shared';
-
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { createDraftEntry } from '@/lib/adminEntries';
+import { withApiHandler } from '@/lib/apiErrors';
+import { createEntryBodySchema, parseBody } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function parseEntryType(value: string): 'TERM' | 'ACRONYM' {
-  const v = value.toUpperCase();
-  return v === 'ACRONYM' ? 'ACRONYM' : 'TERM';
-}
+export const POST = withApiHandler(
+  'api.admin.entries.create',
+  async (request) => {
+    const actor = await requireRole(request, 'ADMIN', 'EDITOR');
+    if (actor instanceof NextResponse) return actor;
 
-export async function POST(request: Request) {
-  const requestId = request.headers.get('x-request-id') ?? undefined;
+    const body = await parseBody(request, createEntryBodySchema);
+    if (!body.ok) return body.response;
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+    const input: Parameters<typeof createDraftEntry>[0] = {
+      actorUserId: actor.dbUserId,
+      entryType: body.data.entryType,
+      displayTitle: body.data.displayTitle,
+    };
+    if (body.data.primarySlug) input.primarySlug = body.data.primarySlug;
 
-  const body = (await request.json()) as unknown;
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
-  }
+    const { entryId } = await createDraftEntry(input);
 
-  const data = body as Record<string, unknown>;
-  const entryType = parseEntryType(getString(data, 'entryType'));
-
-  const { entryId } = await createDraftEntry({
-    actorUserId: actor.dbUserId,
-    entryType,
-    displayTitle: getString(data, 'displayTitle'),
-    primarySlug: getString(data, 'primarySlug') || undefined,
-  });
-
-  return NextResponse.json({ entryId });
-}
+    return NextResponse.json({ entryId }, { status: 201 });
+  },
+);

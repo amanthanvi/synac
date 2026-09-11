@@ -4,22 +4,24 @@ import { notFound, redirect } from 'next/navigation';
 import { getPrismaClient } from '@synac/db';
 
 import { PageHeader } from '@/components/PageHeader';
-import { requireAdminActor } from '@/lib/admin';
+import { requireActionRole } from '@/lib/admin';
 import { setSourceEnabled, updateSource } from '@/lib/adminSources';
 
 export const dynamic = 'force-dynamic';
 
 type AdminSourcePageProps = {
   params: Promise<{ id: string }>;
-  searchParams?: Promise<{ saved?: string; enabled?: string; disabled?: string }>;
+  searchParams?: Promise<{
+    saved?: string;
+    enabled?: string;
+    disabled?: string;
+  }>;
 };
 
-function formatDateInput(value: Date | null): string {
-  if (!value) return '';
-  return value.toISOString().slice(0, 10);
-}
-
-export default async function AdminSourcePage({ params, searchParams }: AdminSourcePageProps) {
+export default async function AdminSourcePage({
+  params,
+  searchParams,
+}: AdminSourcePageProps) {
   const { id } = await params;
   const qp = searchParams ? await searchParams : {};
 
@@ -44,6 +46,12 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
       trustTier: true,
       enabled: true,
       notesInternal: true,
+      licenseUrl: true,
+      licensePublicStatement: true,
+      attributionHtml: true,
+      tierRationale: true,
+      snapshotAllowed: true,
+      defaultContentMode: true,
       updatedAt: true,
     },
   });
@@ -52,21 +60,54 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
 
   return (
     <>
-      <PageHeader badge="Admin" title={source.name} subtitle="Edit source registry metadata." />
+      <PageHeader
+        badge="Admin"
+        title={source.name}
+        subtitle="Edit source registry metadata."
+      />
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 10, alignItems: 'center' }}>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>
-          {source.enabled ? 'ENABLED' : 'DISABLED'} · {source.trustTier} · {source.licenseType}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 10,
+          marginTop: 10,
+          alignItems: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            opacity: 0.75,
+          }}
+        >
+          {source.enabled ? 'ENABLED' : 'DISABLED'} · {source.trustTier} ·{' '}
+          {source.licenseType}
         </span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            opacity: 0.75,
+          }}
+        >
           · slug <code>{source.sourceSlug}</code>
         </span>
-        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, opacity: 0.75 }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            opacity: 0.75,
+          }}
+        >
           · updated {source.updatedAt.toISOString().slice(0, 10)}
         </span>
       </div>
 
-      <div style={{ marginTop: 12, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <div
+        style={{ marginTop: 12, display: 'flex', gap: 12, flexWrap: 'wrap' }}
+      >
         <Link href={`/sources/${source.sourceSlug}`}>Public page</Link>
         <Link href="/admin/sources">All sources</Link>
       </div>
@@ -79,7 +120,10 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
         <div style={{ marginTop: 12, opacity: 0.9 }}>Disabled.</div>
       ) : null}
 
-      <form action={save} style={{ maxWidth: 860, marginTop: 16, display: 'grid', gap: 12 }}>
+      <form
+        action={save}
+        style={{ maxWidth: 860, marginTop: 16, display: 'grid', gap: 12 }}
+      >
         <input type="hidden" name="sourceId" value={source.id} />
 
         <label style={{ display: 'grid', gap: 6 }}>
@@ -106,7 +150,11 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
         >
           <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>License type</div>
-            <select name="licenseType" defaultValue={source.licenseType} required>
+            <select
+              name="licenseType"
+              defaultValue={source.licenseType}
+              required
+            >
               <option value="PUBLIC_DOMAIN">PUBLIC_DOMAIN</option>
               <option value="CC_BY_4_0">CC_BY_4_0</option>
               <option value="CC_BY_SA_4_0">CC_BY_SA_4_0</option>
@@ -128,7 +176,11 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
 
           <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>Access method</div>
-            <select name="accessMethod" defaultValue={source.accessMethod} required>
+            <select
+              name="accessMethod"
+              defaultValue={source.accessMethod}
+              required
+            >
               <option value="API">API</option>
               <option value="RSS">RSS</option>
               <option value="HTML">HTML</option>
@@ -139,7 +191,11 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
 
           <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>Robots policy</div>
-            <select name="robotsPolicy" defaultValue={source.robotsPolicy} required>
+            <select
+              name="robotsPolicy"
+              defaultValue={source.robotsPolicy}
+              required
+            >
               <option value="RESPECT">RESPECT</option>
               <option value="EXPLICIT_PERMISSION">EXPLICIT_PERMISSION</option>
             </select>
@@ -148,11 +204,18 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
 
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>Allowed use (verified)</div>
-          <textarea name="allowedUse" defaultValue={source.allowedUse} required rows={3} />
+          <textarea
+            name="allowedUse"
+            defaultValue={source.allowedUse}
+            required
+            rows={3}
+          />
         </label>
 
         <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Attribution requirements (verified)</div>
+          <div style={{ opacity: 0.85 }}>
+            Attribution requirements (verified)
+          </div>
           <textarea
             name="attributionRequirements"
             defaultValue={source.attributionRequirements}
@@ -163,7 +226,11 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
 
         <label style={{ display: 'grid', gap: 6 }}>
           <div style={{ opacity: 0.85 }}>License notes (optional)</div>
-          <textarea name="licenseNotes" defaultValue={source.licenseNotes ?? ''} rows={2} />
+          <textarea
+            name="licenseNotes"
+            defaultValue={source.licenseNotes ?? ''}
+            rows={2}
+          />
         </label>
 
         <div
@@ -175,12 +242,22 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
         >
           <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>Last verified at</div>
-            <input name="lastVerifiedAt" type="date" defaultValue={formatDateInput(source.lastVerifiedAt)} />
+            <input
+              name="lastVerifiedAt"
+              type="date"
+              defaultValue={
+                source.lastVerifiedAt?.toISOString().slice(0, 10) ?? ''
+              }
+            />
           </label>
 
           <label style={{ display: 'grid', gap: 6 }}>
             <div style={{ opacity: 0.85 }}>Ingest cron (optional, UTC)</div>
-            <input name="cronSchedule" defaultValue={source.cronSchedule ?? ''} placeholder="e.g., 0 3 * * *" />
+            <input
+              name="cronSchedule"
+              defaultValue={source.cronSchedule ?? ''}
+              placeholder="e.g., 0 3 * * *"
+            />
           </label>
 
           <label style={{ display: 'grid', gap: 6 }}>
@@ -193,17 +270,114 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
           <div style={{ opacity: 0.85 }}>Rate limit policy JSON (optional)</div>
           <textarea
             name="rateLimitPolicy"
-            defaultValue={source.rateLimitPolicy ? JSON.stringify(source.rateLimitPolicy) : ''}
+            defaultValue={
+              source.rateLimitPolicy
+                ? JSON.stringify(source.rateLimitPolicy)
+                : ''
+            }
+            rows={2}
+          />
+        </label>
+
+        <h2 style={{ margin: '16px 0 0', fontSize: 16 }}>
+          Public licence &amp; attribution
+        </h2>
+        <div style={{ opacity: 0.7, fontSize: 12 }}>
+          These fields are served verbatim by the public API and the source
+          page, so every consumer of a definition inherits this source&rsquo;s
+          terms.
+        </div>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>License URL (https, optional)</div>
+          <input
+            name="licenseUrl"
+            type="url"
+            defaultValue={source.licenseUrl ?? ''}
+          />
+        </label>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>
+            Public licence statement (shown to readers)
+          </div>
+          <textarea
+            name="licensePublicStatement"
+            defaultValue={source.licensePublicStatement ?? ''}
             rows={2}
           />
         </label>
 
         <label style={{ display: 'grid', gap: 6 }}>
-          <div style={{ opacity: 0.85 }}>Internal notes (optional)</div>
-          <textarea name="notesInternal" defaultValue={source.notesInternal ?? ''} rows={2} />
+          <div style={{ opacity: 0.85 }}>
+            Attribution HTML (rendered on the source page)
+          </div>
+          <textarea
+            name="attributionHtml"
+            defaultValue={source.attributionHtml ?? ''}
+            rows={2}
+          />
         </label>
 
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>
+            Trust tier rationale (why this tier?)
+          </div>
+          <textarea
+            name="tierRationale"
+            defaultValue={source.tierRationale ?? ''}
+            rows={2}
+          />
+        </label>
+
+        <div
+          style={{
+            display: 'grid',
+            gap: 12,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          }}
+        >
+          <label style={{ display: 'grid', gap: 6 }}>
+            <div style={{ opacity: 0.85 }}>Default content mode</div>
+            <select
+              name="defaultContentMode"
+              defaultValue={source.defaultContentMode}
+            >
+              <option value="SUMMARIZED">SUMMARIZED</option>
+              <option value="PARAPHRASED">PARAPHRASED</option>
+              <option value="QUOTED">QUOTED</option>
+            </select>
+          </label>
+
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input
+              name="snapshotAllowed"
+              type="checkbox"
+              defaultChecked={source.snapshotAllowed}
+            />
+            <div style={{ opacity: 0.85 }}>
+              Snapshots of fetched documents may be stored
+            </div>
+          </label>
+        </div>
+
+        <label style={{ display: 'grid', gap: 6 }}>
+          <div style={{ opacity: 0.85 }}>Internal notes (optional)</div>
+          <textarea
+            name="notesInternal"
+            defaultValue={source.notesInternal ?? ''}
+            rows={2}
+          />
+        </label>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
           <button type="submit">Save</button>
           <div style={{ opacity: 0.7, fontSize: 12 }}>
             Enabling requires <code>lastVerifiedAt</code>.
@@ -213,11 +387,23 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
 
       <form
         action={toggleEnabled}
-        style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}
+        style={{
+          marginTop: 12,
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
       >
         <input type="hidden" name="sourceId" value={source.id} />
-        <input type="hidden" name="enabled" value={source.enabled ? '0' : '1'} />
-        <button type="submit">{source.enabled ? 'Disable source' : 'Enable source'}</button>
+        <input
+          type="hidden"
+          name="enabled"
+          value={source.enabled ? '0' : '1'}
+        />
+        <button type="submit">
+          {source.enabled ? 'Disable source' : 'Enable source'}
+        </button>
       </form>
     </>
   );
@@ -226,10 +412,7 @@ export default async function AdminSourcePage({ params, searchParams }: AdminSou
 async function save(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage sources');
-  }
+  const actor = await requireActionRole('ADMIN');
 
   const sourceId = String(formData.get('sourceId') ?? '');
   await updateSource({
@@ -242,7 +425,9 @@ async function save(formData: FormData) {
     licenseType: String(formData.get('licenseType') ?? ''),
     licenseNotes: String(formData.get('licenseNotes') ?? ''),
     allowedUse: String(formData.get('allowedUse') ?? ''),
-    attributionRequirements: String(formData.get('attributionRequirements') ?? ''),
+    attributionRequirements: String(
+      formData.get('attributionRequirements') ?? '',
+    ),
     accessMethod: String(formData.get('accessMethod') ?? ''),
     robotsPolicy: String(formData.get('robotsPolicy') ?? ''),
     rateLimitPolicy: String(formData.get('rateLimitPolicy') ?? ''),
@@ -250,6 +435,14 @@ async function save(formData: FormData) {
     lastVerifiedAt: String(formData.get('lastVerifiedAt') ?? ''),
     trustTier: String(formData.get('trustTier') ?? ''),
     notesInternal: String(formData.get('notesInternal') ?? ''),
+    licenseUrl: String(formData.get('licenseUrl') ?? ''),
+    licensePublicStatement: String(
+      formData.get('licensePublicStatement') ?? '',
+    ),
+    attributionHtml: String(formData.get('attributionHtml') ?? ''),
+    tierRationale: String(formData.get('tierRationale') ?? ''),
+    snapshotAllowed: formData.get('snapshotAllowed') === 'on',
+    defaultContentMode: String(formData.get('defaultContentMode') ?? ''),
   });
 
   redirect(`/admin/sources/${sourceId}?saved=1`);
@@ -258,10 +451,7 @@ async function save(formData: FormData) {
 async function toggleEnabled(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN')) {
-    throw new Error('Only ADMIN can manage sources');
-  }
+  const actor = await requireActionRole('ADMIN');
 
   const sourceId = String(formData.get('sourceId') ?? '');
   const enabled = String(formData.get('enabled') ?? '') === '1';

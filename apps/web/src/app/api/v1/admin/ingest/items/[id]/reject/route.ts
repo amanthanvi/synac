@@ -1,34 +1,32 @@
 import { NextResponse } from 'next/server';
 
-import { getString, normalizeOptional } from '@synac/shared';
-
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { rejectIngestItem } from '@/lib/adminIngest';
+import { withApiHandler } from '@/lib/apiErrors';
+import { parseBody, rejectIngestItemBodySchema } from '@/lib/validation';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const POST = withApiHandler<Context>(
+  'api.admin.ingest.items.reject',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN', 'EDITOR');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: ingestItemId } = await context.params;
+    const { id: ingestItemId } = await context.params;
 
-  const body = (await request.json()) as unknown;
-  if (!body || typeof body !== 'object') {
-    return NextResponse.json({ error: 'invalid_json', requestId }, { status: 400 });
-  }
+    const body = await parseBody(request, rejectIngestItemBodySchema);
+    if (!body.ok) return body.response;
 
-  const data = body as Record<string, unknown>;
-  await rejectIngestItem({
-    actorUserId: actor.dbUserId,
-    ingestItemId,
-    reason: getString(data, 'reason'),
-  });
+    await rejectIngestItem({
+      actorUserId: actor.dbUserId,
+      ingestItemId,
+      reason: body.data.reason,
+    });
 
-  return NextResponse.json({ ok: true });
-}
+    return NextResponse.json({ ok: true });
+  },
+);

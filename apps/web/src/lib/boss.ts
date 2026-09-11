@@ -7,12 +7,19 @@ type GlobalForBoss = typeof globalThis & {
   __synacBossStartPromiseByUrl?: Map<string, Promise<PgBoss>>;
 };
 
-export async function getBossForDatabaseUrl(databaseUrl: string): Promise<PgBoss> {
+export async function getBossForDatabaseUrl(
+  databaseUrl: string,
+): Promise<PgBoss> {
+  // `globalThis` carries no declared shape; the cache keys below are ours alone.
   const globalForBoss = globalThis as GlobalForBoss;
 
-  if (!globalForBoss.__synacBossByUrl) globalForBoss.__synacBossByUrl = new Map<string, PgBoss>();
+  if (!globalForBoss.__synacBossByUrl)
+    globalForBoss.__synacBossByUrl = new Map<string, PgBoss>();
   if (!globalForBoss.__synacBossStartPromiseByUrl) {
-    globalForBoss.__synacBossStartPromiseByUrl = new Map<string, Promise<PgBoss>>();
+    globalForBoss.__synacBossStartPromiseByUrl = new Map<
+      string,
+      Promise<PgBoss>
+    >();
   }
 
   const existing = globalForBoss.__synacBossByUrl.get(databaseUrl);
@@ -34,6 +41,7 @@ export async function getBossForDatabaseUrl(databaseUrl: string): Promise<PgBoss
 
 export async function getBoss(): Promise<PgBoss> {
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) throw new Error('DATABASE_URL is required to start pg-boss');
+  if (!databaseUrl)
+    throw new Error('DATABASE_URL is required to start pg-boss');
   return getBossForDatabaseUrl(databaseUrl);
 }

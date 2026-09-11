@@ -1,9 +1,10 @@
 import Link from 'next/link';
 
 import { PageHeader } from '@/components/PageHeader';
-import { getPrismaClient } from '@synac/db';
+import { getPrismaClient, type Prisma } from '@synac/db';
 
 import { Button } from '@/components/ui/Button';
+import { formatDateTime } from '@/app/admin/_format';
 
 import styles from './page.module.css';
 
@@ -23,37 +24,24 @@ function normalizeOptional(value: string | undefined): string | undefined {
   return v ? v : undefined;
 }
 
-function formatDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(value);
-}
-
-export default async function AdminAuditPage({ searchParams }: AdminAuditPageProps) {
+export default async function AdminAuditPage({
+  searchParams,
+}: AdminAuditPageProps) {
   const qp = searchParams ? await searchParams : {};
   const entityType = normalizeOptional(qp.entityType);
   const entityId = normalizeOptional(qp.entityId);
   const action = normalizeOptional(qp.action);
   const actorEmail = normalizeOptional(qp.actorEmail)?.toLowerCase();
 
+  const where: Prisma.AuditEventWhereInput = {};
+  if (entityType) where.entityType = entityType;
+  if (entityId) where.entityId = entityId;
+  if (action) where.action = { contains: action, mode: 'insensitive' };
+  if (actorEmail) where.actorUser = { email: actorEmail };
+
   const prisma = getPrismaClient();
   const events = await prisma.auditEvent.findMany({
-    where: {
-      ...(entityType ? { entityType } : {}),
-      ...(entityId ? { entityId } : {}),
-      ...(action ? { action: { contains: action, mode: 'insensitive' } } : {}),
-      ...(actorEmail
-        ? {
-            actorUser: {
-              email: actorEmail,
-            },
-          }
-        : {}),
-    },
+    where,
     include: {
       actorUser: { select: { email: true } },
     },
@@ -61,7 +49,9 @@ export default async function AdminAuditPage({ searchParams }: AdminAuditPagePro
     take: 200,
   });
 
-  const senseIds = events.filter((ev) => ev.entityType === 'SENSE').map((ev) => ev.entityId);
+  const senseIds = events.flatMap((ev) =>
+    ev.entityType === 'SENSE' ? [ev.entityId] : [],
+  );
   const senseToEntry = new Map<string, string>();
   if (senseIds.length > 0) {
     const senses = await prisma.sense.findMany({
@@ -73,7 +63,11 @@ export default async function AdminAuditPage({ searchParams }: AdminAuditPagePro
 
   return (
     <>
-      <PageHeader badge="Admin" title="Audit" subtitle="Recent changes and rollback points." />
+      <PageHeader
+        badge="Admin"
+        title="Audit"
+        subtitle="Recent changes and rollback points."
+      />
 
       <form className={styles.filterForm}>
         <label className={styles.field}>
@@ -87,11 +81,21 @@ export default async function AdminAuditPage({ searchParams }: AdminAuditPagePro
         </label>
         <label className={styles.field}>
           <span className={styles.label}>Entity ID</span>
-          <input className={styles.input} name="entityId" defaultValue={entityId ?? ''} placeholder="UUID" />
+          <input
+            className={styles.input}
+            name="entityId"
+            defaultValue={entityId ?? ''}
+            placeholder="UUID"
+          />
         </label>
         <label className={styles.field}>
           <span className={styles.label}>Action</span>
-          <input className={styles.input} name="action" defaultValue={action ?? ''} placeholder="ENTRY_PUBLISH" />
+          <input
+            className={styles.input}
+            name="action"
+            defaultValue={action ?? ''}
+            placeholder="ENTRY_PUBLISH"
+          />
         </label>
         <label className={styles.field}>
           <span className={styles.label}>Actor email</span>
@@ -123,17 +127,27 @@ export default async function AdminAuditPage({ searchParams }: AdminAuditPagePro
             </thead>
             <tbody>
               {events.map((ev) => {
-                const entryId = ev.entityType === 'ENTRY' ? ev.entityId : senseToEntry.get(ev.entityId);
-                const adminHref = entryId ? `/admin/entries/${entryId}` : undefined;
-                const canRollback = Boolean(ev.before) && ev.action !== 'ENTRY_CREATE';
+                const entryId =
+                  ev.entityType === 'ENTRY'
+                    ? ev.entityId
+                    : senseToEntry.get(ev.entityId);
+                const adminHref = entryId
+                  ? `/admin/entries/${entryId}`
+                  : undefined;
+                const canRollback =
+                  Boolean(ev.before) && ev.action !== 'ENTRY_CREATE';
 
                 return (
                   <tr key={ev.id} className={styles.row}>
                     <td className={styles.td}>
-                      <span className={styles.monoStrong}>{formatDate(ev.createdAt)}</span>
+                      <span className={styles.monoStrong}>
+                        {formatDateTime(ev.createdAt)}
+                      </span>
                     </td>
                     <td className={styles.td}>
-                      <span className={styles.monoStrong}>{ev.actorUser.email}</span>
+                      <span className={styles.monoStrong}>
+                        {ev.actorUser.email}
+                      </span>
                     </td>
                     <td className={styles.td}>
                       <span className={styles.mono}>{ev.action}</span>

@@ -4,14 +4,22 @@ import { redirect } from 'next/navigation';
 import { getPrismaClient } from '@synac/db';
 
 import { Button } from '@/components/ui/Button';
-import { requireAdminActor } from '@/lib/admin';
-import { addTagToEntry, removeTagFromEntry } from '@/lib/adminEntryTags';
+import { requireActionRole } from '@/lib/admin';
+import {
+  addTagToEntry,
+  pinEntryTagAsEditorial,
+  removeTagFromEntry,
+} from '@/lib/adminEntryTags';
 
 import styles from './page.module.css';
 
 export async function EntryTagsSection(props: {
   entryId: string;
-  entryTags: Array<{ tagId: string; tag: { id: string; name: string; slug: string } }>;
+  entryTags: Array<{
+    tagId: string;
+    assignedBy: 'EDITORIAL' | 'AUTO' | 'INGEST';
+    tag: { id: string; name: string; slug: string };
+  }>;
 }) {
   const prisma = getPrismaClient();
   const allTags = await prisma.tag.findMany({
@@ -30,22 +38,39 @@ export async function EntryTagsSection(props: {
 
       {props.entryTags.length === 0 ? (
         <div className={styles.notice}>
-          No tags yet. Tags power public browsing on <code>/tags/&hellip;</code>.
+          No tags yet. Tags power public browsing on <code>/tags/&hellip;</code>
+          .
         </div>
       ) : (
         <ul className={styles.tagList}>
-          {props.entryTags.map(({ tag }) => (
+          {props.entryTags.map(({ tag, assignedBy }) => (
             <li key={tag.id} className={styles.tagItem}>
               <div className={styles.tagMain}>
                 <Link className={styles.tagName} href={`/admin/tags/${tag.id}`}>
                   {tag.name}
                 </Link>
                 <span className={styles.tagSlug}>{tag.slug}</span>
+                <span className={styles.assignedByBadge}>
+                  {assignedBy.toLowerCase()}
+                </span>
               </div>
               <div className={styles.tagActions}>
                 <Link className={styles.inlineLink} href={`/tags/${tag.slug}`}>
                   Public
                 </Link>
+                {assignedBy === 'EDITORIAL' ? null : (
+                  <form action={pinTagAction}>
+                    <input type="hidden" name="entryId" value={props.entryId} />
+                    <input type="hidden" name="tagId" value={tag.id} />
+                    <button
+                      type="submit"
+                      className={styles.inlineButton}
+                      title="Pin this tag so the auto-tagger cannot remove it"
+                    >
+                      Make editorial
+                    </button>
+                  </form>
+                )}
                 <form action={removeTagAction}>
                   <input type="hidden" name="entryId" value={props.entryId} />
                   <input type="hidden" name="tagId" value={tag.id} />
@@ -59,6 +84,11 @@ export async function EntryTagsSection(props: {
         </ul>
       )}
 
+      <div className={styles.muted}>
+        Tags you add here are <strong>editorial</strong>, which pins them: the
+        auto-tagger only adds and removes its own <code>auto</code> links.
+      </div>
+
       {availableTags.length === 0 ? (
         <div className={styles.notice}>No more tags to add.</div>
       ) : (
@@ -66,7 +96,12 @@ export async function EntryTagsSection(props: {
           <input type="hidden" name="entryId" value={props.entryId} />
           <label className={styles.field}>
             <div className={styles.label}>Add tag</div>
-            <select className={styles.input} name="tagId" required defaultValue={availableTags[0]?.id}>
+            <select
+              className={styles.input}
+              name="tagId"
+              required
+              defaultValue={availableTags[0]?.id}
+            >
               {availableTags.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name} ({t.slug})
@@ -86,10 +121,7 @@ export async function EntryTagsSection(props: {
 async function addTagAction(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    throw new Error('Not authorized');
-  }
+  const actor = await requireActionRole('ADMIN', 'EDITOR');
 
   const entryId = String(formData.get('entryId') ?? '');
   const tagId = String(formData.get('tagId') ?? '');
@@ -98,13 +130,22 @@ async function addTagAction(formData: FormData) {
   redirect(`/admin/entries/${entryId}?saved=1`);
 }
 
+async function pinTagAction(formData: FormData) {
+  'use server';
+
+  const actor = await requireActionRole('ADMIN', 'EDITOR');
+
+  const entryId = String(formData.get('entryId') ?? '');
+  const tagId = String(formData.get('tagId') ?? '');
+
+  await pinEntryTagAsEditorial({ actorUserId: actor.dbUserId, entryId, tagId });
+  redirect(`/admin/entries/${entryId}?saved=1`);
+}
+
 async function removeTagAction(formData: FormData) {
   'use server';
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    throw new Error('Not authorized');
-  }
+  const actor = await requireActionRole('ADMIN', 'EDITOR');
 
   const entryId = String(formData.get('entryId') ?? '');
   const tagId = String(formData.get('tagId') ?? '');

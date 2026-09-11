@@ -1,14 +1,19 @@
 import styles from './EmptyState.module.css';
 import type { ReactNode } from 'react';
 
-export type EmptyStateProps = {
+type EmptyStateProps = {
   title?: string;
   children?: ReactNode;
   actions?: ReactNode;
   className?: string;
 };
 
-export function EmptyState({ title, children, actions, className }: EmptyStateProps) {
+export function EmptyState({
+  title,
+  children,
+  actions,
+  className,
+}: EmptyStateProps) {
   return (
     <section className={[styles.empty, className].filter(Boolean).join(' ')}>
       {title ? <div className={styles.title}>{title}</div> : null}

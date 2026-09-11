@@ -25,7 +25,8 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           <p className={`${layoutStyles.muted} ${layoutStyles.small}`}>
             {error.digest ? (
               <>
-                Error ID: <span className={layoutStyles.mono}>{error.digest}</span>
+                Error ID:{' '}
+                <span className={layoutStyles.mono}>{error.digest}</span>
               </>
             ) : (
               <>Error ID unavailable.</>

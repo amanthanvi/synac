@@ -1,22 +1,30 @@
 import { NextResponse } from 'next/server';
 
-import { getPrismaClient } from '@synac/db';
+import { getPrismaClient, type Prisma } from '@synac/db';
 import { normalizeOptional } from '@synac/shared';
 
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
+import { withApiHandler } from '@/lib/apiErrors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
-  await requireAdminActor();
+/**
+ * The audit log names who did what, including the actor's email address. Only
+ * ADMINs may read it: an EDITOR needs to see the entries, not the roster.
+ */
+export const GET = withApiHandler('api.admin.audit', async (request) => {
+  const actor = await requireRole(request, 'ADMIN');
+  if (actor instanceof NextResponse) return actor;
 
   const url = new URL(request.url);
   const entity = normalizeOptional(url.searchParams.get('entity'));
   let entityType = normalizeOptional(url.searchParams.get('entityType'));
   let entityId = normalizeOptional(url.searchParams.get('entityId'));
   const action = normalizeOptional(url.searchParams.get('action'));
-  const actorEmail = normalizeOptional(url.searchParams.get('actorEmail'))?.toLowerCase();
+  const actorEmail = normalizeOptional(
+    url.searchParams.get('actorEmail'),
+  )?.toLowerCase();
 
   if (entity) {
     const [tRaw, idRaw] = entity.split(':');
@@ -26,22 +34,20 @@ export async function GET(request: Request) {
     entityId ??= id;
   }
 
-  const limit = Math.max(1, Math.min(500, Number(url.searchParams.get('limit') ?? 200) || 200));
+  const limit = Math.max(
+    1,
+    Math.min(500, Number(url.searchParams.get('limit') ?? 200) || 200),
+  );
+
+  const where: Prisma.AuditEventWhereInput = {};
+  if (entityType) where.entityType = entityType;
+  if (entityId) where.entityId = entityId;
+  if (action) where.action = { contains: action, mode: 'insensitive' };
+  if (actorEmail) where.actorUser = { email: actorEmail };
 
   const prisma = getPrismaClient();
   const events = await prisma.auditEvent.findMany({
-    where: {
-      ...(entityType ? { entityType } : {}),
-      ...(entityId ? { entityId } : {}),
-      ...(action ? { action: { contains: action, mode: 'insensitive' } } : {}),
-      ...(actorEmail
-        ? {
-            actorUser: {
-              email: actorEmail,
-            },
-          }
-        : {}),
-    },
+    where,
     include: {
       actorUser: { select: { email: true } },
     },
@@ -63,12 +69,7 @@ export async function GET(request: Request) {
     })),
     meta: {
       limit,
-      filters: {
-        entityType,
-        entityId,
-        action,
-        actorEmail,
-      },
+      filters: { entityType, entityId, action, actorEmail },
     },
   });
-}
+});

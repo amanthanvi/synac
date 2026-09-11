@@ -30,16 +30,20 @@ export default async function AdminSearchIndexPage() {
         <Panel className={layoutStyles.narrow}>
           <div className={layoutStyles.stack}>
             <div>
-              <strong>Published entries:</strong> {coverage.publishedEntries.toLocaleString()}
+              <strong>Published entries:</strong>{' '}
+              {coverage.publishedEntries.toLocaleString()}
             </div>
             <div>
-              <strong>Indexed entries:</strong> {coverage.indexedEntries.toLocaleString()}
+              <strong>Indexed entries:</strong>{' '}
+              {coverage.indexedEntries.toLocaleString()}
             </div>
             <div>
-              <strong>Missing rows:</strong> {coverage.missingEntryIds.length.toLocaleString()}
+              <strong>Missing rows:</strong>{' '}
+              {coverage.missingEntryIds.length.toLocaleString()}
             </div>
             <div>
-              <strong>Orphaned rows:</strong> {coverage.orphanedEntryIds.length.toLocaleString()}
+              <strong>Orphaned rows:</strong>{' '}
+              {coverage.orphanedEntryIds.length.toLocaleString()}
             </div>
           </div>
         </Panel>

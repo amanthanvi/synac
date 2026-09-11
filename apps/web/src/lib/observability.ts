@@ -1,7 +1,7 @@
 import { logger } from './logger';
 
 /** Defaults for search index coverage audits; override via `SYNAC_SEARCH_COVERAGE_AUDIT_*` env vars. */
-export const SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS = {
+const SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS = {
   firstPage: 1,
   minQueryLength: 8,
   slowThresholdMs: 250,
@@ -18,7 +18,8 @@ function readCoverageAuditFirstPage(): number {
   const raw = process.env.SYNAC_SEARCH_COVERAGE_AUDIT_FIRST_PAGE?.trim();
   if (!raw) return SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS.firstPage;
   const n = Number.parseInt(raw, 10);
-  if (!Number.isFinite(n) || n < 1) return SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS.firstPage;
+  if (!Number.isFinite(n) || n < 1)
+    return SEARCH_INDEX_COVERAGE_AUDIT_DEFAULTS.firstPage;
   return n;
 }
 
@@ -40,7 +41,8 @@ export function shouldAuditSearchIndexCoverage(input: {
   resultsCount: number;
   durationMs: number;
 }): boolean {
-  const { firstPage, minQueryLength, slowThresholdMs } = SEARCH_COVERAGE_AUDIT_THRESHOLDS;
+  const { firstPage, minQueryLength, slowThresholdMs } =
+    SEARCH_COVERAGE_AUDIT_THRESHOLDS;
 
   const normalizedQuery = input.query.trim();
   if (input.page !== firstPage) return false;

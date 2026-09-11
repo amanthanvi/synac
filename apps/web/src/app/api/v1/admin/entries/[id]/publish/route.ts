@@ -1,27 +1,24 @@
 import { NextResponse } from 'next/server';
 
-import { normalizeOptional } from '@synac/shared';
-
-import { requireAdminActor } from '@/lib/admin';
+import { requireRole } from '@/lib/admin';
 import { publishEntry } from '@/lib/adminEntries';
+import { withApiHandler } from '@/lib/apiErrors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
-  const requestId = normalizeOptional(request.headers.get('x-request-id')) ?? undefined;
+type Context = { params: Promise<{ id: string }> };
 
-  const actor = await requireAdminActor();
-  if (!actor.roleNames.includes('ADMIN') && !actor.roleNames.includes('EDITOR')) {
-    return NextResponse.json({ error: 'forbidden', requestId }, { status: 403 });
-  }
+export const POST = withApiHandler<Context>(
+  'api.admin.entries.publish',
+  async (request, context) => {
+    const actor = await requireRole(request, 'ADMIN', 'EDITOR');
+    if (actor instanceof NextResponse) return actor;
 
-  const { id: entryId } = await context.params;
+    const { id: entryId } = await context.params;
 
-  const result = await publishEntry({
-    actorUserId: actor.dbUserId,
-    entryId,
-  });
+    const result = await publishEntry({ actorUserId: actor.dbUserId, entryId });
 
-  return NextResponse.json({ ok: true, ...result });
-}
+    return NextResponse.json({ ok: true, ...result });
+  },
+);
