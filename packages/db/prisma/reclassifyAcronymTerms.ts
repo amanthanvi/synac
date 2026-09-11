@@ -25,7 +25,8 @@ function isAcronymLikeTitle(value: string): boolean {
   const digits = v.replace(/[^0-9]/g, '').length;
 
   if (uppercase >= 2 && lowercase <= 2) return true;
-  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return true;
+  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0)
+    return true;
 
   return false;
 }
@@ -69,14 +70,21 @@ async function main(): Promise<void> {
   for (;;) {
     const batch = await prisma.entry.findMany({
       where: { entryType: 'TERM', deletedAt: null },
-      select: { id: true, displayTitle: true, primarySlug: true, entryType: true },
+      select: {
+        id: true,
+        displayTitle: true,
+        primarySlug: true,
+        entryType: true,
+      },
       orderBy: [{ id: 'asc' }],
       take: batchSize,
-      ...(cursor ? { skip: 1, cursor } : {}),
+      skip: cursor ? 1 : 0,
+      cursor,
     });
 
-    if (batch.length === 0) break;
-    cursor = { id: batch[batch.length - 1]!.id };
+    const last = batch[batch.length - 1];
+    if (!last) break;
+    cursor = { id: last.id };
 
     for (const entry of batch) {
       scanned += 1;
@@ -84,7 +92,10 @@ async function main(): Promise<void> {
       if (!isAcronymLikeTitle(entry.displayTitle)) continue;
 
       const slug = entry.primarySlug;
-      if (existingAcronymSlugs.has(slug) || existingAcronymHistorySlugs.has(slug)) {
+      if (
+        existingAcronymSlugs.has(slug) ||
+        existingAcronymHistorySlugs.has(slug)
+      ) {
         skipped += 1;
         continue;
       }
@@ -96,7 +107,12 @@ async function main(): Promise<void> {
           const updated = await tx.entry.update({
             where: { id: entry.id },
             data: { entryType: 'ACRONYM', updatedByUserId: actor.id },
-            select: { id: true, entryType: true, displayTitle: true, primarySlug: true },
+            select: {
+              id: true,
+              entryType: true,
+              displayTitle: true,
+              primarySlug: true,
+            },
           });
 
           await tx.entrySlugHistory.updateMany({
@@ -115,8 +131,18 @@ async function main(): Promise<void> {
               action: 'ENTRY_RECLASSIFY',
               entityType: 'ENTRY',
               entityId: entry.id,
-              before: { id: before.id, entryType: before.entryType, displayTitle: before.displayTitle, primarySlug: before.primarySlug },
-              after: { id: updated.id, entryType: updated.entryType, displayTitle: updated.displayTitle, primarySlug: updated.primarySlug },
+              before: {
+                id: before.id,
+                entryType: before.entryType,
+                displayTitle: before.displayTitle,
+                primarySlug: before.primarySlug,
+              },
+              after: {
+                id: updated.id,
+                entryType: updated.entryType,
+                displayTitle: updated.displayTitle,
+                primarySlug: updated.primarySlug,
+              },
             },
           });
 
@@ -135,11 +161,7 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    JSON.stringify(
-      { ok: true, scanned, converted, skipped },
-      null,
-      2,
-    ),
+    JSON.stringify({ ok: true, scanned, converted, skipped }, null, 2),
   );
 
   await prisma.$disconnect();

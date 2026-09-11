@@ -1,79 +1,127 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { createPrismaClient } from '../client.js';
 import {
-  createIntegrationTestDatabase,
+  createIntegrationTestClient,
+  disconnectIntegrationPrisma,
   resetIntegrationDatabase,
 } from '../testing.js';
 import {
   AUTO_TAG_DEFINITIONS,
+  AUTO_TAG_THRESHOLD,
+  collectAutoTagMatchesForDocument,
   collectAutoTagSlugsForDocument,
   ensureMissingAutoTagDefinitions,
   syncAutoTagsForPublishedEntry,
 } from './autoTagging.js';
 
-const prisma = createPrismaClient(createIntegrationTestDatabase());
+const prisma = createIntegrationTestClient();
 
-describe('auto tagging integration', () => {
-  beforeAll(async () => {
-    await resetIntegrationDatabase(prisma);
+async function createPublishedEntry(input: {
+  title: string;
+  slug: string;
+  summary: string;
+  definition: string;
+}): Promise<string> {
+  const entry = await prisma.entry.create({
+    data: {
+      entryType: 'TERM',
+      displayTitle: input.title,
+      normalizedTitle: input.title.toLowerCase(),
+      primarySlug: input.slug,
+      status: 'PUBLISHED',
+      summaryMd: input.summary,
+      summaryText: input.summary,
+      publishedAt: new Date(),
+    },
+    select: { id: true },
   });
 
-  beforeEach(async () => {
-    await resetIntegrationDatabase(prisma);
+  await prisma.sense.create({
+    data: {
+      entryId: entry.id,
+      senseOrder: 0,
+      slug: 'sense-1',
+      definitionMd: input.definition,
+      definitionText: input.definition,
+      status: 'PUBLISHED',
+      publishedAt: new Date(),
+    },
   });
 
-  afterAll(async () => {
-    await prisma.$disconnect();
-  });
+  return entry.id;
+}
 
-  it('exposes the same curated tag catalog used by scripts', () => {
+afterAll(async () => {
+  await disconnectIntegrationPrisma();
+});
+
+describe('auto tag matching rules', () => {
+  it('exposes the curated tag catalog used by the backfill script', () => {
+    expect(AUTO_TAG_THRESHOLD).toBe(2);
     expect(AUTO_TAG_DEFINITIONS.length).toBeGreaterThan(10);
-    expect(AUTO_TAG_DEFINITIONS.map((definition) => definition.slug)).toContain('identity');
+    expect(AUTO_TAG_DEFINITIONS.map((definition) => definition.slug)).toContain(
+      'identity',
+    );
     expect(AUTO_TAG_DEFINITIONS.map((definition) => definition.slug)).toContain(
       'application-security',
     );
   });
 
-  it('collects matching slugs from a real search document', async () => {
-    const entry = await prisma.entry.create({
-      data: {
-        entryType: 'TERM',
-        displayTitle: 'Authentication Test',
-        normalizedTitle: 'authentication test',
-        primarySlug: 'authentication-test',
-        status: 'PUBLISHED',
-        summaryMd:
-          'Authentication tokens can be stolen through phishing and SSRF chains.',
-        summaryText:
-          'Authentication tokens can be stolen through phishing and SSRF chains.',
-      },
-      select: { id: true },
-    });
+  it('requires two generic hits or one specific phrase', () => {
+    expect(
+      collectAutoTagSlugsForDocument('Network traffic is inspected.'),
+    ).toEqual([]);
+    expect(
+      collectAutoTagSlugsForDocument('A network firewall inspects traffic.'),
+    ).toEqual(['network-security']);
+    expect(
+      collectAutoTagSlugsForDocument('Firewall rules are ordered.'),
+    ).toEqual(['network-security']);
 
-    await prisma.sense.create({
-      data: {
-        entryId: entry.id,
-        senseOrder: 0,
-        definitionMd: 'A SIEM alert helped incident response teams investigate the compromise.',
-        definitionText:
-          'A SIEM alert helped incident response teams investigate the compromise.',
-        status: 'PUBLISHED',
-      },
-    });
+    const matches = collectAutoTagMatchesForDocument(
+      'A network firewall inspects packets before routing them.',
+    );
+    expect(matches[0]?.slug).toBe('network-security');
+    expect(matches[0]?.score).toBeGreaterThanOrEqual(AUTO_TAG_THRESHOLD);
+  });
 
-    const searchRow = await prisma.entrySearch.findUniqueOrThrow({
-      where: { entryId: entry.id },
-      select: { searchDocument: true },
-    });
+  it('no longer tags on bare common English words', () => {
+    const noise =
+      'The host writes a log entry when the policy control token session monitor package runs.';
+    expect(collectAutoTagSlugsForDocument(noise)).toEqual([]);
 
-    expect(collectAutoTagSlugsForDocument(searchRow.searchDocument)).toEqual([
-      'identity',
-      'application-security',
-      'threats',
-      'security-operations',
-      'incident-response',
-    ]);
+    expect(
+      collectAutoTagSlugsForDocument('There is a risk to consider.'),
+    ).toEqual([]);
+    expect(collectAutoTagSlugsForDocument('An attack happened.')).toEqual([]);
+  });
+
+  it('strips markdown before matching', () => {
+    expect(
+      collectAutoTagSlugsForDocument(
+        '**Firewall** rules use `iptables` under the hood.',
+      ),
+    ).toEqual(['network-security']);
+  });
+
+  it('matches multi-signal security content', () => {
+    expect(
+      collectAutoTagSlugsForDocument(
+        'Multi-factor authentication (MFA) confirms a claimed identity before access is granted.',
+      ),
+    ).toContain('identity');
+
+    expect(
+      collectAutoTagSlugsForDocument(
+        'A SQL injection lets an attacker run arbitrary queries.',
+      ),
+    ).toContain('application-security');
+  });
+});
+
+describe('auto tag definitions', () => {
+  beforeEach(async () => {
+    await resetIntegrationDatabase(prisma);
   });
 
   it('creates only missing active tag definitions and does not revive deleted tags', async () => {
@@ -106,10 +154,6 @@ describe('auto tagging integration', () => {
       where: { slug: 'privacy' },
       select: { deletedAt: true },
     });
-    const appSec = await prisma.tag.findFirstOrThrow({
-      where: { slug: 'application-security', deletedAt: null },
-      select: { slug: true },
-    });
 
     expect(identity).toMatchObject({
       name: 'Curated Identity',
@@ -117,8 +161,6 @@ describe('auto tagging integration', () => {
       deletedAt: null,
     });
     expect(privacy.deletedAt).not.toBeNull();
-    expect(appSec.slug).toBe('application-security');
-    expect(created.map((tag) => tag.slug)).toContain('identity');
     expect(created.map((tag) => tag.slug)).toContain('application-security');
     expect(created.map((tag) => tag.slug)).not.toContain('privacy');
   });
@@ -136,126 +178,102 @@ describe('auto tagging integration', () => {
       data: { tagId: tag.id, slug: 'identity' },
     });
 
-    const created = await ensureMissingAutoTagDefinitions(prisma, { slugs: ['identity'] });
+    const created = await ensureMissingAutoTagDefinitions(prisma, {
+      slugs: ['identity'],
+    });
     expect(created.map((t) => t.slug)).not.toContain('identity');
-    const ghost = await prisma.tag.findFirst({
-      where: { slug: 'identity', deletedAt: null },
-      select: { id: true },
-    });
-    expect(ghost).toBeNull();
+    expect(
+      await prisma.tag.findFirst({
+        where: { slug: 'identity', deletedAt: null },
+      }),
+    ).toBeNull();
+  });
+});
+
+describe('syncAutoTagsForPublishedEntry', () => {
+  beforeEach(async () => {
+    await resetIntegrationDatabase(prisma);
   });
 
-  it('syncs entry tag links using the live search index without mutating curated tags', async () => {
-    const identityTag = await prisma.tag.create({
-      data: {
-        name: 'Curated Identity',
-        slug: 'identity',
-        description: 'Keep me intact',
-      },
-      select: { id: true },
+  it('never creates tag rows unless ensureDefinitions is explicitly true', async () => {
+    const entryId = await createPublishedEntry({
+      title: 'Perimeter defense',
+      slug: 'perimeter-defense',
+      summary: 'A network firewall inspects packets at the boundary.',
+      definition: 'Firewall policies decide which packets may cross.',
     });
 
-    await prisma.tag.create({
-      data: {
-        name: 'Deleted AppSec',
-        slug: 'application-security',
-        description: 'Deleted tag should stay deleted',
-        deletedAt: new Date('2026-03-24T00:00:00.000Z'),
-      },
+    const withoutDefinitions = await syncAutoTagsForPublishedEntry(prisma, {
+      entryId,
     });
 
-    const entry = await prisma.entry.create({
-      data: {
-        entryType: 'TERM',
-        displayTitle: 'Authentication Link Test',
-        normalizedTitle: 'authentication link test',
-        primarySlug: 'authentication-link-test',
-        status: 'PUBLISHED',
-        summaryMd: 'Authentication and token handling.',
-        summaryText: 'Authentication and token handling.',
-      },
-      select: { id: true },
+    expect(withoutDefinitions).toEqual({
+      added: 0,
+      removed: 0,
+      matchedSlugs: [],
+    });
+    expect(await prisma.tag.count()).toBe(0);
+
+    const withDefinitions = await syncAutoTagsForPublishedEntry(prisma, {
+      entryId,
+      ensureDefinitions: true,
     });
 
-    await prisma.sense.create({
-      data: {
-        entryId: entry.id,
-        senseOrder: 0,
-        definitionMd: 'A web vulnerability can expose authentication tokens.',
-        definitionText: 'A web vulnerability can expose authentication tokens.',
-        status: 'PUBLISHED',
-      },
-    });
+    expect(withDefinitions.matchedSlugs).toEqual(['network-security']);
+    expect(withDefinitions.added).toBe(1);
 
-    const result = await syncAutoTagsForPublishedEntry(prisma, { entryId: entry.id });
-    const entryTags = await prisma.entryTag.findMany({
-      where: { entryId: entry.id },
-      select: { tagId: true },
+    const links = await prisma.entryTag.findMany({
+      where: { entryId },
+      select: { assignedBy: true, tag: { select: { slug: true } } },
     });
-    const identity = await prisma.tag.findUniqueOrThrow({
-      where: { id: identityTag.id },
-      select: { name: true, description: true },
-    });
-    const activeAppSec = await prisma.tag.findMany({
-      where: { slug: 'application-security', deletedAt: null },
-      select: { id: true },
-    });
-
-    expect(result.matchedSlugs).toContain('identity');
-    expect(entryTags.map((row) => row.tagId)).toContain(identityTag.id);
-    expect(identity).toEqual({
-      name: 'Curated Identity',
-      description: 'Keep me intact',
-    });
-    expect(activeAppSec).toHaveLength(0);
+    expect(links).toEqual([
+      { assignedBy: 'AUTO', tag: { slug: 'network-security' } },
+    ]);
   });
 
-  it('drops stale auto tags when republished content no longer matches', async () => {
-    const manualTag = await prisma.tag.create({
-      data: {
-        name: 'Manual tag',
-        slug: 'manual-tag',
-        description: 'Should remain attached',
-      },
+  it('removes stale AUTO links but never touches EDITORIAL or INGEST links', async () => {
+    const network = await prisma.tag.create({
+      data: { name: 'Network Security', slug: 'network-security' },
+      select: { id: true },
+    });
+    const curated = await prisma.tag.create({
+      data: { name: 'Fundamentals', slug: 'fundamentals' },
+      select: { id: true },
+    });
+    const imported = await prisma.tag.create({
+      data: { name: 'Privacy', slug: 'privacy' },
       select: { id: true },
     });
 
-    const entry = await prisma.entry.create({
-      data: {
-        entryType: 'TERM',
-        displayTitle: 'Republish test',
-        normalizedTitle: 'republish test',
-        primarySlug: 'republish-test',
-        status: 'PUBLISHED',
-        summaryMd: 'Authentication tokens need protection.',
-        summaryText: 'Authentication tokens need protection.',
-      },
+    const entryId = await createPublishedEntry({
+      title: 'Perimeter defense',
+      slug: 'perimeter-defense',
+      summary: 'A network firewall inspects packets at the boundary.',
+      definition: 'Firewall policies decide which packets may cross.',
+    });
+
+    await prisma.entryTag.createMany({
+      data: [
+        { entryId, tagId: curated.id, assignedBy: 'EDITORIAL' },
+        { entryId, tagId: imported.id, assignedBy: 'INGEST' },
+      ],
+    });
+
+    const first = await syncAutoTagsForPublishedEntry(prisma, { entryId });
+    expect(first.matchedSlugs).toEqual(['network-security']);
+    expect(first.added).toBe(1);
+
+    const sense = await prisma.sense.findFirstOrThrow({
+      where: { entryId },
       select: { id: true },
     });
-
-    await prisma.entryTag.create({
-      data: { entryId: entry.id, tagId: manualTag.id },
-    });
-
-    const sense = await prisma.sense.create({
-      data: {
-        entryId: entry.id,
-        senseOrder: 0,
-        definitionMd: 'Web vulnerabilities can expose credentials.',
-        definitionText: 'Web vulnerabilities can expose credentials.',
-        status: 'PUBLISHED',
-      },
-      select: { id: true },
-    });
-
-    const first = await syncAutoTagsForPublishedEntry(prisma, { entryId: entry.id });
-    expect(first.matchedSlugs).toContain('identity');
-
     await prisma.entry.update({
-      where: { id: entry.id },
+      where: { id: entryId },
       data: {
         summaryMd: 'Orchards and soil conditions.',
         summaryText: 'Orchards and soil conditions.',
+        displayTitle: 'Orchard care',
+        normalizedTitle: 'orchard care',
       },
     });
     await prisma.sense.update({
@@ -266,14 +284,74 @@ describe('auto tagging integration', () => {
       },
     });
 
-    const second = await syncAutoTagsForPublishedEntry(prisma, { entryId: entry.id });
-    const entryTags = await prisma.entryTag.findMany({
-      where: { entryId: entry.id },
-      include: { tag: { select: { slug: true } } },
-      orderBy: { tagId: 'asc' },
+    const second = await syncAutoTagsForPublishedEntry(prisma, { entryId });
+    expect(second).toEqual({ added: 0, removed: 1, matchedSlugs: [] });
+
+    const remaining = await prisma.entryTag.findMany({
+      where: { entryId },
+      select: { tagId: true, assignedBy: true },
     });
 
-    expect(second).toEqual({ added: 0, matchedSlugs: [] });
-    expect(entryTags.map((row) => row.tag.slug)).toEqual(['manual-tag']);
+    expect(remaining).toHaveLength(2);
+    expect(remaining.map((row) => row.tagId).sort()).toEqual(
+      [curated.id, imported.id].sort(),
+    );
+    expect(remaining.map((row) => row.assignedBy).sort()).toEqual([
+      'EDITORIAL',
+      'INGEST',
+    ]);
+    expect(remaining.map((row) => row.tagId)).not.toContain(network.id);
+  });
+
+  it('leaves an EDITORIAL link alone when the same tag also matches automatically', async () => {
+    const network = await prisma.tag.create({
+      data: { name: 'Network Security', slug: 'network-security' },
+      select: { id: true },
+    });
+
+    const entryId = await createPublishedEntry({
+      title: 'Perimeter defense',
+      slug: 'perimeter-defense',
+      summary: 'A network firewall inspects packets at the boundary.',
+      definition: 'Firewall policies decide which packets may cross.',
+    });
+
+    await prisma.entryTag.create({
+      data: { entryId, tagId: network.id, assignedBy: 'EDITORIAL' },
+    });
+
+    const result = await syncAutoTagsForPublishedEntry(prisma, { entryId });
+
+    expect(result.added).toBe(0);
+    expect(result.removed).toBe(0);
+
+    const links = await prisma.entryTag.findMany({
+      where: { entryId },
+      select: { assignedBy: true },
+    });
+    expect(links).toEqual([{ assignedBy: 'EDITORIAL' }]);
+  });
+
+  it('ignores tags outside the auto catalog', async () => {
+    const manual = await prisma.tag.create({
+      data: { name: 'Manual tag', slug: 'manual-tag' },
+      select: { id: true },
+    });
+
+    const entryId = await createPublishedEntry({
+      title: 'Orchard care',
+      slug: 'orchard-care',
+      summary: 'Orchards and soil conditions.',
+      definition: 'Fruit trees and seasonal harvests.',
+    });
+
+    await prisma.entryTag.create({
+      data: { entryId, tagId: manual.id, assignedBy: 'AUTO' },
+    });
+
+    const result = await syncAutoTagsForPublishedEntry(prisma, { entryId });
+
+    expect(result).toEqual({ added: 0, removed: 0, matchedSlugs: [] });
+    expect(await prisma.entryTag.count({ where: { entryId } })).toBe(1);
   });
 });

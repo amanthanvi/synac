@@ -1,11 +1,19 @@
 import type { DbClientLike } from '../client.js';
-import type { Prisma, RoleName } from '@prisma/client';
+import type { Prisma, RoleName, UserStatus } from '@prisma/client';
 
 export type UserWithRoles = Prisma.UserGetPayload<{
   include: { roles: { include: { role: true } } };
 }>;
 
-export type AllowlistedRole = Exclude<RoleName, 'VIEWER'>;
+/**
+ * Environment allowlists, one CSV env var per role:
+ * `SYNAC_ADMIN_EMAILS`, `SYNAC_EDITOR_EMAILS`, `SYNAC_VIEWER_EMAILS`.
+ */
+export type RoleAllowlists = {
+  adminEmails: readonly string[];
+  editorEmails: readonly string[];
+  viewerEmails?: readonly string[];
+};
 
 export function parseCsv(value: string | undefined): string[] {
   if (!value) return [];
@@ -19,21 +27,32 @@ export function getRoleNames(user: UserWithRoles): RoleName[] {
   return user.roles.map((ur) => ur.role.name);
 }
 
+export function isUserActive(user: { status: UserStatus }): boolean {
+  return user.status === 'ACTIVE';
+}
+
+function includesEmail(
+  list: readonly string[] | undefined,
+  normalizedEmail: string,
+): boolean {
+  if (!list) return false;
+  return list.some((entry) => entry.trim().toLowerCase() === normalizedEmail);
+}
+
 export function pickAllowlistedRole(
   email: string,
-  allowlists: { adminEmails: readonly string[]; editorEmails: readonly string[] },
-): AllowlistedRole | null {
+  allowlists: RoleAllowlists,
+): RoleName | null {
   const normalizedEmail = email.trim().toLowerCase();
-  const adminEmails = new Set(allowlists.adminEmails.map((e) => e.toLowerCase()));
-  if (adminEmails.has(normalizedEmail)) return 'ADMIN';
 
-  const editorEmails = new Set(allowlists.editorEmails.map((e) => e.toLowerCase()));
-  if (editorEmails.has(normalizedEmail)) return 'EDITOR';
+  if (includesEmail(allowlists.adminEmails, normalizedEmail)) return 'ADMIN';
+  if (includesEmail(allowlists.editorEmails, normalizedEmail)) return 'EDITOR';
+  if (includesEmail(allowlists.viewerEmails, normalizedEmail)) return 'VIEWER';
 
   return null;
 }
 
-export async function ensureDefaultRoles(
+async function ensureDefaultRoles(
   db: DbClientLike,
 ): Promise<Record<RoleName, string>> {
   const adminRole = await db.role.upsert({
@@ -61,6 +80,11 @@ export async function ensureDefaultRoles(
   };
 }
 
+/**
+ * Records a successful OIDC login. `status` is set only at creation: an
+ * administrator who disables an account must not have it silently reactivated
+ * by the next login.
+ */
 export async function upsertUserFromOidc(
   db: DbClientLike,
   input: {
@@ -75,7 +99,6 @@ export async function upsertUserFromOidc(
   return db.user.upsert({
     where: { email: input.email },
     update: {
-      status: 'ACTIVE',
       displayName: input.displayName ?? undefined,
       providerSubject: input.providerSubject ?? undefined,
       lastLoginAt: now,
@@ -92,7 +115,7 @@ export async function upsertUserFromOidc(
   });
 }
 
-export async function ensureUserRole(
+async function ensureUserRole(
   db: DbClientLike,
   input: { userId: string; roleId: string },
 ): Promise<void> {
@@ -105,16 +128,54 @@ export async function ensureUserRole(
   });
 }
 
+/**
+ * Makes the stored role grants match the allowlist exactly. Roles are not
+ * hierarchical here: an allowlisted role grants only itself, and every other
+ * role the user holds is revoked.
+ */
+async function syncUserRolesToAllowlist(
+  db: DbClientLike,
+  input: { userId: string; allowlistedRole: RoleName | null },
+): Promise<void> {
+  const roleIds = await ensureDefaultRoles(db);
+  const desiredRoleIds = input.allowlistedRole
+    ? [roleIds[input.allowlistedRole]]
+    : [];
+
+  const where: Prisma.UserRoleWhereInput = { userId: input.userId };
+  if (desiredRoleIds.length > 0) where.roleId = { notIn: desiredRoleIds };
+  await db.userRole.deleteMany({ where });
+
+  for (const roleId of desiredRoleIds) {
+    await ensureUserRole(db, { userId: input.userId, roleId });
+  }
+}
+
+/**
+ * Upserts the signed-in user and re-syncs their roles to the allowlist on every
+ * call. Returns `null` when the account row exists but is `DISABLED`, so a
+ * revoked operator cannot re-enter through the allowlist.
+ */
 export async function bootstrapUserFromAllowlist(
   db: DbClientLike,
   input: {
     email: string;
     displayName?: string | null;
     providerSubject?: string | null;
-    allowlists: { adminEmails: readonly string[]; editorEmails: readonly string[] };
+    allowlists: RoleAllowlists;
   },
-): Promise<{ user: UserWithRoles; allowlistedRole: AllowlistedRole | null }> {
+): Promise<{
+  user: UserWithRoles;
+  allowlistedRole: RoleName | null;
+} | null> {
   const allowlistedRole = pickAllowlistedRole(input.email, input.allowlists);
+
+  const existing = await db.user.findUnique({
+    where: { email: input.email },
+    select: { id: true, status: true },
+  });
+
+  if (existing && !isUserActive(existing)) return null;
 
   const user = await upsertUserFromOidc(db, {
     email: input.email,
@@ -122,12 +183,7 @@ export async function bootstrapUserFromAllowlist(
     providerSubject: input.providerSubject,
   });
 
-  if (!allowlistedRole) {
-    return { user, allowlistedRole: null };
-  }
-
-  const roles = await ensureDefaultRoles(db);
-  await ensureUserRole(db, { userId: user.id, roleId: roles[allowlistedRole] });
+  await syncUserRolesToAllowlist(db, { userId: user.id, allowlistedRole });
 
   const refreshedUser = await db.user.findUniqueOrThrow({
     where: { id: user.id },
@@ -137,19 +193,31 @@ export async function bootstrapUserFromAllowlist(
   return { user: refreshedUser, allowlistedRole };
 }
 
-export const DEFAULT_SYSTEM_ACTOR_EMAIL = 'system@synac.app';
+/**
+ * Fixed identity used by background jobs (promotion, reclassification, seeds)
+ * that need an actor for audit rows. It is a local, non-loginable account: no
+ * OIDC provider issues this address and no allowlist grants it.
+ */
+export const SYSTEM_ACTOR_EMAIL = 'system@synac.app';
 
 export async function ensureSystemActor(
   db: DbClientLike,
-  input?: { email?: string },
 ): Promise<UserWithRoles> {
   const roles = await ensureDefaultRoles(db);
-  const email = (input?.email ?? DEFAULT_SYSTEM_ACTOR_EMAIL).trim().toLowerCase();
 
   const user = await db.user.upsert({
-    where: { email },
-    update: { status: 'ACTIVE', authProvider: 'LOCAL', displayName: 'SynAc System' },
-    create: { email, status: 'ACTIVE', authProvider: 'LOCAL', displayName: 'SynAc System' },
+    where: { email: SYSTEM_ACTOR_EMAIL },
+    update: {
+      status: 'ACTIVE',
+      authProvider: 'LOCAL',
+      displayName: 'SynAc System',
+    },
+    create: {
+      email: SYSTEM_ACTOR_EMAIL,
+      status: 'ACTIVE',
+      authProvider: 'LOCAL',
+      displayName: 'SynAc System',
+    },
     include: { roles: { include: { role: true } } },
   });
 

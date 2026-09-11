@@ -1,7 +1,7 @@
 {
   "name": "@synac/db",
   "private": true,
-  "version": "0.1.5",
+  "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./src/index.ts",
@@ -9,6 +9,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./src/testing.ts",
+      "default": "./dist/testing.js"
     }
   },
   "scripts": {
@@ -28,7 +32,8 @@
     "db:reclassify:acronyms": "tsx prisma/reclassifyAcronymTerms.ts",
     "db:tag:auto": "tsx prisma/autoTagPublishedEntries.ts",
     "db:search:index:check": "tsx prisma/checkSearchIndex.ts",
-    "db:search:index:rebuild": "tsx prisma/rebuildSearchIndex.ts"
+    "db:search:index:rebuild": "tsx prisma/rebuildSearchIndex.ts",
+    "db:migrate:drift": "tsx prisma/checkMigrationDrift.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.0",

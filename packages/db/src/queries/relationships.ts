@@ -29,10 +29,20 @@ export async function listPublishedRelationshipsForEntry(
       relationshipType: true,
       weight: true,
       fromEntry: {
-        select: { id: true, entryType: true, displayTitle: true, primarySlug: true },
+        select: {
+          id: true,
+          entryType: true,
+          displayTitle: true,
+          primarySlug: true,
+        },
       },
       toEntry: {
-        select: { id: true, entryType: true, displayTitle: true, primarySlug: true },
+        select: {
+          id: true,
+          entryType: true,
+          displayTitle: true,
+          primarySlug: true,
+        },
       },
     },
     orderBy: [{ weight: 'desc' }, { createdAt: 'desc' }],
@@ -67,10 +77,13 @@ export async function listPublishedRelationshipsForEntry(
         return a.relationshipType.localeCompare(b.relationshipType);
       }
       if (a.weight !== b.weight) return b.weight - a.weight;
-      return a.otherEntry.displayTitle.localeCompare(b.otherEntry.displayTitle, 'en', {
-        sensitivity: 'base',
-      });
+      return a.otherEntry.displayTitle.localeCompare(
+        b.otherEntry.displayTitle,
+        'en',
+        {
+          sensitivity: 'base',
+        },
+      );
     })
     .slice(0, input.limit);
 }
-

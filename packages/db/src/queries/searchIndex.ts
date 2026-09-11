@@ -1,20 +1,20 @@
 import { Prisma } from '@prisma/client';
 
+import { rebuildSenseSearchIndex } from './senseSearch.js';
+import { isUuid } from './searchShared.js';
+
 import type { DbClientLike } from '../client.js';
-
-/** Matches canonical UUID strings (parameterized as `::uuid` in raw SQL). */
-const UUID_STRING_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-export function isSearchIndexEntryId(value: string): boolean {
-  return UUID_STRING_RE.test(value.trim());
-}
 
 export type SearchIndexCoverage = {
   publishedEntries: number;
   indexedEntries: number;
   missingEntryIds: string[];
   orphanedEntryIds: string[];
+};
+
+export type SearchIndexRebuildResult = {
+  rebuiltCount: number;
+  senseRebuiltCount: number;
 };
 
 function entryIdSqlList(entryIds: string[]): Prisma.Sql {
@@ -50,10 +50,11 @@ export async function getSearchIndexCoverage(
 ): Promise<SearchIndexCoverage> {
   const limit = Math.max(1, Math.min(500, Math.floor(input?.limit ?? 100)));
 
-  const [publishedEntries, indexedEntries, missingRows, orphanedRows] = await Promise.all([
-    db.entry.count({ where: { status: 'PUBLISHED', deletedAt: null } }),
-    db.entrySearch.count(),
-    db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+  const [publishedEntries, indexedEntries, missingRows, orphanedRows] =
+    await Promise.all([
+      db.entry.count({ where: { status: 'PUBLISHED', deletedAt: null } }),
+      db.entrySearch.count(),
+      db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
       SELECT e.id
       FROM entries e
       LEFT JOIN entry_search es ON es.entry_id = e.id
@@ -63,7 +64,7 @@ export async function getSearchIndexCoverage(
       ORDER BY e.updated_at DESC
       LIMIT ${limit}
     `),
-    db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+      db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
       SELECT es.entry_id AS id
       FROM entry_search es
       LEFT JOIN entries e ON e.id = es.entry_id
@@ -73,7 +74,7 @@ export async function getSearchIndexCoverage(
       ORDER BY es.updated_at DESC
       LIMIT ${limit}
     `),
-  ]);
+    ]);
 
   return {
     publishedEntries,
@@ -83,65 +84,60 @@ export async function getSearchIndexCoverage(
   };
 }
 
+/**
+ * Refreshes `entry_search` (and the meaning-level `sense_search`) from the
+ * canonical tables. The refresh statement itself reports how many published
+ * entries it touched, so there is no separate counting scan.
+ */
 export async function rebuildSearchIndex(
   db: DbClientLike,
   input?: { entryIds?: string[] },
-): Promise<{ rebuiltCount: number }> {
+): Promise<SearchIndexRebuildResult> {
   const rawEntryIds = input?.entryIds;
   const partialRebuildRequested = rawEntryIds !== undefined;
 
   const requestedIds = (rawEntryIds ?? [])
     .map((entryId) => entryId.trim())
-    .filter(Boolean)
-    .filter(isSearchIndexEntryId);
+    .filter(isUuid);
 
   if (partialRebuildRequested) {
     if (requestedIds.length === 0) {
-      return { rebuiltCount: 0 };
+      return { rebuiltCount: 0, senseRebuiltCount: 0 };
     }
-  }
 
-  if (requestedIds.length > 0) {
     await deleteOrphanedSearchIndexRows(db, { entryIds: requestedIds });
 
-    const matchedRows = await db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
-      SELECT id
+    const rebuiltCount = await db.$executeRaw(Prisma.sql`
+      SELECT synac_refresh_entry_search(id)
       FROM entries
       WHERE status = 'PUBLISHED'
         AND deleted_at IS NULL
         AND id IN (${entryIdSqlList(requestedIds)})
     `);
 
-    if (matchedRows.length === 0) {
-      return { rebuiltCount: 0 };
-    }
+    const senses = await rebuildSenseSearchIndex(db, {
+      entryIds: requestedIds,
+    });
 
-    await db.$executeRaw(Prisma.sql`
-      SELECT synac_refresh_entry_search(id)
-      FROM entries
-      WHERE status = 'PUBLISHED'
-        AND deleted_at IS NULL
-        AND id IN (${entryIdSqlList(matchedRows.map((row) => row.id))})
-    `);
-
-    return { rebuiltCount: matchedRows.length };
+    return {
+      rebuiltCount: Math.max(0, rebuiltCount),
+      senseRebuiltCount: senses.rebuiltCount,
+    };
   }
 
   await deleteOrphanedSearchIndexRows(db);
 
-  const rows = await db.$queryRaw<Array<{ id: string }>>(Prisma.sql`
-    SELECT id
-    FROM entries
-    WHERE status = 'PUBLISHED'
-      AND deleted_at IS NULL
-  `);
-
-  await db.$executeRaw(Prisma.sql`
+  const rebuiltCount = await db.$executeRaw(Prisma.sql`
     SELECT synac_refresh_entry_search(id)
     FROM entries
     WHERE status = 'PUBLISHED'
       AND deleted_at IS NULL
   `);
 
-  return { rebuiltCount: rows.length };
+  const senses = await rebuildSenseSearchIndex(db);
+
+  return {
+    rebuiltCount: Math.max(0, rebuiltCount),
+    senseRebuiltCount: senses.rebuiltCount,
+  };
 }

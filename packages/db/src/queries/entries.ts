@@ -1,16 +1,18 @@
 import type { DbClientLike } from '../client.js';
 import type { EntryType, Prisma } from '@prisma/client';
 
+const entryListSelect = {
+  id: true,
+  entryType: true,
+  displayTitle: true,
+  primarySlug: true,
+  summaryText: true,
+  updatedAt: true,
+  publishedAt: true,
+} satisfies Prisma.EntrySelect;
+
 export type EntryListItem = Prisma.EntryGetPayload<{
-  select: {
-    id: true;
-    entryType: true;
-    displayTitle: true;
-    primarySlug: true;
-    summaryText: true;
-    updatedAt: true;
-    publishedAt: true;
-  };
+  select: typeof entryListSelect;
 }>;
 
 export type ResolvedEntry = {
@@ -32,15 +34,7 @@ export async function resolvePublishedEntryBySlug(
       status: 'PUBLISHED',
       deletedAt: null,
     },
-    select: {
-      id: true,
-      entryType: true,
-      displayTitle: true,
-      primarySlug: true,
-      summaryText: true,
-      updatedAt: true,
-      publishedAt: true,
-    },
+    select: entryListSelect,
   });
 
   if (canonicalEntry) {
@@ -58,20 +52,8 @@ export async function resolvePublishedEntryBySlug(
   if (!history) return null;
 
   const entry = await db.entry.findFirst({
-    where: {
-      id: history.entryId,
-      status: 'PUBLISHED',
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      entryType: true,
-      displayTitle: true,
-      primarySlug: true,
-      summaryText: true,
-      updatedAt: true,
-      publishedAt: true,
-    },
+    where: { id: history.entryId, status: 'PUBLISHED', deletedAt: null },
+    select: entryListSelect,
   });
 
   if (!entry) return null;
@@ -83,82 +65,18 @@ export async function resolvePublishedEntryBySlug(
   };
 }
 
-export async function listPublishedEntriesByLetter(
-  db: DbClientLike,
-  input: {
-    entryType: EntryType;
-    letter: string;
-    page: number;
-    pageSize: number;
-  },
-): Promise<EntryListItem[]> {
-  const page = Math.max(1, Math.floor(input.page));
-  const pageSize = Math.min(200, Math.max(1, Math.floor(input.pageSize)));
-  const offset = (page - 1) * pageSize;
-
-  const letter = input.letter.trim().toLowerCase();
-
-  const normalizedTitleFilter =
-    letter === '0-9'
-      ? {
-          OR: [
-            { normalizedTitle: { startsWith: '0' } },
-            { normalizedTitle: { startsWith: '1' } },
-            { normalizedTitle: { startsWith: '2' } },
-            { normalizedTitle: { startsWith: '3' } },
-            { normalizedTitle: { startsWith: '4' } },
-            { normalizedTitle: { startsWith: '5' } },
-            { normalizedTitle: { startsWith: '6' } },
-            { normalizedTitle: { startsWith: '7' } },
-            { normalizedTitle: { startsWith: '8' } },
-            { normalizedTitle: { startsWith: '9' } },
-          ],
-        }
-      : { normalizedTitle: { startsWith: letter } };
-
-  return db.entry.findMany({
-    where: {
-      entryType: input.entryType,
-      status: 'PUBLISHED',
-      deletedAt: null,
-      ...normalizedTitleFilter,
-    },
-    select: {
-      id: true,
-      entryType: true,
-      displayTitle: true,
-      primarySlug: true,
-      summaryText: true,
-      updatedAt: true,
-      publishedAt: true,
-    },
-    orderBy: [{ normalizedTitle: 'asc' }],
-    skip: offset,
-    take: pageSize,
-  });
-}
-
 export async function listRecentPublishedEntries(
   db: DbClientLike,
   input: { page: number; pageSize: number },
 ): Promise<EntryListItem[]> {
   const page = Math.max(1, Math.floor(input.page));
   const pageSize = Math.min(200, Math.max(1, Math.floor(input.pageSize)));
-  const offset = (page - 1) * pageSize;
 
   return db.entry.findMany({
     where: { status: 'PUBLISHED', deletedAt: null },
-    select: {
-      id: true,
-      entryType: true,
-      displayTitle: true,
-      primarySlug: true,
-      summaryText: true,
-      updatedAt: true,
-      publishedAt: true,
-    },
+    select: entryListSelect,
     orderBy: [{ updatedAt: 'desc' }],
-    skip: offset,
+    skip: (page - 1) * pageSize,
     take: pageSize,
   });
 }

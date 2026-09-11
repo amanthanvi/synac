@@ -6,16 +6,10 @@ import dotenv from 'dotenv';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
+import { parseCsv } from '../src/queries/users.js';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(here, '..', '..', '..', '.env') });
-
-function parseCsv(value: string | undefined): string[] {
-  if (!value) return [];
-  return value
-    .split(',')
-    .map((v) => v.trim())
-    .filter(Boolean);
-}
 
 async function main(): Promise<void> {
   const databaseUrl = process.env.DATABASE_URL;
@@ -46,8 +40,17 @@ async function main(): Promise<void> {
 
   const systemUser = await prisma.user.upsert({
     where: { email: 'system@synac.app' },
-    update: { status: 'ACTIVE', authProvider: 'LOCAL', displayName: 'SynAc System' },
-    create: { email: 'system@synac.app', authProvider: 'LOCAL', displayName: 'SynAc System', status: 'ACTIVE' },
+    update: {
+      status: 'ACTIVE',
+      authProvider: 'LOCAL',
+      displayName: 'SynAc System',
+    },
+    create: {
+      email: 'system@synac.app',
+      authProvider: 'LOCAL',
+      displayName: 'SynAc System',
+      status: 'ACTIVE',
+    },
   });
 
   await prisma.userRole.upsert({

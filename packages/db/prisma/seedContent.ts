@@ -7,46 +7,17 @@ import dotenv from 'dotenv';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
+import { toJsonSafe } from '../src/json.js';
+import { parseCsv } from '../src/queries/users.js';
+import {
+  markdownToText,
+  normalizeTitle,
+  normalizeWhitespace,
+  slugify,
+} from '../src/text.js';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(here, '..', '..', '..', '.env') });
-
-function parseCsv(value: string | undefined): string[] {
-  if (!value) return [];
-  return value
-    .split(',')
-    .map((v) => v.trim())
-    .filter(Boolean);
-}
-
-function normalizeWhitespace(value: string): string {
-  return value.trim().replace(/\s+/g, ' ');
-}
-
-function normalizeTitle(value: string): string {
-  return normalizeWhitespace(value).toLowerCase();
-}
-
-function slugify(value: string): string {
-  return normalizeWhitespace(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-function markdownToText(value: string): string {
-  return value
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/`[^`]+`/g, ' ')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/[*_~>#-]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function toJsonSafe<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
-}
 
 async function fetchForHash(url: string): Promise<{
   finalUrl: string;
@@ -74,7 +45,8 @@ async function fetchForHash(url: string): Promise<{
 
     const buf = Buffer.from(await res.arrayBuffer());
     const sha256 = crypto.createHash('sha256').update(buf).digest('hex');
-    const contentType = res.headers.get('content-type') ?? 'application/octet-stream';
+    const contentType =
+      res.headers.get('content-type') ?? 'application/octet-stream';
 
     return {
       finalUrl: res.url,
@@ -88,11 +60,15 @@ async function fetchForHash(url: string): Promise<{
   }
 }
 
-async function ensureSeedActor(prisma: PrismaClient): Promise<{ actorUserId: string }> {
+async function ensureSeedActor(
+  prisma: PrismaClient,
+): Promise<{ actorUserId: string }> {
   const adminEmails = parseCsv(process.env.SYNAC_ADMIN_EMAILS);
   const email = adminEmails[0]?.toLowerCase();
   if (!email) {
-    throw new Error('SYNAC_ADMIN_EMAILS is required for db:seed:content (needs an actor for audit events)');
+    throw new Error(
+      'SYNAC_ADMIN_EMAILS is required for db:seed:content (needs an actor for audit events)',
+    );
   }
 
   const adminRole = await prisma.role.upsert({
@@ -124,7 +100,9 @@ async function ensureTag(
 ): Promise<{ tagId: string }> {
   const slug = slugify(input.slug);
   const name = normalizeWhitespace(input.name);
-  const description = input.description?.trim() ? input.description.trim() : null;
+  const description = input.description?.trim()
+    ? input.description.trim()
+    : null;
 
   const existing = await prisma.tag.findFirst({
     where: { slug, deletedAt: null },
@@ -156,7 +134,15 @@ async function ensureSource(
     baseUrl: string;
     cronSchedule?: string | null;
     licenseType: 'PUBLIC_DOMAIN' | 'CC_BY_SA_4_0' | 'OTHER';
+    /** Short, user-facing license statement rendered on source pages. */
     licenseNotes?: string;
+    licenseUrl?: string;
+    licensePublicStatement?: string;
+    tierRationale?: string;
+    defaultContentMode: 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
+    snapshotAllowed?: boolean;
+    /** Operator-only verification checklist; never rendered publicly. */
+    notesInternal?: string;
     allowedUse: string;
     attributionRequirements: string;
     accessMethod: 'API' | 'HTML';
@@ -176,9 +162,25 @@ async function ensureSource(
     update: {
       name,
       baseUrl,
-      cronSchedule: input.cronSchedule?.trim() ? input.cronSchedule.trim() : null,
+      cronSchedule: input.cronSchedule?.trim()
+        ? input.cronSchedule.trim()
+        : null,
       licenseType: input.licenseType,
-      licenseNotes: input.licenseNotes?.trim() ? input.licenseNotes.trim() : null,
+      licenseNotes: input.licenseNotes?.trim()
+        ? input.licenseNotes.trim()
+        : null,
+      licenseUrl: input.licenseUrl?.trim() ? input.licenseUrl.trim() : null,
+      licensePublicStatement: input.licensePublicStatement?.trim()
+        ? normalizeWhitespace(input.licensePublicStatement)
+        : null,
+      tierRationale: input.tierRationale?.trim()
+        ? normalizeWhitespace(input.tierRationale)
+        : null,
+      defaultContentMode: input.defaultContentMode,
+      snapshotAllowed: input.snapshotAllowed ?? false,
+      notesInternal: input.notesInternal?.trim()
+        ? normalizeWhitespace(input.notesInternal)
+        : null,
       allowedUse: input.allowedUse.trim(),
       attributionRequirements: input.attributionRequirements.trim(),
       accessMethod: input.accessMethod,
@@ -192,9 +194,25 @@ async function ensureSource(
       name,
       sourceSlug,
       baseUrl,
-      cronSchedule: input.cronSchedule?.trim() ? input.cronSchedule.trim() : null,
+      cronSchedule: input.cronSchedule?.trim()
+        ? input.cronSchedule.trim()
+        : null,
       licenseType: input.licenseType,
-      licenseNotes: input.licenseNotes?.trim() ? input.licenseNotes.trim() : null,
+      licenseNotes: input.licenseNotes?.trim()
+        ? input.licenseNotes.trim()
+        : null,
+      licenseUrl: input.licenseUrl?.trim() ? input.licenseUrl.trim() : null,
+      licensePublicStatement: input.licensePublicStatement?.trim()
+        ? normalizeWhitespace(input.licensePublicStatement)
+        : null,
+      tierRationale: input.tierRationale?.trim()
+        ? normalizeWhitespace(input.tierRationale)
+        : null,
+      defaultContentMode: input.defaultContentMode,
+      snapshotAllowed: input.snapshotAllowed ?? false,
+      notesInternal: input.notesInternal?.trim()
+        ? normalizeWhitespace(input.notesInternal)
+        : null,
       allowedUse: input.allowedUse.trim(),
       attributionRequirements: input.attributionRequirements.trim(),
       accessMethod: input.accessMethod,
@@ -210,11 +228,14 @@ async function ensureSource(
   return { sourceId: source.id };
 }
 
-async function ensureSourceDocumentAndCitation(prisma: PrismaClient, input: {
-  sourceId: string;
-  url: string;
-  title: string;
-}): Promise<{ citationId: string }> {
+async function ensureSourceDocumentAndCitation(
+  prisma: PrismaClient,
+  input: {
+    sourceId: string;
+    url: string;
+    title: string;
+  },
+): Promise<{ citationId: string }> {
   const fetchedAt = new Date();
   const fetched = await fetchForHash(input.url);
 
@@ -239,7 +260,11 @@ async function ensureSourceDocumentAndCitation(prisma: PrismaClient, input: {
     sourceDocumentId = created.id;
   } catch {
     const existing = await prisma.sourceDocument.findFirst({
-      where: { sourceId: input.sourceId, url: input.url, contentSha256: fetched.sha256 },
+      where: {
+        sourceId: input.sourceId,
+        url: input.url,
+        contentSha256: fetched.sha256,
+      },
       select: { id: true },
     });
     if (!existing) throw new Error('Failed to create or find SourceDocument');
@@ -247,7 +272,11 @@ async function ensureSourceDocumentAndCitation(prisma: PrismaClient, input: {
   }
 
   const existingCitation = await prisma.citation.findFirst({
-    where: { sourceId: input.sourceId, sourceDocumentId, url: fetched.finalUrl },
+    where: {
+      sourceId: input.sourceId,
+      sourceDocumentId,
+      url: fetched.finalUrl,
+    },
     select: { id: true },
   });
   if (existingCitation) return { citationId: existingCitation.id };
@@ -274,12 +303,15 @@ async function ensureSourceDocumentAndCitation(prisma: PrismaClient, input: {
   return { citationId: citation.id };
 }
 
-async function ensureFieldProvenance(prisma: PrismaClient, input: {
-  entityType: 'ENTRY' | 'SENSE';
-  entityId: string;
-  fieldName: string;
-  citationId: string;
-}): Promise<void> {
+async function ensureFieldProvenance(
+  prisma: PrismaClient,
+  input: {
+    entityType: 'ENTRY' | 'SENSE';
+    entityId: string;
+    fieldName: string;
+    citationId: string;
+  },
+): Promise<void> {
   const existing = await prisma.fieldProvenance.findFirst({
     where: {
       entityType: input.entityType,
@@ -306,20 +338,170 @@ async function ensureFieldProvenance(prisma: PrismaClient, input: {
   });
 }
 
-async function ensurePublishedEntryWithOneSense(prisma: PrismaClient, input: {
-  actorUserId: string;
-  entryType: 'TERM' | 'ACRONYM';
-  displayTitle: string;
-  primarySlug: string;
-  summaryMd: string;
-  sense: {
-    senseLabel?: string;
-    expandedForm?: string;
-    definitionMd: string;
-  };
-  tagIds: string[];
-  provenance?: { citationId: string };
-}): Promise<{ entryId: string; senseId: string }> {
+type SeedSense = {
+  senseLabel?: string;
+  expandedForm?: string;
+  definitionMd: string;
+};
+
+async function ensureSense(
+  prisma: PrismaClient,
+  input: {
+    actorUserId: string;
+    entryId: string;
+    senseOrder: number;
+    sense: SeedSense;
+    citationId?: string;
+    now: Date;
+  },
+): Promise<string> {
+  const entryId = input.entryId;
+  const now = input.now;
+  const definitionMd = input.sense.definitionMd.trim();
+  const definitionText = markdownToText(definitionMd);
+  if (!definitionMd) throw new Error('sense.definitionMd is required');
+
+  // Stable per-entry fragment id (`/term/<slug>#s-<senseSlug>`) for meaning-level links.
+  const senseSlug =
+    slugify(input.sense.senseLabel ?? input.sense.expandedForm ?? '') ||
+    `sense-${input.senseOrder + 1}`;
+
+  const existingSense = await prisma.sense.findFirst({
+    where: { entryId, senseOrder: input.senseOrder, deletedAt: null },
+    select: {
+      id: true,
+      status: true,
+      publishedAt: true,
+      definitionMd: true,
+      expandedForm: true,
+      senseLabel: true,
+    },
+  });
+
+  let senseId: string;
+  if (!existingSense) {
+    const created = await prisma.sense.create({
+      data: {
+        entryId,
+        senseOrder: input.senseOrder,
+        senseLabel: input.sense.senseLabel?.trim()
+          ? normalizeWhitespace(input.sense.senseLabel)
+          : null,
+        expandedForm: input.sense.expandedForm?.trim()
+          ? normalizeWhitespace(input.sense.expandedForm)
+          : null,
+        slug: senseSlug,
+        definitionMd,
+        definitionText: definitionText || null,
+        isEditorial: false,
+        editorialRationale: null,
+        isPreferred: input.senseOrder === 0,
+        status: 'PUBLISHED',
+        publishedAt: now,
+      },
+      select: { id: true, entryId: true, senseOrder: true, status: true },
+    });
+    senseId = created.id;
+
+    await prisma.auditEvent.create({
+      data: {
+        actorUserId: input.actorUserId,
+        action: 'SENSE_CREATE',
+        entityType: 'SENSE',
+        entityId: created.id,
+        after: toJsonSafe(created),
+      },
+    });
+  } else {
+    senseId = existingSense.id;
+
+    const after = await prisma.sense.update({
+      where: { id: existingSense.id },
+      data: {
+        senseLabel: input.sense.senseLabel?.trim()
+          ? normalizeWhitespace(input.sense.senseLabel)
+          : null,
+        expandedForm: input.sense.expandedForm?.trim()
+          ? normalizeWhitespace(input.sense.expandedForm)
+          : null,
+        slug: senseSlug,
+        definitionMd,
+        definitionText: definitionText || null,
+        status: 'PUBLISHED',
+        publishedAt: existingSense.publishedAt ?? now,
+      },
+      select: { id: true, entryId: true, senseOrder: true, status: true },
+    });
+
+    await prisma.auditEvent.create({
+      data: {
+        actorUserId: input.actorUserId,
+        action: 'SENSE_UPDATE',
+        entityType: 'SENSE',
+        entityId: existingSense.id,
+        before: toJsonSafe(existingSense),
+        after: toJsonSafe(after),
+      },
+    });
+  }
+
+  if (input.citationId) {
+    await ensureFieldProvenance(prisma, {
+      entityType: 'SENSE',
+      entityId: senseId,
+      fieldName: 'definitionMd',
+      citationId: input.citationId,
+    });
+
+    // The sense's own wording, recorded as this source's attestation of the meaning.
+    await prisma.senseDefinition.upsert({
+      where: {
+        senseId_citationId: {
+          senseId,
+          citationId: input.citationId,
+        },
+      },
+      update: {
+        definitionMd,
+        definitionText: definitionText || definitionMd,
+        contentMode: 'SUMMARIZED',
+        isPrimary: true,
+        extractorVersion: 'synac-seed/0.1.1',
+        extractedAt: now,
+        sourceLocator: { seeded: true },
+      },
+      create: {
+        senseId,
+        citationId: input.citationId,
+        definitionMd,
+        definitionText: definitionText || definitionMd,
+        contentMode: 'SUMMARIZED',
+        isPrimary: true,
+        extractorVersion: 'synac-seed/0.1.1',
+        extractedAt: now,
+        sourceLocator: { seeded: true },
+      },
+    });
+  }
+
+  return senseId;
+}
+
+async function ensurePublishedEntryWithOneSense(
+  prisma: PrismaClient,
+  input: {
+    actorUserId: string;
+    entryType: 'TERM' | 'ACRONYM';
+    displayTitle: string;
+    primarySlug: string;
+    summaryMd: string;
+    sense: SeedSense;
+    /** Further meanings, in display order; each may cite its own document. */
+    extraSenses?: Array<SeedSense & { citationId?: string }>;
+    tagIds: string[];
+    provenance?: { citationId: string };
+  },
+): Promise<{ entryId: string; senseId: string }> {
   const now = new Date();
 
   const displayTitle = normalizeWhitespace(input.displayTitle);
@@ -364,7 +546,14 @@ async function ensurePublishedEntryWithOneSense(prisma: PrismaClient, input: {
         createdByUserId: input.actorUserId,
         updatedByUserId: input.actorUserId,
       },
-      select: { id: true, entryType: true, displayTitle: true, primarySlug: true, status: true, publishedAt: true },
+      select: {
+        id: true,
+        entryType: true,
+        displayTitle: true,
+        primarySlug: true,
+        status: true,
+        publishedAt: true,
+      },
     });
     entryId = created.id;
 
@@ -393,7 +582,14 @@ async function ensurePublishedEntryWithOneSense(prisma: PrismaClient, input: {
         publishedAt: existing.publishedAt ?? now,
         updatedByUserId: input.actorUserId,
       },
-      select: { id: true, entryType: true, status: true, summaryMd: true, summaryText: true, publishedAt: true },
+      select: {
+        id: true,
+        entryType: true,
+        status: true,
+        summaryMd: true,
+        summaryText: true,
+        publishedAt: true,
+      },
     });
 
     await prisma.auditEvent.create({
@@ -408,77 +604,12 @@ async function ensurePublishedEntryWithOneSense(prisma: PrismaClient, input: {
     });
   }
 
-  const definitionMd = input.sense.definitionMd.trim();
-  const definitionText = markdownToText(definitionMd);
-  if (!definitionMd) throw new Error('sense.definitionMd is required');
-
-  const existingSense = await prisma.sense.findFirst({
-    where: { entryId, senseOrder: 0, deletedAt: null },
-    select: { id: true, status: true, publishedAt: true, definitionMd: true, expandedForm: true, senseLabel: true },
-  });
-
-  let senseId: string;
-  if (!existingSense) {
-    const created = await prisma.sense.create({
-      data: {
-        entryId,
-        senseOrder: 0,
-        senseLabel: input.sense.senseLabel?.trim() ? normalizeWhitespace(input.sense.senseLabel) : null,
-        expandedForm: input.sense.expandedForm?.trim() ? normalizeWhitespace(input.sense.expandedForm) : null,
-        definitionMd,
-        definitionText: definitionText || null,
-        isEditorial: false,
-        editorialRationale: null,
-        isPreferred: true,
-        status: 'PUBLISHED',
-        publishedAt: now,
-      },
-      select: { id: true, entryId: true, senseOrder: true, status: true },
-    });
-    senseId = created.id;
-
-    await prisma.auditEvent.create({
-      data: {
-        actorUserId: input.actorUserId,
-        action: 'SENSE_CREATE',
-        entityType: 'SENSE',
-        entityId: created.id,
-        after: toJsonSafe(created),
-      },
-    });
-  } else {
-    senseId = existingSense.id;
-
-    const after = await prisma.sense.update({
-      where: { id: existingSense.id },
-      data: {
-        senseLabel: input.sense.senseLabel?.trim() ? normalizeWhitespace(input.sense.senseLabel) : null,
-        expandedForm: input.sense.expandedForm?.trim() ? normalizeWhitespace(input.sense.expandedForm) : null,
-        definitionMd,
-        definitionText: definitionText || null,
-        status: 'PUBLISHED',
-        publishedAt: existingSense.publishedAt ?? now,
-      },
-      select: { id: true, entryId: true, senseOrder: true, status: true },
-    });
-
-    await prisma.auditEvent.create({
-      data: {
-        actorUserId: input.actorUserId,
-        action: 'SENSE_UPDATE',
-        entityType: 'SENSE',
-        entityId: existingSense.id,
-        before: toJsonSafe(existingSense),
-        after: toJsonSafe(after),
-      },
-    });
-  }
-
+  // Seeded tags are curator decisions, not machine guesses: auto-tagging must not remove them.
   for (const tagId of input.tagIds) {
     await prisma.entryTag.upsert({
       where: { entryId_tagId: { entryId, tagId } },
-      update: {},
-      create: { entryId, tagId },
+      update: { assignedBy: 'EDITORIAL' },
+      create: { entryId, tagId, assignedBy: 'EDITORIAL' },
     });
   }
 
@@ -489,11 +620,25 @@ async function ensurePublishedEntryWithOneSense(prisma: PrismaClient, input: {
       fieldName: 'summaryMd',
       citationId: input.provenance.citationId,
     });
-    await ensureFieldProvenance(prisma, {
-      entityType: 'SENSE',
-      entityId: senseId,
-      fieldName: 'definitionMd',
-      citationId: input.provenance.citationId,
+  }
+
+  const senseId = await ensureSense(prisma, {
+    actorUserId: input.actorUserId,
+    entryId,
+    senseOrder: 0,
+    sense: input.sense,
+    citationId: input.provenance?.citationId,
+    now,
+  });
+
+  for (const [index, extra] of (input.extraSenses ?? []).entries()) {
+    await ensureSense(prisma, {
+      actorUserId: input.actorUserId,
+      entryId,
+      senseOrder: index + 1,
+      sense: extra,
+      citationId: extra.citationId ?? input.provenance?.citationId,
+      now,
     });
   }
 
@@ -538,7 +683,16 @@ async function main(): Promise<void> {
       cronSchedule: null,
       licenseType: 'PUBLIC_DOMAIN',
       licenseNotes:
-        'NIST states most site information is public information and may be distributed or copied, except material marked as copyrighted; attribution requested. Verify per-document markings before quoting.',
+        'Public domain U.S. Government work. Free to read, quote, and redistribute; NIST asks that you name it as the source.',
+      licenseUrl: 'https://www.nist.gov/oism/copyrights',
+      licensePublicStatement:
+        'Public domain (U.S. Government work); attribution requested.',
+      tierRationale:
+        'Tier 1: the U.S. federal reference glossary for cybersecurity terminology, versioned and citable per term.',
+      defaultContentMode: 'QUOTED',
+      snapshotAllowed: false,
+      notesInternal:
+        'Verification checklist: (1) confirm the page is not marked as copyrighted third-party material; (2) confirm the per-term "Source(s)" list, since some entries restate CNSSI/NIST SP text; (3) re-read https://www.nist.gov/oism/copyrights before widening quoted use; (4) refresh lastVerifiedAt on each review.',
       allowedUse:
         'Public information; may be distributed or copied unless explicitly marked as copyrighted. Prefer summarization/paraphrase when in doubt.',
       attributionRequirements: 'Source: NIST CSRC Glossary (csrc.nist.gov).',
@@ -551,11 +705,22 @@ async function main(): Promise<void> {
     ensureSource(prisma, {
       name: 'MITRE ATT&CK (CTI STIX Data)',
       sourceSlug: 'mitre-attack-cti',
-      baseUrl: 'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json',
+      baseUrl:
+        'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json',
       cronSchedule: null,
       licenseType: 'OTHER',
       licenseNotes:
-        'See repository LICENSE.txt for ATT&CK terms: non-exclusive royalty-free license; reproduce MITRE copyright + license in copies. Verify requirements before publishing quoted text.',
+        'Used under the MITRE ATT&CK license. Quoting is allowed as long as the MITRE copyright notice and license link travel with the text.',
+      licenseUrl:
+        'https://github.com/mitre-attack/attack-stix-data/blob/master/LICENSE.txt',
+      licensePublicStatement:
+        'Used under the MITRE ATT&CK license; MITRE copyright notice and license link included.',
+      tierRationale:
+        'Tier 1: MITRE publishes ATT&CK as versioned STIX data with stable technique IDs, so every extracted claim maps to an addressable upstream object.',
+      defaultContentMode: 'QUOTED',
+      snapshotAllowed: false,
+      notesInternal:
+        'Verification checklist: (1) re-read LICENSE.txt in attack-stix-data before each ingest wave; (2) confirm the rendered attribution reproduces the MITRE copyright notice and links the license; (3) pin the ATT&CK release version in the ingest run; (4) refresh lastVerifiedAt on each review.',
       allowedUse:
         'Allowed for research/development/commercial under MITRE ATT&CK license; reproduce license text when required. Prefer summarization and citation links.',
       attributionRequirements: 'Source: MITRE ATT&CK (attack-stix-data).',
@@ -569,11 +734,22 @@ async function main(): Promise<void> {
     ensureSource(prisma, {
       name: 'MITRE ATT&CK (Mobile, CTI STIX Data)',
       sourceSlug: 'mitre-attack-mobile-cti',
-      baseUrl: 'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/mobile-attack/mobile-attack.json',
+      baseUrl:
+        'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/mobile-attack/mobile-attack.json',
       cronSchedule: null,
       licenseType: 'OTHER',
       licenseNotes:
-        'See repository LICENSE.txt for ATT&CK terms: non-exclusive royalty-free license; reproduce MITRE copyright + license in copies. Verify requirements before publishing quoted text.',
+        'Used under the MITRE ATT&CK license. Quoting is allowed as long as the MITRE copyright notice and license link travel with the text.',
+      licenseUrl:
+        'https://github.com/mitre-attack/attack-stix-data/blob/master/LICENSE.txt',
+      licensePublicStatement:
+        'Used under the MITRE ATT&CK license; MITRE copyright notice and license link included.',
+      tierRationale:
+        'Tier 1: MITRE publishes ATT&CK as versioned STIX data with stable technique IDs, so every extracted claim maps to an addressable upstream object.',
+      defaultContentMode: 'QUOTED',
+      snapshotAllowed: false,
+      notesInternal:
+        'Verification checklist: (1) re-read LICENSE.txt in attack-stix-data before each ingest wave; (2) confirm the rendered attribution reproduces the MITRE copyright notice and links the license; (3) pin the ATT&CK release version in the ingest run; (4) refresh lastVerifiedAt on each review.',
       allowedUse:
         'Allowed for research/development/commercial under MITRE ATT&CK license; reproduce license text when required. Prefer summarization and citation links.',
       attributionRequirements: 'Source: MITRE ATT&CK (attack-stix-data).',
@@ -587,11 +763,22 @@ async function main(): Promise<void> {
     ensureSource(prisma, {
       name: 'MITRE ATT&CK (ICS, CTI STIX Data)',
       sourceSlug: 'mitre-attack-ics-cti',
-      baseUrl: 'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/ics-attack/ics-attack.json',
+      baseUrl:
+        'https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/ics-attack/ics-attack.json',
       cronSchedule: null,
       licenseType: 'OTHER',
       licenseNotes:
-        'See repository LICENSE.txt for ATT&CK terms: non-exclusive royalty-free license; reproduce MITRE copyright + license in copies. Verify requirements before publishing quoted text.',
+        'Used under the MITRE ATT&CK license. Quoting is allowed as long as the MITRE copyright notice and license link travel with the text.',
+      licenseUrl:
+        'https://github.com/mitre-attack/attack-stix-data/blob/master/LICENSE.txt',
+      licensePublicStatement:
+        'Used under the MITRE ATT&CK license; MITRE copyright notice and license link included.',
+      tierRationale:
+        'Tier 1: MITRE publishes ATT&CK as versioned STIX data with stable technique IDs, so every extracted claim maps to an addressable upstream object.',
+      defaultContentMode: 'QUOTED',
+      snapshotAllowed: false,
+      notesInternal:
+        'Verification checklist: (1) re-read LICENSE.txt in attack-stix-data before each ingest wave; (2) confirm the rendered attribution reproduces the MITRE copyright notice and links the license; (3) pin the ATT&CK release version in the ingest run; (4) refresh lastVerifiedAt on each review.',
       allowedUse:
         'Allowed for research/development/commercial under MITRE ATT&CK license; reproduce license text when required. Prefer summarization and citation links.',
       attributionRequirements: 'Source: MITRE ATT&CK (attack-stix-data).',
@@ -609,7 +796,16 @@ async function main(): Promise<void> {
       cronSchedule: null,
       licenseType: 'CC_BY_SA_4_0',
       licenseNotes:
-        'OWASP site footer states content is Creative Commons Attribution-ShareAlike v4.0 unless otherwise specified. Verify per-page exceptions.',
+        'Creative Commons Attribution-ShareAlike 4.0. We summarize rather than quote, because share-alike would extend to adapted text.',
+      licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      licensePublicStatement:
+        'CC BY-SA 4.0; summarized here so the share-alike obligation does not extend to SynAc content.',
+      tierRationale:
+        'Tier 2: community-maintained project pages are authoritative for application security practice but are edited continuously and are not versioned per term.',
+      defaultContentMode: 'SUMMARIZED',
+      snapshotAllowed: false,
+      notesInternal:
+        'Verification checklist: (1) check the page footer for a per-page license exception before ingest; (2) keep contentMode SUMMARIZED unless legal review clears share-alike for quoted text; (3) confirm attribution names the OWASP Foundation and links the page; (4) refresh lastVerifiedAt on each review.',
       allowedUse:
         'CC BY-SA 4.0 unless otherwise specified. Share-alike applies to adapted material; review before publishing quoted text.',
       attributionRequirements: 'Source: OWASP Foundation (owasp.org).',
@@ -627,10 +823,20 @@ async function main(): Promise<void> {
       cronSchedule: null,
       licenseType: 'OTHER',
       licenseNotes:
-        'NICCS is a CISA (DHS) program. Individual glossary entries include a "From" attribution (e.g., CNSSI 4009, NIST SPs, NICE Framework). Treat "From" values as upstream provenance and verify before quoting large portions of text.',
+        'U.S. Government (CISA) material, free to read and quote with attribution. Each term also names the upstream standard it came from.',
+      licenseUrl: 'https://www.cisa.gov/privacy-policy',
+      licensePublicStatement:
+        'Public domain (U.S. Government work); attribution requested.',
+      tierRationale:
+        'Tier 1: a CISA-operated vocabulary that carries per-term "From" provenance back to CNSSI, NIST SP, and NICE Framework sources.',
+      defaultContentMode: 'QUOTED',
+      snapshotAllowed: false,
+      notesInternal:
+        'Verification checklist: (1) record the per-term "From" value as upstream provenance, not as SynAc\'s own citation; (2) where "From" names a non-government standard, fall back to SUMMARIZED; (3) re-read https://www.cisa.gov/privacy-policy and the site policies before widening quoted use; (4) refresh lastVerifiedAt on each review.',
       allowedUse:
         'Government-hosted glossary data with per-term provenance hints. Prefer summarization/paraphrase when in doubt and include source links for attribution.',
-      attributionRequirements: 'Source: NICCS (CISA) Cybersecurity Vocabulary (niccs.cisa.gov).',
+      attributionRequirements:
+        'Source: NICCS (CISA) Cybersecurity Vocabulary (niccs.cisa.gov).',
       accessMethod: 'API',
       robotsPolicy: 'RESPECT',
       trustTier: 'TIER_1',
@@ -645,7 +851,16 @@ async function main(): Promise<void> {
       cronSchedule: null,
       licenseType: 'OTHER',
       licenseNotes:
-        'RFC 4949 is published by the IETF Trust and marked as "Distribution of this memo is unlimited". Verify IETF Trust copyright/licensing terms for reuse.',
+        'Published by the IETF Trust with unlimited distribution. We summarize definitions and link the RFC rather than reproducing its text.',
+      licenseUrl: 'https://trustee.ietf.org/documents/trust-legal-provisions/',
+      licensePublicStatement:
+        'IETF Trust document, distribution unlimited; summarized here pending verification of reuse terms.',
+      tierRationale:
+        'Tier 1: a stable, immutable RFC with numbered definitions, so citations never drift.',
+      defaultContentMode: 'SUMMARIZED',
+      snapshotAllowed: false,
+      notesInternal:
+        'Verification checklist: (1) confirm the applicable IETF Trust Legal Provisions revision before quoting; (2) keep contentMode SUMMARIZED until that review is recorded; (3) cite the section anchor within RFC 4949, not the whole memo; (4) refresh lastVerifiedAt on each review.',
       allowedUse:
         'Public RFC text. Prefer summarization/paraphrase when in doubt and include citations/links for attribution.',
       attributionRequirements: 'Source: IETF RFC 4949 (rfc-editor.org).',
@@ -668,7 +883,8 @@ async function main(): Promise<void> {
     ensureTag(prisma, {
       name: 'Identity',
       slug: 'identity',
-      description: 'Authentication, authorization, federation, and access control.',
+      description:
+        'Authentication, authorization, federation, and access control.',
     }),
     ensureTag(prisma, {
       name: 'Cryptography',
@@ -683,7 +899,8 @@ async function main(): Promise<void> {
     ensureTag(prisma, {
       name: 'Network Security',
       slug: 'network-security',
-      description: 'Network resilience, protocols, and denial-of-service defenses.',
+      description:
+        'Network resilience, protocols, and denial-of-service defenses.',
     }),
     ensureTag(prisma, {
       name: 'Threats',
@@ -693,7 +910,8 @@ async function main(): Promise<void> {
     ensureTag(prisma, {
       name: 'Fundamentals',
       slug: 'fundamentals',
-      description: 'Core security properties and building blocks (CIA, crypto basics).',
+      description:
+        'Core security properties and building blocks (CIA, crypto basics).',
     }),
   ]);
 
@@ -763,11 +981,14 @@ async function main(): Promise<void> {
     title: 'NIST CSRC Glossary — Access control',
   });
 
-  const confidentialityCitation = await ensureSourceDocumentAndCitation(prisma, {
-    sourceId: nistSourceId,
-    url: 'https://csrc.nist.gov/glossary/term/confidentiality',
-    title: 'NIST CSRC Glossary — Confidentiality',
-  });
+  const confidentialityCitation = await ensureSourceDocumentAndCitation(
+    prisma,
+    {
+      sourceId: nistSourceId,
+      url: 'https://csrc.nist.gov/glossary/term/confidentiality',
+      title: 'NIST CSRC Glossary — Confidentiality',
+    },
+  );
 
   const integrityCitation = await ensureSourceDocumentAndCitation(prisma, {
     sourceId: nistSourceId,
@@ -791,6 +1012,18 @@ async function main(): Promise<void> {
     sourceId: nistSourceId,
     url: 'https://csrc.nist.gov/glossary/term/multi_factor_authentication',
     title: 'NIST CSRC Glossary — Multi-factor authentication',
+  });
+
+  const socCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/security_operations_center',
+    title: 'NIST CSRC Glossary — Security operations center',
+  });
+
+  const systemOnChipCitation = await ensureSourceDocumentAndCitation(prisma, {
+    sourceId: nistSourceId,
+    url: 'https://csrc.nist.gov/glossary/term/system_on_chip',
+    title: 'NIST CSRC Glossary — System on chip',
   });
 
   const ssoCitation = await ensureSourceDocumentAndCitation(prisma, {
@@ -891,7 +1124,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Authorization',
     primarySlug: 'authorization',
-    summaryMd: 'Authorization is the process of determining what an authenticated principal is permitted to do.',
+    summaryMd:
+      'Authorization is the process of determining what an authenticated principal is permitted to do.',
     sense: {
       senseLabel: 'Access decision',
       definitionMd:
@@ -922,7 +1156,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Confidentiality',
     primarySlug: 'confidentiality',
-    summaryMd: 'Confidentiality is the property that information is not disclosed to unauthorized parties.',
+    summaryMd:
+      'Confidentiality is the property that information is not disclosed to unauthorized parties.',
     sense: {
       senseLabel: 'No unauthorized disclosure',
       definitionMd:
@@ -937,7 +1172,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Integrity',
     primarySlug: 'integrity',
-    summaryMd: 'Integrity is the property that data is accurate and has not been improperly modified or destroyed.',
+    summaryMd:
+      'Integrity is the property that data is accurate and has not been improperly modified or destroyed.',
     sense: {
       senseLabel: 'No unauthorized modification',
       definitionMd:
@@ -952,7 +1188,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Availability',
     primarySlug: 'availability',
-    summaryMd: 'Availability is the property that systems and data are accessible and usable when needed.',
+    summaryMd:
+      'Availability is the property that systems and data are accessible and usable when needed.',
     sense: {
       senseLabel: 'Accessible when required',
       definitionMd:
@@ -967,7 +1204,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Least Privilege',
     primarySlug: 'least-privilege',
-    summaryMd: 'Least privilege means granting only the minimum access necessary to perform an authorized task.',
+    summaryMd:
+      'Least privilege means granting only the minimum access necessary to perform an authorized task.',
     sense: {
       senseLabel: 'Minimize access',
       definitionMd:
@@ -982,7 +1220,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Multi-factor Authentication',
     primarySlug: 'multi-factor-authentication',
-    summaryMd: 'Multi-factor authentication (MFA) uses two or more independent factors to verify identity.',
+    summaryMd:
+      'Multi-factor authentication (MFA) uses two or more independent factors to verify identity.',
     sense: {
       senseLabel: 'Identity verification',
       definitionMd:
@@ -995,9 +1234,36 @@ async function main(): Promise<void> {
   await ensurePublishedEntryWithOneSense(prisma, {
     actorUserId,
     entryType: 'ACRONYM',
+    displayTitle: 'SOC',
+    primarySlug: 'soc',
+    summaryMd:
+      'SOC has two common meanings in security work: a security operations center, and a system on chip.',
+    sense: {
+      senseLabel: 'Security operations center',
+      expandedForm: 'Security Operations Center',
+      definitionMd:
+        'A team and facility that monitors, detects, and responds to security events across an organization, typically around the clock.',
+    },
+    extraSenses: [
+      {
+        senseLabel: 'System on chip',
+        expandedForm: 'System on Chip',
+        definitionMd:
+          'An integrated circuit that combines processor, memory, and peripheral components on one die; security discussions focus on its hardware root of trust and firmware.',
+        citationId: systemOnChipCitation.citationId,
+      },
+    ],
+    tagIds: [fundamentalsTagId],
+    provenance: socCitation,
+  });
+
+  await ensurePublishedEntryWithOneSense(prisma, {
+    actorUserId,
+    entryType: 'ACRONYM',
     displayTitle: 'MFA',
     primarySlug: 'mfa',
-    summaryMd: 'MFA stands for Multi-factor Authentication, an authentication method using multiple factors.',
+    summaryMd:
+      'MFA stands for Multi-factor Authentication, an authentication method using multiple factors.',
     sense: {
       senseLabel: 'Multiple factors',
       expandedForm: 'Multi-factor Authentication',
@@ -1013,7 +1279,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Single Sign-on',
     primarySlug: 'single-sign-on',
-    summaryMd: 'Single sign-on (SSO) allows a user to authenticate once and access multiple services without re-authenticating.',
+    summaryMd:
+      'Single sign-on (SSO) allows a user to authenticate once and access multiple services without re-authenticating.',
     sense: {
       senseLabel: 'Federated login',
       definitionMd:
@@ -1028,7 +1295,8 @@ async function main(): Promise<void> {
     entryType: 'ACRONYM',
     displayTitle: 'SSO',
     primarySlug: 'sso',
-    summaryMd: 'SSO stands for Single Sign-on, enabling access to multiple services with one authentication event.',
+    summaryMd:
+      'SSO stands for Single Sign-on, enabling access to multiple services with one authentication event.',
     sense: {
       senseLabel: 'Single login session',
       expandedForm: 'Single Sign-on',
@@ -1044,7 +1312,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Phishing',
     primarySlug: 'phishing',
-    summaryMd: 'Phishing is a form of social engineering that attempts to trick targets into revealing sensitive information or taking harmful actions.',
+    summaryMd:
+      'Phishing is a form of social engineering that attempts to trick targets into revealing sensitive information or taking harmful actions.',
     sense: {
       senseLabel: 'Social engineering',
       definitionMd:
@@ -1059,7 +1328,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Malware',
     primarySlug: 'malware',
-    summaryMd: 'Malware is malicious software designed to disrupt, damage, or gain unauthorized access to systems and data.',
+    summaryMd:
+      'Malware is malicious software designed to disrupt, damage, or gain unauthorized access to systems and data.',
     sense: {
       senseLabel: 'Malicious software',
       definitionMd:
@@ -1074,7 +1344,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Denial of Service',
     primarySlug: 'denial-of-service',
-    summaryMd: 'A denial-of-service (DoS) attack attempts to make a system or network unavailable to legitimate users.',
+    summaryMd:
+      'A denial-of-service (DoS) attack attempts to make a system or network unavailable to legitimate users.',
     sense: {
       senseLabel: 'Availability attack',
       definitionMd:
@@ -1089,7 +1360,8 @@ async function main(): Promise<void> {
     entryType: 'ACRONYM',
     displayTitle: 'DoS',
     primarySlug: 'dos',
-    summaryMd: 'DoS stands for Denial of Service, an attack targeting system availability.',
+    summaryMd:
+      'DoS stands for Denial of Service, an attack targeting system availability.',
     sense: {
       senseLabel: 'Availability disruption',
       expandedForm: 'Denial of Service',
@@ -1105,7 +1377,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Distributed Denial of Service',
     primarySlug: 'distributed-denial-of-service',
-    summaryMd: 'A distributed denial-of-service (DDoS) attack uses many systems to overwhelm a target and degrade availability.',
+    summaryMd:
+      'A distributed denial-of-service (DDoS) attack uses many systems to overwhelm a target and degrade availability.',
     sense: {
       senseLabel: 'Distributed availability attack',
       definitionMd:
@@ -1120,7 +1393,8 @@ async function main(): Promise<void> {
     entryType: 'ACRONYM',
     displayTitle: 'DDoS',
     primarySlug: 'ddos',
-    summaryMd: 'DDoS stands for Distributed Denial of Service, a DoS attack carried out from many sources.',
+    summaryMd:
+      'DDoS stands for Distributed Denial of Service, a DoS attack carried out from many sources.',
     sense: {
       senseLabel: 'Distributed attack',
       expandedForm: 'Distributed Denial of Service',
@@ -1136,7 +1410,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Encryption',
     primarySlug: 'encryption',
-    summaryMd: 'Encryption is the process of transforming information so it is unintelligible without the appropriate key.',
+    summaryMd:
+      'Encryption is the process of transforming information so it is unintelligible without the appropriate key.',
     sense: {
       senseLabel: 'Confidentiality control',
       definitionMd:
@@ -1151,7 +1426,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Hash Function',
     primarySlug: 'hash-function',
-    summaryMd: 'A hash function maps input data to a fixed-size output (digest) and is commonly used for integrity checks.',
+    summaryMd:
+      'A hash function maps input data to a fixed-size output (digest) and is commonly used for integrity checks.',
     sense: {
       senseLabel: 'Digest',
       definitionMd:
@@ -1166,7 +1442,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Public Key',
     primarySlug: 'public-key',
-    summaryMd: 'A public key is the publicly shared component of an asymmetric key pair used for encryption or signature verification.',
+    summaryMd:
+      'A public key is the publicly shared component of an asymmetric key pair used for encryption or signature verification.',
     sense: {
       senseLabel: 'Asymmetric cryptography',
       definitionMd:
@@ -1181,7 +1458,8 @@ async function main(): Promise<void> {
     entryType: 'TERM',
     displayTitle: 'Symmetric Key',
     primarySlug: 'symmetric-key',
-    summaryMd: 'A symmetric key is a secret key shared between parties and used for both encryption and decryption.',
+    summaryMd:
+      'A symmetric key is a secret key shared between parties and used for both encryption and decryption.',
     sense: {
       senseLabel: 'Shared secret',
       definitionMd:
@@ -1207,7 +1485,14 @@ async function main(): Promise<void> {
           niccsSourceId,
           rfc4949SourceId,
         },
-        tags: { identityTagId, cryptoTagId, accessControlTagId, networkSecurityTagId, threatsTagId, fundamentalsTagId },
+        tags: {
+          identityTagId,
+          cryptoTagId,
+          accessControlTagId,
+          networkSecurityTagId,
+          threatsTagId,
+          fundamentalsTagId,
+        },
         ranAt: now.toISOString(),
       }),
     },

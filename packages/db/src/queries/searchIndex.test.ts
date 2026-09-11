@@ -1,11 +1,19 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { createIntegrationTestClient, resetIntegrationDatabase } from '../testing.js';
+import {
+  createIntegrationTestClient,
+  disconnectIntegrationPrisma,
+  resetIntegrationDatabase,
+} from '../testing.js';
 import { getSearchIndexCoverage, rebuildSearchIndex } from './searchIndex.js';
 
 const prisma = createIntegrationTestClient();
 
-async function createPublishedEntry(input: { slug: string; title: string; definition: string }) {
+async function createPublishedEntry(input: {
+  slug: string;
+  title: string;
+  definition: string;
+}) {
   const entry = await prisma.entry.create({
     data: {
       entryType: 'TERM',
@@ -38,7 +46,7 @@ describe('search index helpers', () => {
   });
 
   afterAll(async () => {
-    await prisma.$disconnect();
+    await disconnectIntegrationPrisma();
   });
 
   it('reports coverage for real published, missing, and orphaned search rows', async () => {
@@ -53,7 +61,9 @@ describe('search index helpers', () => {
       definition: 'Authorization grants permissions.',
     });
 
-    await prisma.entrySearch.deleteMany({ where: { entryId: missingEntry.id } });
+    await prisma.entrySearch.deleteMany({
+      where: { entryId: missingEntry.id },
+    });
     await prisma.entry.update({
       where: { id: indexedEntry.id },
       data: { status: 'ARCHIVED' },
@@ -101,8 +111,10 @@ describe('search index helpers', () => {
 
     const result = await rebuildSearchIndex(prisma, { entryIds: [] });
 
-    expect(result).toEqual({ rebuiltCount: 0 });
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: entry.id } })).toBeNull();
+    expect(result).toMatchObject({ rebuiltCount: 0 });
+    expect(
+      await prisma.entrySearch.findUnique({ where: { entryId: entry.id } }),
+    ).toBeNull();
   });
 
   it('returns zero rebuilt count for invalid entry id strings', async () => {
@@ -112,8 +124,10 @@ describe('search index helpers', () => {
       definition: 'Coverage for invalid id inputs.',
     });
 
-    const result = await rebuildSearchIndex(prisma, { entryIds: ["not-a-uuid'; DROP TABLE entries;--"] });
-    expect(result).toEqual({ rebuiltCount: 0 });
+    const result = await rebuildSearchIndex(prisma, {
+      entryIds: ["not-a-uuid'; DROP TABLE entries;--"],
+    });
+    expect(result).toMatchObject({ rebuiltCount: 0 });
   });
 
   it('rebuilds only the requested entry ids when provided', async () => {
@@ -132,11 +146,21 @@ describe('search index helpers', () => {
       where: { entryId: { in: [firstEntry.id, secondEntry.id] } },
     });
 
-    const result = await rebuildSearchIndex(prisma, { entryIds: [firstEntry.id] });
+    const result = await rebuildSearchIndex(prisma, {
+      entryIds: [firstEntry.id],
+    });
 
-    expect(result).toEqual({ rebuiltCount: 1 });
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: firstEntry.id } })).not.toBeNull();
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: secondEntry.id } })).toBeNull();
+    expect(result).toMatchObject({ rebuiltCount: 1 });
+    expect(
+      await prisma.entrySearch.findUnique({
+        where: { entryId: firstEntry.id },
+      }),
+    ).not.toBeNull();
+    expect(
+      await prisma.entrySearch.findUnique({
+        where: { entryId: secondEntry.id },
+      }),
+    ).toBeNull();
   });
 
   it('full rebuild targets published entries only', async () => {
@@ -162,8 +186,10 @@ describe('search index helpers', () => {
 
     const result = await rebuildSearchIndex(prisma);
 
-    expect(result).toEqual({ rebuiltCount: 1 });
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: published.id } })).not.toBeNull();
+    expect(result).toMatchObject({ rebuiltCount: 1 });
+    expect(
+      await prisma.entrySearch.findUnique({ where: { entryId: published.id } }),
+    ).not.toBeNull();
   });
 
   it('full rebuild clears orphaned rows while restoring published rows', async () => {
@@ -209,9 +235,13 @@ describe('search index helpers', () => {
 
     const result = await rebuildSearchIndex(prisma);
 
-    expect(result).toEqual({ rebuiltCount: 1 });
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: published.id } })).not.toBeNull();
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: archived.id } })).toBeNull();
+    expect(result).toMatchObject({ rebuiltCount: 1 });
+    expect(
+      await prisma.entrySearch.findUnique({ where: { entryId: published.id } }),
+    ).not.toBeNull();
+    expect(
+      await prisma.entrySearch.findUnique({ where: { entryId: archived.id } }),
+    ).toBeNull();
   });
 
   it('rebuilds the full published corpus when ids are omitted', async () => {
@@ -223,17 +253,29 @@ describe('search index helpers', () => {
     const secondEntry = await createPublishedEntry({
       slug: 'cia-triad',
       title: 'CIA Triad',
-      definition: 'The CIA triad covers confidentiality, integrity, and availability.',
+      definition:
+        'The CIA triad covers confidentiality, integrity, and availability.',
     });
 
     await prisma.entrySearch.deleteMany({
       where: { entryId: { in: [firstEntry.id, secondEntry.id] } },
     });
 
+    await prisma.$executeRawUnsafe('DELETE FROM sense_search');
+
     const result = await rebuildSearchIndex(prisma);
 
-    expect(result).toEqual({ rebuiltCount: 2 });
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: firstEntry.id } })).not.toBeNull();
-    expect(await prisma.entrySearch.findUnique({ where: { entryId: secondEntry.id } })).not.toBeNull();
+    expect(result).toEqual({ rebuiltCount: 2, senseRebuiltCount: 2 });
+    expect(
+      await prisma.entrySearch.findUnique({
+        where: { entryId: firstEntry.id },
+      }),
+    ).not.toBeNull();
+    expect(
+      await prisma.entrySearch.findUnique({
+        where: { entryId: secondEntry.id },
+      }),
+    ).not.toBeNull();
+    expect(await prisma.senseSearch.count()).toBe(2);
   });
 });

@@ -1,10 +1,25 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [citext, pg_trgm]
 }
+
+// Raw-SQL objects that Prisma cannot express live only in migrations and are
+// allowlisted by prisma/checkMigrationDrift.ts:
+//   - partial unique indexes: entries_entry_type_primary_slug_active_key,
+//     entries_entry_type_normalized_title_active_key, tags_slug_active_key,
+//     entry_relationships_from_to_type_active_key, senses_entry_id_slug_active_key
+//   - CHECK entry_relationships_no_self_links
+//   - expression GIN indexes: entry_search_search_document_tsv_idx,
+//     sense_search_search_document_tsv_idx
+//   - text_pattern_ops btree indexes: entry_search_normalized_title_pattern_idx,
+//     entry_search_primary_slug_pattern_idx
+//   - functions synac_refresh_entry_search*, synac_refresh_sense_search*, synac_slugify
+//     and their AFTER-row triggers on entries/senses/entry_variants/sense_examples/sense_definitions
 
 enum EntryType {
   TERM
@@ -142,6 +157,17 @@ enum RoleName {
   VIEWER
 }
 
+enum TagKind {
+  DOMAIN
+  FACET
+}
+
+enum TagAssignment {
+  EDITORIAL
+  AUTO
+  INGEST
+}
+
 model Entry {
   id              String      @id @default(uuid()) @db.Uuid
   entryType       EntryType   @map("entry_type")
@@ -167,7 +193,6 @@ model Entry {
   variants        EntryVariant[]
   entryTags       EntryTag[]
   search          EntrySearch?
-  views           EntryView[]
   relationshipsFrom EntryRelationship[] @relation("relationships_from")
   relationshipsTo   EntryRelationship[] @relation("relationships_to")
   takedownCases   TakedownCase[]
@@ -175,6 +200,7 @@ model Entry {
   @@index([entryType, primarySlug])
   @@index([entryType, normalizedTitle])
   @@index([updatedAt])
+  @@index([status, deletedAt, updatedAt(sort: Desc)], map: "entries_status_deleted_at_updated_at_idx")
   @@map("entries")
 }
 
@@ -190,22 +216,9 @@ model EntrySearch {
 
   @@index([entryType])
   @@index([normalizedTitle])
+  @@index([normalizedTitle(ops: raw("gin_trgm_ops"))], type: Gin, map: "entry_search_normalized_title_trgm_idx")
+  @@index([primarySlug], map: "entry_search_primary_slug_idx")
   @@map("entry_search")
-}
-
-model EntryView {
-  id          String   @id @default(uuid()) @db.Uuid
-  entryId     String   @map("entry_id") @db.Uuid
-  sessionHash String   @map("session_hash") @db.Text
-  firstSeenAt DateTime @default(now()) @map("first_seen_at")
-  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
-
-  entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-
-  @@unique([entryId, sessionHash])
-  @@index([lastSeenAt])
-  @@index([entryId])
-  @@map("entry_views")
 }
 
 model EntrySlugHistory {
@@ -236,6 +249,7 @@ model EntryVariant {
 
   @@unique([entryId, normalizedVariant, variantType])
   @@index([normalizedVariant])
+  @@index([entryId], map: "entry_variants_entry_id_idx")
   @@map("entry_variants")
 }
 
@@ -252,18 +266,73 @@ model Sense {
   isEditorial    Boolean     @default(false) @map("is_editorial")
   editorialRationale String? @map("editorial_rationale") @db.Text
   isPreferred    Boolean     @default(false) @map("is_preferred")
+  slug           String?     @db.Text
+  needsLabel     Boolean     @default(false) @map("needs_label")
+  disambiguationNote String? @map("disambiguation_note") @db.Text
   status         SenseStatus
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
   publishedAt    DateTime?   @map("published_at")
   deletedAt      DateTime?   @map("deleted_at")
 
-  entry     Entry          @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  examples  SenseExample[]
+  entry       Entry            @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  examples    SenseExample[]
+  definitions SenseDefinition[]
+  search      SenseSearch?
 
   @@index([entryId, senseOrder])
   @@index([status])
+  @@index([entryId, status, deletedAt], map: "senses_entry_id_status_deleted_at_idx")
+  // DB: partial unique index senses_entry_id_slug_active_key on (entry_id, slug) WHERE deleted_at IS NULL AND slug IS NOT NULL
   @@map("senses")
+}
+
+/// One source's attested wording of a sense (meaning). A sense may carry
+/// several attestations from different citations; `isPrimary` marks the one
+/// used for the rendered definition.
+model SenseDefinition {
+  id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senseId             String      @map("sense_id") @db.Uuid
+  citationId          String      @map("citation_id") @db.Uuid
+  definitionMd        String      @map("definition_md") @db.Text
+  definitionText      String      @map("definition_text") @db.Text
+  contentMode         ContentMode @default(SUMMARIZED) @map("content_mode")
+  isPrimary           Boolean     @default(false) @map("is_primary")
+  similarityToPrimary Float?      @map("similarity_to_primary")
+  sourceLocator       Json?       @map("source_locator")
+  extractorVersion    String?     @map("extractor_version") @db.Text
+  extractedAt         DateTime?   @map("extracted_at")
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @default(now()) @updatedAt @map("updated_at")
+
+  sense    Sense    @relation(fields: [senseId], references: [id], onDelete: Cascade)
+  citation Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
+
+  @@unique([senseId, citationId])
+  @@index([citationId])
+  @@map("sense_definitions")
+}
+
+/// Meaning-level search index, maintained by triggers (see migrations).
+model SenseSearch {
+  senseId         String    @id @map("sense_id") @db.Uuid
+  entryId         String    @map("entry_id") @db.Uuid
+  entryType       EntryType @map("entry_type")
+  entrySlug       String    @map("entry_slug") @db.Text
+  entryTitle      String    @map("entry_title") @db.Text
+  senseSlug       String?   @map("sense_slug") @db.Text
+  senseLabel      String?   @map("sense_label") @db.Text
+  expandedForm    String?   @map("expanded_form") @db.Text
+  normalizedLabel String    @map("normalized_label") @db.Text
+  searchDocument  String    @map("search_document") @db.Text
+  sourceNames     String?   @map("source_names") @db.Text
+  updatedAt       DateTime  @default(now()) @map("updated_at")
+
+  sense Sense @relation(fields: [senseId], references: [id], onDelete: Cascade)
+
+  @@index([entryId])
+  @@index([normalizedLabel(ops: raw("gin_trgm_ops"))], type: Gin, map: "sense_search_normalized_label_trgm_idx")
+  @@map("sense_search")
 }
 
 model SenseExample {
@@ -284,14 +353,19 @@ model Tag {
   name        String   @db.Text
   slug        String   @db.Text
   description String?  @db.Text
+  kind        TagKind  @default(DOMAIN)
+  parentId    String?  @map("parent_id") @db.Uuid
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
+  parent      Tag?   @relation("tag_hierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Tag[]  @relation("tag_hierarchy")
   entryTags   EntryTag[]
   slugHistory TagSlugHistory[]
 
   @@index([slug])
+  @@index([parentId])
   // DB: partial unique index tags_slug_active_unique on (slug) WHERE deleted_at IS NULL — see migrations.
   @@map("tags")
 }
@@ -311,8 +385,10 @@ model TagSlugHistory {
 }
 
 model EntryTag {
-  entryId String @map("entry_id") @db.Uuid
-  tagId   String @map("tag_id") @db.Uuid
+  entryId    String        @map("entry_id") @db.Uuid
+  tagId      String        @map("tag_id") @db.Uuid
+  assignedBy TagAssignment @default(EDITORIAL) @map("assigned_by")
+  createdAt  DateTime      @default(now()) @map("created_at")
 
   entry Entry @relation(fields: [entryId], references: [id], onDelete: Cascade)
   tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
@@ -328,13 +404,16 @@ model EntryRelationship {
   toEntryId        String           @map("to_entry_id") @db.Uuid
   relationshipType RelationshipType @map("relationship_type")
   weight           Int              @default(0)
+  note             String?          @db.Text
+  sourceId         String?          @map("source_id") @db.Uuid
   createdAt        DateTime         @default(now()) @map("created_at")
   createdByUserId  String?          @map("created_by_user_id") @db.Uuid
   deletedAt        DateTime?        @map("deleted_at")
 
-  fromEntry     Entry @relation("relationships_from", fields: [fromEntryId], references: [id], onDelete: Cascade)
-  toEntry       Entry @relation("relationships_to", fields: [toEntryId], references: [id], onDelete: Cascade)
-  createdByUser User? @relation("entry_relationships_created_by", fields: [createdByUserId], references: [id])
+  fromEntry     Entry   @relation("relationships_from", fields: [fromEntryId], references: [id], onDelete: Cascade)
+  toEntry       Entry   @relation("relationships_to", fields: [toEntryId], references: [id], onDelete: Cascade)
+  createdByUser User?   @relation("entry_relationships_created_by", fields: [createdByUserId], references: [id])
+  source        Source? @relation("entry_relationships_source", fields: [sourceId], references: [id], onDelete: SetNull)
 
   @@index([toEntryId])
   @@index([fromEntryId])
@@ -349,6 +428,12 @@ model Source {
   cronSchedule           String?           @map("cron_schedule") @db.Text
   licenseType            LicenseType       @map("license_type")
   licenseNotes           String?           @map("license_notes") @db.Text
+  licenseUrl             String?           @map("license_url") @db.Text
+  licensePublicStatement String?           @map("license_public_statement") @db.Text
+  attributionHtml        String?           @map("attribution_html") @db.Text
+  tierRationale          String?           @map("tier_rationale") @db.Text
+  snapshotAllowed        Boolean           @default(false) @map("snapshot_allowed")
+  defaultContentMode     ContentMode       @default(SUMMARIZED) @map("default_content_mode")
   allowedUse             String            @map("allowed_use") @db.Text
   attributionRequirements String           @map("attribution_requirements") @db.Text
   accessMethod           SourceAccessMethod @map("access_method")
@@ -366,6 +451,7 @@ model Source {
   citations Citation[]
   ingestRuns IngestRun[]
   takedownCases TakedownCase[]
+  relationships EntryRelationship[] @relation("entry_relationships_source")
 
   @@map("sources")
 }
@@ -414,7 +500,9 @@ model Citation {
   source        Source       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   sourceDocument SourceDocument @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
   fieldProvenance FieldProvenance[]
+  senseDefinitions SenseDefinition[]
 
+  @@unique([sourceId, sourceDocumentId, url], map: "citations_source_document_url_key")
   @@index([sourceId])
   @@index([sourceDocumentId])
   @@map("citations")
@@ -434,6 +522,7 @@ model FieldProvenance {
 
   citation Citation @relation(fields: [citationId], references: [id], onDelete: Cascade)
 
+  @@unique([entityType, entityId, fieldName, citationId], map: "field_provenance_entity_field_citation_key")
   @@index([entityType, entityId])
   @@index([citationId])
   @@map("field_provenance")
@@ -564,6 +653,7 @@ model AuditEvent {
   actorUser User @relation(fields: [actorUserId], references: [id], onDelete: Cascade)
 
   @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)], map: "audit_events_created_at_idx")
   @@map("audit_events")
 }
 

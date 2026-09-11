@@ -17,6 +17,7 @@ export function createPrismaClient(databaseUrl: string): PrismaClient {
 }
 
 export function getPrismaClientForUrl(databaseUrl: string): PrismaClient {
+  // `__synacPrisma*` are written only here, so the globals match the declared shape.
   const globalForPrisma = globalThis as GlobalForPrisma;
 
   if (!globalForPrisma.__synacPrismaByUrl) {
@@ -32,6 +33,7 @@ export function getPrismaClientForUrl(databaseUrl: string): PrismaClient {
 }
 
 export function getPrismaClient(): PrismaClient {
+  // See `getPrismaClientForUrl`: this module owns both cache slots.
   const globalForPrisma = globalThis as GlobalForPrisma;
 
   if (process.env.NODE_ENV !== 'production' && globalForPrisma.__synacPrisma) {
@@ -50,13 +52,6 @@ export function getPrismaClient(): PrismaClient {
   }
 
   return prisma;
-}
-
-export async function withTransaction<T>(
-  fn: (tx: DbTransactionClient) => Promise<T>,
-): Promise<T> {
-  const prisma = getPrismaClient();
-  return prisma.$transaction(fn);
 }
 
 export { PrismaClient };

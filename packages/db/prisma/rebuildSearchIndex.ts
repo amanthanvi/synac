@@ -3,7 +3,12 @@ import { fileURLToPath } from 'node:url';
 
 import dotenv from 'dotenv';
 
-import { createPrismaClient, getSearchIndexCoverage, rebuildSearchIndex } from '../src/index.js';
+import {
+  createPrismaClient,
+  getSearchIndexCoverage,
+  getSenseSearchCoverage,
+  rebuildSearchIndex,
+} from '../src/index.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(here, '..', '..', '..', '.env') });
@@ -17,15 +22,22 @@ async function main(): Promise<void> {
   const prisma = createPrismaClient(databaseUrl);
 
   try {
-    const before = await getSearchIndexCoverage(prisma, { limit: 50 });
+    const before = {
+      entries: await getSearchIndexCoverage(prisma, { limit: 50 }),
+      senses: await getSenseSearchCoverage(prisma, { limit: 50 }),
+    };
     const rebuilt = await rebuildSearchIndex(prisma);
-    const after = await getSearchIndexCoverage(prisma, { limit: 50 });
+    const after = {
+      entries: await getSearchIndexCoverage(prisma, { limit: 50 }),
+      senses: await getSenseSearchCoverage(prisma, { limit: 50 }),
+    };
 
     console.log(
       JSON.stringify(
         {
           ok: true,
           rebuiltCount: rebuilt.rebuiltCount,
+          senseRebuiltCount: rebuilt.senseRebuiltCount,
           before,
           after,
         },
