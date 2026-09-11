@@ -1,0 +1,93 @@
+name: Sense disambiguation
+description: Report or propose a sense-level fix (add, split, merge, or label a sense).
+labels: ['sense']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Senses are first-class in SynAc: each entry can carry several distinct meanings, each with its own slug and page fragment (`#s-<slug>`).
+
+        Use this form when the problem is which senses exist or how they are labelled, rather than the wording of a single definition (use the content correction form for that). See `docs/content/editorial-layer.md` for how senses are authored.
+  - type: input
+    id: url
+    attributes:
+      label: Entry URL
+      placeholder: https://synac.app/term/... or https://synac.app/acronym/...
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of change is this?
+      options:
+        - Add a label to an existing sense
+        - Add a new sense
+        - Split one sense into two
+        - Merge two senses
+        - Fix a confusion between entries
+    validations:
+      required: true
+  - type: input
+    id: sense_fragment
+    attributes:
+      label: Existing sense fragment
+      description: |
+        The `#s-<slug>` fragment of the sense this is about, copied from the URL — e.g. `#s-key-derivation`. Leave blank if you are proposing a brand-new sense. For a merge, list both fragments.
+      placeholder: '#s-<slug>'
+    validations:
+      required: false
+  - type: input
+    id: sense_label
+    attributes:
+      label: Proposed sense label
+      description: A short domain label that tells this sense apart from the others.
+      placeholder: cryptography, networking, hardware, ...
+    validations:
+      required: false
+  - type: textarea
+    id: definition
+    attributes:
+      label: Proposed definition + citations
+      description: The definition for the sense you are adding or changing, plus at least one authoritative citation URL supporting it.
+      placeholder: |
+        Definition: ...
+
+        Citations:
+        - https://example.com/...
+    validations:
+      required: true
+  - type: textarea
+    id: confused_with
+    attributes:
+      label: Commonly confused with
+      description: Other SynAc entries (or senses) that readers mix up with this one. Link them if you can.
+      placeholder: |
+        - https://synac.app/term/...
+        - https://synac.app/acronym/...
+    validations:
+      required: false
+  - type: dropdown
+    id: wording_origin
+    attributes:
+      label: Is your proposed wording quoted from a source, or your own words?
+      options:
+        - Quoted from the source
+        - My own wording
+        - Mix — I’ll say which
+    validations:
+      required: true
+  - type: input
+    id: license_url
+    attributes:
+      label: Source license (URL)
+      description: Link to the license or terms page of the source you cited above.
+      placeholder: https://...
+    validations:
+      required: true
+  - type: checkboxes
+    id: attestation
+    attributes:
+      label: Attestation
+      options:
+        - label: Any wording I quoted comes from the source I cited above, under the license I linked; anything else is my own original wording.
+          required: true

@@ -1,0 +1,124 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/synac_e2e?schema=public
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  E2E_BASE_URL: http://localhost:3000
+  # Seeding requires an admin allowlist entry; this account never signs in.
+  SYNAC_ADMIN_EMAILS: ci@synac.invalid
+  NEXT_TELEMETRY_DISABLED: '1'
+
+jobs:
+  e2e:
+    name: E2E (Playwright + axe) and Lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.27.0
+
+      - name: Setup Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Create database
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "CREATE DATABASE synac_e2e;"
+
+      - name: Migrate + seed
+        run: |
+          pnpm --filter @synac/db db:migrate:deploy
+          pnpm db:seed
+          pnpm db:seed:content
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browser
+        run: pnpm --filter @synac/e2e exec playwright install --with-deps chromium
+
+      - name: Start web
+        run: |
+          pnpm --filter @synac/web start > "$RUNNER_TEMP/web.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/web.pid"
+
+      - name: Wait for /api/healthz
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/healthz > /dev/null; then
+              echo "web is up after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::web did not become healthy in 60s"
+          cat "$RUNNER_TEMP/web.log"
+          exit 1
+
+      - name: Playwright + axe
+        run: pnpm --filter @synac/e2e test:e2e
+
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli@0.15.x autorun --config=lighthouserc.json
+
+      - name: Stop web
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/web.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/web.pid")" || true
+          fi
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: quality-reports
+          path: |
+            apps/e2e/playwright-report/
+            apps/e2e/test-results/
+            .lighthouseci/
+          if-no-files-found: warn
+          retention-days: 14

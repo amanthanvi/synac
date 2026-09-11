@@ -1,6 +1,6 @@
 name: Content correction
 description: Report an incorrect or unclear entry (include citations).
-labels: ["content"]
+labels: ['content']
 body:
   - type: markdown
     attributes:
@@ -15,6 +15,15 @@ body:
       placeholder: https://synac.app/term/... or https://synac.app/acronym/...
     validations:
       required: true
+  - type: input
+    id: sense
+    attributes:
+      label: Which sense is wrong?
+      description: |
+        Entries can have several senses (distinct meanings). Copy the `#s-<slug>` fragment from the URL of the sense you are reporting, for example `#s-key-derivation`. If the page has no fragment, give the sense label as it appears on the page.
+      placeholder: '#s-<slug> (or the sense label, for example "cryptography")'
+    validations:
+      required: false
   - type: textarea
     id: problem
     attributes:
@@ -29,6 +38,26 @@ body:
       description: What should it say instead?
     validations:
       required: false
+  - type: dropdown
+    id: wording_origin
+    attributes:
+      label: Is your suggested wording quoted from a source, or your own words?
+      description: We track provenance for every definition, so we need to know which it is before we can merge a change.
+      options:
+        - Quoted from the source
+        - My own wording
+        - Mix, I'll say which
+    validations:
+      required: true
+  - type: input
+    id: license_url
+    attributes:
+      label: Source license (URL)
+      description: |
+        Link to the license or terms page of the source you are quoting (e.g. a CC BY 4.0 deed, a public-domain notice, or the site's terms of use). If your wording is entirely your own, link the license of the source that supports the fact.
+      placeholder: https://...
+    validations:
+      required: true
   - type: textarea
     id: sources
     attributes:
@@ -38,5 +67,4 @@ body:
         - https://example.com/...
         - https://example.com/...
     validations:
-      required: false
-
+      required: true

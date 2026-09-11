@@ -6,3 +6,7 @@ build
 pnpm-lock.yaml
 apps/web/next-env.d.ts
 packages/db/src/generated
+coverage/
+**/coverage/
+**/test-results/
+**/playwright-report/

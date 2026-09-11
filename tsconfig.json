@@ -1,0 +1,28 @@
+{
+  // Tooling-only project. Nothing builds from this file: every workspace
+  // typechecks through its own `tsconfig.json` / `tsconfig.build.json`.
+  //
+  // It exists so type-aware ESLint (`projectService: true`) can resolve the
+  // packages that only ship a `tsconfig.build.json` (apps/worker, packages/db,
+  // packages/shared) plus root-level tooling like `*.config.ts`.
+  // `apps/web` and `apps/e2e` have their own `tsconfig.json` and are excluded.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowJs": false,
+    "types": ["node"]
+  },
+  "include": [
+    "apps/worker/**/*.ts",
+    "packages/db/**/*.ts",
+    "packages/shared/**/*.ts",
+    "*.ts"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "apps/web/**",
+    "apps/e2e/**",
+    "packages/db/src/generated/**"
+  ]
+}

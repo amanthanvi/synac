@@ -1,8 +1,13 @@
+# Blank issues are disabled on purpose: every report should arrive through a
+# template so it carries a URL, citations, and license/provenance information.
 blank_issues_enabled: false
 contact_links:
   - name: Questions + ideas (Discussions)
     url: https://github.com/amanthanvi/synac/discussions
-    about: Q&A, “how do I…?”, design feedback, and project discussion.
-  - name: Security vulnerability report
-    url: https://github.com/amanthanvi/synac/security/policy
-    about: Please report security vulnerabilities privately (see SECURITY.md).
+    about: Q&A, "how do I ...?", design feedback, and project discussion. See `SUPPORT.md`.
+  - name: Report a security vulnerability (private)
+    url: https://github.com/amanthanvi/synac/security/advisories/new
+    about: Report privately via a GitHub security advisory. Do not open a public issue. See `SECURITY.md`.
+  - name: Contributing guide
+    url: https://github.com/amanthanvi/synac/blob/main/CONTRIBUTING.md
+    about: Local setup, the `pnpm gate` checks, commit conventions, and how content changes are reviewed.

@@ -1,6 +1,6 @@
 name: Source request
 description: Propose a new source to ingest (include license and link).
-labels: ["source"]
+labels: ['source']
 body:
   - type: markdown
     attributes:
@@ -30,6 +30,74 @@ body:
       placeholder: https://...
     validations:
       required: true
+  - type: dropdown
+    id: license_type
+    attributes:
+      label: License type
+      description: |
+        Which license best describes the source? These map to the `LicenseType` values SynAc records for each source (see `docs/content/licensing.md`). Pick "I'm not sure" rather than guessing.
+      options:
+        - PUBLIC_DOMAIN
+        - CC0_1_0
+        - CC_BY_4_0
+        - CC_BY_SA_4_0
+        - PROPRIETARY
+        - OTHER
+        - I'm not sure
+    validations:
+      required: true
+  - type: textarea
+    id: allowed_use
+    attributes:
+      label: Allowed use
+      description: |
+        What do the source's terms actually permit? Please address redistribution, derivative works (e.g. rewording or excerpting a definition), and commercial use. Quote the relevant clause if you can.
+      placeholder: |
+        - Redistribution:
+        - Derivative works:
+        - Commercial use:
+    validations:
+      required: true
+  - type: textarea
+    id: attribution
+    attributes:
+      label: Attribution requirements
+      description: The exact attribution string or format the license demands (wording, placement, links back, notice of changes).
+      placeholder: |
+        e.g. "© 2025 Example Org. Licensed under CC BY 4.0. Changes were made."
+    validations:
+      required: true
+  - type: textarea
+    id: robots
+    attributes:
+      label: Robots / rate-limit notes
+      description: |
+        What does the source say about automated access? Include its `robots.txt` stance for the paths we would fetch, any published rate limits or `Crawl-delay`, and any API terms of service.
+      placeholder: |
+        - robots.txt:
+        - Published rate limits / crawl-delay:
+        - API terms:
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact
+      description: A maintainer/owner contact for the source (email, contact page, or issue tracker), if known. This helps with permission requests and takedowns.
+      placeholder: https://example.org/contact or name@example.org
+    validations:
+      required: false
+  - type: checkboxes
+    id: adapter_exists
+    attributes:
+      label: Does an adapter already exist?
+      description: |
+        Ingest adapters live in `apps/worker/src/ingest/` (one file per source). Please check that list before filing. If an adapter exists, this may be a bug or a change to that adapter instead.
+      options:
+        - label: I checked `apps/worker/src/ingest/` and no adapter exists for this source yet.
+          required: false
+        - label: An adapter exists, but it needs changes (please describe below).
+          required: false
   - type: textarea
     id: why
     attributes:
@@ -55,4 +123,3 @@ body:
         - Term C
     validations:
       required: false
-

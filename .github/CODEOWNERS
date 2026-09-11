@@ -5,11 +5,40 @@ packages/db/ @amanthanvi
 apps/worker/ @amanthanvi
 apps/web/src/app/admin/ @amanthanvi
 apps/web/src/app/api/ @amanthanvi
-.github/workflows/ @amanthanvi
+apps/web/src/proxy.ts @amanthanvi
+apps/web/src/lib/ @amanthanvi
+
+# Repo-wide tooling + CI configuration.
+# `.github/` covers workflows, issue templates, dependabot and this file itself.
+.github/ @amanthanvi
+
+# Dependency + build surface. `package.json` has no slash, so it matches the
+# root manifest and every workspace manifest at any depth (that is intended).
+package.json @amanthanvi
+pnpm-lock.yaml @amanthanvi
+tsconfig.base.json @amanthanvi
+eslint.config.mjs @amanthanvi
+apps/web/eslint.config.mjs @amanthanvi
+
+# Test-runner configuration. `*/vitest.config.ts` would only match a single
+# directory level (e.g. `apps/vitest.config.ts`) and would miss the real files
+# at `apps/web/`, `apps/worker/`, `packages/db/` and `packages/shared/`, so this
+# uses `**/` to match at any depth.
+**/vitest.config.ts @amanthanvi
+
+# Deploy + runtime configuration. `Dockerfile.*` has no slash, so it matches
+# any `Dockerfile.<suffix>` at any depth (e.g. `Dockerfile.web`, `Dockerfile.worker`).
+railway.json @amanthanvi
+docker-compose.yml @amanthanvi
+Dockerfile.* @amanthanvi
+.env.example @amanthanvi
 
 SECURITY.md @amanthanvi
 LICENSE @amanthanvi
 docs/content/ @amanthanvi
+
+# Editorial YAML layer: maintainer review required for editorial merges.
+content/ @amanthanvi
 
 SPEC.md @amanthanvi
 PLAN.md @amanthanvi

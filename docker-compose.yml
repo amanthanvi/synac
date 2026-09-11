@@ -1,0 +1,82 @@
+# Local development stack.
+#
+#   docker compose up db          # just Postgres (the common case)
+#   docker compose --profile app up --build   # + web and worker
+#
+# The `web` and `worker` services sit behind the `app` profile so that the
+# default `up` only starts the database and leaves the app to `pnpm dev`.
+name: synac
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: synac
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      # Runs once, on an empty data volume. Creates synac, synac_test,
+      # synac_staging_test, synac_shadow plus the pg_trgm/citext extensions.
+      - ./scripts/db/init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d synac']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    profiles: ['app']
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/synac?schema=public
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
+      SYNAC_ADMIN_EMAILS: ${SYNAC_ADMIN_EMAILS:-}
+      SYNAC_RATE_LIMIT_SALT: ${SYNAC_RATE_LIMIT_SALT:-}
+      SYNAC_REVALIDATE_SECRET: ${SYNAC_REVALIDATE_SECRET:-}
+      SYNAC_TRUSTED_PROXY_HOPS: ${SYNAC_TRUSTED_PROXY_HOPS:-1}
+      PORT: '3000'
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/api/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  worker:
+    profiles: ['app']
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/synac?schema=public
+      SYNAC_WORKER_MODE: ${SYNAC_WORKER_MODE:-ingest}
+      SYNAC_STAGING_DATABASE_URL: ${SYNAC_STAGING_DATABASE_URL:-}
+      SYNAC_AUTOPUBLISH_TIER1: ${SYNAC_AUTOPUBLISH_TIER1:-false}
+      SYNAC_AUTOPUBLISH_WARN: ${SYNAC_AUTOPUBLISH_WARN:-false}
+
+volumes:
+  db-data:

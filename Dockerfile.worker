@@ -1,0 +1,54 @@
+# syntax=docker/dockerfile:1
+
+# Multi-stage build for @synac/worker (pg-boss ingest / promotion / editorial-sync).
+# Used by docker-compose (profile `app`) and for self-hosting.
+# Production on Railway uses RAILPACK, not this file — see railway.json.
+
+# ---------------------------------------------------------------------------
+# Stage 1: install + build the whole workspace
+# ---------------------------------------------------------------------------
+FROM node:22-alpine AS builder
+
+RUN apk add --no-cache libc6-compat openssl
+ENV PNPM_HOME=/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY apps/worker/package.json ./apps/worker/
+COPY apps/e2e/package.json ./apps/e2e/
+COPY packages/db/package.json ./packages/db/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/db/prisma ./packages/db/prisma
+
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile
+
+COPY . .
+
+RUN pnpm --filter @synac/shared build \
+ && pnpm --filter @synac/db build \
+ && pnpm --filter @synac/worker build
+
+# ---------------------------------------------------------------------------
+# Stage 2: runtime
+# ---------------------------------------------------------------------------
+FROM node:22-alpine AS runner
+
+RUN apk add --no-cache libc6-compat openssl
+ENV PNPM_HOME=/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=builder --chown=node:node /app /app
+
+USER node
+
+# The editorial_sync job reads content/entries/**/*.yaml from the image.
+CMD ["node", "apps/worker/dist/index.js"]

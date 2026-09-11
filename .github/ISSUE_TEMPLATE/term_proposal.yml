@@ -1,0 +1,98 @@
+name: Term proposal
+description: Propose a new glossary entry (term or acronym) with citations.
+labels: ['term-proposal']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propose a new entry for SynAc.
+
+        Every entry must be traceable to a source. Please cite at least one authoritative URL per sense, and tell us whether the wording is quoted or your own. See `docs/content/editorial-layer.md` for how entries are authored under `content/entries/**/*.yaml`.
+  - type: input
+    id: headword
+    attributes:
+      label: Headword
+      description: The term or acronym exactly as it should appear as the entry title.
+      placeholder: forward secrecy, MFA, ...
+    validations:
+      required: true
+  - type: dropdown
+    id: entry_type
+    attributes:
+      label: Entry type
+      options:
+        - Term
+        - Acronym
+    validations:
+      required: true
+  - type: textarea
+    id: expansions
+    attributes:
+      label: Expansions (acronyms only)
+      description: All known expansions of the acronym, one per line. Note the domain if an expansion is field-specific.
+      placeholder: |
+        - Multi-Factor Authentication
+        - Multi-Factor Authorization (rare, often a misuse)
+    validations:
+      required: false
+  - type: textarea
+    id: definition
+    attributes:
+      label: Proposed definition
+      description: |
+        If the headword has more than one meaning, give one definition per sense and label each sense (e.g. “cryptography”, “networking”). Keep each definition to a sentence or two.
+      placeholder: |
+        Sense 1 — cryptography: ...
+        Sense 2 — networking: ...
+    validations:
+      required: true
+  - type: textarea
+    id: citations
+    attributes:
+      label: Citations (at least one URL per sense)
+      description: Link an authoritative source (standard, RFC, vendor doc, academic paper) for each sense above, and quote the supporting line if you can.
+      placeholder: |
+        Sense 1 — https://example.com/...
+        Sense 2 — https://example.com/...
+    validations:
+      required: true
+  - type: input
+    id: license_url
+    attributes:
+      label: Source license (URL)
+      description: Link to the license or terms page of the source(s) you cited above.
+      placeholder: https://...
+    validations:
+      required: true
+  - type: dropdown
+    id: wording_origin
+    attributes:
+      label: Is your proposed wording quoted from a source, or your own words?
+      options:
+        - Quoted from the source
+        - My own wording
+        - Mix — I’ll say which
+    validations:
+      required: true
+  - type: textarea
+    id: tags
+    attributes:
+      label: Suggested tags
+      description: Free text, comma-separated. See `docs/content/taxonomy.md` for the tag vocabulary — existing tags are preferred over new ones.
+      placeholder: cryptography, authentication, protocols
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else that helps — related entries, common confusions, why this belongs in SynAc.
+    validations:
+      required: false
+  - type: checkboxes
+    id: attestation
+    attributes:
+      label: Attestation
+      options:
+        - label: I understand that entry content must be sourced and that the maintainer reviews every entry before it is published; quoted wording must come with its citation and license.
+          required: true
