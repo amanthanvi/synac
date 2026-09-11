@@ -97,13 +97,12 @@ next deploy. See `docs/runbooks/suspected-compromise.md`.
 
 ## Vercel project settings
 
-The repository keeps one Vercel config at the repository root, `vercel.json`.
-The Vercel project's Root Directory must therefore stay at the repository root
-and must not be set to `apps/web`. The root config installs the whole
-workspace, builds only `@synac/web`, and points Vercel at
-`apps/web/.next` for the output. Setting Root Directory to `apps/web` makes
-Vercel look for a config that no longer exists there, and the workspace install
-fails.
+The Vercel project's Root Directory is `apps/web`, and the only Vercel config
+is `apps/web/vercel.json`. It changes to the repository root to install the
+whole workspace and build `@synac/web`, then points Vercel at `.next` inside
+the app. Do not add a `vercel.json` at the repository root: with the Root
+Directory set to `apps/web` it resolves paths twice (`apps/web/apps/web/.next`)
+and the deploy fails after a successful build.
 
 ## Cutting a versioned release
 
