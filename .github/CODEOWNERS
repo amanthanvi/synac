@@ -1,12 +1,37 @@
-# Only sensitive / high-risk paths have required code owner review.
-# The repo intentionally keeps the “easy contribution surface” to docs + public web UI.
+# Only sensitive and high-risk paths require code owner review.
+# The repository keeps the easy contribution surface open: docs, the public
+# web UI, and content overrides.
+#
+# GitHub reads this file. There is no second CODEOWNERS at the repository
+# root; do not add one, because only one of the two would ever take effect.
 
-packages/db/ @amanthanvi
-apps/worker/ @amanthanvi
-apps/web/src/app/admin/ @amanthanvi
-apps/web/src/app/api/ @amanthanvi
+# Content registries and machine-owned bundles
+content/sources/ @amanthanvi
+content/generated/ @amanthanvi
+content/tags.json @amanthanvi
+content/tag-assignments.json @amanthanvi
+content/redirects.json @amanthanvi
+
+# Backend, content pipeline, and automation
+convex/ @amanthanvi
+tools/ @amanthanvi
 .github/workflows/ @amanthanvi
 
+# Web surfaces that carry security or contract weight
+apps/web/src/app/api/ @amanthanvi
+apps/web/src/proxy.ts @amanthanvi
+
+# Build, dependency, and test configuration
+package.json @amanthanvi
+pnpm-lock.yaml @amanthanvi
+pnpm-workspace.yaml @amanthanvi
+eslint.config.mjs @amanthanvi
+tsconfig.base.json @amanthanvi
+**/vitest.config.ts @amanthanvi
+lighthouserc.json @amanthanvi
+vercel.json @amanthanvi
+
+# Policy and legal
 SECURITY.md @amanthanvi
 LICENSE @amanthanvi
 docs/content/ @amanthanvi
