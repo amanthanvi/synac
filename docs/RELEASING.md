@@ -1,10 +1,27 @@
 # Releasing SynAc
 
-Deployment is continuous: every push to `main` triggers the `Deploy` workflow,
-which runs the complete repository gate, deploys the Convex functions, syncs
-the compiled content, and waits for stale-row pruning to converge. A failed
-gate or non-convergent sync never reports a successful content deployment.
-Vercel builds the web app from `main` independently.
+Deployment is continuous. Every push to `main` triggers the `Deploy` workflow,
+which runs the full repository gate, deploys the Convex functions, syncs the
+compiled content, waits for stale-row pruning to converge, and then asks the
+web app to revalidate its cached pages. A failed gate or a non-convergent sync
+never reports a successful content deployment. Vercel builds the web app from
+`main` independently.
+
+The revalidate step is the last one. It sends `POST` to
+`$NEXT_PUBLIC_SITE_URL/api/v1/internal/revalidate` with an
+`Authorization: Bearer $SYNAC_REVALIDATE_SECRET` header and the body
+`{"tags":["content"]}`. Pages read through a tagged server-side data cache, so
+without this call a merged content change stays invisible until the cache
+entry expires on its own. A failed revalidate call leaves stale pages, not
+wrong pages, because the pages and the API read the same active generation.
+
+There is no manual deploy trigger. `workflow_dispatch` was removed from the
+`Deploy` workflow. To force a redeploy, push to `main`:
+
+```sh
+git commit --allow-empty -m "chore: redeploy"
+git push
+```
 
 Content sync stages a complete, hash-bound generation while the prior
 generation remains active. Activation is one Convex mutation after exact
@@ -56,45 +73,53 @@ revert of the taxonomy/assignment commit followed by the normal sync.
 
 GitHub repository secrets:
 
-- `CONVEX_DEPLOY_KEY` — production deploy key from the Convex dashboard
-  (Deployment settings → Deploy keys).
+- `CONVEX_DEPLOY_KEY` is the production deploy key from the Convex dashboard,
+  under Deployment settings then Deploy keys.
+- `SYNAC_REVALIDATE_SECRET` is the bearer token the Deploy workflow presents to
+  the revalidate endpoint. It must match the value set in Vercel.
 
 Convex production deployment environment variables:
 
-- `SYNAC_CONVEX_SERVICE_KEY` — random secret shared with the web server.
+- `SYNAC_CONVEX_SERVICE_KEY` is a random secret shared with the web server.
 
 Vercel environment variables (see `.env.example`):
 
-- `NEXT_PUBLIC_CONVEX_URL`, `SYNAC_CONVEX_SERVICE_KEY`,
-  `NEXT_PUBLIC_SITE_URL`, `SYNAC_SESSION_HASH_SALT`, `SYNAC_RATE_LIMIT_SALT`.
+- `NEXT_PUBLIC_CONVEX_URL` points at the production Convex deployment.
+- `NEXT_PUBLIC_SITE_URL` is `https://synac.app` in production.
+- `SYNAC_CONVEX_SERVICE_KEY` matches the value set on the Convex deployment.
+- `SYNAC_RATE_LIMIT_SALT` is required in production. The server refuses to
+  start without it; there is no development fallback value.
+- `SYNAC_REVALIDATE_SECRET` matches the GitHub repository secret of the same
+  name.
+
+Rotating any of these means setting the new value in both places before the
+next deploy. See `docs/runbooks/suspected-compromise.md`.
+
+## Vercel project settings
+
+The repository keeps one Vercel config at the repository root, `vercel.json`.
+The Vercel project's Root Directory must therefore stay at the repository root
+and must not be set to `apps/web`. The root config installs the whole
+workspace, builds only `@synac/web`, and points Vercel at
+`apps/web/.next` for the output. Setting Root Directory to `apps/web` makes
+Vercel look for a config that no longer exists there, and the workspace install
+fails.
 
 ## Cutting a versioned release
 
-1. Ensure CI is green on `main`.
-2. Update `CHANGELOG.md` (canonical) and mirror the entry in
-   `apps/web/src/lib/changelog.ts`.
-3. Bump `version` in the root and workspace `package.json` files.
-4. Tag: `git tag vX.Y.Z && git push --tags`.
-
-## One-time GitOps cutover (from the pre-content-as-code deployment)
-
-Performed once when this architecture first ships:
-
-1. Export the old production data: `npx convex export --prod --path snapshot.zip`
-   (or download a dashboard backup) and keep it as the rollback artifact.
-2. Bootstrap `content/` from the snapshot:
-   `pnpm --filter @synac/content-tools exec tsx src/bootstrap-from-export.ts <extracted-snapshot-dir>`
-   then review, run `pnpm content:check`, and commit.
-3. Clear the old tables (dashboard → Data → clear, or restore an empty
-   backup) — the new schema cannot validate rows from the old one.
-4. Merge to `main`; the deploy workflow pushes the new schema + functions and
-   syncs the content in.
-5. Verify: `/`, an entry page, `/search?q=…`, `/sources`, and
-   `npx convex run sync:status --prod`. `pending` must be absent,
-   `prunePending` must be `false`, and the reported `contentVersion` must equal
-   the locally compiled version.
-6. Decommission Clerk (delete the application) and remove Clerk env vars from
-   Vercel.
+1. Confirm CI is green on `main`.
+2. Update `CHANGELOG.md`, which is canonical, and mirror the entry in
+   `apps/web/src/changelog.ts`.
+3. Bump `version` in the root `package.json` and in every workspace
+   `package.json`.
+4. Bump `version` in `CITATION.cff` to the same number.
+5. Run `pnpm version:check`. It compares the root `package.json`, every
+   workspace `package.json`, `CITATION.cff`, and the newest release heading in
+   `CHANGELOG.md`, and it names every file that disagrees.
+6. Run `pnpm gate`.
+7. Tag and push: `git tag vX.Y.Z && git push --tags`.
+8. Watch the `Deploy` workflow to the end, including the revalidate step, then
+   load a changed entry page to confirm the cache picked up the new generation.
 
 ## Rollback
 

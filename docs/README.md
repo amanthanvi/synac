@@ -12,10 +12,12 @@ This directory contains operational docs, runbooks, and contributor guidance.
 ## Architecture
 
 - System overview: `docs/architecture/overview.md`
+- Public API: `docs/api.md`
 
 ## Content + licensing
 
 - Policy: `docs/content/licensing.md`
+- Senses: `docs/content/senses.md`
 
 ## Community
 

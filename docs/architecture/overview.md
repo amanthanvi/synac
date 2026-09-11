@@ -1,6 +1,6 @@
 # Architecture overview
 
-SynAc is a **GitOps content system**: the repository is the source of truth for
+SynAc is a GitOps content system: the repository is the source of truth for
 everything the site serves, and the runtime is a thin, read-mostly serving
 layer. There are no user accounts anywhere.
 
@@ -13,25 +13,34 @@ tools/ingest
 
 ## Content plane (git)
 
-- `content/sources/*.json` — source registry: license terms, attribution
+- `content/sources/*.json` is the source registry: license terms, attribution
   requirements, trust tier, ingest adapter config. A source contributes
   content only when enabled with complete license terms.
-- `content/tags.json` — curated taxonomy.
-- `content/tag-assignments.json` — reviewed, content-addressed automatic tag
+- `content/tags.json` is the curated taxonomy.
+- `content/tag-assignments.json` holds reviewed, content-addressed automatic tag
   assignments and classifier provenance. Manual add/remove overrides remain
   authoritative.
-- `content/generated/<source>.json` — machine-owned per-source bundles
+- `content/generated/<source>.json` holds machine-owned per-source bundles
   (entries, senses, citations). Written only by `tools/ingest`; deterministic,
   so unchanged upstream content produces zero diff.
-- `content/overrides/{term,acronym}/<slug>.json` — sparse human curation:
+- `content/overrides/{term,acronym}/<slug>.json` holds sparse human curation:
   summaries, tags, aliases, relationships, editorial senses, and suppression
   (the takedown mechanism).
-- `content/redirects.json` — slug redirects for renamed entries.
+- `content/redirects.json` holds slug redirects for renamed entries.
 
 `tools/content` validates all of it (`pnpm content:check`, run on every PR)
 and compiles bundles + overrides into normalized rows with resolved citations,
 search documents, and denormalized counts. The compiler output carries a
 `contentVersion` hash of the whole dataset.
+
+After the compiler resolves citations it groups near-identical senses across
+sources into meanings. The lead sense of a group supplies the definition the
+page renders; every other source in the group is attached to it as an
+attestation carrying that source's own wording, citation, and license. When two
+meanings are alike enough to confuse a reader and neither carries a label, the
+compiler emits a `needsLabel` warning for a maintainer to resolve with an
+override. Grouping is deterministic, so the same content always compiles to the
+same meanings. See `docs/content/senses.md`.
 
 ## Sync (CI → Convex)
 
@@ -47,19 +56,28 @@ are never touched by sync.
 
 ## Serving plane (Convex + Next.js)
 
-- `convex/schema.ts` — native `v.id()` relations and literal-union types.
+- `convex/schema.ts` declares native `v.id()` relations and literal-union types.
   Content tables (sources, tags, entries, senses, entryTags, entrySources,
-  relationships, redirects, tagRedirects) are populated only by sync. Runtime tables
-  (entryViews) are keyed by entry natural keys so they survive re-syncs.
+  relationships, redirects, tagRedirects) are populated only by sync. The rate
+  limiter component holds the only runtime state, and sync never touches it.
 - Public queries (`publicEntries`, `publicBrowse`, `tags`, `sources`,
   `search`, `sitemap`) are indexed, bounded reads; counts are denormalized at
   compile time, never computed by scanning.
-- Anonymous runtime mutations (`views.trackView`, `rateLimit.consume`) require
-  `SYNAC_CONVEX_SERVICE_KEY`, held only by the Next.js server, and compute all
+- The one runtime mutation (`rateLimit.consume`) requires
+  `SYNAC_CONVEX_SERVICE_KEY`, held only by the Next.js server, and computes all
   timestamps server-side. Rate limiting uses the official
   `@convex-dev/rate-limiter` component.
 - `apps/web` is a server-first Next.js app; it imports typed function
   references from `convex/_generated/api` via `src/lib/convex.ts`.
+
+Pages and API routes read through a server-side data cache keyed by cache tags.
+For content, that cache is not time-based. It holds the current generation until
+something drops the tag. The deploy workflow calls the revalidate endpoint once
+the content sync finishes, which drops the `content` tag and makes the next
+request rebuild from the new generation. A missed revalidate call degrades to
+stale pages, not to wrong data: the API and the pages both read the same active
+generation, so they stay consistent with each other and simply lag until the
+next successful revalidate.
 
 ## Ingest plane (GitHub Actions)
 
@@ -71,14 +89,14 @@ review happens as ordinary PR review.
 
 ## Decisions of record
 
-- **No accounts, no admin surface.** All write paths are pull requests;
+- No accounts, no admin surface: all write paths are pull requests;
   GitHub authenticates contributors; git history is the audit log; takedowns
   are `suppress` overrides. (Replaced the former Clerk + admin UI + RBAC
   tables.)
-- **Native Convex IDs.** The former string-UUID `id` + `by_appId`
+- Native Convex IDs: the former string-UUID `id` + `by_appId`
   compatibility layer from the Postgres era was removed in the GitOps
   cutover; the deployment is rebuilt from repo content, so data migrations
   are replaced by re-syncs.
-- **Ingest runs in CI, not in Convex.** Adapters stay plain, testable Node
+- Ingest runs in CI, not in Convex: adapters stay plain, testable Node
   code with no runtime limits, and their output is reviewable before it
   publishes.
