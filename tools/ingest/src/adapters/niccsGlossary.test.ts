@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { bundleEntriesFromRows, parseCsvRecords, parseNiccsRows } from './niccsGlossary.js';
+import {
+  bundleEntriesFromRows,
+  parseCsvRecords,
+  parseNiccsRows,
+} from './niccsGlossary.js';
 
 describe('niccs csv parsing', () => {
   it('parses quoted fields with commas', () => {
@@ -51,10 +55,14 @@ describe('niccs bundle mapping', () => {
     const aiaas = entries[0]!;
     expect(aiaas.entryType).toBe('ACRONYM');
     expect(aiaas.aliases).toEqual(['AI service', 'hosted AI']);
-    expect(aiaas.summaryMd).toBe('a cloud-based service, offering AI outsourcing');
+    expect(aiaas.summaryMd).toBe(
+      'a cloud-based service, offering AI outsourcing',
+    );
     expect(aiaas.senses).toHaveLength(1);
     expect(aiaas.senses[0]!.key).toBe('aiaas');
-    expect(aiaas.senses[0]!.expandedForm).toBe('Artificial Intelligence as a Service');
+    expect(aiaas.senses[0]!.expandedForm).toBe(
+      'Artificial Intelligence as a Service',
+    );
     expect(aiaas.senses[0]!.definitionMd).toBe(
       'a cloud-based service, offering AI outsourcing\n\nAn extended definition.',
     );

@@ -1,4 +1,10 @@
-import { bundleFileSchema, type BundleFile, type SourceFile } from '@synac/content-tools';
+import {
+  bundleFileSchema,
+  type BundleFile,
+  type SourceFile,
+} from '@synac/content-tools';
+
+import type { FetchImpl } from './net/safeFetch.js';
 
 export type DraftDocument = BundleFile['documents'][number];
 export type DraftEntry = Omit<BundleFile['entries'][number], 'updatedAt'>;
@@ -8,17 +14,34 @@ export type AdapterContext = {
   previous: BundleFile | null;
   maxItems: number;
   now: Date;
+  /** Network seam; defaults to safeFetch. Tests pass a stub instead of mocking the module. */
+  fetch?: FetchImpl;
+  /** Per-host floor between request starts; defaults to the crawler's own floor. */
+  minRequestDelayMs?: number;
 };
 
 export type Adapter = (ctx: AdapterContext) => Promise<BundleFile>;
 
+/** `text/html; charset=utf-8` narrowed to the media type a bundle records. */
+export function shortContentType(
+  contentType: string,
+  fallback: string,
+): string {
+  return contentType.split(';')[0]?.trim() || fallback;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function stableStringify(value: unknown): string {
-  return JSON.stringify(value, (_key, val) => {
-    if (val && typeof val === 'object' && !Array.isArray(val)) {
-      return Object.fromEntries(Object.entries(val as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)));
-    }
-    return val as unknown;
-  });
+  return JSON.stringify(value, (_key, val: unknown) =>
+    isPlainObject(val)
+      ? Object.fromEntries(
+          Object.entries(val).sort(([a], [b]) => a.localeCompare(b)),
+        )
+      : val,
+  );
 }
 
 /**
@@ -39,15 +62,23 @@ export function finalizeBundle(input: {
 }): BundleFile {
   const today = input.now.toISOString().slice(0, 10);
   const previousEntries = new Map(
-    (input.previous?.entries ?? []).map((entry) => [`${entry.entryType}:${entry.slug}`, entry]),
+    (input.previous?.entries ?? []).map((entry) => [
+      `${entry.entryType}:${entry.slug}`,
+      entry,
+    ]),
   );
 
   const entries = [...input.entries]
-    .sort((a, b) => a.entryType.localeCompare(b.entryType) || a.slug.localeCompare(b.slug))
+    .sort(
+      (a, b) =>
+        a.entryType.localeCompare(b.entryType) || a.slug.localeCompare(b.slug),
+    )
     .map((entry) => {
       const previous = previousEntries.get(`${entry.entryType}:${entry.slug}`);
       const unchanged =
-        previous && stableStringify({ ...previous, updatedAt: undefined }) === stableStringify(entry);
+        previous &&
+        stableStringify({ ...previous, updatedAt: undefined }) ===
+          stableStringify(entry);
       return { ...entry, updatedAt: unchanged ? previous.updatedAt : today };
     });
 

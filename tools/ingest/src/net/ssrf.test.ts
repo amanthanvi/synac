@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { isAllowedHostname, isForbiddenHostname, isForbiddenIp } from './ssrf.js';
+import {
+  isAllowedHostname,
+  isForbiddenHostname,
+  isForbiddenIp,
+} from './ssrf.js';
 
 describe('ssrf helpers', () => {
   it('blocks private + local IPv4 ranges', () => {
@@ -30,8 +34,9 @@ describe('ssrf helpers', () => {
 
   it('allows exact + subdomains', () => {
     expect(isAllowedHostname('csrc.nist.gov', ['csrc.nist.gov'])).toBe(true);
-    expect(isAllowedHostname('sub.csrc.nist.gov', ['csrc.nist.gov'])).toBe(true);
+    expect(isAllowedHostname('sub.csrc.nist.gov', ['csrc.nist.gov'])).toBe(
+      true,
+    );
     expect(isAllowedHostname('evilnist.gov', ['csrc.nist.gov'])).toBe(false);
   });
 });
-

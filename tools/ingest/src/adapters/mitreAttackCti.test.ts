@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { bundleEntriesFromPatterns, getAttackPatterns } from './mitreAttackCti.js';
+import {
+  bundleEntriesFromPatterns,
+  getAttackPatterns,
+} from './mitreAttackCti.js';
 
 const stixBundle = {
   objects: [
@@ -21,7 +24,9 @@ const stixBundle = {
       name: 'Revoked Technique',
       description: 'Should be skipped.',
       revoked: true,
-      external_references: [{ source_name: 'mitre-attack', external_id: 'T9998' }],
+      external_references: [
+        { source_name: 'mitre-attack', external_id: 'T9998' },
+      ],
     },
     {
       type: 'attack-pattern',
@@ -29,7 +34,9 @@ const stixBundle = {
       name: 'Deprecated Technique',
       description: 'Should be skipped.',
       x_mitre_deprecated: true,
-      external_references: [{ source_name: 'mitre-attack', external_id: 'T9999' }],
+      external_references: [
+        { source_name: 'mitre-attack', external_id: 'T9999' },
+      ],
     },
     {
       type: 'attack-pattern',
@@ -61,13 +68,17 @@ describe('mitre attack stix parsing', () => {
   });
 
   it('maps techniques onto entries keyed by ATT&CK id', () => {
-    const [entry] = bundleEntriesFromPatterns(getAttackPatterns(stixBundle), 100);
+    const [entry] = bundleEntriesFromPatterns(
+      getAttackPatterns(stixBundle),
+      100,
+    );
     expect(entry).toMatchObject({
       entryType: 'TERM',
       slug: 'command-and-scripting-interpreter',
       title: 'Command and Scripting Interpreter',
       tags: [],
-      summaryMd: 'Adversaries may abuse command and script interpreters to execute commands.',
+      summaryMd:
+        'Adversaries may abuse command and script interpreters to execute commands.',
     });
     expect(entry!.senses).toHaveLength(1);
     expect(entry!.senses[0]!.key).toBe('T1059');

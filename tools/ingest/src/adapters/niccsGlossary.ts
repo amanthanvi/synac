@@ -1,59 +1,33 @@
-import { slugify } from '@synac/content-tools';
+import {
+  normalizeTitle,
+  normalizeWhitespace,
+  slugify,
+} from '@synac/content-tools';
 
+import { classifyEntryType, classifyVariantType } from '../classify.js';
 import { safeFetch } from '../net/safeFetch.js';
-import { finalizeBundle, type AdapterContext, type DraftEntry } from '../bundle.js';
+import { conditionalHeaders, documentValidators } from '../net/conditional.js';
+import {
+  finalizeBundle,
+  shortContentType,
+  type AdapterContext,
+  type DraftEntry,
+} from '../bundle.js';
 import type { BundleFile } from '@synac/content-tools';
 
 export const ADAPTER_VERSION = 'niccs-glossary/1.0.0';
 const DOCUMENT_KEY = 'niccs-glossary-csv';
 const USER_AGENT = 'synac-ingest/1.0 (+https://github.com/amanthanvi/synac)';
 
-function normalizeWhitespace(value: string): string {
-  return value.trim().replace(/\s+/g, ' ');
-}
-
-function normalizeTitle(value: string): string {
-  return normalizeWhitespace(value).toLowerCase();
-}
-
-function inferEntryTypeFromTitle(value: string, input: { acronymExpansion?: string }): 'TERM' | 'ACRONYM' {
-  const v = value.trim();
+/** A CSV acronym expansion is an explicit signal; otherwise fall back to the shared heuristic. */
+function entryTypeFromRow(
+  title: string,
+  acronymExpansion: string,
+): 'TERM' | 'ACRONYM' {
+  const v = title.trim();
   if (!v) return 'TERM';
-
-  if (input.acronymExpansion?.trim()) {
-    return v.includes(' ') ? 'TERM' : 'ACRONYM';
-  }
-
-  if (v.includes(' ')) return 'TERM';
-  if (v.length < 2 || v.length > 24) return 'TERM';
-
-  const letters = v.replace(/[^A-Za-z]/g, '');
-  if (letters.length < 1) return 'TERM';
-
-  const uppercase = letters.replace(/[^A-Z]/g, '').length;
-  const lowercase = letters.replace(/[^a-z]/g, '').length;
-  const digits = v.replace(/[^0-9]/g, '').length;
-
-  if (uppercase >= 2 && lowercase <= 2) return 'ACRONYM';
-  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return 'ACRONYM';
-
-  return 'TERM';
-}
-
-function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
-  const v = value.trim();
-  if (!v) return 'ALIAS';
-  if (v.includes(' ')) return 'SYNONYM';
-
-  const compact = v.replace(/[.\-_/]/g, '');
-  const isAllCaps =
-    compact.length >= 2 &&
-    compact === compact.toUpperCase() &&
-    /[A-Z]/.test(compact) &&
-    /^[A-Z0-9]+$/.test(compact);
-  if (isAllCaps && v.length <= 24) return 'ABBREVIATION';
-
-  return 'ALIAS';
+  if (acronymExpansion.trim()) return v.includes(' ') ? 'TERM' : 'ACRONYM';
+  return classifyEntryType(v);
 }
 
 export function parseCsvRecords(input: string): string[][] {
@@ -116,7 +90,10 @@ export function parseCsvRecords(input: string): string[][] {
 }
 
 function normalizeHeaderKey(value: string): string {
-  return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
 }
 
 function findHeaderIndex(headers: string[], names: string[]): number {
@@ -152,10 +129,20 @@ export function parseNiccsRows(csv: string): NiccsRow[] {
   const rows = records.slice(1);
 
   const termIdx = findHeaderIndex(header, ['term']);
-  const acronymIdx = findHeaderIndex(header, ['acronym expansion', 'acronymexpansion']);
+  const acronymIdx = findHeaderIndex(header, [
+    'acronym expansion',
+    'acronymexpansion',
+  ]);
   const defIdx = findHeaderIndex(header, ['definition']);
-  const extIdx = findHeaderIndex(header, ['extended definition', 'extendeddefinition']);
-  const relIdx = findHeaderIndex(header, ['related term(s)', 'related terms', 'relatedterms']);
+  const extIdx = findHeaderIndex(header, [
+    'extended definition',
+    'extendeddefinition',
+  ]);
+  const relIdx = findHeaderIndex(header, [
+    'related term(s)',
+    'related terms',
+    'relatedterms',
+  ]);
   const synIdx = findHeaderIndex(header, ['synonym(s)', 'synonyms']);
   const fromIdx = findHeaderIndex(header, ['from']);
 
@@ -170,7 +157,9 @@ export function parseNiccsRows(csv: string): NiccsRow[] {
   ].filter((c) => c.idx < 0);
 
   if (required.length) {
-    throw new Error(`NICCS CSV missing columns: ${required.map((c) => c.name).join(', ')}`);
+    throw new Error(
+      `NICCS CSV missing columns: ${required.map((c) => c.name).join(', ')}`,
+    );
   }
 
   return rows.map((r) => ({
@@ -185,7 +174,10 @@ export function parseNiccsRows(csv: string): NiccsRow[] {
 }
 
 /** Maps parsed NICCS rows onto bundle entries, deduplicating slug collisions. */
-export function bundleEntriesFromRows(rows: NiccsRow[], maxItems: number): DraftEntry[] {
+export function bundleEntriesFromRows(
+  rows: NiccsRow[],
+  maxItems: number,
+): DraftEntry[] {
   const out: DraftEntry[] = [];
   const seenKeys = new Set<string>();
   const parsedRows = rows.filter((r) => Boolean(r.term));
@@ -196,15 +188,18 @@ export function bundleEntriesFromRows(rows: NiccsRow[], maxItems: number): Draft
     const slug = slugify(row.term);
     if (!slug) continue;
 
-    const expandedForm = row.acronymExpansion.trim() ? row.acronymExpansion.trim() : null;
-    const entryType = inferEntryTypeFromTitle(row.term, { acronymExpansion: row.acronymExpansion });
+    const expandedForm = row.acronymExpansion.trim()
+      ? row.acronymExpansion.trim()
+      : null;
+    const entryType = entryTypeFromRow(row.term, row.acronymExpansion);
     const normalizedTitle = normalizeTitle(row.term);
 
     const key = `${entryType}:${slug}`;
     if (seenKeys.has(key)) continue;
 
     const definitionMd = (() => {
-      if (row.definition && row.extendedDefinition) return `${row.definition}\n\n${row.extendedDefinition}`;
+      if (row.definition && row.extendedDefinition)
+        return `${row.definition}\n\n${row.extendedDefinition}`;
       return row.definition || row.extendedDefinition || '';
     })();
 
@@ -213,7 +208,10 @@ export function bundleEntriesFromRows(rows: NiccsRow[], maxItems: number): Draft
 
     const synonyms = splitList(row.synonyms);
     const variants = (() => {
-      const out: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' }> = [];
+      const out: Array<{
+        variantText: string;
+        variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION';
+      }> = [];
       const seen = new Set<string>();
 
       for (const s of synonyms) {
@@ -223,7 +221,7 @@ export function bundleEntriesFromRows(rows: NiccsRow[], maxItems: number): Draft
         const variantKey = normalizeTitle(text);
         if (seen.has(variantKey)) continue;
         seen.add(variantKey);
-        out.push({ variantText: text, variantType: inferVariantType(text) });
+        out.push({ variantText: text, variantType: classifyVariantType(text) });
       }
 
       return out;
@@ -256,12 +254,15 @@ export function bundleEntriesFromRows(rows: NiccsRow[], maxItems: number): Draft
   return out;
 }
 
-export async function runNiccsGlossary(ctx: AdapterContext): Promise<BundleFile> {
+export async function runNiccsGlossary(
+  ctx: AdapterContext,
+): Promise<BundleFile> {
   const base = new URL(ctx.source.baseUrl);
   const origin = base.origin;
   const exportUrl = new URL('/rest/vocab/export-csv', origin).toString();
+  const fetchImpl = ctx.fetch ?? safeFetch;
 
-  const res = await safeFetch({
+  const res = await fetchImpl({
     url: exportUrl,
     allowedHosts: [base.hostname],
     allowedContentTypePrefixes: ['text/csv'],
@@ -270,15 +271,27 @@ export async function runNiccsGlossary(ctx: AdapterContext): Promise<BundleFile>
     maxBytes: 5 * 1024 * 1024,
     headers: {
       'user-agent': USER_AGENT,
+      ...conditionalHeaders(ctx.previous, exportUrl, ADAPTER_VERSION),
     },
   });
+  // A 304 answers the conditional request above: the copy recorded in the
+  // previous bundle is still current, so reuse it whole.
+  if (res.status === 304 && ctx.previous) return ctx.previous;
   if (res.status !== 200) {
-    throw new Error(`NICCS glossary export fetch failed (${res.status}) for ${exportUrl}`);
+    throw new Error(
+      `NICCS glossary export fetch failed (${res.status}) for ${exportUrl}`,
+    );
   }
 
-  // Upstream unchanged: keep the previous bundle byte-identical.
-  const previousDocument = ctx.previous?.documents.find((doc) => doc.key === DOCUMENT_KEY);
-  if (ctx.previous && previousDocument?.contentSha256 === res.sha256) {
+  // Upstream unchanged and parsed by this adapter version: keep the previous
+  // bundle byte-identical. A version bump forces a reparse so parser changes land.
+  const previousDocument = ctx.previous?.documents.find(
+    (doc) => doc.key === DOCUMENT_KEY,
+  );
+  if (
+    ctx.previous?.adapterVersion === ADAPTER_VERSION &&
+    previousDocument?.contentSha256 === res.sha256
+  ) {
     return ctx.previous;
   }
 
@@ -292,9 +305,10 @@ export async function runNiccsGlossary(ctx: AdapterContext): Promise<BundleFile>
         key: DOCUMENT_KEY,
         url: exportUrl,
         title: 'NICCS glossary export (CSV)',
-        contentType: res.contentType.split(';')[0]!.trim() || 'text/csv',
+        contentType: shortContentType(res.contentType, 'text/csv'),
         contentSha256: res.sha256,
         fetchedAt: ctx.now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+        ...documentValidators(res),
       },
     ],
     entries: bundleEntriesFromRows(rows, ctx.maxItems),

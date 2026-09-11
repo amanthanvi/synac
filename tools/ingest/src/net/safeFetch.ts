@@ -2,9 +2,13 @@ import { createHash } from 'node:crypto';
 import { Resolver } from 'node:dns/promises';
 import { Readable } from 'node:stream';
 
-import { isAllowedHostname, isForbiddenHostname, isForbiddenIp } from './ssrf.js';
+import {
+  isAllowedHostname,
+  isForbiddenHostname,
+  isForbiddenIp,
+} from './ssrf.js';
 
-type SafeFetchResult = {
+export type SafeFetchResult = {
   url: string;
   status: number;
   contentType: string;
@@ -14,7 +18,7 @@ type SafeFetchResult = {
   sha256: string;
 };
 
-type SafeFetchOptions = {
+export type SafeFetchOptions = {
   url: string;
   allowedHosts: string[];
   allowedContentTypePrefixes: string[];
@@ -24,18 +28,25 @@ type SafeFetchOptions = {
   headers?: Record<string, string>;
 };
 
-async function readBodyWithLimit(response: Response, maxBytes: number): Promise<Buffer> {
+export type FetchImpl = (options: SafeFetchOptions) => Promise<SafeFetchResult>;
+
+async function readBodyWithLimit(
+  response: Response,
+  maxBytes: number,
+): Promise<Buffer> {
   if (!response.body) return Buffer.from([]);
 
   const chunks: Buffer[] = [];
   let total = 0;
 
-  const stream = Readable.fromWeb(response.body as unknown as ReadableStream);
+  const stream: AsyncIterable<Uint8Array> = Readable.fromWeb(response.body);
   for await (const chunk of stream) {
-    const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as Uint8Array);
+    const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     total += buf.length;
     if (total > maxBytes) {
-      throw new Error(`Response too large (${total} bytes > ${maxBytes} bytes)`);
+      throw new Error(
+        `Response too large (${total} bytes > ${maxBytes} bytes)`,
+      );
     }
     chunks.push(buf);
   }
@@ -48,7 +59,9 @@ function dnsErrorCode(error: unknown): string | undefined {
   return typeof error.code === 'string' ? error.code : undefined;
 }
 
-async function resolveDnsFamily(operation: Promise<string[]>): Promise<string[]> {
+async function resolveDnsFamily(
+  operation: Promise<string[]>,
+): Promise<string[]> {
   try {
     return await operation;
   } catch (error) {
@@ -92,11 +105,17 @@ async function assertSafeHostname(
   }
 }
 
-function abortReason(signal: AbortSignal): unknown {
-  return signal.reason ?? new DOMException('Aborted', 'AbortError');
+function abortReason(signal: AbortSignal): Error {
+  const reason: unknown = signal.reason;
+  return reason instanceof Error
+    ? reason
+    : new DOMException('Aborted', 'AbortError');
 }
 
-async function withAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise<T> {
+async function withAbort<T>(
+  operation: Promise<T>,
+  signal: AbortSignal,
+): Promise<T> {
   if (signal.aborted) throw abortReason(signal);
 
   return new Promise<T>((resolve, reject) => {
@@ -114,14 +133,19 @@ async function withAbort<T>(operation: Promise<T>, signal: AbortSignal): Promise
       },
       (error: unknown) => {
         cleanup();
-        reject(error);
+        // assertSafeHostname only rejects with Errors; wrap anything else.
+        reject(error instanceof Error ? error : new Error(String(error)));
       },
     );
   });
 }
 
-export async function safeFetch(options: SafeFetchOptions): Promise<SafeFetchResult> {
-  const allowedHosts = options.allowedHosts.map((h) => h.trim().toLowerCase()).filter(Boolean);
+export async function safeFetch(
+  options: SafeFetchOptions,
+): Promise<SafeFetchResult> {
+  const allowedHosts = options.allowedHosts
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
   if (allowedHosts.length === 0) throw new Error('allowedHosts is required');
 
   let current = new URL(options.url);
@@ -147,7 +171,10 @@ export async function safeFetch(options: SafeFetchOptions): Promise<SafeFetchRes
 
       if ([301, 302, 303, 307, 308].includes(response.status)) {
         const location = response.headers.get('location');
-        if (!location) throw new Error(`Redirect without location from ${current.toString()}`);
+        if (!location)
+          throw new Error(
+            `Redirect without location from ${current.toString()}`,
+          );
         if (i === options.maxRedirects) throw new Error('Too many redirects');
         current = new URL(location, current);
         if (current.protocol !== 'https:') {
@@ -156,12 +183,29 @@ export async function safeFetch(options: SafeFetchOptions): Promise<SafeFetchRes
         continue;
       }
 
+      // A 304 answers a conditional request: the server transferred no body, so
+      // there is no content-type to validate and nothing to hash but emptiness.
+      if (response.status === 304) {
+        const empty = Buffer.alloc(0);
+        return {
+          url: current.toString(),
+          status: 304,
+          contentType: response.headers.get('content-type') ?? '',
+          etag: response.headers.get('etag'),
+          lastModified: response.headers.get('last-modified'),
+          body: empty,
+          sha256: createHash('sha256').update(empty).digest('hex'),
+        };
+      }
+
       const contentType = response.headers.get('content-type') ?? '';
       const okType = options.allowedContentTypePrefixes.some((p) =>
         contentType.toLowerCase().startsWith(p.toLowerCase()),
       );
       if (!okType) {
-        throw new Error(`Disallowed content-type: ${contentType || '(missing)'}`);
+        throw new Error(
+          `Disallowed content-type: ${contentType || '(missing)'}`,
+        );
       }
 
       const body = await readBodyWithLimit(response, options.maxBytes);
