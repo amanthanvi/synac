@@ -88,9 +88,10 @@ function bibtexKey(sourceSlug: string, senseKey: string): string {
 }
 
 function bibtexValue(value: string): string {
-  return value
-    .replace(/\\/g, '\\textbackslash ')
-    .replace(/([{}$&#_%~^])/g, '\\$1');
+  // One pass so a backslash is never escaped twice.
+  return value.replace(/[\\{}$&#_%~^]/g, (char) =>
+    char === '\\' ? '\\textbackslash ' : `\\${char}`,
+  );
 }
 
 function isoDay(value: Date): string {
