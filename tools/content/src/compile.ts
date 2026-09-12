@@ -49,8 +49,22 @@ export type ContentInput = {
   overrides: Map<string, OverrideFile>;
 };
 
+/**
+ * The ungrouped, pre-dedupe shape of every entry. Tag classification hashes
+ * this view, so grouping senses for display never stales an assignment.
+ */
+export type ClassificationView = {
+  entries: CompiledEntry[];
+  senses: CompiledSense[];
+};
+
 export type CompileResult =
-  | { ok: true; dataset: CompiledDataset; warnings: string[] }
+  | {
+      ok: true;
+      dataset: CompiledDataset;
+      classification: ClassificationView;
+      warnings: string[];
+    }
   | { ok: false; errors: string[]; warnings: string[] };
 
 export type CompileOptions = {
@@ -1114,5 +1128,13 @@ export function compileContent(
     )
     .digest('hex');
 
-  return { ok: true, dataset, warnings };
+  return {
+    ok: true,
+    dataset,
+    classification: {
+      entries: classificationEntries,
+      senses: classificationSenses,
+    },
+    warnings,
+  };
 }

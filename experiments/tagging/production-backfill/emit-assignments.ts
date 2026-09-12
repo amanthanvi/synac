@@ -678,6 +678,9 @@ function validatePrevious(
   };
 }
 
+/** currentEntryContentHash of a reviewed removal whose entry is no longer in the corpus. */
+export const REMOVED_ENTRY_HASH = '0'.repeat(64);
+
 function validateRemovals(
   artifact: HashedArtifact | undefined,
   predecessorHash: string | null,
@@ -909,10 +912,10 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
           `reviewed removal prior hash mismatch for ${prior.entryKey}/${prior.tagSlug}`,
         );
       }
-      if (
-        !currentEntry ||
-        removal.currentEntryContentHash !== currentEntry.entryContentHash
-      ) {
+      // An entry that left the corpus has no current hash; the reviewer
+      // records the sentinel to show the absence was seen, not assumed.
+      const currentHash = currentEntry?.entryContentHash ?? REMOVED_ENTRY_HASH;
+      if (removal.currentEntryContentHash !== currentHash) {
         throw new Error(
           `reviewed removal is not classified against current ${prior.entryKey}`,
         );
@@ -1213,15 +1216,18 @@ async function currentCorpus(rootDir: string): Promise<{
     { allowUnreleasedTagging: true },
   );
   if (!compiled.ok) throw new Error(compiled.errors.join('\n'));
-  const sensesByEntry = new Map<string, typeof compiled.dataset.senses>();
-  for (const sense of compiled.dataset.senses) {
+  const sensesByEntry = new Map<
+    string,
+    typeof compiled.classification.senses
+  >();
+  for (const sense of compiled.classification.senses) {
     const senses = sensesByEntry.get(sense.entryKey) ?? [];
     senses.push(sense);
     sensesByEntry.set(sense.entryKey, senses);
   }
   const classificationEntries = compileClassificationEntries(
-    compiled.dataset.entries,
-    compiled.dataset.senses,
+    compiled.classification.entries,
+    compiled.classification.senses,
   );
   const reviewedControls = await loadReviewedControls(
     `${rootDir}/experiments/tagging/synthetic-reference/reviewed-controls`,
@@ -1261,7 +1267,7 @@ async function currentCorpus(rootDir: string): Promise<{
     controlPairs.add(identity);
   }
   const servingHashes = new Map(
-    compiled.dataset.entries.map((entry) => {
+    compiled.classification.entries.map((entry) => {
       const senses = sensesByEntry.get(entry.key) ?? [];
       return [entry.key, classificationEntryHash(entry, senses)] as const;
     }),
@@ -1295,10 +1301,10 @@ async function currentCorpus(rootDir: string): Promise<{
     corpus: {
       contentVersion: compiled.dataset.contentVersion,
       corpusHash: classificationCorpusHash(
-        compiled.dataset.entries,
-        compiled.dataset.senses,
+        compiled.classification.entries,
+        compiled.classification.senses,
       ),
-      entries: compiled.dataset.entries
+      entries: compiled.classification.entries
         .map((entry) => {
           const senses = sensesByEntry.get(entry.key) ?? [];
           return {
