@@ -11,7 +11,7 @@ function publicSource(source: {
   licenseUrl?: string;
   licenseNotes?: string;
   publicStatement?: string;
-  contentMode: 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
+  contentMode?: 'QUOTED' | 'SUMMARIZED' | 'PARAPHRASED';
   allowedUse: string;
   attributionRequirements: string;
   trustTier: string;
@@ -27,7 +27,8 @@ function publicSource(source: {
     licenseUrl: source.licenseUrl ?? null,
     licenseNotes: source.licenseNotes ?? null,
     publicStatement: source.publicStatement ?? null,
-    contentMode: source.contentMode,
+    // Rows from before the mode existed are replaced by the next sync.
+    contentMode: source.contentMode ?? 'SUMMARIZED',
     allowedUse: source.allowedUse,
     attributionRequirements: source.attributionRequirements,
     trustTier: source.trustTier,

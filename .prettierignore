@@ -17,3 +17,4 @@ experiments/tagging/production-backfill/codex-cli/
 experiments/tagging/production-backfill/candidates.json
 experiments/tagging/production-backfill/local-review-progress*.jsonl
 experiments/tagging/production-backfill/reviewed-candidates.json
+.vercel

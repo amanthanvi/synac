@@ -23,8 +23,8 @@ export const directory = query({
       name: tag.name,
       description: tag.description ?? null,
       entryCount: tag.entryCount,
-      editorialCount: tag.editorialCount,
-      autoCount: tag.autoCount,
+      editorialCount: tag.editorialCount ?? tag.entryCount,
+      autoCount: tag.autoCount ?? 0,
     }));
   },
 });

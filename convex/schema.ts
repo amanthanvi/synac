@@ -23,9 +23,9 @@ export const citationValidator = v.object({
   licenseNote: v.optional(v.string()),
   licenseUrl: v.optional(v.string()),
   publicStatement: v.optional(v.string()),
-  contentMode,
+  contentMode: v.optional(contentMode),
   /** Digest of the fetched document the wording came from. */
-  documentSha256: v.string(),
+  documentSha256: v.optional(v.string()),
   attributionText: v.string(),
   accessedAt: v.number(),
   locator: v.optional(v.string()),
@@ -64,6 +64,9 @@ export const generationCountsValidator = v.object({
   tagRedirects: v.number(),
 });
 
+// Fields added after the first production generation are optional so a
+// schema push validates rows the next sync replaces; the sync always writes
+// them and readers fall back to defaults.
 // Content tables are populated exclusively by the sync pipeline from the
 // compiled content/ dataset. `syncVersion` carries the contentVersion hash of
 // the sync that last touched a row; pruning deletes rows from older versions.
@@ -76,7 +79,7 @@ export default defineSchema({
     licenseUrl: v.optional(v.string()),
     licenseNotes: v.optional(v.string()),
     publicStatement: v.optional(v.string()),
-    contentMode,
+    contentMode: v.optional(contentMode),
     allowedUse: v.string(),
     attributionRequirements: v.string(),
     trustTier: v.string(),
@@ -94,8 +97,8 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
     entryCount: v.number(),
-    editorialCount: v.number(),
-    autoCount: v.number(),
+    editorialCount: v.optional(v.number()),
+    autoCount: v.optional(v.number()),
     syncVersion: v.string(),
   })
     .index('by_slug', ['slug'])
@@ -111,14 +114,14 @@ export default defineSchema({
     aliases: v.array(v.string()),
     summaryMd: v.optional(v.string()),
     summaryText: v.optional(v.string()),
-    snippetText: v.string(),
-    matchTerms: v.array(v.string()),
+    snippetText: v.optional(v.string()),
+    matchTerms: v.optional(v.array(v.string())),
     editorialNotes: v.optional(v.string()),
     updatedAt: v.number(),
     senseCount: v.number(),
     senseSummary: v.optional(v.string()),
     searchDocument: v.string(),
-    tags: v.array(entryTagValidator),
+    tags: v.optional(v.array(entryTagValidator)),
     tagSlugs: v.array(v.string()),
     citedSourceSlugs: v.array(v.string()),
     syncVersion: v.string(),
@@ -160,14 +163,14 @@ export default defineSchema({
     entryId: v.id('entries'),
     entryKey: v.string(),
     // Copied from the entry so meaning-level search can filter without a join.
-    entryType,
+    entryType: v.optional(entryType),
     key: v.string(),
     order: v.number(),
     label: v.optional(v.string()),
-    labelFallback: v.string(),
+    labelFallback: v.optional(v.string()),
     disambiguationNote: v.optional(v.string()),
-    needsLabel: v.boolean(),
-    normalizedLabel: v.string(),
+    needsLabel: v.optional(v.boolean()),
+    normalizedLabel: v.optional(v.string()),
     definitionMd: v.string(),
     definitionText: v.string(),
     expandedForm: v.optional(v.string()),
@@ -175,7 +178,7 @@ export default defineSchema({
     editorialRationale: v.optional(v.string()),
     isPreferred: v.boolean(),
     examples: v.array(exampleValidator),
-    attestations: v.array(attestationValidator),
+    attestations: v.optional(v.array(attestationValidator)),
     citations: v.array(citationValidator),
     syncVersion: v.string(),
   })
@@ -196,7 +199,7 @@ export default defineSchema({
     entryId: v.id('entries'),
     entryKey: v.string(),
     tagSlug: v.string(),
-    assignedBy: v.union(v.literal('EDITORIAL'), v.literal('AUTO')),
+    assignedBy: v.optional(v.union(v.literal('EDITORIAL'), v.literal('AUTO'))),
     score: v.optional(v.number()),
     // Optional for the one deployment that backfills existing links. Every
     // current sync writes it; the compound index makes type-filtered tag

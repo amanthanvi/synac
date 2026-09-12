@@ -28,7 +28,7 @@ export async function tagNames(
   entryTags: Doc<'entries'>['tags'],
 ): Promise<EntryTag[]> {
   const tags: EntryTag[] = [];
-  for (const entryTag of entryTags) {
+  for (const entryTag of entryTags ?? []) {
     const tag = await ctx.db
       .query('tags')
       .withIndex('by_syncVersion_and_slug', (q) =>
@@ -39,7 +39,7 @@ export async function tagNames(
       tags.push({
         slug: tag.slug,
         name: tag.name,
-        assignedBy: entryTag.assignedBy,
+        assignedBy: entryTag.assignedBy ?? 'EDITORIAL',
       });
   }
   return tags;
@@ -173,7 +173,7 @@ export const getEntryPage = query({
           key: sense.key,
           order: sense.order,
           label: sense.label ?? null,
-          labelFallback: sense.labelFallback,
+          labelFallback: sense.labelFallback ?? entry.title,
           disambiguationNote: sense.disambiguationNote ?? null,
           definitionMd: sense.definitionMd,
           definitionText: sense.definitionText,
@@ -182,14 +182,28 @@ export const getEntryPage = query({
           editorialRationale: sense.editorialRationale ?? null,
           isPreferred: sense.isPreferred,
           examples: sense.examples,
-          attestations: sense.attestations,
-          citations: sense.citations,
+          attestations: (sense.attestations ?? []).map((attestation) => ({
+            ...attestation,
+            citation: publicCitation(attestation.citation),
+          })),
+          citations: sense.citations.map(publicCitation),
         })),
       },
       relationships,
     };
   },
 });
+
+type Citation = Doc<'senses'>['citations'][number];
+
+/** Rows from before these fields existed are replaced by the next sync. */
+function publicCitation(citation: Citation) {
+  return {
+    ...citation,
+    contentMode: citation.contentMode ?? ('SUMMARIZED' as const),
+    documentSha256: citation.documentSha256 ?? '',
+  };
+}
 
 /** Recently updated entries for the home page and /recent, newest first. */
 export const listRecent = query({

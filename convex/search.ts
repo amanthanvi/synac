@@ -206,10 +206,12 @@ export const search = query({
       ) {
         bucket = 2;
         score = 800;
-      } else if (entry.matchTerms.includes(query.text)) {
+      } else if ((entry.matchTerms ?? []).includes(query.text)) {
         bucket = 3;
         score = 600;
-      } else if (entry.matchTerms.some((term) => term.startsWith(query.text))) {
+      } else if (
+        (entry.matchTerms ?? []).some((term) => term.startsWith(query.text))
+      ) {
         bucket = 3;
         score = 500;
       } else if (
@@ -228,7 +230,7 @@ export const search = query({
         title: entry.title,
         slug: entry.slug,
         summaryText: entry.summaryText ?? null,
-        snippet: highlight(entry.snippetText, query),
+        snippet: highlight(entry.snippetText ?? entry.summaryText ?? '', query),
         senseCount: entry.senseCount,
         senseSummary: entry.senseSummary ?? null,
         bucket,
@@ -283,9 +285,9 @@ export const senses = query({
         sense,
         index,
         rank:
-          sense.normalizedLabel === query.text
+          (sense.normalizedLabel ?? '') === query.text
             ? 0
-            : sense.normalizedLabel.startsWith(query.text)
+            : (sense.normalizedLabel ?? '').startsWith(query.text)
               ? 1
               : 2,
       }))
@@ -301,14 +303,14 @@ export const senses = query({
       const entry = await ctx.db.get(sense.entryId);
       if (entry?.syncVersion !== generation.version) continue;
       results.push({
-        entryType: sense.entryType,
+        entryType: sense.entryType ?? entry.entryType,
         slug: entry.slug,
         title: entry.title,
         senseKey: sense.key,
         anchor: senseAnchorId(sense.key),
         label: sense.label ?? null,
         expandedForm: sense.expandedForm ?? null,
-        labelFallback: sense.labelFallback,
+        labelFallback: sense.labelFallback ?? entry.title,
         // citations already lists the primary source first, then each
         // further source that attests to this meaning.
         sourceNames: [
