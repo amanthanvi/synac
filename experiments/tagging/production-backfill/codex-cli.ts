@@ -224,7 +224,7 @@ async function loadPlan(): Promise<PlanRequest[]> {
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as Manifest;
   if (
     manifest.schemaVersion !== 'synac-production-backfill-manifest-v1' ||
-    manifest.generation !== 'codex-v1' ||
+    manifest.generation !== 'codex-v2' ||
     manifest.transport !== 'codex-cli' ||
     manifest.model !== model ||
     manifest.reasoningEffort !== reasoningEffort

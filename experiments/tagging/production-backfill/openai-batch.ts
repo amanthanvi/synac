@@ -67,7 +67,7 @@ type BatchRecord = {
 
 const directory = fileURLToPath(new URL('.', import.meta.url));
 const rootDir = fileURLToPath(new URL('../../..', import.meta.url));
-const batchGeneration = 'codex-v1';
+const batchGeneration = 'codex-v2';
 const transport = 'codex-cli';
 const batchDirectory = `${directory}/codex-cli`;
 const requestPath = `${batchDirectory}/requests.jsonl`;

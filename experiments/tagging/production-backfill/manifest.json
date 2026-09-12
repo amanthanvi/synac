@@ -1,6 +1,6 @@
 {
   "schemaVersion": "synac-production-backfill-manifest-v1",
-  "generation": "codex-v1",
+  "generation": "codex-v2",
   "transport": "codex-cli",
   "model": "gpt-5.6-terra",
   "reasoningEffort": "max",
@@ -10,13 +10,13 @@
   ],
   "chunkSize": 20,
   "maxOutputTokens": null,
-  "entryCount": 6701,
-  "requestCount": 672,
-  "contentVersion": "31bd468da507ed63247b0e6e46839ed4b0fb76a4f7cd5a038f439af38ee0e97f",
-  "corpusHash": "3d6cdcb9026c82dc36e12fee79f5840a3442bd054b62b555f45c641666d44c35",
-  "entryIndexHash": "46ee505b2666dc7ea5a250e4221bf4dc83bc221c2635a44078be21b9e66fa490",
+  "entryCount": 6700,
+  "requestCount": 670,
+  "contentVersion": "d91f4ebe451ea18b64a4d28d2ffa447f621972cc454b52b53721fe92ff2f9a7e",
+  "corpusHash": "a20d2393bff6dea957fdfd087284919032f7f4f3b55d1113348e4157fc4afbea",
+  "entryIndexHash": "d682f5a1625103734a24a888b37b68be93ae7edea131b182d19e3cd1de01dd53",
   "rubricHash": "b658efc9f29325c70b69df476730551898b2bb78bafe26f2e839db138c695075",
   "promptHash": "58fe3b4d9e6d0fbcc069ba7fd3902cb93f8fecab7aa9b5a97e798ba6d91f6aa0",
   "configHash": "a96e4644c38f5ea93fb8562086943589172ceca204cf98fbf904c6b4d2c6a30b",
-  "requestFileHash": "49951ea60cee0dfef9f108069279c933e50c4ebaaf90c29b035a109758d23253"
+  "requestFileHash": "91e7e5443937e6382f4743850e9b99856bd65d40eccb6a74ae2d29cf47fac132"
 }

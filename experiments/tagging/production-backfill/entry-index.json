@@ -1,7 +1,7 @@
 {
   "schemaVersion": "synac-production-entry-index-v1",
-  "contentVersion": "31bd468da507ed63247b0e6e46839ed4b0fb76a4f7cd5a038f439af38ee0e97f",
-  "corpusHash": "3d6cdcb9026c82dc36e12fee79f5840a3442bd054b62b555f45c641666d44c35",
+  "contentVersion": "d91f4ebe451ea18b64a4d28d2ffa447f621972cc454b52b53721fe92ff2f9a7e",
+  "corpusHash": "a20d2393bff6dea957fdfd087284919032f7f4f3b55d1113348e4157fc4afbea",
   "entries": [
     {
       "entryKey": "ACRONYM:2fa",
@@ -5305,7 +5305,7 @@
     },
     {
       "entryKey": "TERM:buffer-overflow",
-      "entryContentHash": "676010da70f71e495a4c870b3141f8ca0cd87155c9dcadb2373c5dc328225877"
+      "entryContentHash": "f9d066f2d3737cc1325cb721063cb423d2c4a8b15b4e2021f40fb2e5dd777138"
     },
     {
       "entryKey": "TERM:buffer-overflow-attack",
@@ -7905,7 +7905,7 @@
     },
     {
       "entryKey": "TERM:covert-storage-channel",
-      "entryContentHash": "0dd8d56ef0940a082943389ea8d0de1570295aad00db610638f8e62493fbe42f"
+      "entryContentHash": "d3fa00099259241dd1643db63dd4dceaa8ea5e8093cad17fc7005965c6da4d96"
     },
     {
       "entryKey": "TERM:covert-testing",
@@ -13354,10 +13354,6 @@
     {
       "entryKey": "TERM:impossible",
       "entryContentHash": "5d1346e14b125e082c3f24e170b10130981ce858222531b7888d6bc843063926"
-    },
-    {
-      "entryKey": "TERM:improper-pointer-subtraction",
-      "entryContentHash": "8fe12749a834126c50465a31f666016295c75075bcd601f044094a2141a7b5b6"
     },
     {
       "entryKey": "TERM:imputation",
@@ -30980,14 +30976,13 @@
         "TERM:implementation-under-test",
         "TERM:import",
         "TERM:impossible",
-        "TERM:improper-pointer-subtraction",
-        "TERM:imputation"
+        "TERM:imputation",
+        "TERM:in"
       ]
     },
     {
       "chunkId": "0167",
       "entryKeys": [
-        "TERM:in",
         "TERM:in-the-clear",
         "TERM:ina-jo",
         "TERM:inadvertent-disclosure",
@@ -31006,13 +31001,13 @@
         "TERM:independent-and-identically-distributed",
         "TERM:independent-qualified-reviewer",
         "TERM:independent-regulatory-agency",
-        "TERM:independent-validation-authority-iva"
+        "TERM:independent-validation-authority-iva",
+        "TERM:independent-verification-validation-iv-v"
       ]
     },
     {
       "chunkId": "0168",
       "entryKeys": [
-        "TERM:independent-verification-validation-iv-v",
         "TERM:indicator",
         "TERM:indicator-of-compromise",
         "TERM:indicator-removal",
@@ -31031,13 +31026,13 @@
         "TERM:industrial-security",
         "TERM:infeasible",
         "TERM:inference",
-        "TERM:inference-control"
+        "TERM:inference-control",
+        "TERM:infiniband"
       ]
     },
     {
       "chunkId": "0169",
       "entryKeys": [
-        "TERM:infiniband",
         "TERM:informal",
         "TERM:information",
         "TERM:information-and-communication-s-technology",
@@ -31056,13 +31051,13 @@
         "TERM:information-domain-security-policy",
         "TERM:information-environment",
         "TERM:information-exchange",
-        "TERM:information-exchange-agreement"
+        "TERM:information-exchange-agreement",
+        "TERM:information-flow-control"
       ]
     },
     {
       "chunkId": "0170",
       "entryKeys": [
-        "TERM:information-flow-control",
         "TERM:information-flow-policy",
         "TERM:information-item",
         "TERM:information-leakage",
@@ -31081,13 +31076,13 @@
         "TERM:information-security-architecture",
         "TERM:information-security-continuous-monitoring-iscm",
         "TERM:information-security-continuous-monitoring-iscm-process",
-        "TERM:information-security-continuous-monitoring-iscm-program"
+        "TERM:information-security-continuous-monitoring-iscm-program",
+        "TERM:information-security-continuous-monitoring-iscm-strategy"
       ]
     },
     {
       "chunkId": "0171",
       "entryKeys": [
-        "TERM:information-security-continuous-monitoring-iscm-strategy",
         "TERM:information-security-officer",
         "TERM:information-security-policy",
         "TERM:information-security-program-plan",
@@ -31106,13 +31101,13 @@
         "TERM:information-system-life-cycle",
         "TERM:information-system-owner-or-program-manager",
         "TERM:information-system-related-security-risks",
-        "TERM:information-system-resilience"
+        "TERM:information-system-resilience",
+        "TERM:information-system-security-engineer"
       ]
     },
     {
       "chunkId": "0172",
       "entryKeys": [
-        "TERM:information-system-security-engineer",
         "TERM:information-system-security-engineering",
         "TERM:information-system-security-officer",
         "TERM:information-system-security-plan",
@@ -31131,13 +31126,13 @@
         "TERM:informative-reference-developer",
         "TERM:informative-references",
         "TERM:infrastructure-as-a-service-iaas",
-        "TERM:ingress-filtering"
+        "TERM:ingress-filtering",
+        "TERM:ingress-tool-transfer"
       ]
     },
     {
       "chunkId": "0173",
       "entryKeys": [
-        "TERM:ingress-tool-transfer",
         "TERM:inherent-risk",
         "TERM:inheritance",
         "TERM:inhibit-system-recovery",
@@ -31156,13 +31151,13 @@
         "TERM:insider",
         "TERM:insider-threat",
         "TERM:insider-threat-program",
-        "TERM:inspectable-space"
+        "TERM:inspectable-space",
+        "TERM:inspection"
       ]
     },
     {
       "chunkId": "0174",
       "entryKeys": [
-        "TERM:inspection",
         "TERM:install-digital-certificate",
         "TERM:install-root-certificate",
         "TERM:installation-as-used-herein",
@@ -31181,13 +31176,13 @@
         "TERM:integrator",
         "TERM:integrity",
         "TERM:integrity-authentication",
-        "TERM:integrity-check"
+        "TERM:integrity-check",
+        "TERM:integrity-check-value"
       ]
     },
     {
       "chunkId": "0175",
       "entryKeys": [
-        "TERM:integrity-check-value",
         "TERM:integrity-impact",
         "TERM:integrity-label",
         "TERM:integrity-protection",
@@ -31206,13 +31201,13 @@
         "TERM:interactive-user",
         "TERM:interception",
         "TERM:interchangeable",
-        "TERM:interconnection"
+        "TERM:interconnection",
+        "TERM:interconnection-security-agreement-isa"
       ]
     },
     {
       "chunkId": "0176",
       "entryKeys": [
-        "TERM:interconnection-security-agreement-isa",
         "TERM:interface",
         "TERM:interface-capabilities",
         "TERM:interface-device",
@@ -31231,13 +31226,13 @@
         "TERM:internal-network",
         "TERM:internal-proxy",
         "TERM:internal-security-controls",
-        "TERM:internal-security-testing"
+        "TERM:internal-security-testing",
+        "TERM:internal-spearphishing"
       ]
     },
     {
       "chunkId": "0177",
       "entryKeys": [
-        "TERM:internal-spearphishing",
         "TERM:internal-state",
         "TERM:international-data-encryption-algorithm",
         "TERM:international-mobile-equipment-identity-imei",
@@ -31256,13 +31251,13 @@
         "TERM:internet-engineering-task-force-ietf",
         "TERM:internet-internet",
         "TERM:internet-key-exchange",
-        "TERM:internet-key-exchange-ike"
+        "TERM:internet-key-exchange-ike",
+        "TERM:internet-layer"
       ]
     },
     {
       "chunkId": "0178",
       "entryKeys": [
-        "TERM:internet-layer",
         "TERM:internet-message-access-protocol-imap",
         "TERM:internet-message-access-protocol-version-4",
         "TERM:internet-of-things",
@@ -31281,13 +31276,13 @@
         "TERM:interoperability",
         "TERM:interoperability-test",
         "TERM:interoperating-system",
-        "TERM:interpreter"
+        "TERM:interpreter",
+        "TERM:interval-scale"
       ]
     },
     {
       "chunkId": "0179",
       "entryKeys": [
-        "TERM:interval-scale",
         "TERM:interview",
         "TERM:intranet",
         "TERM:intruder",
@@ -31306,13 +31301,13 @@
         "TERM:inverse-cipher-function-inverse-cipher-operation",
         "TERM:inverse-cipher-operation-inverse-transformation",
         "TERM:inverse-transformation",
-        "TERM:investigate"
+        "TERM:investigate",
+        "TERM:investigation"
       ]
     },
     {
       "chunkId": "0180",
       "entryKeys": [
-        "TERM:investigation",
         "TERM:invisible-unicode",
         "TERM:invocation-field",
         "TERM:iot-device",
@@ -31331,13 +31326,13 @@
         "TERM:iris-segmentation",
         "TERM:iscm-capability",
         "TERM:iscm-dashboard",
-        "TERM:iso-17799"
+        "TERM:iso-17799",
+        "TERM:isogeny"
       ]
     },
     {
       "chunkId": "0181",
       "entryKeys": [
-        "TERM:isogeny",
         "TERM:isolation",
         "TERM:isomorphism-of-elliptic-curves",
         "TERM:issuance",
@@ -31356,13 +31351,13 @@
         "TERM:javascript",
         "TERM:jitter",
         "TERM:joint-authorization",
-        "TERM:json-web-token"
+        "TERM:json-web-token",
+        "TERM:judgment"
       ]
     },
     {
       "chunkId": "0182",
       "entryKeys": [
-        "TERM:judgment",
         "TERM:judgment-value",
         "TERM:junk-code-insertion",
         "TERM:junk-data",
@@ -31381,13 +31376,13 @@
         "TERM:kernel",
         "TERM:kernel-modules-and-extensions",
         "TERM:kernelcallbacktable",
-        "TERM:kernelized-secure-operating-system"
+        "TERM:kernelized-secure-operating-system",
+        "TERM:key"
       ]
     },
     {
       "chunkId": "0183",
       "entryKeys": [
-        "TERM:key",
         "TERM:key-administration",
         "TERM:key-agreement",
         "TERM:key-agreement-algorithm-or-protocol",
@@ -31406,13 +31401,13 @@
         "TERM:key-component",
         "TERM:key-confirmation",
         "TERM:key-confirmation-provider",
-        "TERM:key-confirmation-recipient"
+        "TERM:key-confirmation-recipient",
+        "TERM:key-custodian"
       ]
     },
     {
       "chunkId": "0184",
       "entryKeys": [
-        "TERM:key-custodian",
         "TERM:key-de-registration",
         "TERM:key-derivation",
         "TERM:key-derivation-function",
@@ -31431,13 +31426,13 @@
         "TERM:key-escrow",
         "TERM:key-escrow-system",
         "TERM:key-establishment",
-        "TERM:key-establishment-algorithm-or-protocol"
+        "TERM:key-establishment-algorithm-or-protocol",
+        "TERM:key-establishment-key-pair"
       ]
     },
     {
       "chunkId": "0185",
       "entryKeys": [
-        "TERM:key-establishment-key-pair",
         "TERM:key-establishment-transaction",
         "TERM:key-exchange",
         "TERM:key-exchange-algorithm",
@@ -31456,13 +31451,13 @@
         "TERM:key-list",
         "TERM:key-loader",
         "TERM:key-loading-and-initialization-facility",
-        "TERM:key-logger"
+        "TERM:key-logger",
+        "TERM:key-management"
       ]
     },
     {
       "chunkId": "0186",
       "entryKeys": [
-        "TERM:key-management",
         "TERM:key-management-components",
         "TERM:key-management-device",
         "TERM:key-management-entity-kme",
@@ -31481,13 +31476,13 @@
         "TERM:key-owner",
         "TERM:key-pair",
         "TERM:key-pair-owner",
-        "TERM:key-performance-indicator"
+        "TERM:key-performance-indicator",
+        "TERM:key-processor-kp"
       ]
     },
     {
       "chunkId": "0187",
       "entryKeys": [
-        "TERM:key-processor-kp",
         "TERM:key-recovery",
         "TERM:key-recovery-agent",
         "TERM:key-reference",
@@ -31506,13 +31501,13 @@
         "TERM:key-stream",
         "TERM:key-tag",
         "TERM:key-tape",
-        "TERM:key-translation-center"
+        "TERM:key-translation-center",
+        "TERM:key-translation-center-ktc"
       ]
     },
     {
       "chunkId": "0188",
       "entryKeys": [
-        "TERM:key-translation-center-ktc",
         "TERM:key-transport",
         "TERM:key-transport-algorithm-or-protocol",
         "TERM:key-transport-automated",
@@ -31531,13 +31526,13 @@
         "TERM:keydata",
         "TERM:keyed-hash",
         "TERM:keyed-hash-algorithm",
-        "TERM:keyed-hash-message-authentication-code"
+        "TERM:keyed-hash-message-authentication-code",
+        "TERM:keying-material"
       ]
     },
     {
       "chunkId": "0189",
       "entryKeys": [
-        "TERM:keying-material",
         "TERM:keying-material-identifier",
         "TERM:keylogger",
         "TERM:keylogging",
@@ -31556,13 +31551,13 @@
         "TERM:known-data",
         "TERM:known-hosts-file",
         "TERM:known-plaintext-attack",
-        "TERM:koa-agent"
+        "TERM:koa-agent",
+        "TERM:koa-manager-koam"
       ]
     },
     {
       "chunkId": "0190",
       "entryKeys": [
-        "TERM:koa-manager-koam",
         "TERM:koa-registration-manager",
         "TERM:kolmogorov-smirnov-test",
         "TERM:kracker",
@@ -31581,13 +31576,13 @@
         "TERM:lagging-indicator",
         "TERM:land-attack",
         "TERM:language-of-temporal-ordering-specification",
-        "TERM:laplace-mechanism"
+        "TERM:laplace-mechanism",
+        "TERM:last-numbers-dialed"
       ]
     },
     {
       "chunkId": "0191",
       "entryKeys": [
-        "TERM:last-numbers-dialed",
         "TERM:latency",
         "TERM:lateral-tool-transfer",
         "TERM:latin-america-and-caribbean-network-information-centre",
@@ -31606,13 +31601,13 @@
         "TERM:lc-load-dylib-addition",
         "TERM:lcm-a-b",
         "TERM:leading-indicator",
-        "TERM:leap-of-faith"
+        "TERM:leap-of-faith",
+        "TERM:leap-second"
       ]
     },
     {
       "chunkId": "0192",
       "entryKeys": [
-        "TERM:leap-second",
         "TERM:learners",
         "TERM:learning-objectives",
         "TERM:learning-program",
@@ -31631,13 +31626,13 @@
         "TERM:legal-non-repudiation",
         "TERM:lempel-ziv-complexity-test",
         "TERM:len",
-        "TERM:len-a"
+        "TERM:len-a",
+        "TERM:level-1"
       ]
     },
     {
       "chunkId": "0193",
       "entryKeys": [
-        "TERM:level-1",
         "TERM:level-2",
         "TERM:level-3",
         "TERM:level-of-assurance",
@@ -31656,13 +31651,13 @@
         "TERM:lightweight-directory-access-protocol-ldap",
         "TERM:lightweight-node",
         "TERM:likelihood",
-        "TERM:likelihood-of-occurrence"
+        "TERM:likelihood-of-occurrence",
+        "TERM:likelihood-ratio-test"
       ]
     },
     {
       "chunkId": "0194",
       "entryKeys": [
-        "TERM:likelihood-ratio-test",
         "TERM:limit-specification",
         "TERM:limited-dataset",
         "TERM:line-conditioning",
@@ -31681,13 +31676,13 @@
         "TERM:linux-and-mac-permissions",
         "TERM:list",
         "TERM:listplanting",
-        "TERM:literacy"
+        "TERM:literacy",
+        "TERM:little-endian"
       ]
     },
     {
       "chunkId": "0195",
       "entryKeys": [
-        "TERM:little-endian",
         "TERM:live-entropy-source",
         "TERM:liveness",
         "TERM:lnk-icon-smuggling",
@@ -31706,13 +31701,13 @@
         "TERM:local-groups",
         "TERM:local-interface",
         "TERM:local-management-device-lmd",
-        "TERM:local-performance-metric"
+        "TERM:local-performance-metric",
+        "TERM:local-registration-authority-lra"
       ]
     },
     {
       "chunkId": "0196",
       "entryKeys": [
-        "TERM:local-registration-authority-lra",
         "TERM:local-remediation-level",
         "TERM:local-storage-discovery",
         "TERM:local-vulnerability-prevalence",
@@ -31731,13 +31726,13 @@
         "TERM:log-management",
         "TERM:log-management-infrastructure",
         "TERM:log-normalization",
-        "TERM:log-parsing"
+        "TERM:log-parsing",
+        "TERM:log-preservation"
       ]
     },
     {
       "chunkId": "0197",
       "entryKeys": [
-        "TERM:log-preservation",
         "TERM:log-reduction",
         "TERM:log-reporting",
         "TERM:log-retention",
@@ -31756,13 +31751,13 @@
         "TERM:login",
         "TERM:login-hook",
         "TERM:login-items",
-        "TERM:logistic-regression"
+        "TERM:logistic-regression",
+        "TERM:logo"
       ]
     },
     {
       "chunkId": "0198",
       "entryKeys": [
-        "TERM:logo",
         "TERM:logon-script-windows",
         "TERM:long-runs-of-ones-test",
         "TERM:long-title",
@@ -31781,13 +31776,13 @@
         "TERM:lsass-memory",
         "TERM:lua",
         "TERM:mac-algorithm",
-        "TERM:mac-chaining-value"
+        "TERM:mac-chaining-value",
+        "TERM:mac-key"
       ]
     },
     {
       "chunkId": "0199",
       "entryKeys": [
-        "TERM:mac-key",
         "TERM:mac-tag",
         "TERM:macdata",
         "TERM:macdatau-or-macdatav",
@@ -31806,13 +31801,13 @@
         "TERM:mactaglen",
         "TERM:mactagv-mactagu",
         "TERM:magnetic-remanence",
-        "TERM:mail-protocols"
+        "TERM:mail-protocols",
+        "TERM:mail-server"
       ]
     },
     {
       "chunkId": "0200",
       "entryKeys": [
-        "TERM:mail-server",
         "TERM:mail-server-administrator",
         "TERM:mail-transfer-agent-mta",
         "TERM:mail-user-agent-mua",
@@ -31831,13 +31826,13 @@
         "TERM:malicious-cyber-activity",
         "TERM:malicious-file",
         "TERM:malicious-image",
-        "TERM:malicious-library"
+        "TERM:malicious-library",
+        "TERM:malicious-link"
       ]
     },
     {
       "chunkId": "0201",
       "entryKeys": [
-        "TERM:malicious-link",
         "TERM:malicious-logic",
         "TERM:malvertising",
         "TERM:malware",
@@ -31856,13 +31851,13 @@
         "TERM:management-stations",
         "TERM:manager",
         "TERM:mandate",
-        "TERM:mandatory-access-control"
+        "TERM:mandatory-access-control",
+        "TERM:mandatory-access-control-mac"
       ]
     },
     {
       "chunkId": "0202",
       "entryKeys": [
-        "TERM:mandatory-access-control-mac",
         "TERM:mandatory-modification-man",
         "TERM:manipulated-variable",
         "TERM:manipulation-detection-code",
@@ -31881,13 +31876,13 @@
         "TERM:marking",
         "TERM:markov-model",
         "TERM:martian",
-        "TERM:masking"
+        "TERM:masking",
+        "TERM:masquerade"
       ]
     },
     {
       "chunkId": "0203",
       "entryKeys": [
-        "TERM:masquerade",
         "TERM:masquerade-account-name",
         "TERM:masquerade-file-type",
         "TERM:masquerade-task-or-service",
@@ -31906,13 +31901,13 @@
         "TERM:maxerrs",
         "TERM:maximum-tolerable-downtime",
         "TERM:mean",
-        "TERM:mean-time-to-detect"
+        "TERM:mean-time-to-detect",
+        "TERM:mean-time-to-recovery"
       ]
     },
     {
       "chunkId": "0204",
       "entryKeys": [
-        "TERM:mean-time-to-recovery",
         "TERM:measured-service",
         "TERM:measurement",
         "TERM:measures",
@@ -31931,13 +31926,13 @@
         "TERM:memory-scavenging",
         "TERM:merchant",
         "TERM:merchant-certificate",
-        "TERM:merchant-certification-authority"
+        "TERM:merchant-certification-authority",
+        "TERM:merkle-tree"
       ]
     },
     {
       "chunkId": "0205",
       "entryKeys": [
-        "TERM:merkle-tree",
         "TERM:mesh",
         "TERM:mesh-encryption",
         "TERM:mesh-pki",
@@ -31956,13 +31951,13 @@
         "TERM:messaging-applications",
         "TERM:meta-data",
         "TERM:metaattribute",
-        "TERM:metacharacter"
+        "TERM:metacharacter",
+        "TERM:metacontrol"
       ]
     },
     {
       "chunkId": "0206",
       "entryKeys": [
-        "TERM:metacontrol",
         "TERM:metadata",
         "TERM:metadata-bound",
         "TERM:metadata-compromised",
@@ -31981,13 +31976,13 @@
         "TERM:mime-object-security-services",
         "TERM:min-a-b",
         "TERM:min-entropy",
-        "TERM:min-x-y"
+        "TERM:min-x-y",
+        "TERM:minimalist-cryptography"
       ]
     },
     {
       "chunkId": "0207",
       "entryKeys": [
-        "TERM:minimalist-cryptography",
         "TERM:minimum-interoperability-specification-for-pki-components",
         "TERM:mining",
         "TERM:minor-application",
@@ -32006,13 +32001,13 @@
         "TERM:mission-critical",
         "TERM:mission-critical-element",
         "TERM:mission-critical-functionality",
-        "TERM:mission-essential"
+        "TERM:mission-essential",
+        "TERM:mission-objective"
       ]
     },
     {
       "chunkId": "0208",
       "entryKeys": [
-        "TERM:mission-objective",
         "TERM:mission-operations-center",
         "TERM:mission-resilience",
         "TERM:misuse",
@@ -32031,13 +32026,13 @@
         "TERM:mobile-device-management-mdm",
         "TERM:mobile-internet-key-exchange-mobike",
         "TERM:mobile-mode",
-        "TERM:mobile-subscriber-integrated-services-digital-network-msisdn"
+        "TERM:mobile-subscriber-integrated-services-digital-network-msisdn",
+        "TERM:mode-of-iteration"
       ]
     },
     {
       "chunkId": "0209",
       "entryKeys": [
-        "TERM:mode-of-iteration",
         "TERM:mode-of-operation",
         "TERM:mode-of-operation-mode",
         "TERM:model",
@@ -32056,13 +32051,13 @@
         "TERM:modify-cloud-compute-infrastructure",
         "TERM:modify-cloud-resource-hierarchy",
         "TERM:modify-or-spoof-tool-ui",
-        "TERM:modify-registry"
+        "TERM:modify-registry",
+        "TERM:modify-system-image"
       ]
     },
     {
       "chunkId": "0210",
       "entryKeys": [
-        "TERM:modify-system-image",
         "TERM:modular-contracting",
         "TERM:module",
         "TERM:modulus",
@@ -32081,13 +32076,13 @@
         "TERM:mud-capable",
         "TERM:multi-exit-discriminator-med",
         "TERM:multi-factor-authentication",
-        "TERM:multi-factor-authentication-interception"
+        "TERM:multi-factor-authentication-interception",
+        "TERM:multi-factor-authentication-request-generation"
       ]
     },
     {
       "chunkId": "0211",
       "entryKeys": [
-        "TERM:multi-factor-authentication-request-generation",
         "TERM:multi-hop-proxy",
         "TERM:multi-level-cross-domain-solution",
         "TERM:multi-level-device",
@@ -32106,13 +32101,13 @@
         "TERM:multimodal-models",
         "TERM:multipath",
         "TERM:multiple-center-group",
-        "TERM:multiple-security-levels-msl"
+        "TERM:multiple-security-levels-msl",
+        "TERM:multipurpose-internet-mail-extensions"
       ]
     },
     {
       "chunkId": "0212",
       "entryKeys": [
-        "TERM:multipurpose-internet-mail-extensions",
         "TERM:multipurpose-internet-mail-extensions-mime",
         "TERM:must",
         "TERM:mutual-authentication",
@@ -32131,13 +32126,13 @@
         "TERM:national-checklist-program-repository",
         "TERM:national-computer-security-center",
         "TERM:national-comsec-incident-reporting-system-ncirs",
-        "TERM:national-information-assurance-partnership"
+        "TERM:national-information-assurance-partnership",
+        "TERM:national-information-assurance-partnership-niap"
       ]
     },
     {
       "chunkId": "0213",
       "entryKeys": [
-        "TERM:national-information-assurance-partnership-niap",
         "TERM:national-information-infrastructure-nii",
         "TERM:national-institute-of-standards-and-technology",
         "TERM:national-reliability-and-interoperability-council",
@@ -32156,13 +32151,13 @@
         "TERM:navigation",
         "TERM:nbits",
         "TERM:near-field-communication-nfc",
-        "TERM:need-to-know"
+        "TERM:need-to-know",
+        "TERM:need-to-know-need-to-know"
       ]
     },
     {
       "chunkId": "0214",
       "entryKeys": [
-        "TERM:need-to-know-need-to-know",
         "TERM:needs-assessment",
         "TERM:negative-risk",
         "TERM:negligible",
@@ -32181,13 +32176,13 @@
         "TERM:network-denial-of-service",
         "TERM:network-device-authentication",
         "TERM:network-device-cli",
-        "TERM:network-device-configuration-dump"
+        "TERM:network-device-configuration-dump",
+        "TERM:network-device-firewall"
       ]
     },
     {
       "chunkId": "0215",
       "entryKeys": [
-        "TERM:network-device-firewall",
         "TERM:network-devices",
         "TERM:network-discovery",
         "TERM:network-extension",
@@ -32206,13 +32201,13 @@
         "TERM:network-mapping",
         "TERM:network-onboarding-component",
         "TERM:network-provider-dll",
-        "TERM:network-resilience"
+        "TERM:network-resilience",
+        "TERM:network-security-appliances"
       ]
     },
     {
       "chunkId": "0216",
       "entryKeys": [
-        "TERM:network-security-appliances",
         "TERM:network-service-discovery",
         "TERM:network-services",
         "TERM:network-share-connection-removal",
@@ -32231,13 +32226,13 @@
         "TERM:nist-approved",
         "TERM:nist-checklist-repository",
         "TERM:nist-special-publication",
-        "TERM:nist-standard"
+        "TERM:nist-standard",
+        "TERM:nist-standards"
       ]
     },
     {
       "chunkId": "0217",
       "entryKeys": [
-        "TERM:nist-standards",
         "TERM:nlen",
         "TERM:no-lone-zone",
         "TERM:no-lone-zone-nlz",
@@ -32256,13 +32251,13 @@
         "TERM:non-automated-checklist",
         "TERM:non-custodial",
         "TERM:non-deterministic-noise",
-        "TERM:non-deterministic-random-bit-generator-nrbg"
+        "TERM:non-deterministic-random-bit-generator-nrbg",
+        "TERM:non-disclosure-agreement"
       ]
     },
     {
       "chunkId": "0218",
       "entryKeys": [
-        "TERM:non-disclosure-agreement",
         "TERM:non-discretionary-access-control",
         "TERM:non-fungible-token",
         "TERM:non-ignorable-bias",
@@ -32281,13 +32276,13 @@
         "TERM:non-standard-port",
         "TERM:non-technical-supporting-capability",
         "TERM:non-technical-supporting-capability-core-baseline",
-        "TERM:non-technology-based-input-product"
+        "TERM:non-technology-based-input-product",
+        "TERM:non-vendor-directed"
       ]
     },
     {
       "chunkId": "0219",
       "entryKeys": [
-        "TERM:non-vendor-directed",
         "TERM:non-volatile-data",
         "TERM:non-volatile-media",
         "TERM:nonce",
@@ -32306,13 +32301,13 @@
         "TERM:notarization",
         "TERM:notary",
         "TERM:nsa-approved-commercial-solution",
-        "TERM:nsa-approved-cryptography"
+        "TERM:nsa-approved-cryptography",
+        "TERM:nsa-approved-product"
       ]
     },
     {
       "chunkId": "0220",
       "entryKeys": [
-        "TERM:nsa-approved-product",
         "TERM:nss-baselines",
         "TERM:ntds",
         "TERM:ntfs-file-attributes",
@@ -32331,13 +32326,13 @@
         "TERM:observable",
         "TERM:observational-data",
         "TERM:obstruction",
-        "TERM:obtain-capabilities"
+        "TERM:obtain-capabilities",
+        "TERM:octet"
       ]
     },
     {
       "chunkId": "0221",
       "entryKeys": [
-        "TERM:octet",
         "TERM:octet-length",
         "TERM:octet-string",
         "TERM:odbcconf",
@@ -32356,13 +32351,13 @@
         "TERM:ohnosecond",
         "TERM:oj",
         "TERM:olir-catalog",
-        "TERM:olir-developer"
+        "TERM:olir-developer",
+        "TERM:olir-program"
       ]
     },
     {
       "chunkId": "0222",
       "entryKeys": [
-        "TERM:olir-program",
         "TERM:olir-template",
         "TERM:on",
         "TERM:on-access-scanning",
@@ -32381,13 +32376,13 @@
         "TERM:one-time-pad",
         "TERM:one-time-pad-otp",
         "TERM:one-time-password-one-time-password",
-        "TERM:one-time-tape-ott"
+        "TERM:one-time-tape-ott",
+        "TERM:one-to-one"
       ]
     },
     {
       "chunkId": "0223",
       "entryKeys": [
-        "TERM:one-to-one",
         "TERM:one-way-communication",
         "TERM:one-way-encryption",
         "TERM:one-way-function",
@@ -32406,13 +32401,13 @@
         "TERM:open-storage",
         "TERM:open-system",
         "TERM:open-systems-interconnection-osi-reference-model",
-        "TERM:open-vulnerability-and-assessment-language-oval"
+        "TERM:open-vulnerability-and-assessment-language-oval",
+        "TERM:operate-maintain"
       ]
     },
     {
       "chunkId": "0224",
       "entryKeys": [
-        "TERM:operate-maintain",
         "TERM:operating-system",
         "TERM:operating-system-os-fingerprinting",
         "TERM:operating-system-virtualization",
@@ -32431,13 +32426,13 @@
         "TERM:operational-storage",
         "TERM:operational-technology",
         "TERM:operational-test",
-        "TERM:operational-waiver"
+        "TERM:operational-waiver",
+        "TERM:operationalization"
       ]
     },
     {
       "chunkId": "0225",
       "entryKeys": [
-        "TERM:operationalization",
         "TERM:operations-code-opcode",
         "TERM:operations-security",
         "TERM:operations-security-opsec",
@@ -32456,13 +32451,13 @@
         "TERM:organization-defined-control-parameter",
         "TERM:organization-defined-parameter",
         "TERM:organizational-certificate",
-        "TERM:organizational-information-security-continuous-monitoring"
+        "TERM:organizational-information-security-continuous-monitoring",
+        "TERM:organizational-registration-authority"
       ]
     },
     {
       "chunkId": "0226",
       "entryKeys": [
-        "TERM:organizational-registration-authority",
         "TERM:organizational-registration-authority-ora",
         "TERM:organizational-user",
         "TERM:organizationally-tailored-control-baseline",
@@ -32481,13 +32476,13 @@
         "TERM:out-of-band",
         "TERM:out-of-distribution",
         "TERM:outage",
-        "TERM:outcome"
+        "TERM:outcome",
+        "TERM:outcome-specific-utility-metrics"
       ]
     },
     {
       "chunkId": "0227",
       "entryKeys": [
-        "TERM:outcome-specific-utility-metrics",
         "TERM:outliers",
         "TERM:outlook-forms",
         "TERM:outlook-home-page",
@@ -32506,13 +32501,13 @@
         "TERM:overfitting",
         "TERM:overlay",
         "TERM:overlay-network",
-        "TERM:overload"
+        "TERM:overload",
+        "TERM:oversight-development"
       ]
     },
     {
       "chunkId": "0228",
       "entryKeys": [
-        "TERM:oversight-development",
         "TERM:overt-channel",
         "TERM:overt-testing",
         "TERM:overwrite",
@@ -32531,13 +32526,13 @@
         "TERM:package-manifest",
         "TERM:packet",
         "TERM:packet-filter",
-        "TERM:packet-monkey"
+        "TERM:packet-monkey",
+        "TERM:packet-sniffer"
       ]
     },
     {
       "chunkId": "0229",
       "entryKeys": [
-        "TERM:packet-sniffer",
         "TERM:packet-sniffer-and-passive-wiretapping",
         "TERM:padding",
         "TERM:page-check",
@@ -32556,13 +32551,13 @@
         "TERM:partitioned-security-mode",
         "TERM:partitioning",
         "TERM:party",
-        "TERM:pass-the-hash"
+        "TERM:pass-the-hash",
+        "TERM:pass-the-ticket"
       ]
     },
     {
       "chunkId": "0230",
       "entryKeys": [
-        "TERM:pass-the-ticket",
         "TERM:passive-attack",
         "TERM:passive-security-testing",
         "TERM:passive-tag",
@@ -32581,13 +32576,13 @@
         "TERM:password-spraying",
         "TERM:passwordless",
         "TERM:patch",
-        "TERM:patch-level"
+        "TERM:patch-level",
+        "TERM:patch-management"
       ]
     },
     {
       "chunkId": "0231",
       "entryKeys": [
-        "TERM:patch-management",
         "TERM:patch-set",
         "TERM:patch-system-image",
         "TERM:patching",
@@ -32606,13 +32601,13 @@
         "TERM:pci-dss",
         "TERM:pebibyte",
         "TERM:pedigree",
-        "TERM:peer-entity-authentication"
+        "TERM:peer-entity-authentication",
+        "TERM:peer-entity-authentication-service"
       ]
     },
     {
       "chunkId": "0232",
       "entryKeys": [
-        "TERM:peer-entity-authentication-service",
         "TERM:peers",
         "TERM:pen-test",
         "TERM:pending-transaction-pool",
@@ -32631,13 +32626,13 @@
         "TERM:period-of-protection",
         "TERM:periodic-template-test",
         "TERM:periods-processing",
-        "TERM:peripheral-device-discovery"
+        "TERM:peripheral-device-discovery",
+        "TERM:perishable-data"
       ]
     },
     {
       "chunkId": "0233",
       "entryKeys": [
-        "TERM:perishable-data",
         "TERM:permalock",
         "TERM:permanent-connection",
         "TERM:permanent-storage",
@@ -32656,13 +32651,13 @@
         "TERM:personal-firewall",
         "TERM:personal-firewall-appliance",
         "TERM:personal-identification-number",
-        "TERM:personal-identification-number-pin"
+        "TERM:personal-identification-number-pin",
+        "TERM:personal-identifier"
       ]
     },
     {
       "chunkId": "0234",
       "entryKeys": [
-        "TERM:personal-identifier",
         "TERM:personal-identifying-information-personally-identifiable-information",
         "TERM:personal-identity-verification-piv",
         "TERM:personal-identity-verification-piv-authorization",
@@ -32681,13 +32676,13 @@
         "TERM:personnel-authentication-system-string",
         "TERM:personnel-registration-manager",
         "TERM:personnel-security",
-        "TERM:personnel-security-compromise"
+        "TERM:personnel-security-compromise",
+        "TERM:perturbation-based-methods"
       ]
     },
     {
       "chunkId": "0235",
       "entryKeys": [
-        "TERM:perturbation-based-methods",
         "TERM:pgp-trademark",
         "TERM:phaas",
         "TERM:pharming",
@@ -32706,13 +32701,13 @@
         "TERM:physical-non-deterministic-random-bit-generator",
         "TERM:physical-partitioning",
         "TERM:physical-safeguards",
-        "TERM:physical-security"
+        "TERM:physical-security",
+        "TERM:physical-security-compromise"
       ]
     },
     {
       "chunkId": "0236",
       "entryKeys": [
-        "TERM:physical-security-compromise",
         "TERM:physically-protected-space-pps",
         "TERM:piconet",
         "TERM:piggyback-attack",
@@ -32731,13 +32726,13 @@
         "TERM:pj",
         "TERM:pkcs-10",
         "TERM:pkcs-11",
-        "TERM:pkcs-5"
+        "TERM:pkcs-5",
+        "TERM:pkcs-7"
       ]
     },
     {
       "chunkId": "0237",
       "entryKeys": [
-        "TERM:pkcs-7",
         "TERM:pki-card-authentication-pki-cak",
         "TERM:pki-piv-authentication-key-pki-auth",
         "TERM:pki-piv-authentication-pki-auth",
@@ -32756,13 +32751,13 @@
         "TERM:platform-trust",
         "TERM:plen",
         "TERM:plist-file-modification",
-        "TERM:pluggable-authentication-modules"
+        "TERM:pluggable-authentication-modules",
+        "TERM:pn"
       ]
     },
     {
       "chunkId": "0238",
       "entryKeys": [
-        "TERM:pn",
         "TERM:pnt-data",
         "TERM:pnt-solution",
         "TERM:pnt-source",
@@ -32781,13 +32776,13 @@
         "TERM:policy-authority",
         "TERM:policy-based-access-control-pbac",
         "TERM:policy-certification-authority-internet-pca",
-        "TERM:policy-creation-authority-missi-pca"
+        "TERM:policy-creation-authority-missi-pca",
+        "TERM:policy-decision-point"
       ]
     },
     {
       "chunkId": "0239",
       "entryKeys": [
-        "TERM:policy-decision-point",
         "TERM:policy-enforcement-point",
         "TERM:policy-information-point",
         "TERM:policy-management-authority",
@@ -32806,13 +32801,13 @@
         "TERM:portable-executable-injection",
         "TERM:portable-storage-device",
         "TERM:portal-vpn",
-        "TERM:positioning"
+        "TERM:positioning",
+        "TERM:positive-authorization"
       ]
     },
     {
       "chunkId": "0240",
       "entryKeys": [
-        "TERM:positive-authorization",
         "TERM:positive-control-material",
         "TERM:post-market-capability",
         "TERM:post-office-protocol-pop",
@@ -32831,13 +32826,13 @@
         "TERM:pre-training",
         "TERM:preauthorization",
         "TERM:precedence",
-        "TERM:precision"
+        "TERM:precision",
+        "TERM:precursor"
       ]
     },
     {
       "chunkId": "0241",
       "entryKeys": [
-        "TERM:precursor",
         "TERM:predictability",
         "TERM:predictor",
         "TERM:predisposing-condition",
@@ -32856,13 +32851,13 @@
         "TERM:prevention",
         "TERM:prf-s-x",
         "TERM:primary-account-number",
-        "TERM:primary-facility"
+        "TERM:primary-facility",
+        "TERM:primary-services-node-prsn"
       ]
     },
     {
       "chunkId": "0242",
       "entryKeys": [
-        "TERM:primary-services-node-prsn",
         "TERM:primary-system",
         "TERM:prime-number",
         "TERM:prime-number-generation-seed",
@@ -32881,13 +32876,13 @@
         "TERM:privacy-breach",
         "TERM:privacy-budget",
         "TERM:privacy-capability",
-        "TERM:privacy-compromise"
+        "TERM:privacy-compromise",
+        "TERM:privacy-continuous-monitoring-program"
       ]
     },
     {
       "chunkId": "0243",
       "entryKeys": [
-        "TERM:privacy-continuous-monitoring-program",
         "TERM:privacy-control",
         "TERM:privacy-control-assessment",
         "TERM:privacy-control-assessor",
@@ -32906,13 +32901,13 @@
         "TERM:privacy-preserving-data-mining",
         "TERM:privacy-preserving-data-publishing",
         "TERM:privacy-program-plan",
-        "TERM:privacy-requirement"
+        "TERM:privacy-requirement",
+        "TERM:privacy-requirements"
       ]
     },
     {
       "chunkId": "0244",
       "entryKeys": [
-        "TERM:privacy-requirements",
         "TERM:privacy-risk",
         "TERM:privacy-risk-assessment",
         "TERM:privacy-risk-assessment-methodology-pram",
@@ -32931,13 +32926,13 @@
         "TERM:privileged-access-account-holder",
         "TERM:privileged-account",
         "TERM:privileged-command",
-        "TERM:privileged-network-account"
+        "TERM:privileged-network-account",
+        "TERM:privileged-process"
       ]
     },
     {
       "chunkId": "0245",
       "entryKeys": [
-        "TERM:privileged-process",
         "TERM:privileged-user",
         "TERM:privkeyu-privkeyv",
         "TERM:proactive-cyber-defense",
@@ -32956,13 +32951,13 @@
         "TERM:process",
         "TERM:process-argument-spoofing",
         "TERM:process-assistant",
-        "TERM:process-controller"
+        "TERM:process-controller",
+        "TERM:process-discovery"
       ]
     },
     {
       "chunkId": "0246",
       "entryKeys": [
-        "TERM:process-discovery",
         "TERM:process-doppelg-nging",
         "TERM:process-hijacking",
         "TERM:process-hollowing",
@@ -32981,13 +32976,13 @@
         "TERM:product-source-node-psn",
         "TERM:profile",
         "TERM:profile-augmentations",
-        "TERM:profile-features"
+        "TERM:profile-features",
+        "TERM:profile-requirements"
       ]
     },
     {
       "chunkId": "0247",
       "entryKeys": [
-        "TERM:profile-requirements",
         "TERM:profiling",
         "TERM:program-manager",
         "TERM:program-metrics",
@@ -33006,13 +33001,13 @@
         "TERM:property-value",
         "TERM:proprietary",
         "TERM:proprietary-information-propin",
-        "TERM:proscribed-information"
+        "TERM:proscribed-information",
+        "TERM:prose-checklist"
       ]
     },
     {
       "chunkId": "0248",
       "entryKeys": [
-        "TERM:prose-checklist",
         "TERM:protect-csf-function",
         "TERM:protect-defend",
         "TERM:protect-p-function",
@@ -33031,13 +33026,13 @@
         "TERM:protective-packaging",
         "TERM:protective-technologies",
         "TERM:protocol",
-        "TERM:protocol-analyzer"
+        "TERM:protocol-analyzer",
+        "TERM:protocol-control-information"
       ]
     },
     {
       "chunkId": "0249",
       "entryKeys": [
-        "TERM:protocol-control-information",
         "TERM:protocol-data-unit",
         "TERM:protocol-or-service-impersonation",
         "TERM:protocol-suite",
@@ -33056,13 +33051,13 @@
         "TERM:pseudonym",
         "TERM:pseudonymization",
         "TERM:pseudorandom",
-        "TERM:pseudorandom-function-family"
+        "TERM:pseudorandom-function-family",
+        "TERM:pseudorandom-function-prf"
       ]
     },
     {
       "chunkId": "0250",
       "entryKeys": [
-        "TERM:pseudorandom-function-prf",
         "TERM:pseudorandom-key",
         "TERM:pseudorandom-number-generator",
         "TERM:ptrace-system-calls",
@@ -33081,13 +33076,13 @@
         "TERM:public-key-cryptography-pkc",
         "TERM:public-key-cryptography-standards",
         "TERM:public-key-enabling-pke",
-        "TERM:public-key-encryption-scheme"
+        "TERM:public-key-encryption-scheme",
+        "TERM:public-key-forward-secrecy"
       ]
     },
     {
       "chunkId": "0251",
       "entryKeys": [
-        "TERM:public-key-forward-secrecy",
         "TERM:public-key-infrastructure",
         "TERM:public-key-infrastructure-pki",
         "TERM:public-key-kerberos",
@@ -33106,13 +33101,13 @@
         "TERM:python-startup-hooks",
         "TERM:q",
         "TERM:qemu-quick-emulator",
-        "TERM:qinv"
+        "TERM:qinv",
+        "TERM:quadrant"
       ]
     },
     {
       "chunkId": "0252",
       "entryKeys": [
-        "TERM:quadrant",
         "TERM:quadratic-twist",
         "TERM:qualification",
         "TERM:qualified-certificate",
@@ -33131,13 +33126,13 @@
         "TERM:quarantining",
         "TERM:quasi",
         "TERM:quasi-identifier",
-        "TERM:query-access"
+        "TERM:query-access",
+        "TERM:query-public-ai-services"
       ]
     },
     {
       "chunkId": "0253",
       "entryKeys": [
-        "TERM:query-public-ai-services",
         "TERM:query-registry",
         "TERM:question",
         "TERM:questionnaire",
@@ -33156,13 +33151,13 @@
         "TERM:random-excursion-variant-test",
         "TERM:random-field",
         "TERM:random-nonce",
-        "TERM:random-number"
+        "TERM:random-number",
+        "TERM:random-number-generator"
       ]
     },
     {
       "chunkId": "0254",
       "entryKeys": [
-        "TERM:random-number-generator",
         "TERM:random-number-generator-rng",
         "TERM:random-sampling",
         "TERM:random-value",
@@ -33181,13 +33176,13 @@
         "TERM:ratio-scale",
         "TERM:rationale",
         "TERM:raw-data",
-        "TERM:rb"
+        "TERM:rb",
+        "TERM:rbg-seed"
       ]
     },
     {
       "chunkId": "0255",
       "entryKeys": [
-        "TERM:rbg-seed",
         "TERM:rc-scripts",
         "TERM:rc2-rc4-rc6",
         "TERM:rdp-hijacking",
@@ -33206,13 +33201,13 @@
         "TERM:real-mode",
         "TERM:real-time",
         "TERM:real-time-reaction",
-        "TERM:realm"
+        "TERM:realm",
+        "TERM:reauthentication"
       ]
     },
     {
       "chunkId": "0256",
       "entryKeys": [
-        "TERM:reauthentication",
         "TERM:receiver",
         "TERM:receiver-operating-characteristic",
         "TERM:recipient",
@@ -33231,13 +33226,13 @@
         "TERM:red-black-concept",
         "TERM:red-black-separation",
         "TERM:red-book",
-        "TERM:red-data"
+        "TERM:red-data",
+        "TERM:red-equipment"
       ]
     },
     {
       "chunkId": "0257",
       "entryKeys": [
-        "TERM:red-equipment",
         "TERM:red-key",
         "TERM:red-line",
         "TERM:red-optical-fiber-line",
@@ -33256,13 +33251,13 @@
         "TERM:reference-document",
         "TERM:reference-document-element",
         "TERM:reference-monitor",
-        "TERM:reference-monitor-concept"
+        "TERM:reference-monitor-concept",
+        "TERM:reference-validation-mechanism"
       ]
     },
     {
       "chunkId": "0258",
       "entryKeys": [
-        "TERM:reference-validation-mechanism",
         "TERM:reference-version",
         "TERM:reflection-amplification",
         "TERM:reflection-attack",
@@ -33281,13 +33276,13 @@
         "TERM:regrade",
         "TERM:regrader",
         "TERM:regression",
-        "TERM:regsvcs-regasm"
+        "TERM:regsvcs-regasm",
+        "TERM:regsvr32"
       ]
     },
     {
       "chunkId": "0259",
       "entryKeys": [
-        "TERM:regsvr32",
         "TERM:regular-expression",
         "TERM:reinforcement-learning",
         "TERM:rekey",
@@ -33306,13 +33301,13 @@
         "TERM:reliability",
         "TERM:reliable-human-review",
         "TERM:relocate-malware",
-        "TERM:relying-party"
+        "TERM:relying-party",
+        "TERM:remanence"
       ]
     },
     {
       "chunkId": "0260",
       "entryKeys": [
-        "TERM:remanence",
         "TERM:remediation",
         "TERM:remote-access",
         "TERM:remote-access-hardware",
@@ -33331,13 +33326,13 @@
         "TERM:remote-services",
         "TERM:remote-system-discovery",
         "TERM:remote-terminal-unit",
-        "TERM:remoting"
+        "TERM:remoting",
+        "TERM:removable-media"
       ]
     },
     {
       "chunkId": "0261",
       "entryKeys": [
-        "TERM:removable-media",
         "TERM:removable-media-device",
         "TERM:removable-user-identity-module-r-uim",
         "TERM:rename-legitimate-utilities",
@@ -33356,13 +33351,13 @@
         "TERM:reproducibility",
         "TERM:repudiation",
         "TERM:request-for-comment",
-        "TERM:request-for-comments"
+        "TERM:request-for-comments",
+        "TERM:requester"
       ]
     },
     {
       "chunkId": "0262",
       "entryKeys": [
-        "TERM:requester",
         "TERM:required",
         "TERM:requirement",
         "TERM:requirements-engineering",
@@ -33381,13 +33376,13 @@
         "TERM:resource-control",
         "TERM:resource-forking",
         "TERM:resource-hijacking",
-        "TERM:resource-pooling"
+        "TERM:resource-pooling",
+        "TERM:resource-public-key-infrastructure"
       ]
     },
     {
       "chunkId": "0263",
       "entryKeys": [
-        "TERM:resource-public-key-infrastructure",
         "TERM:respond-csf-function",
         "TERM:response",
         "TERM:responsibility-to-provide",
@@ -33406,13 +33401,13 @@
         "TERM:review-status",
         "TERM:review-techniques",
         "TERM:revocation",
-        "TERM:revocation-date"
+        "TERM:revocation-date",
+        "TERM:revoke"
       ]
     },
     {
       "chunkId": "0264",
       "entryKeys": [
-        "TERM:revoke",
         "TERM:revoked-key-notification-rkn",
         "TERM:reward-system",
         "TERM:rf-subsystem",
@@ -33431,13 +33426,13 @@
         "TERM:risk-assessor",
         "TERM:risk-assumption",
         "TERM:risk-avoidance",
-        "TERM:risk-based-data-management"
+        "TERM:risk-based-data-management",
+        "TERM:risk-criteria"
       ]
     },
     {
       "chunkId": "0265",
       "entryKeys": [
-        "TERM:risk-criteria",
         "TERM:risk-detail-report",
         "TERM:risk-elevation",
         "TERM:risk-escalation",
@@ -33456,13 +33451,13 @@
         "TERM:risk-mitigation",
         "TERM:risk-model",
         "TERM:risk-optimization",
-        "TERM:risk-profile"
+        "TERM:risk-profile",
+        "TERM:risk-register"
       ]
     },
     {
       "chunkId": "0266",
       "entryKeys": [
-        "TERM:risk-register",
         "TERM:risk-reserve",
         "TERM:risk-response",
         "TERM:risk-response-measure",
@@ -33481,13 +33476,13 @@
         "TERM:role-based-access-control",
         "TERM:role-based-access-control-rbac",
         "TERM:role-based-authentication",
-        "TERM:role-based-training"
+        "TERM:role-based-training",
+        "TERM:role-certificate"
       ]
     },
     {
       "chunkId": "0267",
       "entryKeys": [
-        "TERM:role-certificate",
         "TERM:rollup",
         "TERM:rommonkit",
         "TERM:root-cause-analysis",
@@ -33506,13 +33501,13 @@
         "TERM:route-origin-attestation",
         "TERM:router",
         "TERM:rowhammer-attack",
-        "TERM:rp-subscriber-account"
+        "TERM:rp-subscriber-account",
+        "TERM:rpki-validation-cache"
       ]
     },
     {
       "chunkId": "0268",
       "entryKeys": [
-        "TERM:rpki-validation-cache",
         "TERM:rule",
         "TERM:rule-based-event-correlation",
         "TERM:rule-based-security-policy",
@@ -33531,13 +33526,13 @@
         "TERM:rv-length-indicator",
         "TERM:s",
         "TERM:s-box",
-        "TERM:s-field"
+        "TERM:s-field",
+        "TERM:s2"
       ]
     },
     {
       "chunkId": "0269",
       "entryKeys": [
-        "TERM:s2",
         "TERM:safe-harbor",
         "TERM:safe-mode-boot",
         "TERM:safeguards",
@@ -33556,13 +33551,13 @@
         "TERM:sanitize",
         "TERM:satellite",
         "TERM:satisfaction",
-        "TERM:sc-37"
+        "TERM:sc-37",
+        "TERM:scada-server"
       ]
     },
     {
       "chunkId": "0270",
       "entryKeys": [
-        "TERM:scada-server",
         "TERM:scalability",
         "TERM:scalability-testing",
         "TERM:scan-databases",
@@ -33581,13 +33576,13 @@
         "TERM:scap-source-data-stream-collection",
         "TERM:scap-use-case",
         "TERM:scareware",
-        "TERM:scatternet"
+        "TERM:scatternet",
+        "TERM:scavenging"
       ]
     },
     {
       "chunkId": "0271",
       "entryKeys": [
-        "TERM:scavenging",
         "TERM:scenario",
         "TERM:scenario-test",
         "TERM:scheduled-data-transfer",
@@ -33606,13 +33601,13 @@
         "TERM:scripting-language",
         "TERM:seal",
         "TERM:seal-of-approval",
-        "TERM:search-closed-sources"
+        "TERM:search-closed-sources",
+        "TERM:search-engines"
       ]
     },
     {
       "chunkId": "0272",
       "entryKeys": [
-        "TERM:search-engines",
         "TERM:search-open-technical-databases",
         "TERM:search-open-websites-domains",
         "TERM:search-threat-vendor-data",
@@ -33631,13 +33626,13 @@
         "TERM:secret-keying-material",
         "TERM:secret-seed",
         "TERM:sector",
-        "TERM:secure"
+        "TERM:secure",
+        "TERM:secure-bgp"
       ]
     },
     {
       "chunkId": "0273",
       "entryKeys": [
-        "TERM:secure-bgp",
         "TERM:secure-channel",
         "TERM:secure-communication-protocol",
         "TERM:secure-communications",
@@ -33656,13 +33651,13 @@
         "TERM:secure-multicast",
         "TERM:secure-multipurpose-internet-mail-extensions-s-mime",
         "TERM:secure-shell-trademark-ssh-trademark",
-        "TERM:secure-sockets-layer"
+        "TERM:secure-sockets-layer",
+        "TERM:secure-sockets-layer-ssl"
       ]
     },
     {
       "chunkId": "0274",
       "entryKeys": [
-        "TERM:secure-sockets-layer-ssl",
         "TERM:secure-state",
         "TERM:secure-transport",
         "TERM:securely-provision",
@@ -33681,13 +33676,13 @@
         "TERM:security-association-identifier",
         "TERM:security-association-sa",
         "TERM:security-assurance",
-        "TERM:security-attribute"
+        "TERM:security-attribute",
+        "TERM:security-audit"
       ]
     },
     {
       "chunkId": "0275",
       "entryKeys": [
-        "TERM:security-audit",
         "TERM:security-audit-trail",
         "TERM:security-auditor",
         "TERM:security-authorization",
@@ -33706,13 +33701,13 @@
         "TERM:security-clearance",
         "TERM:security-compromise",
         "TERM:security-concept-of-operations-security-conop",
-        "TERM:security-configuration-management-seccm"
+        "TERM:security-configuration-management-seccm",
+        "TERM:security-content-automation-protocol-scap"
       ]
     },
     {
       "chunkId": "0276",
       "entryKeys": [
-        "TERM:security-content-automation-protocol-scap",
         "TERM:security-control",
         "TERM:security-control-and-privacy-control",
         "TERM:security-control-assessment",
@@ -33731,13 +33726,13 @@
         "TERM:security-engineering",
         "TERM:security-environment",
         "TERM:security-event",
-        "TERM:security-event-management-software"
+        "TERM:security-event-management-software",
+        "TERM:security-executive-agent"
       ]
     },
     {
       "chunkId": "0277",
       "entryKeys": [
-        "TERM:security-executive-agent",
         "TERM:security-fault-analysis",
         "TERM:security-fault-analysis-sfa",
         "TERM:security-fault-injection-test",
@@ -33756,13 +33751,13 @@
         "TERM:security-intrusion",
         "TERM:security-kernel",
         "TERM:security-label",
-        "TERM:security-level"
+        "TERM:security-level",
+        "TERM:security-level-field"
       ]
     },
     {
       "chunkId": "0278",
       "entryKeys": [
-        "TERM:security-level-field",
         "TERM:security-life-of-data",
         "TERM:security-management-dashboard",
         "TERM:security-management-infrastructure",
@@ -33781,13 +33776,13 @@
         "TERM:security-policy-filter",
         "TERM:security-posture",
         "TERM:security-program-management",
-        "TERM:security-program-plan"
+        "TERM:security-program-plan",
+        "TERM:security-properties"
       ]
     },
     {
       "chunkId": "0279",
       "entryKeys": [
-        "TERM:security-properties",
         "TERM:security-protocol",
         "TERM:security-protocol-3",
         "TERM:security-protocol-4",
@@ -33806,13 +33801,13 @@
         "TERM:security-service",
         "TERM:security-situation",
         "TERM:security-software-discovery",
-        "TERM:security-solution"
+        "TERM:security-solution",
+        "TERM:security-specification"
       ]
     },
     {
       "chunkId": "0280",
       "entryKeys": [
-        "TERM:security-specification",
         "TERM:security-status",
         "TERM:security-strength",
         "TERM:security-support-provider",
@@ -33831,13 +33826,13 @@
         "TERM:select-v-a-b",
         "TERM:selection-operation",
         "TERM:selection-statement",
-        "TERM:selective-exclusion"
+        "TERM:selective-exclusion",
+        "TERM:selective-field-confidentiality"
       ]
     },
     {
       "chunkId": "0281",
       "entryKeys": [
-        "TERM:selective-field-confidentiality",
         "TERM:selective-field-integrity",
         "TERM:self-dual-key",
         "TERM:self-encrypting-devices-self-encrypting-drives-sed",
@@ -33856,13 +33851,13 @@
         "TERM:semi-supervised-learning",
         "TERM:semiblock",
         "TERM:semiblock-string",
-        "TERM:semiformal"
+        "TERM:semiformal",
+        "TERM:sender"
       ]
     },
     {
       "chunkId": "0282",
       "entryKeys": [
-        "TERM:sender",
         "TERM:senior-accountable-official-for-risk-management",
         "TERM:senior-agency-information-security-officer-saiso",
         "TERM:senior-agency-official-for-privacy",
@@ -33881,13 +33876,13 @@
         "TERM:sentences-formal",
         "TERM:seo-poisoning",
         "TERM:separation-of-concerns",
-        "TERM:separation-of-duties"
+        "TERM:separation-of-duties",
+        "TERM:separation-of-duty-sod"
       ]
     },
     {
       "chunkId": "0283",
       "entryKeys": [
-        "TERM:separation-of-duty-sod",
         "TERM:sequence",
         "TERM:serial-test",
         "TERM:serpent",
@@ -33906,13 +33901,13 @@
         "TERM:service-level-agreement-sla",
         "TERM:service-oriented-architecture-soa",
         "TERM:service-provider",
-        "TERM:service-stop"
+        "TERM:service-stop",
+        "TERM:services-file-permissions-weakness"
       ]
     },
     {
       "chunkId": "0284",
       "entryKeys": [
-        "TERM:services-file-permissions-weakness",
         "TERM:services-registry-permissions-weakness",
         "TERM:session",
         "TERM:session-key",
@@ -33931,13 +33926,13 @@
         "TERM:sharding",
         "TERM:shared-control",
         "TERM:shared-identity",
-        "TERM:shared-modules"
+        "TERM:shared-modules",
+        "TERM:shared-secret"
       ]
     },
     {
       "chunkId": "0285",
       "entryKeys": [
-        "TERM:shared-secret",
         "TERM:shared-secret-key",
         "TERM:sharepoint",
         "TERM:shell-history",
@@ -33956,13 +33951,13 @@
         "TERM:side-channel-attack",
         "TERM:sidechain",
         "TERM:sig",
-        "TERM:sign"
+        "TERM:sign",
+        "TERM:signal-analysis"
       ]
     },
     {
       "chunkId": "0286",
       "entryKeys": [
-        "TERM:signal-analysis",
         "TERM:signal-intelligence",
         "TERM:signal-security",
         "TERM:signaling-rate",
@@ -33981,13 +33976,13 @@
         "TERM:signing-key",
         "TERM:silver-ticket",
         "TERM:similarity",
-        "TERM:similarity-digest"
+        "TERM:similarity-digest",
+        "TERM:similarity-function"
       ]
     },
     {
       "chunkId": "0287",
       "entryKeys": [
-        "TERM:similarity-function",
         "TERM:simple-authentication",
         "TERM:simple-authentication-and-security-layer",
         "TERM:simple-certificate-enrollment-protocol-scep",
@@ -34006,13 +34001,13 @@
         "TERM:singular-identity",
         "TERM:singulation",
         "TERM:sip-and-trust-provider-hijacking",
-        "TERM:site"
+        "TERM:site",
+        "TERM:situation"
       ]
     },
     {
       "chunkId": "0288",
       "entryKeys": [
-        "TERM:situation",
         "TERM:situational-awareness",
         "TERM:skill",
         "TERM:skimming",
@@ -34031,13 +34026,13 @@
         "TERM:sms-pumping",
         "TERM:smurf-attack",
         "TERM:sn",
-        "TERM:snapshot"
+        "TERM:snapshot",
+        "TERM:sneaker-net"
       ]
     },
     {
       "chunkId": "0289",
       "entryKeys": [
-        "TERM:sneaker-net",
         "TERM:snefru",
         "TERM:sniffer",
         "TERM:sniffing",
@@ -34056,13 +34051,13 @@
         "TERM:software",
         "TERM:software-as-a-service-saas",
         "TERM:software-asset-management",
-        "TERM:software-assurance"
+        "TERM:software-assurance",
+        "TERM:software-assurance-and-security-engineering"
       ]
     },
     {
       "chunkId": "0290",
       "entryKeys": [
-        "TERM:software-assurance-and-security-engineering",
         "TERM:software-assurance-swa",
         "TERM:software-bill-of-materials",
         "TERM:software-deployment-tools",
@@ -34081,13 +34076,13 @@
         "TERM:source-content",
         "TERM:source-integrity",
         "TERM:source-name",
-        "TERM:source-of-randomness"
+        "TERM:source-of-randomness",
+        "TERM:source-restriction"
       ]
     },
     {
       "chunkId": "0291",
       "entryKeys": [
-        "TERM:source-restriction",
         "TERM:source-value",
         "TERM:sources-sought-notice",
         "TERM:space-after-filename",
@@ -34106,13 +34101,13 @@
         "TERM:special-character",
         "TERM:specialized-security-limited-functionality-sslf-environment",
         "TERM:specific",
-        "TERM:specification"
+        "TERM:specification",
+        "TERM:specification-limit"
       ]
     },
     {
       "chunkId": "0292",
       "entryKeys": [
-        "TERM:specification-limit",
         "TERM:specification-requirement",
         "TERM:specification-versioning",
         "TERM:spidering",
@@ -34131,13 +34126,13 @@
         "TERM:sprawl",
         "TERM:spread-spectrum",
         "TERM:spyware",
-        "TERM:sql-injection"
+        "TERM:sql-injection",
+        "TERM:sql-stored-procedures"
       ]
     },
     {
       "chunkId": "0293",
       "entryKeys": [
-        "TERM:sql-stored-procedures",
         "TERM:square",
         "TERM:ss-k",
         "TERM:ss-mi",
@@ -34156,13 +34151,13 @@
         "TERM:stage-capabilities",
         "TERM:stakeholder",
         "TERM:staking",
-        "TERM:standalone-environment"
+        "TERM:standalone-environment",
+        "TERM:standard"
       ]
     },
     {
       "chunkId": "0294",
       "entryKeys": [
-        "TERM:standard",
         "TERM:standard-encoding",
         "TERM:standard-normal-cumulative-distribution-function",
         "TERM:standards-developing-organization",
@@ -34181,13 +34176,13 @@
         "TERM:stateless-inspection",
         "TERM:statement-coverage",
         "TERM:statement-of-work-requirement",
-        "TERM:static"
+        "TERM:static",
+        "TERM:static-code-analyzer"
       ]
     },
     {
       "chunkId": "0295",
       "entryKeys": [
-        "TERM:static-code-analyzer",
         "TERM:static-key",
         "TERM:static-key-pair",
         "TERM:statistical-bias",
@@ -34206,13 +34201,13 @@
         "TERM:storage-channel",
         "TERM:storage-key",
         "TERM:store-a-key-or-metadata",
-        "TERM:stored-data-manipulation"
+        "TERM:stored-data-manipulation",
+        "TERM:strategic-planning-and-policy-development"
       ]
     },
     {
       "chunkId": "0296",
       "entryKeys": [
-        "TERM:strategic-planning-and-policy-development",
         "TERM:stratified-sampling",
         "TERM:stream-cipher",
         "TERM:stream-component",
@@ -34231,13 +34226,13 @@
         "TERM:sub-hand-receipt",
         "TERM:subaccount",
         "TERM:subassembly",
-        "TERM:subcategory"
+        "TERM:subcategory",
+        "TERM:subdirectory"
       ]
     },
     {
       "chunkId": "0297",
       "entryKeys": [
-        "TERM:subdirectory",
         "TERM:subject",
         "TERM:subject-alternative-name",
         "TERM:subject-ca",
@@ -34256,13 +34251,13 @@
         "TERM:subscriber-identity-module-sim",
         "TERM:substitution",
         "TERM:subsystem",
-        "TERM:subvert-trust-controls"
+        "TERM:subvert-trust-controls",
+        "TERM:successor"
       ]
     },
     {
       "chunkId": "0298",
       "entryKeys": [
-        "TERM:successor",
         "TERM:sudo-and-sudo-caching",
         "TERM:suitability-and-credentialing-executive-agent",
         "TERM:suite-a",
@@ -34281,13 +34276,13 @@
         "TERM:supplier-s-declaration-of-conformity",
         "TERM:supply-chain",
         "TERM:supply-chain-assurance",
-        "TERM:supply-chain-attack"
+        "TERM:supply-chain-attack",
+        "TERM:supply-chain-compromise"
       ]
     },
     {
       "chunkId": "0299",
       "entryKeys": [
-        "TERM:supply-chain-compromise",
         "TERM:supply-chain-element",
         "TERM:supply-chain-risk",
         "TERM:supply-chain-risk-assessment",
@@ -34306,13 +34301,13 @@
         "TERM:surge-protector",
         "TERM:surveilling",
         "TERM:survivability",
-        "TERM:susceptibility"
+        "TERM:susceptibility",
+        "TERM:suspended-state"
       ]
     },
     {
       "chunkId": "0300",
       "entryKeys": [
-        "TERM:suspended-state",
         "TERM:suspension",
         "TERM:svg-smuggling",
         "TERM:swid-tag",
@@ -34331,13 +34326,13 @@
         "TERM:sync-fabric",
         "TERM:syncable-authenticators",
         "TERM:syncappvpublishingserver",
-        "TERM:synchronization"
+        "TERM:synchronization",
+        "TERM:synchronization-protocols"
       ]
     },
     {
       "chunkId": "0301",
       "entryKeys": [
-        "TERM:synchronization-protocols",
         "TERM:synchronous-crypto-operation",
         "TERM:synchronous-training",
         "TERM:syntactic-matching",
@@ -34356,13 +34351,13 @@
         "TERM:system-authority",
         "TERM:system-binary-proxy-execution",
         "TERM:system-boundary",
-        "TERM:system-categorization"
+        "TERM:system-categorization",
+        "TERM:system-checks"
       ]
     },
     {
       "chunkId": "0302",
       "entryKeys": [
-        "TERM:system-checks",
         "TERM:system-component",
         "TERM:system-context",
         "TERM:system-developer",
@@ -34381,13 +34376,13 @@
         "TERM:system-integrity",
         "TERM:system-integrity-service",
         "TERM:system-interconnection",
-        "TERM:system-language-discovery"
+        "TERM:system-language-discovery",
+        "TERM:system-life-cycle"
       ]
     },
     {
       "chunkId": "0303",
       "entryKeys": [
-        "TERM:system-life-cycle",
         "TERM:system-location-discovery",
         "TERM:system-low",
         "TERM:system-management-mode-smm",
@@ -34406,13 +34401,13 @@
         "TERM:system-prompt",
         "TERM:system-related-privacy-risk",
         "TERM:system-related-security-risk",
-        "TERM:system-resource"
+        "TERM:system-resource",
+        "TERM:system-script-proxy-execution"
       ]
     },
     {
       "chunkId": "0304",
       "entryKeys": [
-        "TERM:system-script-proxy-execution",
         "TERM:system-security-officer",
         "TERM:system-security-plan",
         "TERM:system-security-requirement",
@@ -34431,13 +34426,13 @@
         "TERM:systemd-timers",
         "TERM:systemic-bias",
         "TERM:systems-development",
-        "TERM:systems-engineering"
+        "TERM:systems-engineering",
+        "TERM:systems-privacy-engineer"
       ]
     },
     {
       "chunkId": "0305",
       "entryKeys": [
-        "TERM:systems-privacy-engineer",
         "TERM:systems-privacy-engineering",
         "TERM:systems-requirements-planning",
         "TERM:systems-security-analysis",
@@ -34456,13 +34451,13 @@
         "TERM:tag-talks-first",
         "TERM:tailored-control-baseline",
         "TERM:tailored-security-control-baseline",
-        "TERM:tailored-trustworthy-space"
+        "TERM:tailored-trustworthy-space",
+        "TERM:tailoring"
       ]
     },
     {
       "chunkId": "0306",
       "entryKeys": [
-        "TERM:tailoring",
         "TERM:tailoring-assessment-procedures",
         "TERM:taint-shared-content",
         "TERM:tainting",
@@ -34481,13 +34476,13 @@
         "TERM:target-residual-risk",
         "TERM:target-value",
         "TERM:target-vulnerability-validation-techniques",
-        "TERM:targeted-poisoning-attack"
+        "TERM:targeted-poisoning-attack",
+        "TERM:targeted-security-strength"
       ]
     },
     {
       "chunkId": "0307",
       "entryKeys": [
-        "TERM:targeted-security-strength",
         "TERM:targets",
         "TERM:task",
         "TERM:taxonomy",
@@ -34506,13 +34501,13 @@
         "TERM:technical-security",
         "TERM:technical-security-controls",
         "TERM:technical-security-material",
-        "TERM:technical-surveillance-countermeasures-tscm"
+        "TERM:technical-surveillance-countermeasures-tscm",
+        "TERM:technical-vulnerability-information"
       ]
     },
     {
       "chunkId": "0308",
       "entryKeys": [
-        "TERM:technical-vulnerability-information",
         "TERM:technique",
         "TERM:technology-based-input-product",
         "TERM:technology-research-and-development",
@@ -34531,13 +34526,13 @@
         "TERM:terminal-access-controller-tac-access-control-system",
         "TERM:terminal-services-dll",
         "TERM:test",
-        "TERM:test-action"
+        "TERM:test-action",
+        "TERM:test-and-evaluation"
       ]
     },
     {
       "chunkId": "0309",
       "entryKeys": [
-        "TERM:test-and-evaluation",
         "TERM:test-director",
         "TERM:test-guide",
         "TERM:test-key",
@@ -34556,13 +34551,13 @@
         "TERM:the-exponential-encryption-system",
         "TERM:theft",
         "TERM:third-party-providers",
-        "TERM:third-party-relationships"
+        "TERM:third-party-relationships",
+        "TERM:third-party-testing"
       ]
     },
     {
       "chunkId": "0310",
       "entryKeys": [
-        "TERM:third-party-testing",
         "TERM:thread",
         "TERM:thread-execution-hijacking",
         "TERM:thread-local-storage",
@@ -34581,13 +34576,13 @@
         "TERM:threat-intelligence",
         "TERM:threat-intelligence-report",
         "TERM:threat-modeling",
-        "TERM:threat-monitoring"
+        "TERM:threat-monitoring",
+        "TERM:threat-scenario"
       ]
     },
     {
       "chunkId": "0311",
       "entryKeys": [
-        "TERM:threat-scenario",
         "TERM:threat-shifting",
         "TERM:threat-signaling",
         "TERM:threat-source",
@@ -34606,13 +34601,13 @@
         "TERM:tier-iii-checklist",
         "TERM:tier-iv-checklist",
         "TERM:tiered-label",
-        "TERM:tiger-team"
+        "TERM:tiger-team",
+        "TERM:time-based-checks"
       ]
     },
     {
       "chunkId": "0312",
       "entryKeys": [
-        "TERM:time-based-checks",
         "TERM:time-bomb",
         "TERM:time-compliance-date",
         "TERM:time-dependent-password",
@@ -34631,13 +34626,13 @@
         "TERM:timestomping",
         "TERM:timing-channel",
         "TERM:tj",
-        "TERM:tlen"
+        "TERM:tlen",
+        "TERM:tmactagbits-x"
       ]
     },
     {
       "chunkId": "0313",
       "entryKeys": [
-        "TERM:tmactagbits-x",
         "TERM:token",
         "TERM:token-backup",
         "TERM:token-copy",
@@ -34656,13 +34651,13 @@
         "TERM:traceable",
         "TERM:traceback",
         "TERM:tracker",
-        "TERM:trade-off"
+        "TERM:trade-off",
+        "TERM:trade-off-analysis"
       ]
     },
     {
       "chunkId": "0314",
       "entryKeys": [
-        "TERM:trade-off-analysis",
         "TERM:tradecraft-identity",
         "TERM:traditional-key",
         "TERM:traffic-analysis",
@@ -34681,13 +34676,13 @@
         "TERM:training-data-control",
         "TERM:training-data-extraction",
         "TERM:training-key",
-        "TERM:training-stage"
+        "TERM:training-stage",
+        "TERM:tranquility"
       ]
     },
     {
       "chunkId": "0315",
       "entryKeys": [
-        "TERM:tranquility",
         "TERM:tranquility-property",
         "TERM:transaction",
         "TERM:transaction-fee",
@@ -34706,13 +34701,13 @@
         "TERM:transmitted-data-manipulation",
         "TERM:transparency",
         "TERM:transponder",
-        "TERM:transport-agent"
+        "TERM:transport-agent",
+        "TERM:transport-layer"
       ]
     },
     {
       "chunkId": "0316",
       "entryKeys": [
-        "TERM:transport-layer",
         "TERM:transport-layer-security",
         "TERM:transport-layer-security-protocol",
         "TERM:transport-layer-security-tls",
@@ -34731,13 +34726,13 @@
         "TERM:truncation",
         "TERM:trust",
         "TERM:trust-agreement",
-        "TERM:trust-anchor"
+        "TERM:trust-anchor",
+        "TERM:trust-anchor-ca"
       ]
     },
     {
       "chunkId": "0317",
       "entryKeys": [
-        "TERM:trust-anchor-ca",
         "TERM:trust-anchor-certificate",
         "TERM:trust-anchor-information",
         "TERM:trust-anchor-key",
@@ -34756,13 +34751,13 @@
         "TERM:trust-protection-platform",
         "TERM:trust-relationship",
         "TERM:trusted",
-        "TERM:trusted-agent-ta"
+        "TERM:trusted-agent-ta",
+        "TERM:trusted-association"
       ]
     },
     {
       "chunkId": "0318",
       "entryKeys": [
-        "TERM:trusted-association",
         "TERM:trusted-boot",
         "TERM:trusted-ca",
         "TERM:trusted-certificate",
@@ -34781,13 +34776,13 @@
         "TERM:trusted-key",
         "TERM:trusted-network-layer-onboarding",
         "TERM:trusted-operating-system",
-        "TERM:trusted-party"
+        "TERM:trusted-party",
+        "TERM:trusted-path"
       ]
     },
     {
       "chunkId": "0319",
       "entryKeys": [
-        "TERM:trusted-path",
         "TERM:trusted-platform-module",
         "TERM:trusted-platform-module-tpm",
         "TERM:trusted-pool",
@@ -34806,13 +34801,13 @@
         "TERM:trustworthiness-system",
         "TERM:trustworthy-information-system",
         "TERM:trustworthy-system",
-        "TERM:tta-supplied-info"
+        "TERM:tta-supplied-info",
+        "TERM:tunnel"
       ]
     },
     {
       "chunkId": "0320",
       "entryKeys": [
-        "TERM:tunnel",
         "TERM:tunnel-mode",
         "TERM:tunnel-vpn",
         "TERM:tunneling",
@@ -34831,13 +34826,13 @@
         "TERM:type-3-product",
         "TERM:type-4-key",
         "TERM:type-4-product",
-        "TERM:type-accreditation"
+        "TERM:type-accreditation",
+        "TERM:type-authorization"
       ]
     },
     {
       "chunkId": "0321",
       "entryKeys": [
-        "TERM:type-authorization",
         "TERM:type-certification",
         "TERM:type-i-error",
         "TERM:typosquatting",
@@ -34856,13 +34851,13 @@
         "TERM:unauthorized-access",
         "TERM:unauthorized-disclosure",
         "TERM:unauthorized-user",
-        "TERM:unbiased"
+        "TERM:unbiased",
+        "TERM:unbind"
       ]
     },
     {
       "chunkId": "0322",
       "entryKeys": [
-        "TERM:unbind",
         "TERM:unbounded-differential-privacy",
         "TERM:uncertainty",
         "TERM:unclassified",
@@ -34881,13 +34876,13 @@
         "TERM:united-states-government-environment",
         "TERM:universal-description-discovery-and-integration-uddi",
         "TERM:universal-integrated-circuit-card",
-        "TERM:universal-mobile-telecommunications-system-umts"
+        "TERM:universal-mobile-telecommunications-system-umts",
+        "TERM:universal-serial-bus-usb"
       ]
     },
     {
       "chunkId": "0323",
       "entryKeys": [
-        "TERM:universal-serial-bus-usb",
         "TERM:universal-statistical-test",
         "TERM:unix-shell",
         "TERM:unix-shell-configuration-modification",
@@ -34906,13 +34901,13 @@
         "TERM:update",
         "TERM:update-a-certificate",
         "TERM:update-a-key",
-        "TERM:update-server"
+        "TERM:update-server",
+        "TERM:upgrade"
       ]
     },
     {
       "chunkId": "0324",
       "entryKeys": [
-        "TERM:upgrade",
         "TERM:upgrade-management-system",
         "TERM:upgrading",
         "TERM:uplink",
@@ -34931,13 +34926,13 @@
         "TERM:user-id",
         "TERM:user-identifier",
         "TERM:user-identity",
-        "TERM:user-interface"
+        "TERM:user-interface",
+        "TERM:user-key"
       ]
     },
     {
       "chunkId": "0325",
       "entryKeys": [
-        "TERM:user-key",
         "TERM:user-level-privacy",
         "TERM:user-pin",
         "TERM:user-pin-ora",
@@ -34956,13 +34951,13 @@
         "TERM:v3-certificate",
         "TERM:valid-accounts",
         "TERM:valid-certificate",
-        "TERM:valid-data-element"
+        "TERM:valid-data-element",
+        "TERM:valid-length"
       ]
     },
     {
       "chunkId": "0326",
       "entryKeys": [
-        "TERM:valid-length",
         "TERM:valid-signature",
         "TERM:validate",
         "TERM:validated-roa-payload",
@@ -34981,13 +34976,13 @@
         "TERM:variational-autoencoder",
         "TERM:vba-stomping",
         "TERM:vdso-hijacking",
-        "TERM:vehicle"
+        "TERM:vehicle",
+        "TERM:vendor"
       ]
     },
     {
       "chunkId": "0327",
       "entryKeys": [
-        "TERM:vendor",
         "TERM:verclsid",
         "TERM:verification",
         "TERM:verification-key",
@@ -35006,13 +35001,13 @@
         "TERM:virtual-machine-discovery",
         "TERM:virtual-machine-monitor-vmm",
         "TERM:virtual-machine-vm",
-        "TERM:virtual-private-network"
+        "TERM:virtual-private-network",
+        "TERM:virtual-private-network-vpn"
       ]
     },
     {
       "chunkId": "0328",
       "entryKeys": [
-        "TERM:virtual-private-network-vpn",
         "TERM:virtual-private-server",
         "TERM:virtualization",
         "TERM:virtualization-sandbox-evasion",
@@ -35031,13 +35026,13 @@
         "TERM:volatile-memory",
         "TERM:vsphere-installation-bundles",
         "TERM:vulnerabilities",
-        "TERM:vulnerability"
+        "TERM:vulnerability",
+        "TERM:vulnerability-advisory-report"
       ]
     },
     {
       "chunkId": "0329",
       "entryKeys": [
-        "TERM:vulnerability-advisory-report",
         "TERM:vulnerability-analysis",
         "TERM:vulnerability-assessment",
         "TERM:vulnerability-assessment-and-management",
@@ -35056,13 +35051,13 @@
         "TERM:warm-site",
         "TERM:warning-banner",
         "TERM:wassenaar-arrangement",
-        "TERM:watering-hole"
+        "TERM:watering-hole",
+        "TERM:watering-hole-attack"
       ]
     },
     {
       "chunkId": "0330",
       "entryKeys": [
-        "TERM:watering-hole-attack",
         "TERM:weak-key",
         "TERM:weaken-encryption",
         "TERM:weakest-judgment-algorithm",
@@ -35081,13 +35076,13 @@
         "TERM:web-protocols",
         "TERM:web-server",
         "TERM:web-server-administrator",
-        "TERM:web-service"
+        "TERM:web-service",
+        "TERM:web-service-interoperability-ws-i-basic-profile"
       ]
     },
     {
       "chunkId": "0331",
       "entryKeys": [
-        "TERM:web-service-interoperability-ws-i-basic-profile",
         "TERM:web-services",
         "TERM:web-services-description-language-wsdl",
         "TERM:web-services-security-ws-security",
@@ -35106,13 +35101,13 @@
         "TERM:whitebox",
         "TERM:whitelist",
         "TERM:whitelisting",
-        "TERM:whois"
+        "TERM:whois",
+        "TERM:wi-fi-discovery"
       ]
     },
     {
       "chunkId": "0332",
       "entryKeys": [
-        "TERM:wi-fi-discovery",
         "TERM:wi-fi-networks",
         "TERM:wide-area-network",
         "TERM:win-ddos",
@@ -35131,13 +35126,13 @@
         "TERM:wireless-application-protocol-wap",
         "TERM:wireless-device",
         "TERM:wireless-fidelity-wifi",
-        "TERM:wireless-intrusion-detection-system-wids"
+        "TERM:wireless-intrusion-detection-system-wids",
+        "TERM:wireless-local-area-network-wlan"
       ]
     },
     {
       "chunkId": "0333",
       "entryKeys": [
-        "TERM:wireless-local-area-network-wlan",
         "TERM:wireless-markup-language",
         "TERM:wireless-personal-area-network-wpan",
         "TERM:wireless-technology",
@@ -35156,13 +35151,13 @@
         "TERM:world-wide-web-consortium",
         "TERM:world-wide-web-the-web-www",
         "TERM:worm",
-        "TERM:wrap"
+        "TERM:wrap",
+        "TERM:wrapping-algorithm"
       ]
     },
     {
       "chunkId": "0334",
       "entryKeys": [
-        "TERM:wrapping-algorithm",
         "TERM:wrapping-key",
         "TERM:write",
         "TERM:written-content",
@@ -35181,12 +35176,7 @@
         "TERM:yellow-book",
         "TERM:zero-knowledge-proof",
         "TERM:zeroize",
-        "TERM:zombie"
-      ]
-    },
-    {
-      "chunkId": "0335",
-      "entryKeys": [
+        "TERM:zombie",
         "TERM:zone-of-control"
       ]
     }
