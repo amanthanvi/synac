@@ -13,9 +13,12 @@ scheduled job. Corpus or rubric changes require a new generation.
 API generation v1 used 20 Entries per request. It completed at the provider but
 634 of 672 responses exhausted the 16,000 combined output/reasoning-token
 ceiling, so it emitted no candidates. API generation v2 was stopped after the
-owner moved inference to the ChatGPT subscription. The active `codex-v1`
-generation restores 20-Entry chunks and runs Terra Max through `codex exec`;
-API submission is mechanically disabled for this generation.
+owner moved inference to the ChatGPT subscription. The `codex-v1`
+generation restored 20-Entry chunks and ran Terra Max through `codex exec`;
+API submission is mechanically disabled for Codex generations. The active
+`codex-v2` generation reclassifies the corpus after the OWASP source was
+disabled and retires the one pair whose entry left the corpus through a
+reviewed removal whose current hash is the all-zero sentinel.
 
 ```powershell
 corepack pnpm --filter @synac/content-tools exec tsx ../../experiments/tagging/production-backfill/openai-batch.ts prepare
