@@ -1,19 +1,34 @@
+import { senseAnchorId } from '@synac/shared';
 import { notFound, permanentRedirect } from 'next/navigation';
 
-import { api, getConvexClient, type FunctionReturnType } from './convex';
+import {
+  readEntryPage,
+  readResolvedSlug,
+  type EntryType,
+  type PublicEntry,
+  type PublicEntryRelation,
+  type PublicEntrySense,
+  type PublicSenseCitation,
+} from './convex';
+import { getSiteUrl } from './sitemap';
 
-type PublicEntryType = 'TERM' | 'ACRONYM';
+/**
+ * The heading a sense is known by, everywhere it is named: the sense list, the
+ * nav, the citation blocks and the JSON-LD. Never "Sense N": a sense without
+ * an editorial label still carries the source label it was compiled from.
+ */
+export function senseHeadingText(
+  sense: Pick<PublicEntrySense, 'label' | 'expandedForm' | 'labelFallback'>,
+  entryType: EntryType,
+): string {
+  // An acronym's expansion names the meaning; a source marker like "(I)" does not.
+  return entryType === 'ACRONYM'
+    ? (sense.expandedForm ?? sense.label ?? sense.labelFallback)
+    : (sense.label ?? sense.expandedForm ?? sense.labelFallback);
+}
 
-type EntryPagePayload = NonNullable<FunctionReturnType<typeof api.publicEntries.getEntryPage>>;
-
-export type PublicEntry = EntryPagePayload['entry'];
-export type PublicEntrySense = PublicEntry['senses'][number];
-export type PublicSenseCitation = PublicEntrySense['citations'][number];
-export type PublicEntryRelation = EntryPagePayload['relationships'][number];
-
-/** Anchor id for a sense, safe for URLs and CSS selectors. */
-export function senseAnchorId(sense: Pick<PublicEntrySense, 'key'>): string {
-  return `sense-${sense.key.replace(/[^a-zA-Z0-9-]+/g, '-')}`;
+export function entryPath(entryType: EntryType, slug: string): string {
+  return entryType === 'TERM' ? `/term/${slug}` : `/acronym/${slug}`;
 }
 
 function escapeRegExp(value: string): string {
@@ -54,10 +69,12 @@ function dedupeNormalizedStrings(raw: string[]): string[] {
   return values;
 }
 
+export type StandsFor = { primary: string | null; alternates: string[] };
+
 function standsForPrimaryFromCandidates(
   candidates: string[],
   entry: { summaryText: string | null },
-): { primary: string | null; alternates: string[] } {
+): StandsFor {
   if (candidates.length === 0) {
     return { primary: null, alternates: [] };
   }
@@ -69,86 +86,103 @@ function standsForPrimaryFromCandidates(
     return { primary: candidates[0]!, alternates: candidates.slice(1) };
   }
   const scored = candidates
-    .map((value) => ({ text: value, score: scoreByDefinition(value, definition) }))
-    .sort((left, right) => right.score - left.score || left.text.localeCompare(right.text));
+    .map((value) => ({
+      text: value,
+      score: scoreByDefinition(value, definition),
+    }))
+    .sort(
+      (left, right) =>
+        right.score - left.score || left.text.localeCompare(right.text),
+    );
   const primary = scored[0]!.text;
   return {
     primary,
-    alternates: candidates.filter((value) => value.toLowerCase() !== primary.toLowerCase()),
+    alternates: candidates.filter(
+      (value) => value.toLowerCase() !== primary.toLowerCase(),
+    ),
   };
 }
 
-export function formatEntryDate(value: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-  }).format(value);
-}
+export type SenseNavItem = { id: string; label: string };
 
-export type PublicEntryPageData = Awaited<ReturnType<typeof loadPublicEntryPageData>>;
-
-export async function loadPublicEntryPageData(input: {
-  slug: string;
-  requestedType: PublicEntryType;
-}): Promise<{
+export type PublicEntryPageData = {
   entry: PublicEntry;
   related: PublicEntryRelation[];
   seeAlso: PublicEntryRelation[];
-  tocItems: Array<{ id: string; label: string }>;
-  standsForPrimary: { primary: string | null; alternates: string[] };
+  compareWith: PublicEntryRelation[];
+  navItems: SenseNavItem[];
+  standsForPrimary: StandsFor;
   alsoKnownAs: string[];
-}> {
-  const client = getConvexClient();
-  const resolved = await client.query(api.publicEntries.resolveBySlug, {
-    entryType: input.requestedType,
-    slug: input.slug,
-  });
+  /** Absolute, so copied sense links and JSON-LD never depend on the browser. */
+  canonicalUrl: string;
+};
+
+export async function loadPublicEntryPageData(input: {
+  slug: string;
+  requestedType: EntryType;
+}): Promise<PublicEntryPageData> {
+  const resolved = await readResolvedSlug(
+    input.requestedType,
+    input.slug.trim().toLowerCase(),
+  );
 
   if (!resolved) notFound();
 
   if (resolved.entryType !== input.requestedType || resolved.needsRedirect) {
-    permanentRedirect(
-      resolved.entryType === 'TERM'
-        ? `/term/${resolved.canonicalSlug}`
-        : `/acronym/${resolved.canonicalSlug}`,
-    );
+    permanentRedirect(entryPath(resolved.entryType, resolved.canonicalSlug));
   }
 
-  const pageData = await client.query(api.publicEntries.getEntryPage, {
-    entryType: input.requestedType,
-    slug: resolved.canonicalSlug,
-    relationshipLimit: 50,
-  });
+  const pageData = await readEntryPage(
+    input.requestedType,
+    resolved.canonicalSlug,
+  );
 
   if (!pageData) notFound();
 
   const entry = pageData.entry;
-  const related = pageData.relationships.filter((rel) => rel.type === 'RELATED').slice(0, 10);
-  const seeAlso = pageData.relationships.filter((rel) => rel.type === 'SEE_ALSO').slice(0, 10);
+  const byType = (type: PublicEntryRelation['type']) =>
+    pageData.relationships.filter((rel) => rel.type === type).slice(0, 10);
 
-  const tocItems = entry.senses.map((sense) => ({
-    id: senseAnchorId(sense),
-    label: sense.label ?? `Sense ${sense.order + 1}`,
+  const navItems = entry.senses.map((sense) => ({
+    id: senseAnchorId(sense.key),
+    label: senseHeadingText(sense, entry.entryType),
   }));
+
+  const canonicalUrl = `${getSiteUrl()}${entryPath(entry.entryType, entry.slug)}`;
 
   const aliases = dedupeNormalizedStrings(entry.aliases);
 
+  const common = {
+    entry,
+    related: byType('RELATED'),
+    seeAlso: byType('SEE_ALSO'),
+    compareWith: byType('CONTRAST'),
+    navItems,
+    canonicalUrl,
+  };
+
   if (input.requestedType === 'ACRONYM') {
     const expandedForms = dedupeNormalizedStrings([
-      ...entry.senses
-        .map((sense) => sense.expandedForm)
-        .filter((value): value is string => Boolean(value?.trim())),
+      ...entry.senses.flatMap((sense) => {
+        const expanded = sense.expandedForm?.trim();
+        return expanded ? [expanded] : [];
+      }),
       ...aliases.filter((value) => value.includes(' ')),
     ]);
 
-    const standsForPrimary = standsForPrimaryFromCandidates(expandedForms, entry);
-
-    const alsoKnownAs = aliases.filter(
-      (alias) => !expandedForms.some((expanded) => expanded.toLowerCase() === alias.toLowerCase()),
+    const standsForPrimary = standsForPrimaryFromCandidates(
+      expandedForms,
+      entry,
     );
 
-    return { entry, related, seeAlso, tocItems, standsForPrimary, alsoKnownAs };
+    const alsoKnownAs = aliases.filter(
+      (alias) =>
+        !expandedForms.some(
+          (expanded) => expanded.toLowerCase() === alias.toLowerCase(),
+        ),
+    );
+
+    return { ...common, standsForPrimary, alsoKnownAs };
   }
 
   const titleIsShortform = (() => {
@@ -163,18 +197,22 @@ export async function loadPublicEntryPageData(input: {
 
   const standsFor = aliases.filter((alias) => alias.includes(' '));
   const alsoKnownAs =
-    titleIsShortform && standsFor.length ? aliases.filter((alias) => !alias.includes(' ')) : aliases;
+    titleIsShortform && standsFor.length
+      ? aliases.filter((alias) => !alias.includes(' '))
+      : aliases;
 
-  const standsForPrimary =
+  const standsForPrimary: StandsFor =
     titleIsShortform && standsFor.length > 0
       ? standsForPrimaryFromCandidates(standsFor, entry)
-      : { primary: null, alternates: [] as string[] };
+      : { primary: null, alternates: [] };
 
-  return { entry, related, seeAlso, tocItems, standsForPrimary, alsoKnownAs };
+  return { ...common, standsForPrimary, alsoKnownAs };
 }
 
-/** Citations deduplicated by source + URL for the pill row. */
-export function dedupeSenseCitations(citations: PublicSenseCitation[]): PublicSenseCitation[] {
+/** Citations deduplicated by source + URL; a sense often cites one document twice. */
+export function dedupeSenseCitations(
+  citations: PublicSenseCitation[],
+): PublicSenseCitation[] {
   const byKey = new Map<string, PublicSenseCitation>();
   for (const citation of citations) {
     const key = `${citation.sourceSlug}:${citation.url.trim().replace(/\/+$/, '')}`;

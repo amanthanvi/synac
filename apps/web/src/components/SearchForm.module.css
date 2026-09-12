@@ -44,15 +44,10 @@
   flex: 1;
   min-width: 0;
   border: 0;
-  outline: none;
   background: transparent;
   color: var(--fg);
   font-family: var(--font-ui);
   font-size: var(--text-ui);
-}
-
-.input:focus-visible {
-  outline: none;
 }
 
 .inputLg {

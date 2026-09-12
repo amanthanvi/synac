@@ -1,4 +1,6 @@
-import { api, getConvexClient } from '@/lib/convex';
+import type { Metadata } from 'next';
+
+import { readTagDirectory } from '@/lib/convex';
 import { TagDirectory } from '@/components/TagDirectory';
 import { PageHeader } from '@/components/PageHeader';
 
@@ -7,8 +9,25 @@ import layoutStyles from '../_styles/Layout.module.css';
 
 export const revalidate = 900;
 
+const title = 'Tags';
+const description =
+  'The curated SynAc taxonomy: browse cybersecurity terms and acronyms by subject.';
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical: '/tags' },
+  openGraph: { title, description, images: '/opengraph-image.png' },
+  twitter: {
+    card: 'summary_large_image',
+    title,
+    description,
+    images: '/twitter-image.png',
+  },
+};
+
 export default async function TagsPage() {
-  const tags = await getConvexClient().query(api.tags.directory, {});
+  const tags = await readTagDirectory();
 
   return (
     <div className={layoutStyles.pageNarrow}>
@@ -22,11 +41,12 @@ export default async function TagsPage() {
       ) : (
         <TagDirectory
           tags={tags.map((tag) => ({
-            id: tag.slug,
             name: tag.name,
             slug: tag.slug,
             description: tag.description,
             count: tag.entryCount,
+            editorialCount: tag.editorialCount,
+            autoCount: tag.autoCount,
           }))}
         />
       )}

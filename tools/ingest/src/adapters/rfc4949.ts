@@ -1,11 +1,20 @@
-import { slugify } from '@synac/content-tools';
+import { normalizeTitle, slugify } from '@synac/content-tools';
 
+import { classifyEntryType, classifyVariantType } from '../classify.js';
 import { safeFetch } from '../net/safeFetch.js';
-import { finalizeBundle, type AdapterContext, type DraftEntry } from '../bundle.js';
+import { conditionalHeaders, documentValidators } from '../net/conditional.js';
+import {
+  finalizeBundle,
+  shortContentType,
+  type AdapterContext,
+  type DraftEntry,
+} from '../bundle.js';
 import type { BundleFile } from '@synac/content-tools';
 
-export const ADAPTER_VERSION = 'rfc4949/1.0.0';
+export const ADAPTER_VERSION = 'rfc4949/1.1.0';
 const DOCUMENT_KEY = 'rfc4949-txt';
+const MAX_RELATIONSHIPS = 100;
+const MAX_REFERENCE_LENGTH = 80;
 
 type DefinitionType = 'I' | 'N' | 'O' | 'D';
 
@@ -22,15 +31,21 @@ export type ParsedEntry = {
   entryType: 'TERM' | 'ACRONYM';
   summaryMd: string;
   senses: ParsedSense[];
-  variants: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' }>;
+  variants: Array<{
+    variantText: string;
+    variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION';
+  }>;
   sourceLocator: { line: number; title: string };
 };
 
 const BASE_INDENT = '      ';
 
-function normalizeTitle(value: string): string {
-  return value.trim().replace(/\s+/g, ' ').toLowerCase();
-}
+/**
+ * A top-level section header at column 0, e.g. "5. Security Considerations".
+ * Glossary entries and their definitions are always indented, so an unindented
+ * numbered header can only be the section that follows the glossary.
+ */
+const TOP_LEVEL_SECTION = /^\d+\.\s+\S/;
 
 function stripBaseIndent(value: string): string {
   if (value.startsWith(BASE_INDENT)) return value.slice(BASE_INDENT.length);
@@ -72,42 +87,10 @@ function normalizeDefinitionWhitespace(value: string): string {
   return out.join('\n').trim();
 }
 
-function inferEntryTypeFromTitle(value: string): 'TERM' | 'ACRONYM' {
-  const v = value.trim();
-  if (!v) return 'TERM';
-  if (v.includes(' ')) return 'TERM';
-  if (v.length < 2 || v.length > 32) return 'TERM';
-
-  const letters = v.replace(/[^A-Za-z]/g, '');
-  if (letters.length < 1) return 'TERM';
-
-  const uppercase = letters.replace(/[^A-Z]/g, '').length;
-  const lowercase = letters.replace(/[^a-z]/g, '').length;
-  const digits = v.replace(/[^0-9]/g, '').length;
-
-  if (uppercase >= 2 && lowercase <= 2) return 'ACRONYM';
-  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return 'ACRONYM';
-
-  return 'TERM';
-}
-
-function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
-  const v = value.trim();
-  if (!v) return 'ALIAS';
-  if (v.includes(' ')) return 'SYNONYM';
-
-  const compact = v.replace(/[.\-_/]/g, '');
-  const isAllCaps =
-    compact.length >= 2 &&
-    compact === compact.toUpperCase() &&
-    /[A-Z]/.test(compact) &&
-    /^[A-Z0-9]+$/.test(compact);
-  if (isAllCaps && v.length <= 24) return 'ABBREVIATION';
-
-  return 'ALIAS';
-}
-
-function stripTrailingAbbreviation(title: string): { mainTitle: string; abbreviation: string | null } {
+function stripTrailingAbbreviation(title: string): {
+  mainTitle: string;
+  abbreviation: string | null;
+} {
   const trimmed = title.trim();
   const match = trimmed.match(/^(.*)\s+\(([^)]+)\)\s*$/);
   if (!match) return { mainTitle: trimmed, abbreviation: null };
@@ -116,7 +99,8 @@ function stripTrailingAbbreviation(title: string): { mainTitle: string; abbrevia
   const abbr = (match[2] ?? '').trim();
 
   if (!main) return { mainTitle: trimmed, abbreviation: null };
-  if (!abbr || abbr.includes(' ') || abbr.length > 32) return { mainTitle: trimmed, abbreviation: null };
+  if (!abbr || abbr.includes(' ') || abbr.length > 32)
+    return { mainTitle: trimmed, abbreviation: null };
 
   return { mainTitle: main, abbreviation: abbr };
 }
@@ -137,7 +121,7 @@ function parseDefinitionHeader(line: string): {
 
   const ctxMatch = afterType.match(/^\/([^/]+)\/\s*(.*)$/);
   const context = ctxMatch ? ctxMatch[1]!.trim() : null;
-  const rest = (ctxMatch ? ctxMatch[2] : afterType).trim();
+  const rest = (ctxMatch ? (ctxMatch[2] ?? '') : afterType).trim();
 
   return { indexLabel, definitionType, context: context || null, rest };
 }
@@ -162,7 +146,9 @@ function inferExpandedFormFromDefinition(input: {
 
   const text = input.definitionMd.trim();
   const seeMatch = text.match(/^See:\s*([^.\n]+)\./i);
-  const synonymMatch = text.match(/^(?:Synonym|Abbreviation)\s+for\s+"([^"]+)"/i);
+  const synonymMatch = text.match(
+    /^(?:Synonym|Abbreviation)\s+for\s+"([^"]+)"/i,
+  );
 
   const candidate = (synonymMatch?.[1] ?? seeMatch?.[1] ?? '').trim();
   if (!candidate) return null;
@@ -177,8 +163,10 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
   const text = input.replace(/\r\n/g, '\n');
   const lines = text.split('\n');
 
-  const entries: Array<{ title: string; startLine: number; lines: string[] }> = [];
-  let current: { title: string; startLine: number; lines: string[] } | null = null;
+  const entries: Array<{ title: string; startLine: number; lines: string[] }> =
+    [];
+  let current: { title: string; startLine: number; lines: string[] } | null =
+    null;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i] ?? '';
@@ -187,6 +175,15 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
       if (current) entries.push(current);
       current = { title: match[1]!.trim(), startLine: i + 1, lines: [] };
       continue;
+    }
+
+    // The glossary is section 4 of RFC 4949. Once entries have begun, the next
+    // top-level section header ends it, so sections 5+ and the reference list
+    // never get appended to the last entry's definition.
+    if (current && TOP_LEVEL_SECTION.test(line)) {
+      entries.push(current);
+      current = null;
+      break;
     }
 
     if (current) current.lines.push(line);
@@ -201,21 +198,27 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
     if (!normalized) continue;
 
     const variants = (() => {
-      const out: Array<{ variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' }> = [];
+      const out: Array<{
+        variantText: string;
+        variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION';
+      }> = [];
       const seen = new Set<string>();
 
       if (abbreviation) {
         const key = normalizeTitle(abbreviation);
         if (!seen.has(key) && key !== normalized) {
           seen.add(key);
-          out.push({ variantText: abbreviation, variantType: inferVariantType(abbreviation) });
+          out.push({
+            variantText: abbreviation,
+            variantType: classifyVariantType(abbreviation),
+          });
         }
       }
 
       return out;
     })();
 
-    const entryType = inferEntryTypeFromTitle(mainTitle);
+    const entryType = classifyEntryType(mainTitle);
 
     const cleanedLines = entry.lines.filter((line) => !isPageNoiseLine(line));
 
@@ -225,8 +228,13 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
 
     const flush = () => {
       if (!currentHeader) return;
-      const definitionMd = normalizeDefinitionWhitespace(currentLines.join('\n'));
-      const expandedForm = inferExpandedFormFromDefinition({ entryType, definitionMd });
+      const definitionMd = normalizeDefinitionWhitespace(
+        currentLines.join('\n'),
+      );
+      const expandedForm = inferExpandedFormFromDefinition({
+        entryType,
+        definitionMd,
+      });
       senses.push({
         definitionType: currentHeader.definitionType,
         senseLabel: buildSenseLabel({
@@ -258,7 +266,8 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
 
     const summaryMd = (() => {
       const first = senses[0]!;
-      const firstParagraph = first.definitionMd.split(/\n\s*\n/)[0]?.trim() ?? '';
+      const firstParagraph =
+        first.definitionMd.split(/\n\s*\n/)[0]?.trim() ?? '';
       return firstParagraph || first.definitionMd;
     })();
     if (!summaryMd.trim()) continue;
@@ -277,10 +286,78 @@ export function parseRfc4949Entries(input: string): ParsedEntry[] {
   return parsed;
 }
 
+type Relationship = DraftEntry['relationships'][number];
+type CrossReference = { toSlug: string; type: Relationship['type'] };
+
+/**
+ * RFC 4949 definitions end with cross-reference sentences such as
+ * "(See: CA domain, security perimeter. Compare: COI, enclave.)". The sentence
+ * stays in the definition text; this only mirrors it as relationships.
+ */
+function parseCrossReferences(
+  definitionMd: string,
+  fromSlug: string,
+): CrossReference[] {
+  const out: CrossReference[] = [];
+  const seen = new Set<string>([fromSlug]);
+
+  for (const match of definitionMd.matchAll(
+    /\b(See|Compare):\s*([\s\S]*?)\.(?=\s|\)|$)/gi,
+  )) {
+    const type = match[1]!.toLowerCase() === 'see' ? 'SEE_ALSO' : 'CONTRAST';
+    for (const raw of (match[2] ?? '').split(',')) {
+      // "secondary definition under X" points at X.
+      const name = raw
+        .replace(/\s+/g, ' ')
+        .replace(/^and\s+/i, '')
+        .replace(/^.*\bunder\s+/i, '')
+        .trim();
+      if (!name || name.length > MAX_REFERENCE_LENGTH || name.includes(':'))
+        continue;
+
+      const toSlug = slugify(name);
+      if (!toSlug || seen.has(toSlug)) continue;
+      seen.add(toSlug);
+      out.push({ toSlug, type });
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Keeps only references that resolve to an entry in this bundle, with that
+ * entry's real type. The content compiler rejects relationships to unknown
+ * entries, so an unresolved name is dropped rather than guessed.
+ */
+function resolveRelationships(
+  entries: DraftEntry[],
+  references: Map<string, CrossReference[]>,
+): void {
+  const typeBySlug = new Map(
+    entries.map((entry) => [entry.slug, entry.entryType]),
+  );
+
+  for (const entry of entries) {
+    const declared = references.get(entry.slug) ?? [];
+    entry.relationships = declared
+      .flatMap((reference) => {
+        const toType = typeBySlug.get(reference.toSlug);
+        if (!toType || reference.toSlug === entry.slug) return [];
+        return [{ toType, toSlug: reference.toSlug, type: reference.type }];
+      })
+      .slice(0, MAX_RELATIONSHIPS);
+  }
+}
+
 /** Maps parsed RFC entries onto bundle entries, deduplicating slug collisions. */
-export function bundleEntriesFromParsed(parsed: ParsedEntry[], maxItems: number): DraftEntry[] {
+export function bundleEntriesFromParsed(
+  parsed: ParsedEntry[],
+  maxItems: number,
+): DraftEntry[] {
   const out: DraftEntry[] = [];
   const seenKeys = new Set<string>();
+  const references = new Map<string, CrossReference[]>();
   for (const entry of parsed.slice(0, maxItems)) {
     const slug = slugify(entry.title);
     if (!slug) continue;
@@ -296,7 +373,9 @@ export function bundleEntriesFromParsed(parsed: ParsedEntry[], maxItems: number)
       tags: [],
       summaryMd: entry.summaryMd,
       senses: entry.senses.map((sense, index) => ({
-        key: sense.senseLabel ? slugify(sense.senseLabel) || `sense-${index + 1}` : `sense-${index + 1}`,
+        key: sense.senseLabel
+          ? slugify(sense.senseLabel) || `sense-${index + 1}`
+          : `sense-${index + 1}`,
         ...(sense.senseLabel ? { label: sense.senseLabel } : {}),
         definitionMd: sense.definitionMd,
         ...(sense.expandedForm ? { expandedForm: sense.expandedForm } : {}),
@@ -309,14 +388,24 @@ export function bundleEntriesFromParsed(parsed: ParsedEntry[], maxItems: number)
       })),
       relationships: [],
     });
+    references.set(
+      slug,
+      parseCrossReferences(
+        entry.senses.map((sense) => sense.definitionMd).join('\n\n'),
+        slug,
+      ),
+    );
   }
+
+  resolveRelationships(out, references);
   return out;
 }
 
 export async function runRfc4949(ctx: AdapterContext): Promise<BundleFile> {
   const url = new URL(ctx.source.baseUrl);
+  const fetchImpl = ctx.fetch ?? safeFetch;
 
-  const res = await safeFetch({
+  const res = await fetchImpl({
     url: url.toString(),
     allowedHosts: [url.hostname],
     allowedContentTypePrefixes: ['text/plain'],
@@ -325,15 +414,27 @@ export async function runRfc4949(ctx: AdapterContext): Promise<BundleFile> {
     maxBytes: 10 * 1024 * 1024,
     headers: {
       'user-agent': 'synac-ingest/1.0 (+https://github.com/amanthanvi/synac)',
+      ...conditionalHeaders(ctx.previous, url.toString(), ADAPTER_VERSION),
     },
   });
+  // A 304 answers the conditional request above: the copy recorded in the
+  // previous bundle is still current, so reuse it whole.
+  if (res.status === 304 && ctx.previous) return ctx.previous;
   if (res.status !== 200) {
-    throw new Error(`RFC 4949 fetch failed (${res.status}) for ${url.toString()}`);
+    throw new Error(
+      `RFC 4949 fetch failed (${res.status}) for ${url.toString()}`,
+    );
   }
 
-  // Upstream unchanged: keep the previous bundle byte-identical.
-  const previousDocument = ctx.previous?.documents.find((doc) => doc.key === DOCUMENT_KEY);
-  if (ctx.previous && previousDocument?.contentSha256 === res.sha256) {
+  // Upstream unchanged and parsed by this adapter version: keep the previous
+  // bundle byte-identical. A version bump forces a reparse so parser changes land.
+  const previousDocument = ctx.previous?.documents.find(
+    (doc) => doc.key === DOCUMENT_KEY,
+  );
+  if (
+    ctx.previous?.adapterVersion === ADAPTER_VERSION &&
+    previousDocument?.contentSha256 === res.sha256
+  ) {
     return ctx.previous;
   }
 
@@ -347,9 +448,10 @@ export async function runRfc4949(ctx: AdapterContext): Promise<BundleFile> {
         key: DOCUMENT_KEY,
         url: url.toString(),
         title: 'RFC 4949: Internet Security Glossary, Version 2',
-        contentType: res.contentType.split(';')[0]!.trim() || 'text/plain',
+        contentType: shortContentType(res.contentType, 'text/plain'),
         contentSha256: res.sha256,
         fetchedAt: ctx.now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+        ...documentValidators(res),
       },
     ],
     entries: bundleEntriesFromParsed(parsed, ctx.maxItems),

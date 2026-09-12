@@ -5,13 +5,18 @@
   "license": {
     "type": "CC_BY_SA_4_0",
     "url": "https://owasp.org/www-community/about",
-    "notes": "OWASP community content is CC BY-SA 4.0; derivative text must be shared alike.",
+    "notes": "OWASP community content is CC BY-SA 4.0. Each page's Overview paragraph is quoted verbatim with attribution and stays under that license; SynAc writes no summaries or paraphrases of these pages, because derived wording would carry the share-alike obligation into the editorial layer.",
+    "publicStatement": "Quoted from OWASP community pages under CC BY-SA 4.0; the quoted text remains under that license.",
+    "contentMode": "QUOTED",
     "allowedUse": "Reproduce and adapt with attribution and share-alike per CC BY-SA 4.0.",
     "attributionRequirements": "OWASP Foundation, OWASP Community Pages (CC BY-SA 4.0)"
   },
   "accessMethod": "HTML",
   "trustTier": "TIER2",
   "enabled": true,
-  "ingest": { "adapter": "owaspVulnerabilities", "schedule": "weekly" },
+  "ingest": {
+    "adapter": "owaspVulnerabilities",
+    "schedule": "weekly"
+  },
   "lastVerifiedAt": "2026-02-10"
 }

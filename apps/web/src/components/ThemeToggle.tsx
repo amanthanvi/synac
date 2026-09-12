@@ -17,7 +17,12 @@ import styles from './ThemeToggle.module.css';
 function ThemeIcon({ preference }: { preference: ThemePreference }) {
   if (preference === 'dark') {
     return (
-      <svg className={styles.icon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg
+        className={styles.icon}
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
         <path
           d="M20.5 14.5c-1.1.5-2.3.8-3.6.8-4.4 0-8-3.6-8-8 0-1.3.3-2.5.8-3.6-4.1 1-7.2 4.7-7.2 9.1 0 5.2 4.2 9.4 9.4 9.4 4.4 0 8.1-3.1 9.1-7.2Z"
           stroke="currentColor"
@@ -30,7 +35,12 @@ function ThemeIcon({ preference }: { preference: ThemePreference }) {
 
   if (preference === 'light') {
     return (
-      <svg className={styles.icon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg
+        className={styles.icon}
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-hidden="true"
+      >
         <path
           d="M12 17.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Z"
           stroke="currentColor"
@@ -47,7 +57,12 @@ function ThemeIcon({ preference }: { preference: ThemePreference }) {
   }
 
   return (
-    <svg className={styles.icon} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      className={styles.icon}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M7 17h10a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z"
         stroke="currentColor"
@@ -84,7 +99,7 @@ export function ThemeToggle() {
       };
     },
     () => getStoredThemePreference(),
-    () => 'system'
+    () => 'system',
   );
 
   const label = useMemo(() => {

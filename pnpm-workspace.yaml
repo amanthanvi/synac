@@ -7,3 +7,16 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - unrs-resolver
+
+overrides:
+  '@humanfs/node@<0.16.8': '^0.16.8'
+  'brace-expansion@<1.1.18': '^1.1.18'
+  'brace-expansion@>=2.0.0 <2.1.4': '^2.1.4'
+  'brace-expansion@>=5.0.0 <5.0.9': '^5.0.9'
+  'js-yaml@>=4.0.0 <4.3.2': '^4.3.2'
+  'nanoid@>=3.0.0 <3.3.18': '^3.3.18'
+  'postcss@<8.5.18': '^8.5.23'
+  'vite': '7.3.6'
+  'ws@<8.21.0': '^8.21.0'
+  'sharp@<0.35.0': '^0.35.0'
+  'esbuild@<0.28.1': '^0.28.1'

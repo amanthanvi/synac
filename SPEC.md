@@ -9,6 +9,16 @@
 > `docs/architecture/overview.md` for the current architecture. The product
 > behavior described here (senses, provenance, terms vs. acronyms, curated
 > tags, search) remains accurate.
+>
+> Where the superseded infrastructure sections are documented now:
+>
+> | Superseded section | Current documentation |
+> | --- | --- |
+> | 9) Data Model | `docs/architecture/overview.md`, `content/README.md` |
+> | 10) Search Design | `docs/architecture/overview.md`, `docs/api.md` |
+> | 11) API + Backend Architecture | `docs/api.md`, `docs/architecture/overview.md` |
+> | 15) Operations | `docs/RELEASING.md`, `docs/runbooks/` |
+> | 16) Testing Strategy | `docs/contributing/local-dev.md` |
 
 SynAc is a public, internet-facing cybersecurity dictionary/glossary/handbook that centralizes, normalizes, curates, and presents high-quality security terminology and acronyms with strong provenance and attribution. v0.1.0 is a real public launch (not a prototype): it includes robust ingest/scraping as a first-class system (legal/compliance gates, SSRF-safe acquisition, provenance per field, human review workflows), a fast SEO-friendly browsing/search experience, and production operations (security hardening, observability, backups, incident readiness).
 
@@ -837,6 +847,8 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 
 ## 9) Data Model (Authoritative)
 
+*Superseded by docs/architecture/overview.md. Kept for historical product background.*
+
 > **Database:** PostgreSQL 16+ (or compatible managed Postgres).  
 > **IDs:** UUID (v7 preferred) for primary keys.  
 > **Soft delete:** Use `deleted_at` for most content; hard delete only for legal/takedown necessities.
@@ -1108,6 +1120,8 @@ To reduce risk of bad ingest corrupting production, SynAc uses a **staging-first
 
 ## 10) Search Design
 
+*Superseded by docs/architecture/overview.md. Kept for historical product background.*
+
 ### Option A: PostgreSQL Full-Text Search (FTS) + pg_trgm (Recommended default for v0.1.0)
 
 **Pros**
@@ -1186,6 +1200,8 @@ Rank results using weighted signals:
 ---
 
 ## 11) API + Backend Architecture
+
+*Superseded by docs/architecture/overview.md. Kept for historical product background.*
 
 ### Approach: REST + OpenAPI (Chosen)
 
@@ -1531,6 +1547,8 @@ Warm-tinted neutrals tuned separately per theme (dark is not inverted light), ha
 
 ## 15) Operations: Deployment, Observability, Incident Readiness
 
+*Superseded by docs/architecture/overview.md. Kept for historical product background.*
+
 ### Environments
 
 -   `dev`: local, seeded with fixtures.
@@ -1611,6 +1629,8 @@ Warm-tinted neutrals tuned separately per theme (dark is not inverted light), ha
 ---
 
 ## 16) Testing Strategy
+
+*Superseded by docs/architecture/overview.md. Kept for historical product background.*
 
 ### Coverage targets
 

@@ -4,7 +4,8 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["node"],
-    "typeRoots": ["../../../tools/content/node_modules/@types"]
+    "typeRoots": ["../../../tools/content/node_modules/@types"],
+    "noUncheckedIndexedAccess": false
   },
   "include": ["*.ts"]
 }

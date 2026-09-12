@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getSiteUrl, renderSitemapIndex } from '@/lib/sitemap';
+import { getSiteUrl, renderSitemapIndex, SITEMAP_HEADERS } from '@/lib/sitemap';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,18 +9,12 @@ export async function GET() {
   const siteUrl = getSiteUrl();
   const now = new Date();
 
-  const xml = renderSitemapIndex([
-    { loc: `${siteUrl}/sitemap-static.xml`, lastmod: now },
-    { loc: `${siteUrl}/sitemap-terms.xml`, lastmod: now },
-    { loc: `${siteUrl}/sitemap-acronyms.xml`, lastmod: now },
-    { loc: `${siteUrl}/sitemap-tags.xml`, lastmod: now },
-    { loc: `${siteUrl}/sitemap-sources.xml`, lastmod: now },
-  ]);
+  const xml = renderSitemapIndex(
+    ['static', 'terms', 'acronyms', 'tags', 'sources'].map((name) => ({
+      loc: `${siteUrl}/sitemap-${name}.xml`,
+      lastmod: now,
+    })),
+  );
 
-  return new NextResponse(xml, {
-    headers: {
-      'content-type': 'application/xml; charset=utf-8',
-      'cache-control': 'public, s-maxage=3600, stale-while-revalidate=86400',
-    },
-  });
+  return new NextResponse(xml, { headers: SITEMAP_HEADERS });
 }

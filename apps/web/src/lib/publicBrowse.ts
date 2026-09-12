@@ -1,21 +1,39 @@
-import { api, getConvexClient } from './convex';
+import type { BrowseSort } from './convex';
 
-export type BrowseType = 'TERM' | 'ACRONYM';
-export type BrowseSort = 'title' | 'updated';
+export type BrowseBasePath = '/terms' | '/acronyms';
 
-const LETTERS = [...'abcdefghijklmnopqrstuvwxyz'.split(''), '0-9'] as const;
+export const BROWSE_LETTERS: readonly string[] = [
+  ...'abcdefghijklmnopqrstuvwxyz',
+  '0-9',
+];
 
-export function getBrowseLetters(): readonly string[] {
-  return LETTERS;
-}
+/** convex/publicBrowse.ts clamps the page to 10; asking past it silently
+    re-serves page 10, so the UI must not offer a page the backend will not serve. */
+const BROWSE_PAGE_MAX = 10;
 
 export function normalizeBrowseLetter(value: string | undefined): string {
   const letter = (value ?? 'a').trim().toLowerCase();
-  return LETTERS.includes(letter as (typeof LETTERS)[number]) ? letter : 'a';
+  return BROWSE_LETTERS.includes(letter) ? letter : 'a';
 }
 
+export function normalizeBrowseSort(value: string | undefined): BrowseSort {
+  return value === 'updated' ? 'updated' : 'title';
+}
+
+export function normalizeBrowsePage(value: string | undefined): number {
+  const parsed = Math.floor(Number(value ?? 1));
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.max(1, Math.min(BROWSE_PAGE_MAX, parsed));
+}
+
+export function normalizeBrowseTag(value: string | undefined): string | null {
+  const slug = (value ?? '').trim().toLowerCase();
+  return slug ? slug : null;
+}
+
+/** The only builder for browse URLs: query state is the browse state. */
 export function buildBrowseHref(input: {
-  basePath: '/terms' | '/acronyms';
+  basePath: BrowseBasePath;
   letter: string;
   page: number;
   sort: BrowseSort;
@@ -30,24 +48,4 @@ export function buildBrowseHref(input: {
   if (input.tagSlug) params.set('tag', input.tagSlug);
   const queryString = params.toString();
   return queryString ? `${input.basePath}?${queryString}` : input.basePath;
-}
-
-export async function loadBrowsePageData(input: {
-  entryType: BrowseType;
-  letter: string;
-  page: number;
-  pageSize: number;
-  sort: BrowseSort;
-  query: string;
-  rawTag: string;
-}) {
-  return getConvexClient().query(api.publicBrowse.browse, {
-    entryType: input.entryType,
-    letter: input.letter,
-    page: input.page,
-    pageSize: input.pageSize,
-    sort: input.sort,
-    query: input.query,
-    tagSlug: input.rawTag.trim() ? input.rawTag.trim().toLowerCase() : null,
-  });
 }

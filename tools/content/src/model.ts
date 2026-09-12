@@ -20,6 +20,8 @@ export const ADAPTERS = [
   'mitreAttackCti',
 ] as const;
 export const TAG_LIFECYCLES = ['CANDIDATE', 'PUBLISHED'] as const;
+/** How SynAc reproduces a source's wording; every citation carries it. */
+export const CONTENT_MODES = ['QUOTED', 'SUMMARIZED', 'PARAPHRASED'] as const;
 export const TAG_ASSIGNMENT_AUTHORITIES = ['SYNTHETIC_REFERENCE'] as const;
 
 const slug = z
@@ -53,6 +55,9 @@ export const sourceFileSchema = z
         type: z.enum(LICENSE_TYPES),
         url: z.url().optional(),
         notes: z.string().optional(),
+        /** One sentence shown to readers next to the citation. */
+        publicStatement: z.string().min(1).optional(),
+        contentMode: z.enum(CONTENT_MODES),
         allowedUse: z.string().min(1),
         attributionRequirements: z.string().min(1),
       })
@@ -298,6 +303,9 @@ export const bundleFileSchema = z
           contentType: z.string().min(1),
           contentSha256: z.string().regex(/^[a-f0-9]{64}$/),
           fetchedAt: isoDateTime,
+          /** Validators from the fetch, replayed as a conditional request next run. */
+          etag: z.string().min(1).optional(),
+          lastModified: z.string().min(1).optional(),
         })
         .strict(),
     ),
@@ -336,6 +344,19 @@ export const overrideFileSchema = z
     /** Sense keys are namespaced: "<sourceSlug>:<senseKey>". */
     suppressSenses: z.array(z.string().min(1)).max(50).default([]),
     preferredSense: z.string().min(1).optional(),
+    /** Namespaced sense key -> heading label, for senses compile cannot name. */
+    labelSenses: z.record(z.string().min(1), z.string().min(1)).default({}),
+    /** Namespaced sense key -> short note rendered under the sense heading. */
+    disambiguationNotes: z
+      .record(z.string().min(1), z.string().min(1))
+      .default({}),
+    /** Each list merges into one sense regardless of similarity; first key is primary. */
+    groupSenses: z
+      .array(z.array(z.string().min(1)).min(2))
+      .max(20)
+      .default([]),
+    /** Sense keys that must never be grouped automatically. */
+    splitSenses: z.array(z.string().min(1)).max(50).default([]),
     editorialSenses: z.array(editorialSenseSchema).max(20).default([]),
   })
   .strict();
@@ -350,6 +371,8 @@ export type OverrideFile = z.infer<typeof overrideFileSchema>;
 export type EntryType = (typeof ENTRY_TYPES)[number];
 export type RelationshipType = (typeof RELATIONSHIP_TYPES)[number];
 
+export type ContentMode = (typeof CONTENT_MODES)[number];
+
 export type CompiledCitation = {
   sourceSlug: string;
   sourceName: string;
@@ -357,9 +380,23 @@ export type CompiledCitation = {
   documentTitle: string | undefined;
   citationText: string | undefined;
   licenseNote: string | undefined;
+  licenseUrl: string | undefined;
+  publicStatement: string | undefined;
+  contentMode: ContentMode;
+  documentSha256: string;
   attributionText: string;
   accessedAt: number;
   locator: string | undefined;
+};
+
+/** A further source that states the same meaning, in that source's own wording. */
+export type CompiledAttestation = {
+  key: string;
+  sourceSlug: string;
+  sourceName: string;
+  definitionMd: string;
+  definitionText: string;
+  citation: CompiledCitation;
 };
 
 export type CompiledSense = {
@@ -367,6 +404,11 @@ export type CompiledSense = {
   key: string;
   order: number;
   label: string | undefined;
+  /** Heading the UI shows when there is no label and no expandedForm. */
+  labelFallback: string;
+  disambiguationNote: string | undefined;
+  needsLabel: boolean;
+  normalizedLabel: string;
   definitionMd: string;
   definitionText: string;
   expandedForm: string | undefined;
@@ -374,7 +416,20 @@ export type CompiledSense = {
   editorialRationale: string | undefined;
   isPreferred: boolean;
   examples: Array<{ md: string; text: string }>;
+  /**
+   * The sources beyond the primary one that state this meaning. The sense's
+   * own definitionMd is the primary source's wording and citations[0] is its
+   * citation, so the primary never repeats itself here: one glossary entry
+   * carries a 40 KB definition, and duplicating it overflows the sync payload.
+   */
+  attestations: CompiledAttestation[];
   citations: CompiledCitation[];
+};
+
+export type CompiledEntryTag = {
+  slug: string;
+  assignedBy: 'EDITORIAL' | 'AUTO';
+  score: number | undefined;
 };
 
 export type CompiledEntry = {
@@ -386,11 +441,16 @@ export type CompiledEntry = {
   aliases: string[];
   summaryMd: string | undefined;
   summaryText: string | undefined;
+  /** Search-result body text; never contains the title or slug. */
+  snippetText: string;
+  /** Lowercase aliases, labels, and expansions the search alias bucket matches. */
+  matchTerms: string[];
   editorialNotes: string | undefined;
   updatedAt: number;
   senseCount: number;
   senseSummary: string | undefined;
   searchDocument: string;
+  tags: CompiledEntryTag[];
   tagSlugs: string[];
   citedSourceSlugs: string[];
 };
@@ -402,6 +462,8 @@ export type CompiledSource = {
   licenseType: (typeof LICENSE_TYPES)[number];
   licenseUrl: string | undefined;
   licenseNotes: string | undefined;
+  publicStatement: string | undefined;
+  contentMode: ContentMode;
   allowedUse: string;
   attributionRequirements: string;
   trustTier: (typeof TRUST_TIERS)[number];
@@ -418,6 +480,8 @@ export type CompiledDataset = {
     name: string;
     description: string | undefined;
     entryCount: number;
+    editorialCount: number;
+    autoCount: number;
   }>;
   entries: CompiledEntry[];
   senses: CompiledSense[];

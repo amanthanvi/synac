@@ -70,6 +70,16 @@
   padding: 12vh var(--page-pad-x) var(--space-6);
 }
 
+/* Zero-size focus stops on either side of the dialog: Tab and Shift+Tab stay
+   real browser events, and focus lands back on the input instead of escaping
+   to the footer. */
+.sentinel {
+  width: 0;
+  height: 0;
+  flex: none;
+  outline: none;
+}
+
 .dialog {
   width: min(600px, 100%);
   max-height: 70vh;
@@ -113,15 +123,10 @@
   flex: 1;
   min-width: 0;
   border: 0;
-  outline: none;
   background: transparent;
   color: var(--fg);
   font-family: var(--font-ui);
   font-size: var(--text-body);
-}
-
-.input:focus-visible {
-  outline: none;
 }
 
 .input::placeholder {

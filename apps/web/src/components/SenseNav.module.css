@@ -1,0 +1,96 @@
+/* Sense navigation in two shapes: the margin rail at >=1280px, and a
+   horizontally scrollable chip row below that, where the rail has no room. */
+
+.rail {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+}
+
+.railTitle {
+  font-weight: var(--weight-medium);
+  color: var(--fg-subtle);
+  margin-bottom: var(--space-2);
+}
+
+.railList {
+  list-style: none;
+  display: grid;
+  border-left: 1px solid var(--border);
+}
+
+.railLink {
+  display: block;
+  padding: 5px var(--space-3);
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    color var(--dur-hover) var(--ease),
+    border-color var(--dur-hover) var(--ease);
+}
+
+.railLink:hover {
+  color: var(--fg);
+}
+
+.railLinkActive {
+  color: var(--fg);
+  border-left-color: var(--fg);
+}
+
+.chips {
+  margin-bottom: var(--space-5);
+}
+
+.chipList {
+  list-style: none;
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding-bottom: var(--space-1);
+}
+
+.chipList::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg-muted);
+  font-size: var(--text-ui);
+  line-height: var(--text-ui-lh);
+  white-space: nowrap;
+  transition:
+    background var(--dur-hover) var(--ease),
+    border-color var(--dur-hover) var(--ease),
+    color var(--dur-hover) var(--ease);
+}
+
+.chip:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-2);
+  color: var(--fg);
+}
+
+.chipActive {
+  border-color: var(--border-strong);
+  background: var(--bg-2);
+  color: var(--fg);
+  font-weight: var(--weight-medium);
+}
+
+@media (min-width: 1280px) {
+  .chips {
+    display: none;
+  }
+}

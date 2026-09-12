@@ -28,7 +28,7 @@ export function Button({
         styles.button,
         variant === 'primary' ? styles.primary : styles.ghost,
         size === 'sm' ? styles.sm : undefined,
-        className
+        className,
       )}
     />
   );
@@ -53,7 +53,7 @@ export function ButtonLink({
         styles.button,
         variant === 'primary' ? styles.primary : styles.ghost,
         size === 'sm' ? styles.sm : undefined,
-        className
+        className,
       )}
     />
   );

@@ -1,122 +1,214 @@
-import { slugify } from '@synac/content-tools';
+import { normalizeTitle, slugify } from '@synac/content-tools';
 
+import {
+  classifyEntryType,
+  isInitialism,
+  isInitialismOf,
+} from '../classify.js';
+import { createCrawler } from '../net/crawl.js';
 import { safeFetch } from '../net/safeFetch.js';
-import { extractAllByIdPrefix, extractFirstById, extractHrefPaths } from '../html.js';
-import { finalizeBundle, type AdapterContext, type DraftDocument, type DraftEntry } from '../bundle.js';
+import {
+  extractAllByIdPrefix,
+  extractFirstById,
+  extractHrefById,
+  extractHrefPaths,
+} from '../html.js';
+import {
+  conditionalHeaders,
+  documentValidators,
+  reusePreviousDocument,
+} from '../net/conditional.js';
+import {
+  finalizeBundle,
+  shortContentType,
+  type AdapterContext,
+  type DraftDocument,
+  type DraftEntry,
+} from '../bundle.js';
 import type { BundleFile } from '@synac/content-tools';
 
-export const ADAPTER_VERSION = 'nist-glossary/1.0.0';
+export const ADAPTER_VERSION = 'nist-glossary/2.0.0';
 const INDEX_DOCUMENT_KEY = 'nist-glossary-index';
 const USER_AGENT = 'synac-ingest/1.0 (+https://github.com/amanthanvi/synac)';
 const TERM_FETCH_CONCURRENCY = 8;
 const PROGRESS_INTERVAL = 100;
+const MAX_SENSES = 50;
+const MAX_ALIASES = 50;
+const MAX_RELATIONSHIPS = 100;
+const TERM_PATH_PREFIX = '/glossary/term/';
+const TERM_URL_BASE = 'https://csrc.nist.gov';
 
-type Variant = { variantText: string; variantType: 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' };
+export type ParsedNistSense = {
+  /** N from `term-def-text-N`; used for the sense key and locator. */
+  index: number;
+  definitionMd: string;
+  label: string | null;
+  locator: string;
+  citationText: string;
+};
 
 export type ParsedNistTerm = {
   title: string;
   entryType: 'TERM' | 'ACRONYM';
-  definitionMd: string;
-  variants: Variant[];
+  senses: ParsedNistSense[];
+  aliases: string[];
+  /** Term slugs linked from the abbreviation block that are not real short forms. */
+  seeAlso: string[];
 };
 
-function normalizeTitle(value: string): string {
-  return value.trim().replace(/\s+/g, ' ').toLowerCase();
+type RawVariant = { text: string; href: string | null };
+
+function collectVariants(html: string): RawVariant[] {
+  const out: RawVariant[] = [];
+
+  // Ids are contiguous per page; a missing index ends the list.
+  for (let index = 0; index < MAX_ALIASES * 2; index += 1) {
+    const linkText = extractFirstById(html, 'a', `term-abbr-link-${index}`);
+    if (linkText) {
+      out.push({
+        text: linkText,
+        href: extractHrefById(html, 'a', `term-abbr-link-${index}`),
+      });
+      continue;
+    }
+    const spanText = extractFirstById(html, 'span', `term-abbr-text-${index}`);
+    if (spanText) {
+      out.push({ text: spanText, href: null });
+      continue;
+    }
+    break;
+  }
+
+  return out;
 }
 
-function inferVariantType(value: string): 'ALIAS' | 'SYNONYM' | 'ABBREVIATION' {
-  const v = value.trim();
-  if (!v) return 'ALIAS';
-  if (v.includes(' ')) return 'SYNONYM';
-
-  const compact = v.replace(/[.\-_/]/g, '');
-  const isAllCaps =
-    compact.length >= 2 &&
-    compact === compact.toUpperCase() &&
-    /[A-Z]/.test(compact) &&
-    /^[A-Z0-9]+$/.test(compact);
-  if (isAllCaps && v.length <= 24) return 'ABBREVIATION';
-
-  return 'ALIAS';
+/**
+ * NIST lists abbreviations, acronyms and synonyms in one block, so an unrelated
+ * term can sit next to a real expansion. Only true short-form relations become
+ * aliases; everything else is demoted to a SEE_ALSO relationship.
+ */
+function isAbbreviationRelation(variantText: string, title: string): boolean {
+  if (isInitialism(title) && variantText.includes(' ')) return true;
+  return isInitialismOf(variantText, title);
 }
 
-function inferEntryTypeFromTitle(value: string): 'TERM' | 'ACRONYM' {
-  const v = value.trim();
-  if (!v) return 'TERM';
-  if (v.includes(' ')) return 'TERM';
-  if (v.length < 2 || v.length > 24) return 'TERM';
+/** First publication credited for definition N, plus the heading it appears under. */
+function senseSource(
+  html: string,
+  index: number,
+  title: string,
+): { source: string; label: string } | null {
+  const source = extractFirstById(html, 'a', `term-def-src-link-${index}-0`);
+  if (!source) return null;
 
-  const letters = v.replace(/[^A-Za-z]/g, '');
-  if (letters.length < 1) return 'TERM';
+  const under = extractFirstById(html, 'span', `term-def-src-under-${index}-0`);
+  const underTerm = under ? under.replace(/^under\s+/i, '').trim() : '';
+  const differs =
+    Boolean(underTerm) && normalizeTitle(underTerm) !== normalizeTitle(title);
 
-  const uppercase = letters.replace(/[^A-Z]/g, '').length;
-  const lowercase = letters.replace(/[^a-z]/g, '').length;
-  const digits = v.replace(/[^0-9]/g, '').length;
-
-  // Classic initialisms (AAD, TLS, AES, S/MIME, etc.)
-  if (uppercase >= 2 && lowercase <= 2) return 'ACRONYM';
-
-  // Short forms like "C2" (Command and Control) have one letter + digits.
-  if (uppercase >= 1 && digits >= 1 && letters.length <= 2 && lowercase === 0) return 'ACRONYM';
-
-  return 'TERM';
+  return { source, label: differs ? `${source} under ${underTerm}` : source };
 }
 
-/** Parses a NIST CSRC glossary term page; returns null when title or definition is missing. */
+/** Parses a NIST CSRC glossary term page; returns null when title or definitions are missing. */
 export function parseNistTermPage(html: string): ParsedNistTerm | null {
   const title = extractFirstById(html, 'h3', 'term-text');
   const definitions = extractAllByIdPrefix(html, 'span', 'term-def-text-');
-  const definition = definitions[0] ?? null;
+  if (!title || definitions.length === 0) return null;
 
-  if (!title || !definition) return null;
+  const senses: ParsedNistSense[] = [];
+  const senseByText = new Map<
+    string,
+    { sense: ParsedNistSense; sources: string[] }
+  >();
+
+  for (const [index, definitionMd] of definitions.entries()) {
+    const credit = senseSource(html, index, title);
+    const source = credit?.source ?? null;
+    const merged = senseByText.get(definitionMd);
+
+    if (merged) {
+      // NIST repeats the same wording across publications; keep one sense.
+      if (source && !merged.sources.includes(source)) {
+        merged.sources.push(source);
+        const [first, ...also] = merged.sources;
+        merged.sense.citationText = `NIST CSRC Glossary, "${title}" (${first}${
+          also.length ? `, also in ${also.join(', ')}` : ''
+        })`;
+      }
+      continue;
+    }
+
+    const sense: ParsedNistSense = {
+      index,
+      definitionMd,
+      label: credit?.label ?? null,
+      locator: `#term-def-text-${index}`,
+      citationText: source
+        ? `NIST CSRC Glossary, "${title}" (${source})`
+        : `NIST CSRC Glossary, "${title}"`,
+    };
+    senses.push(sense);
+    senseByText.set(definitionMd, { sense, sources: source ? [source] : [] });
+  }
 
   const normalizedTitle = normalizeTitle(title);
-  const variantsRaw = [
-    ...extractAllByIdPrefix(html, 'a', 'term-abbr-link-'),
-    ...extractAllByIdPrefix(html, 'span', 'term-abbr-text-'),
-  ];
+  const aliases: string[] = [];
+  const seeAlso: string[] = [];
   const seenVariants = new Set<string>();
-  const variants = variantsRaw
-    .map((v) => v.trim())
-    .filter((v) => v.length > 0 && normalizeTitle(v) !== normalizedTitle)
-    .filter((v) => {
-      const key = normalizeTitle(v);
-      if (seenVariants.has(key)) return false;
-      seenVariants.add(key);
-      return true;
-    })
-    .map((variantText) => ({
-      variantText,
-      variantType: inferVariantType(variantText),
-    }));
+  const seenSeeAlso = new Set<string>();
+
+  for (const variant of collectVariants(html)) {
+    const key = normalizeTitle(variant.text);
+    if (!key || key === normalizedTitle || seenVariants.has(key)) continue;
+    seenVariants.add(key);
+
+    if (isAbbreviationRelation(variant.text, title)) {
+      aliases.push(variant.text);
+      continue;
+    }
+
+    if (!variant.href?.startsWith(TERM_PATH_PREFIX)) continue;
+    const toSlug = termSlugFromUrl(variant.href);
+    if (!toSlug || seenSeeAlso.has(toSlug)) continue;
+    seenSeeAlso.add(toSlug);
+    seeAlso.push(toSlug);
+  }
 
   return {
     title,
-    entryType: inferEntryTypeFromTitle(title),
-    definitionMd: definition,
-    variants,
+    entryType: classifyEntryType(title),
+    senses: senses.slice(0, MAX_SENSES),
+    aliases: aliases.slice(0, MAX_ALIASES),
+    seeAlso: seeAlso.slice(0, MAX_RELATIONSHIPS),
   };
 }
 
 /** Stable natural id for a term page, derived from the /glossary/term/<segment> URL path. */
 export function termSlugFromUrl(termUrl: string): string | null {
-  const segment = new URL(termUrl).pathname.split('/').filter(Boolean).pop() ?? '';
+  const segment =
+    new URL(termUrl, TERM_URL_BASE).pathname.split('/').filter(Boolean).pop() ??
+    '';
   const slug = slugify(decodeURIComponent(segment));
   return slug || null;
 }
 
-function shortContentType(contentType: string, fallback: string): string {
-  return contentType.split(';')[0]!.trim() || fallback;
-}
-
-export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> {
+export async function runNistGlossary(
+  ctx: AdapterContext,
+): Promise<BundleFile> {
   const base = new URL(ctx.source.baseUrl);
   const origin = base.origin;
   const allowedHosts = [base.hostname];
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const crawler = createCrawler({
+    userAgent: USER_AGENT,
+    fetchImpl: ctx.fetch ?? safeFetch,
+    minDelayMs: ctx.minRequestDelayMs,
+  });
 
-  const fetchPage = (url: string) =>
-    safeFetch({
+  // Only term pages revalidate: a 304 on the index or a letter page would leave
+  // this run with no term list to crawl.
+  const fetchPage = (url: string, revalidate = false) =>
+    crawler.fetch({
       url,
       allowedHosts,
       allowedContentTypePrefixes: ['text/html'],
@@ -125,19 +217,24 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
       maxBytes: 5 * 1024 * 1024,
       headers: {
         'user-agent': USER_AGENT,
+        ...(revalidate
+          ? conditionalHeaders(ctx.previous, url, ADAPTER_VERSION)
+          : {}),
       },
     });
 
   const indexUrl = new URL('/glossary', origin).toString();
   const indexRes = await fetchPage(indexUrl);
   if (indexRes.status !== 200) {
-    throw new Error(`NIST glossary index fetch failed (${indexRes.status}) for ${indexUrl}`);
+    throw new Error(
+      `NIST glossary index fetch failed (${indexRes.status}) for ${indexUrl}`,
+    );
   }
 
   const termUrls: string[] = [];
   const seen = new Set<string>();
   const collectTermUrls = (html: string) => {
-    for (const href of extractHrefPaths(html, '/glossary/term/')) {
+    for (const href of extractHrefPaths(html, TERM_PATH_PREFIX)) {
       const abs = new URL(href, origin).toString();
       if (seen.has(abs)) continue;
       seen.add(abs);
@@ -152,7 +249,9 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
     const letterUrl = new URL(`/glossary?index=${letter}`, origin).toString();
     const res = await fetchPage(letterUrl);
     if (res.status !== 200) {
-      throw new Error(`NIST glossary index fetch failed (${res.status}) for ${letterUrl}`);
+      throw new Error(
+        `NIST glossary index fetch failed (${res.status}) for ${letterUrl}`,
+      );
     }
     collectTermUrls(res.body.toString('utf8'));
   }
@@ -166,9 +265,11 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
       contentType: shortContentType(indexRes.contentType, 'text/html'),
       contentSha256: indexRes.sha256,
       fetchedAt,
+      ...documentValidators(indexRes),
     },
   ];
   const entries: DraftEntry[] = [];
+  const seeAlsoBySlug = new Map<string, string[]>();
   const seenEntryKeys = new Set<string>();
   const seenDocumentKeys = new Set<string>([INDEX_DOCUMENT_KEY]);
   const termsToFetch = termUrls.slice(0, ctx.maxItems);
@@ -195,7 +296,7 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
       if (!term) return;
 
       try {
-        term.result = await fetchPage(term.termUrl);
+        term.result = await fetchPage(term.termUrl, true);
       } catch (error) {
         if (!failed) {
           failed = true;
@@ -204,9 +305,15 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
         return;
       }
       completedTerms += 1;
-      if (completedTerms >= nextProgress || completedTerms === fetchedTerms.length) {
-        console.log(`[nist-glossary] fetched ${completedTerms}/${fetchedTerms.length} term pages`);
-        while (nextProgress <= completedTerms) nextProgress += PROGRESS_INTERVAL;
+      if (
+        completedTerms >= nextProgress ||
+        completedTerms === fetchedTerms.length
+      ) {
+        console.log(
+          `[nist-glossary] fetched ${completedTerms}/${fetchedTerms.length} term pages`,
+        );
+        while (nextProgress <= completedTerms)
+          nextProgress += PROGRESS_INTERVAL;
       }
     }
   };
@@ -215,7 +322,32 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
   if (failed) throw firstError;
 
   for (const { termUrl, result: res } of fetchedTerms) {
-    if (!res) throw new Error(`NIST glossary term fetch produced no result for ${termUrl}`);
+    if (!res)
+      throw new Error(
+        `NIST glossary term fetch produced no result for ${termUrl}`,
+      );
+    if (res.status === 304) {
+      // Unchanged since the previous bundle: carry that run's document and the
+      // entries citing it forward instead of reparsing a page we did not fetch.
+      // Their see-also targets rejoin the pass below, which drops any target
+      // this run did not ingest.
+      const reused = reusePreviousDocument(ctx.previous, termUrl);
+      if (reused && !seenDocumentKeys.has(reused.document.key)) {
+        seenDocumentKeys.add(reused.document.key);
+        documents.push(reused.document);
+        for (const entry of reused.entries) {
+          const reusedKey = `${entry.entryType}:${entry.slug}`;
+          if (seenEntryKeys.has(reusedKey)) continue;
+          seenEntryKeys.add(reusedKey);
+          seeAlsoBySlug.set(
+            entry.slug,
+            entry.relationships.map((relationship) => relationship.toSlug),
+          );
+          entries.push({ ...entry, relationships: [] });
+        }
+      }
+      continue;
+    }
     if (res.status !== 200) continue;
 
     const parsed = parseNistTermPage(res.body.toString('utf8'));
@@ -241,29 +373,47 @@ export async function runNistGlossary(ctx: AdapterContext): Promise<BundleFile> 
       contentType: shortContentType(res.contentType, 'text/html'),
       contentSha256: res.sha256,
       fetchedAt,
+      ...documentValidators(res),
     });
+
+    const single = parsed.senses.length === 1;
 
     entries.push({
       entryType: parsed.entryType,
       slug,
       title: parsed.title,
-      aliases: parsed.variants.map((variant) => variant.variantText),
+      aliases: parsed.aliases,
       tags: [],
-      summaryMd: parsed.definitionMd,
-      senses: [
-        {
-          key: termSlug,
-          definitionMd: parsed.definitionMd,
-          examples: [],
-          citation: {
-            documentKey,
-            citationText: `NIST CSRC Glossary, "${parsed.title}"`,
-            locator: '#term-def-text-0',
-          },
+      summaryMd: parsed.senses[0]!.definitionMd,
+      senses: parsed.senses.map((sense) => ({
+        key: single ? termSlug : `${termSlug}-${sense.index}`,
+        label: sense.label ?? undefined,
+        definitionMd: sense.definitionMd,
+        examples: [],
+        citation: {
+          documentKey,
+          citationText: sense.citationText,
+          locator: sense.locator,
         },
-      ],
+      })),
       relationships: [],
     });
+    seeAlsoBySlug.set(slug, parsed.seeAlso);
+  }
+
+  // The content compiler rejects relationships to unknown entries, so a target
+  // that this run did not ingest is dropped rather than guessed.
+  const typeBySlug = new Map(
+    entries.map((entry) => [entry.slug, entry.entryType]),
+  );
+  for (const entry of entries) {
+    entry.relationships = (seeAlsoBySlug.get(entry.slug) ?? []).flatMap(
+      (toSlug) => {
+        const toType = typeBySlug.get(toSlug);
+        if (!toType || toSlug === entry.slug) return [];
+        return [{ toType, toSlug, type: 'SEE_ALSO' as const }];
+      },
+    );
   }
 
   return finalizeBundle({

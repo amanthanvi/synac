@@ -1,0 +1,73 @@
+name: Sense disambiguation
+description: Propose a label, a disambiguation note, a merge, or a split for an entry's meanings.
+labels: ['content']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        SynAc groups near-identical definitions from different sources into one
+        meaning, then shows each source's wording beneath it. Grouping is
+        automatic and sometimes wrong.
+
+        Use this template when a meaning needs a label, when two meanings are
+        really the same, or when one meaning is really two. See
+        `docs/content/senses.md`.
+  - type: input
+    id: url
+    attributes:
+      label: Entry URL
+      placeholder: https://synac.app/term/domain
+    validations:
+      required: true
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: What are you proposing?
+      options:
+        - Add or change a label for a meaning
+        - Add a disambiguation note
+        - These two meanings are the same meaning (merge)
+        - This one meaning is really two (split)
+    validations:
+      required: true
+  - type: textarea
+    id: sense_fragments
+    attributes:
+      label: Which meanings?
+      description: Paste the `#sense-...` fragment for each meaning involved, one per line. A merge or a split needs at least two.
+      placeholder: |
+        #sense-rfc4949-1a-i-general-security
+        #sense-rfc4949-5-i-internet
+    validations:
+      required: true
+  - type: input
+    id: proposed_label
+    attributes:
+      label: Proposed label
+      description: A short phrase that tells this meaning apart from the others, such as "DNS name hierarchy". Leave empty for a merge or split request.
+      placeholder: DNS name hierarchy
+    validations:
+      required: false
+  - type: textarea
+    id: disambiguation_note
+    attributes:
+      label: Disambiguation note
+      description: One sentence saying when a reader wants this meaning rather than another.
+    validations:
+      required: false
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why?
+      description: For a merge, say why the two meanings are the same concept. For a split, say what distinguishes them.
+    validations:
+      required: true
+  - type: textarea
+    id: citations
+    attributes:
+      label: Supporting citations
+      description: Link the sources that support this distinction. Quote the relevant lines.
+      placeholder: |
+        - https://example.com/...
+    validations:
+      required: true

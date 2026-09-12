@@ -8,6 +8,7 @@ import type {
 import { stableJsonHash } from '../../../tools/content/src/tagging.ts';
 import {
   buildAssignmentEmission,
+  REMOVED_ENTRY_HASH,
   hashJson,
   serializeJson,
   sha256Text,
@@ -437,6 +438,54 @@ test('an explicit reviewed removal bound to predecessor, current entry, and run 
       runId: input.runId,
     },
   ]);
+});
+
+test('a reviewed removal with the sentinel hash retires a pair whose entry left the corpus', () => {
+  const full = makeFixture();
+  const previous = previousWithExtra(full, true);
+  const extra = full.corpus.entries[299];
+  const prior = previous.value as TagAssignmentsFile;
+  const priorRow = prior.assignments.find(
+    (row) => row.entryKey === extra.entryKey && row.tagSlug === tagSlugs[0],
+  );
+  assert.ok(priorRow);
+  const removalsFor = (input: BuildEmissionInput) =>
+    exactArtifact({
+      schemaVersion: 'synac-reviewed-tag-removals-v1',
+      predecessorHash: previous.artifactHash,
+      reviewedCandidatesHash: input.reviewed.artifactHash,
+      removals: [
+        {
+          entryKey: priorRow.entryKey,
+          tagSlug: priorRow.tagSlug,
+          previousEntryContentHash: priorRow.entryContentHash,
+          currentEntryContentHash: REMOVED_ENTRY_HASH,
+          reason: 'Entry removed from the corpus.',
+          runId: input.runId,
+        },
+      ],
+    });
+
+  // The current corpus no longer contains entry 299.
+  const input = makeFixture({ corpusSize: 299 });
+  input.previous = previous;
+  input.removals = removalsFor(input);
+  const emission = buildAssignmentEmission(input);
+  assert.equal(
+    emission.artifact.assignments.some(
+      (row) => row.entryKey === extra.entryKey,
+    ),
+    false,
+  );
+  assert.equal(emission.artifact.removals.length, 1);
+
+  // The sentinel is only for an absent entry; a present one needs its hash.
+  full.previous = previous;
+  full.removals = removalsFor(full);
+  assert.throws(
+    () => buildAssignmentEmission(full),
+    /not classified against current/,
+  );
 });
 
 test('existing output or report refuses overwrite without explicit replace mode', async () => {

@@ -1,0 +1,126 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_PUBLIC_CONVEX_URL: http://127.0.0.1:3210
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  SYNAC_CONVEX_SERVICE_KEY: local-dev
+  SYNAC_RATE_LIMIT_SALT: ci-placeholder-salt
+  E2E_BASE_URL: http://localhost:3000
+
+jobs:
+  quality:
+    name: End-to-end and Lighthouse
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 10.34.4
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright chromium
+        run: pnpm --filter @synac/e2e exec playwright install --with-deps chromium
+
+      - name: Start local Convex backend
+        run: |
+          CONVEX_AGENT_MODE=anonymous npx convex dev > convex-dev.log 2>&1 &
+          echo $! > convex-dev.pid
+          # The backend answers /version before the first function push has
+          # committed; wait for the push so later mutations do not race it.
+          for i in $(seq 1 120); do
+            if grep -q "Convex functions ready" convex-dev.log; then
+              echo "Convex backend is up and functions are deployed."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Convex backend did not start in time."
+          cat convex-dev.log
+          exit 1
+
+      - name: Configure the service key
+        run: |
+          for i in 1 2 3 4 5; do
+            if npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev; then
+              exit 0
+            fi
+            sleep 3
+          done
+          exit 1
+
+      - name: Sync content into the local backend
+        run: pnpm --filter @synac/content-tools sync
+
+      - name: Build the web app
+        run: pnpm --filter @synac/web build
+
+      - name: Start the web app
+        run: |
+          pnpm --filter @synac/web start > web.log 2>&1 &
+          echo $! > web.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/healthz > /dev/null 2>&1; then
+              echo "Web app is up (healthz)."
+              exit 0
+            fi
+            if curl -fsS http://localhost:3000/ > /dev/null 2>&1; then
+              echo "Web app is up (root)."
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Web app did not start in time."
+          cat web.log
+          exit 1
+
+      - name: End-to-end tests (Playwright + axe)
+        run: pnpm --filter @synac/e2e test:e2e
+
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli autorun --config=lighthouserc.json
+
+      - name: Stop background processes
+        if: always()
+        run: |
+          for pidfile in web.pid convex-dev.pid; do
+            if [ -f "$pidfile" ]; then
+              kill "$(cat "$pidfile")" 2>/dev/null || true
+            fi
+          done
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
+        with:
+          name: quality-reports
+          path: |
+            apps/e2e/playwright-report
+            apps/e2e/test-results
+            .lighthouseci
+            web.log
+            convex-dev.log
+          if-no-files-found: ignore
+          retention-days: 7

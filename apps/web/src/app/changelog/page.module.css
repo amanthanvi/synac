@@ -4,8 +4,11 @@
 
 .rss {
   position: absolute;
-  top: var(--space-2);
+  top: var(--space-1);
   right: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   font-size: var(--text-sm);
   color: var(--fg-muted);
   text-decoration: underline;

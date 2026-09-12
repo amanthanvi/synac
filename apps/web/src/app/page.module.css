@@ -41,6 +41,7 @@
 
 .quick a {
   color: var(--fg-muted);
+  padding-block: var(--space-1);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-color: var(--border-strong);
@@ -70,6 +71,9 @@
 }
 
 .sectionLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   font-size: var(--text-sm);
   color: var(--fg-muted);
   text-decoration: underline;

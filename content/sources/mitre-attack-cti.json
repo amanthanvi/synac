@@ -5,13 +5,18 @@
   "license": {
     "type": "OTHER",
     "url": "https://attack.mitre.org/resources/legal-and-branding/terms-of-use/",
-    "notes": "MITRE ATT&CK terms of use permit reproduction with the required attribution statement.",
+    "notes": "MITRE ATT&CK terms of use permit reproduction with the required attribution statement. The full license text is the document at license.url.",
+    "publicStatement": "Reproduced from MITRE ATT&CK with the required attribution, per its Terms of Use.",
+    "contentMode": "QUOTED",
     "allowedUse": "Reproduce technique and concept descriptions with the MITRE ATT&CK attribution statement.",
     "attributionRequirements": "© MITRE Corporation. MITRE ATT&CK is used with permission per the ATT&CK Terms of Use."
   },
   "accessMethod": "JSON",
   "trustTier": "TIER2",
   "enabled": true,
-  "ingest": { "adapter": "mitreAttackCti", "schedule": "weekly" },
+  "ingest": {
+    "adapter": "mitreAttackCti",
+    "schedule": "weekly"
+  },
   "lastVerifiedAt": "2026-02-10"
 }

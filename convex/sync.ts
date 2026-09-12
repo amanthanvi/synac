@@ -5,7 +5,10 @@ import type { MutationCtx } from './_generated/server';
 import { internal } from './_generated/api';
 import { stablePayloadHash } from './lib/contentGeneration';
 import {
+  attestationValidator,
   citationValidator,
+  contentMode,
+  entryTagValidator,
   entryType,
   exampleValidator,
   generationCountsValidator,
@@ -19,6 +22,8 @@ const sourceRow = v.object({
   licenseType: v.string(),
   licenseUrl: v.optional(v.string()),
   licenseNotes: v.optional(v.string()),
+  publicStatement: v.optional(v.string()),
+  contentMode,
   allowedUse: v.string(),
   attributionRequirements: v.string(),
   trustTier: v.string(),
@@ -32,12 +37,18 @@ const tagRow = v.object({
   name: v.string(),
   description: v.optional(v.string()),
   entryCount: v.number(),
+  editorialCount: v.number(),
+  autoCount: v.number(),
 });
 
 const senseRow = v.object({
   key: v.string(),
   order: v.number(),
   label: v.optional(v.string()),
+  labelFallback: v.string(),
+  disambiguationNote: v.optional(v.string()),
+  needsLabel: v.boolean(),
+  normalizedLabel: v.string(),
   definitionMd: v.string(),
   definitionText: v.string(),
   expandedForm: v.optional(v.string()),
@@ -45,6 +56,7 @@ const senseRow = v.object({
   editorialRationale: v.optional(v.string()),
   isPreferred: v.boolean(),
   examples: v.array(exampleValidator),
+  attestations: v.array(attestationValidator),
   citations: v.array(citationValidator),
 });
 
@@ -57,11 +69,14 @@ const entryRow = v.object({
   aliases: v.array(v.string()),
   summaryMd: v.optional(v.string()),
   summaryText: v.optional(v.string()),
+  snippetText: v.string(),
+  matchTerms: v.array(v.string()),
   editorialNotes: v.optional(v.string()),
   updatedAt: v.number(),
   senseCount: v.number(),
   senseSummary: v.optional(v.string()),
   searchDocument: v.string(),
+  tags: v.array(entryTagValidator),
   tagSlugs: v.array(v.string()),
   citedSourceSlugs: v.array(v.string()),
   senses: v.array(senseRow),
@@ -429,6 +444,11 @@ export const upsertTags = internalMutation({
           `staged tag ${row.slug} declares ${row.entryCount}; expected ${expectedCount}`,
         );
       }
+      if (row.editorialCount + row.autoCount !== row.entryCount) {
+        throw new Error(
+          `staged tag ${row.slug} splits ${row.editorialCount} editorial + ${row.autoCount} auto; expected ${row.entryCount}`,
+        );
+      }
       if (existing) throw new Error(`duplicate staged tag ${row.slug}`);
       await ctx.db.insert('tags', { ...row, syncVersion: args.syncVersion });
     }
@@ -477,26 +497,35 @@ export const upsertEntries = internalMutation({
           ...sense,
           entryId,
           entryKey: row.key,
+          entryType: row.entryType,
           syncVersion: args.syncVersion,
         });
         senseCount += 1;
       }
 
+      if (
+        row.tags.length !== row.tagSlugs.length ||
+        row.tags.some((tag, index) => tag.slug !== row.tagSlugs[index])
+      ) {
+        throw new Error(`staged entry ${row.key} tags do not match tagSlugs`);
+      }
       const seenTagSlugs = new Set<string>();
-      for (const tagSlug of row.tagSlugs) {
-        if (seenTagSlugs.has(tagSlug))
-          throw new Error(`duplicate staged entry tag ${row.key}/${tagSlug}`);
-        seenTagSlugs.add(tagSlug);
+      for (const tag of row.tags) {
+        if (seenTagSlugs.has(tag.slug))
+          throw new Error(`duplicate staged entry tag ${row.key}/${tag.slug}`);
+        seenTagSlugs.add(tag.slug);
         await ctx.db.insert('entryTags', {
           entryId,
           entryKey: row.key,
-          tagSlug,
+          tagSlug: tag.slug,
+          assignedBy: tag.assignedBy,
+          score: tag.score,
           entryType: row.entryType,
           updatedAt: row.updatedAt,
           syncVersion: args.syncVersion,
         });
         entryTagCount += 1;
-        tagAdditions[tagSlug] = (tagAdditions[tagSlug] ?? 0) + 1;
+        tagAdditions[tag.slug] = (tagAdditions[tag.slug] ?? 0) + 1;
       }
 
       const seenSourceSlugs = new Set<string>();

@@ -95,7 +95,7 @@ export const browse = query({
         summaryText: entry.summaryText ?? null,
         senseSummary: entry.senseSummary ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tags),
       });
     }
 

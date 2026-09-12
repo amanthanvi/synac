@@ -1,8 +1,15 @@
 import { v } from 'convex/values';
 import { query } from './_generated/server';
+import type { Doc } from './_generated/dataModel';
 import type { QueryCtx } from './_generated/server';
 import { activeGeneration } from './lib/contentGeneration';
 import { entryType } from './schema';
+
+export type EntryTag = {
+  slug: string;
+  name: string;
+  assignedBy: 'EDITORIAL' | 'AUTO';
+};
 
 export type EntrySummary = {
   key: string;
@@ -12,23 +19,28 @@ export type EntrySummary = {
   summaryText: string | null;
   senseSummary: string | null;
   updatedAt: number;
-  tags: Array<{ slug: string; name: string }>;
+  tags: EntryTag[];
 };
 
 export async function tagNames(
   ctx: QueryCtx,
   syncVersion: string,
-  slugs: string[],
-): Promise<Array<{ slug: string; name: string }>> {
-  const tags: Array<{ slug: string; name: string }> = [];
-  for (const slug of slugs) {
+  entryTags: Doc<'entries'>['tags'],
+): Promise<EntryTag[]> {
+  const tags: EntryTag[] = [];
+  for (const entryTag of entryTags ?? []) {
     const tag = await ctx.db
       .query('tags')
       .withIndex('by_syncVersion_and_slug', (q) =>
-        q.eq('syncVersion', syncVersion).eq('slug', slug),
+        q.eq('syncVersion', syncVersion).eq('slug', entryTag.slug),
       )
       .unique();
-    if (tag) tags.push({ slug: tag.slug, name: tag.name });
+    if (tag)
+      tags.push({
+        slug: tag.slug,
+        name: tag.name,
+        assignedBy: entryTag.assignedBy ?? 'EDITORIAL',
+      });
   }
   return tags;
 }
@@ -156,11 +168,13 @@ export const getEntryPage = query({
         summaryText: entry.summaryText ?? null,
         editorialNotes: entry.editorialNotes ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tags),
         senses: senses.map((sense) => ({
           key: sense.key,
           order: sense.order,
           label: sense.label ?? null,
+          labelFallback: sense.labelFallback ?? entry.title,
+          disambiguationNote: sense.disambiguationNote ?? null,
           definitionMd: sense.definitionMd,
           definitionText: sense.definitionText,
           expandedForm: sense.expandedForm ?? null,
@@ -168,13 +182,28 @@ export const getEntryPage = query({
           editorialRationale: sense.editorialRationale ?? null,
           isPreferred: sense.isPreferred,
           examples: sense.examples,
-          citations: sense.citations,
+          attestations: (sense.attestations ?? []).map((attestation) => ({
+            ...attestation,
+            citation: publicCitation(attestation.citation),
+          })),
+          citations: sense.citations.map(publicCitation),
         })),
       },
       relationships,
     };
   },
 });
+
+type Citation = Doc<'senses'>['citations'][number];
+
+/** Rows from before these fields existed are replaced by the next sync. */
+function publicCitation(citation: Citation) {
+  return {
+    ...citation,
+    contentMode: citation.contentMode ?? ('SUMMARIZED' as const),
+    documentSha256: citation.documentSha256 ?? '',
+  };
+}
 
 /** Recently updated entries for the home page and /recent, newest first. */
 export const listRecent = query({
@@ -202,7 +231,7 @@ export const listRecent = query({
         summaryText: entry.summaryText ?? null,
         senseSummary: entry.senseSummary ?? null,
         updatedAt: entry.updatedAt,
-        tags: await tagNames(ctx, generation.version, entry.tagSlugs),
+        tags: await tagNames(ctx, generation.version, entry.tags),
       });
     }
     return { entries, hasMore: rows.length > page * pageSize };

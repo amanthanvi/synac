@@ -1,24 +1,29 @@
-# Backups & Restore
+# Backups and restore
 
-The repository itself is the primary backup: all content is in `content/`,
-and the production Convex deployment can be rebuilt from `main` at any time
-by running the `Deploy` workflow (functions + full content sync).
+The repository itself is the primary backup. All content lives in `content/`,
+and the production Convex deployment can be rebuilt from `main` at any time.
+Pushing to `main` runs the Deploy workflow, which redeploys the functions and
+syncs the full content dataset.
 
 ## What still needs backing up
 
-- **Convex deployment**: enable scheduled backups in the Convex dashboard
-  (Settings → Backups). These cover runtime data (view counts) and provide a
-  fast restore path.
-- **GitHub**: the repo is the source of truth; protect `main` (branch
-  protection + required CI) and keep CODEOWNERS current.
+Enable scheduled backups for the Convex deployment in the Convex dashboard,
+under Settings then Backups. These cover runtime data, which today is the rate
+limiter state. They are a convenience, not the real restore path. There is no
+runtime view-count data to lose, because the site does not track views.
+
+GitHub holds the source of truth. Protect `main` with branch protection and
+required CI, and keep CODEOWNERS current.
 
 ## Restore
 
-1. Restore the latest Convex backup (dashboard), or start from an empty
+1. Restore the latest Convex backup from the dashboard, or start from an empty
    deployment.
-2. Run the `Deploy` workflow from `main` — it redeploys functions and syncs
-   the full content dataset (idempotent).
+2. Push to `main` to run the Deploy workflow. An empty commit is enough:
+   `git commit --allow-empty -m "chore: redeploy" && git push`. The sync is
+   idempotent and rebuilds the full content dataset.
 3. Verify with `npx convex run sync:status --prod` and a public smoke test.
 
-Runtime view counts restored from a backup may be slightly stale; that is
-acceptable degradation.
+The repository plus a resync is the restore path that matters. A Convex backup
+only saves you the rate limiter state, and losing that is acceptable
+degradation.

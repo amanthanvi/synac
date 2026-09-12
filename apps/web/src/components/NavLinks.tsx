@@ -21,7 +21,11 @@ export function NavLinks({ links }: { links: NavLinkItem[] }) {
         return (
           <Link
             key={l.href}
-            className={current ? `${styles.navLink} ${styles.navLinkCurrent}` : styles.navLink}
+            className={
+              current
+                ? `${styles.navLink} ${styles.navLinkCurrent}`
+                : styles.navLink
+            }
             aria-current={current ? 'page' : undefined}
             href={l.href}
           >

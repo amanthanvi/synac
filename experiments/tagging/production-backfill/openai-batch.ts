@@ -181,8 +181,11 @@ async function corpusPackets(): Promise<{
     { allowUnreleasedTagging: true },
   );
   if (!compiled.ok) throw new Error(compiled.errors.join('\n'));
-  const sensesByEntry = new Map<string, typeof compiled.dataset.senses>();
-  for (const sense of compiled.dataset.senses) {
+  const sensesByEntry = new Map<
+    string,
+    typeof compiled.classification.senses
+  >();
+  for (const sense of compiled.classification.senses) {
     const senses = sensesByEntry.get(sense.entryKey) ?? [];
     senses.push(sense);
     sensesByEntry.set(sense.entryKey, senses);
@@ -190,10 +193,10 @@ async function corpusPackets(): Promise<{
   return {
     contentVersion: compiled.dataset.contentVersion,
     corpusHash: classificationCorpusHash(
-      compiled.dataset.entries,
-      compiled.dataset.senses,
+      compiled.classification.entries,
+      compiled.classification.senses,
     ),
-    entries: compiled.dataset.entries.map((entry) => {
+    entries: compiled.classification.entries.map((entry) => {
       const senses = sensesByEntry.get(entry.key) ?? [];
       return {
         ...classificationEntryPayload(entry, senses),

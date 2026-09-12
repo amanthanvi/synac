@@ -8,6 +8,12 @@ export const relationshipType = v.union(
   v.literal('CONTRAST'),
 );
 
+export const contentMode = v.union(
+  v.literal('QUOTED'),
+  v.literal('SUMMARIZED'),
+  v.literal('PARAPHRASED'),
+);
+
 export const citationValidator = v.object({
   sourceSlug: v.string(),
   sourceName: v.string(),
@@ -15,9 +21,30 @@ export const citationValidator = v.object({
   documentTitle: v.optional(v.string()),
   citationText: v.optional(v.string()),
   licenseNote: v.optional(v.string()),
+  licenseUrl: v.optional(v.string()),
+  publicStatement: v.optional(v.string()),
+  contentMode: v.optional(contentMode),
+  /** Digest of the fetched document the wording came from. */
+  documentSha256: v.optional(v.string()),
   attributionText: v.string(),
   accessedAt: v.number(),
   locator: v.optional(v.string()),
+});
+
+/** One source's wording for a sense; index 0 is the wording the page renders. */
+export const attestationValidator = v.object({
+  key: v.string(),
+  sourceSlug: v.string(),
+  sourceName: v.string(),
+  definitionMd: v.string(),
+  definitionText: v.string(),
+  citation: citationValidator,
+});
+
+export const entryTagValidator = v.object({
+  slug: v.string(),
+  assignedBy: v.union(v.literal('EDITORIAL'), v.literal('AUTO')),
+  score: v.optional(v.number()),
 });
 
 export const exampleValidator = v.object({
@@ -37,6 +64,9 @@ export const generationCountsValidator = v.object({
   tagRedirects: v.number(),
 });
 
+// Fields added after the first production generation are optional so a
+// schema push validates rows the next sync replaces; the sync always writes
+// them and readers fall back to defaults.
 // Content tables are populated exclusively by the sync pipeline from the
 // compiled content/ dataset. `syncVersion` carries the contentVersion hash of
 // the sync that last touched a row; pruning deletes rows from older versions.
@@ -48,6 +78,8 @@ export default defineSchema({
     licenseType: v.string(),
     licenseUrl: v.optional(v.string()),
     licenseNotes: v.optional(v.string()),
+    publicStatement: v.optional(v.string()),
+    contentMode: v.optional(contentMode),
     allowedUse: v.string(),
     attributionRequirements: v.string(),
     trustTier: v.string(),
@@ -65,6 +97,8 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
     entryCount: v.number(),
+    editorialCount: v.optional(v.number()),
+    autoCount: v.optional(v.number()),
     syncVersion: v.string(),
   })
     .index('by_slug', ['slug'])
@@ -80,11 +114,14 @@ export default defineSchema({
     aliases: v.array(v.string()),
     summaryMd: v.optional(v.string()),
     summaryText: v.optional(v.string()),
+    snippetText: v.optional(v.string()),
+    matchTerms: v.optional(v.array(v.string())),
     editorialNotes: v.optional(v.string()),
     updatedAt: v.number(),
     senseCount: v.number(),
     senseSummary: v.optional(v.string()),
     searchDocument: v.string(),
+    tags: v.optional(v.array(entryTagValidator)),
     tagSlugs: v.array(v.string()),
     citedSourceSlugs: v.array(v.string()),
     syncVersion: v.string(),
@@ -125,9 +162,15 @@ export default defineSchema({
   senses: defineTable({
     entryId: v.id('entries'),
     entryKey: v.string(),
+    // Copied from the entry so meaning-level search can filter without a join.
+    entryType: v.optional(entryType),
     key: v.string(),
     order: v.number(),
     label: v.optional(v.string()),
+    labelFallback: v.optional(v.string()),
+    disambiguationNote: v.optional(v.string()),
+    needsLabel: v.optional(v.boolean()),
+    normalizedLabel: v.optional(v.string()),
     definitionMd: v.string(),
     definitionText: v.string(),
     expandedForm: v.optional(v.string()),
@@ -135,6 +178,7 @@ export default defineSchema({
     editorialRationale: v.optional(v.string()),
     isPreferred: v.boolean(),
     examples: v.array(exampleValidator),
+    attestations: v.optional(v.array(attestationValidator)),
     citations: v.array(citationValidator),
     syncVersion: v.string(),
   })
@@ -145,12 +189,18 @@ export default defineSchema({
       'entryKey',
       'key',
     ])
-    .index('by_syncVersion', ['syncVersion']),
+    .index('by_syncVersion', ['syncVersion'])
+    .searchIndex('search_definition', {
+      searchField: 'definitionText',
+      filterFields: ['syncVersion', 'entryType'],
+    }),
 
   entryTags: defineTable({
     entryId: v.id('entries'),
     entryKey: v.string(),
     tagSlug: v.string(),
+    assignedBy: v.optional(v.union(v.literal('EDITORIAL'), v.literal('AUTO'))),
+    score: v.optional(v.number()),
     // Optional for the one deployment that backfills existing links. Every
     // current sync writes it; the compound index makes type-filtered tag
     // pagination bounded without fetching unrelated Entries.
@@ -269,16 +319,4 @@ export default defineSchema({
       }),
     ),
   }).index('by_key', ['key']),
-
-  // Runtime data — never touched by sync. Keyed by the entry's natural key so
-  // rows survive content re-syncs.
-  entryViews: defineTable({
-    entryKey: v.string(),
-    sessionHash: v.string(),
-    firstSeenAt: v.number(),
-    lastSeenAt: v.number(),
-    viewCount: v.number(),
-  })
-    .index('by_entryKey_and_sessionHash', ['entryKey', 'sessionHash'])
-    .index('by_lastSeenAt', ['lastSeenAt']),
 });

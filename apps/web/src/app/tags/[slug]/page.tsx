@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { permanentRedirect } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 
-import { api, getConvexClient } from '@/lib/convex';
+import { readTag, readTagEntries, readTagResolution } from '@/lib/convex';
 import { formatDate } from '@/lib/dates';
+import { buildTagJsonLd, renderJsonLd } from '@/lib/jsonLd';
+import { getSiteUrl } from '@/lib/sitemap';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
 import { Pagination } from '@/components/Pagination';
@@ -11,14 +13,15 @@ import {
   nextTagPagePath,
   parseTagEntryType,
   parseTagPage,
-  tagRedirectPath,
+  tagPagePath,
 } from '@/lib/tagRouting';
 
-import browseStyles from '../../_styles/Browse.module.css';
 import tagStyles from '../../_styles/Tags.module.css';
 import layoutStyles from '../../_styles/Layout.module.css';
 
 export const revalidate = 300;
+
+const PAGE_SIZE = 50;
 
 type TagPageProps = {
   params: Promise<{ slug: string }>;
@@ -29,24 +32,29 @@ export async function generateMetadata({
   params,
 }: TagPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const client = getConvexClient();
-  const resolution = await client.query(api.tags.resolveSlug, { slug });
+  const resolution = await readTagResolution(slug);
+
   if (resolution?.kind === 'RETIRED') {
     return { title: 'Retired tag', robots: { index: false, follow: true } };
   }
   if (!resolution) return { title: 'Tag not found' };
-  const tag = await client.query(api.tags.bySlug, {
-    slug: resolution.slug,
-  });
 
-  if (!tag) {
-    return { title: 'Tag not found' };
-  }
+  const tag = await readTag(resolution.slug);
+  if (!tag) return { title: 'Tag not found' };
+
+  const description = tag.description ?? `SynAc entries tagged "${tag.name}".`;
 
   return {
     title: tag.name,
-    description: tag.description ?? `SynAc entries tagged “${tag.name}”.`,
+    description,
     alternates: { canonical: `/tags/${tag.slug}` },
+    openGraph: { title: tag.name, description, images: '/opengraph-image.png' },
+    twitter: {
+      card: 'summary_large_image',
+      title: tag.name,
+      description,
+      images: '/twitter-image.png',
+    },
   };
 }
 
@@ -56,22 +64,11 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
 
   const entryType = parseTagEntryType(sp.type);
   const page = parseTagPage(sp.page);
-  const pageSize = 50;
 
-  const client = getConvexClient();
-  const resolution = await client.query(api.tags.resolveSlug, { slug });
-  if (!resolution) {
-    return (
-      <div className={layoutStyles.pageNarrow}>
-        <PageHeader title="Tag not found" subtitle="This tag does not exist." />
-        <div className={tagStyles.empty}>
-          Try <Link href="/tags">all tags</Link>.
-        </div>
-      </div>
-    );
-  }
+  const resolution = await readTagResolution(slug);
+  if (!resolution) notFound();
   if (resolution.kind === 'REDIRECT') {
-    permanentRedirect(tagRedirectPath(resolution.slug, entryType, page));
+    permanentRedirect(tagPagePath(resolution.slug, entryType, page));
   }
   if (resolution.kind === 'RETIRED') {
     return (
@@ -86,35 +83,47 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       </div>
     );
   }
-  const tag = await client.query(api.tags.bySlug, { slug: resolution.slug });
 
-  if (!tag) {
-    return (
-      <div className={layoutStyles.pageNarrow}>
-        <PageHeader title="Tag not found" subtitle="This tag does not exist." />
-        <div className={tagStyles.empty}>
-          Try <Link href="/tags">all tags</Link>.
-        </div>
-      </div>
-    );
-  }
+  const tag = await readTag(resolution.slug);
+  if (!tag) notFound();
 
-  const { entries, hasMore } = await client.query(api.tags.entriesForTag, {
-    tagSlug: tag.slug,
-    entryType: entryType ?? null,
+  const { entries, hasMore } = await readTagEntries(
+    tag.slug,
+    entryType ?? null,
     page,
-    pageSize,
-  });
+    PAGE_SIZE,
+  );
 
-  const baseHref = `/tags/${tag.slug}${entryType ? `?type=${encodeURIComponent(entryType)}` : ''}`;
-  const prevHref =
-    page > 1
-      ? `${baseHref}${entryType ? '&' : '?'}page=${page - 1}`
-      : undefined;
-  const nextHref = nextTagPagePath(tag.slug, entryType, page, hasMore);
+  const siteUrl = getSiteUrl();
+  const jsonLd = renderJsonLd(
+    buildTagJsonLd({
+      url: `${siteUrl}/tags/${tag.slug}`,
+      name: tag.name,
+      description: tag.description,
+      terms: entries.map((entry) => ({
+        name: entry.title,
+        description: entry.summaryText,
+        url: `${siteUrl}${entry.entryType === 'TERM' ? '/term' : '/acronym'}/${entry.slug}`,
+      })),
+    }),
+  );
+
+  const filters: Array<{
+    label: string;
+    type: 'TERM' | 'ACRONYM' | undefined;
+  }> = [
+    { label: 'All', type: undefined },
+    { label: 'Terms', type: 'TERM' },
+    { label: 'Acronyms', type: 'ACRONYM' },
+  ];
 
   return (
     <div className={layoutStyles.pageNarrow}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd }}
+      />
+
       <PageHeader
         title={tag.name}
         subtitle={
@@ -123,28 +132,23 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
       />
 
       <nav className={tagStyles.filters} aria-label="Entry type filter">
-        <Link
-          className={`${tagStyles.chip} ${!entryType ? tagStyles.chipActive : ''}`}
-          href={`/tags/${tag.slug}`}
-        >
-          All
-        </Link>
-        <Link
-          className={`${tagStyles.chip} ${entryType === 'TERM' ? tagStyles.chipActive : ''}`}
-          href={`/tags/${tag.slug}?type=TERM`}
-        >
-          Terms
-        </Link>
-        <Link
-          className={`${tagStyles.chip} ${entryType === 'ACRONYM' ? tagStyles.chipActive : ''}`}
-          href={`/tags/${tag.slug}?type=ACRONYM`}
-        >
-          Acronyms
-        </Link>
+        {filters.map((filter) => {
+          const active = filter.type === entryType;
+          return (
+            <Link
+              key={filter.label}
+              className={`${tagStyles.chip} ${active ? tagStyles.chipActive : ''}`}
+              aria-current={active ? 'true' : undefined}
+              href={tagPagePath(tag.slug, filter.type, 1)}
+            >
+              {filter.label}
+            </Link>
+          );
+        })}
       </nav>
 
       {entries.length === 0 ? (
-        <div className={browseStyles.empty}>
+        <div className={tagStyles.empty}>
           No published entries yet for this tag.
         </div>
       ) : (
@@ -153,11 +157,7 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
             {entries.map((entry) => (
               <EntryRow
                 key={entry.key}
-                href={
-                  entry.entryType === 'TERM'
-                    ? `/term/${entry.slug}`
-                    : `/acronym/${entry.slug}`
-                }
+                href={`${entry.entryType === 'TERM' ? '/term' : '/acronym'}/${entry.slug}`}
                 title={entry.title}
                 entryType={entry.entryType}
                 summary={entry.summaryText}
@@ -165,7 +165,13 @@ export default async function TagPage({ params, searchParams }: TagPageProps) {
               />
             ))}
           </EntryRowList>
-          <Pagination page={page} prevHref={prevHref} nextHref={nextHref} />
+          <Pagination
+            page={page}
+            prevHref={
+              page > 1 ? tagPagePath(tag.slug, entryType, page - 1) : undefined
+            }
+            nextHref={nextTagPagePath(tag.slug, entryType, page, hasMore)}
+          />
         </>
       )}
     </div>

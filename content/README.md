@@ -35,8 +35,41 @@ deployment when changes land on `main`. Git history is the audit log.
 - Suppressing an entry (`"suppress": {"reason": "..."}`) is the takedown
   mechanism. The reason is required; link the issue or request when one exists.
 - New sources require a registry file with complete license terms
-  (`allowedUse`, `attributionRequirements`) and `enabled: true` before their
-  bundles are served. See `docs/content/licensing.md`.
+  (`allowedUse`, `attributionRequirements`, `contentMode`) and `enabled: true`
+  before their bundles are served. See `docs/content/licensing.md`.
+
+## Source license fields
+
+| Field                       | Required | Purpose                                                                             |
+| --------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `type`, `url`               | type     | License identifier and the canonical license text                                    |
+| `notes`                     | no       | Internal detail: the reasoning behind `allowedUse`                                   |
+| `publicStatement`           | no       | One sentence shown to readers beside a citation                                      |
+| `contentMode`               | yes      | `QUOTED`, `SUMMARIZED`, or `PARAPHRASED` — how SynAc reproduces the source's wording |
+| `allowedUse`                | yes      | What the license permits, in the maintainers' words                                  |
+| `attributionRequirements`   | yes      | The attribution line every citation carries                                          |
+
+`contentMode` travels onto every citation along with the fetched document's
+SHA-256, so a page can state exactly how each definition relates to its source.
+
+## Meanings and attestations
+
+Compile folds source definitions that use nearly the same words into one sense
+with one attestation per source; the most trusted source supplies the rendered
+wording. Definitions that are similar but not the same stay separate, and
+compile warns that they need labels so readers can tell them apart. Override
+fields for that curation:
+
+| Field                  | Shape                        | Effect                                                             |
+| ---------------------- | ---------------------------- | ------------------------------------------------------------------ |
+| `labelSenses`          | `{ "<senseKey>": "Label" }`  | Names a sense heading and clears its needs-label warning            |
+| `disambiguationNotes`  | `{ "<senseKey>": "Note." }`  | Short note rendered under the sense heading                        |
+| `groupSenses`          | `[["<primary>", "<other>"]]` | Merges the listed senses regardless of similarity; first is primary |
+| `splitSenses`          | `["<senseKey>"]`             | Keeps a sense out of automatic grouping                            |
+
+Sense keys are namespaced (`"<sourceSlug>:<senseKey>"`, or `"editorial:<index>"`
+for editorial senses) and must match a live sense, otherwise the compile fails.
+Editorial senses cannot be merged into a source sense.
 
 ## Bootstrap status
 

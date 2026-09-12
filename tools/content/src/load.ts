@@ -17,8 +17,7 @@ import type { ContentInput } from './compile.js';
 import { entryKey } from './compile.js';
 
 export type LoadResult =
-  | { ok: true; input: ContentInput }
-  | { ok: false; errors: string[] };
+  { ok: true; input: ContentInput } | { ok: false; errors: string[] };
 
 async function listJsonFiles(dir: string): Promise<string[]> {
   try {

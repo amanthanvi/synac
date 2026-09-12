@@ -1,6 +1,4 @@
-function normalizeWhitespace(value: string): string {
-  return value.replace(/\s+/g, ' ').trim();
-}
+import { normalizeWhitespace } from '@synac/content-tools';
 
 export function stripHtmlTags(html: string): string {
   let out = '';
@@ -19,13 +17,11 @@ export function stripHtmlTags(html: string): string {
   return out;
 }
 
-export function extractFirstInnerHtmlByTag(html: string, tag: string): string | null {
-  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
-  const match = html.match(re);
-  return match?.[1] ?? null;
-}
-
-export function extractFirstInnerHtmlByClass(html: string, tag: string, className: string): string | null {
+export function extractFirstInnerHtmlByClass(
+  html: string,
+  tag: string,
+  className: string,
+): string | null {
   const re = new RegExp(
     `<${tag}[^>]*\\bclass=["'][^"']*\\b${className}\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/${tag}>`,
     'i',
@@ -39,12 +35,12 @@ export function decodeHtmlEntities(text: string): string {
     .replace(/&nbsp;/g, ' ')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&#(\d+);/g, (_, code) => {
+    .replace(/&#(\d+);/g, (_match: string, code: string) => {
       const n = Number(code);
       if (!Number.isFinite(n)) return '';
       return String.fromCodePoint(n);
     })
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+    .replace(/&#x([0-9a-fA-F]+);/g, (_match: string, hex: string) => {
       const n = Number.parseInt(hex, 16);
       if (!Number.isFinite(n)) return '';
       return String.fromCodePoint(n);
@@ -52,15 +48,28 @@ export function decodeHtmlEntities(text: string): string {
     .replace(/&amp;/g, '&');
 }
 
-export function extractFirstById(html: string, tag: string, id: string): string | null {
-  const re = new RegExp(`<${tag}[^>]*\\bid=["']${id}["'][^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i');
+export function extractFirstById(
+  html: string,
+  tag: string,
+  id: string,
+): string | null {
+  const re = new RegExp(
+    `<${tag}[^>]*\\bid=["']${id}["'][^>]*>([\\s\\S]*?)<\\/${tag}>`,
+    'i',
+  );
   const match = html.match(re);
   if (!match) return null;
-  const inner = normalizeWhitespace(decodeHtmlEntities(stripHtmlTags(match[1] ?? '')));
+  const inner = normalizeWhitespace(
+    decodeHtmlEntities(stripHtmlTags(match[1] ?? '')),
+  );
   return inner || null;
 }
 
-export function extractAllByIdPrefix(html: string, tag: string, idPrefix: string): string[] {
+export function extractAllByIdPrefix(
+  html: string,
+  tag: string,
+  idPrefix: string,
+): string[] {
   const re = new RegExp(
     `<${tag}[^>]*\\bid=["']${idPrefix}[^"']*["'][^>]*>([\\s\\S]*?)<\\/${tag}>`,
     'gi',
@@ -68,7 +77,9 @@ export function extractAllByIdPrefix(html: string, tag: string, idPrefix: string
 
   const results: string[] = [];
   for (const match of html.matchAll(re)) {
-    const inner = normalizeWhitespace(decodeHtmlEntities(stripHtmlTags(match[1] ?? '')));
+    const inner = normalizeWhitespace(
+      decodeHtmlEntities(stripHtmlTags(match[1] ?? '')),
+    );
     if (inner) results.push(inner);
   }
 
@@ -83,4 +94,16 @@ export function extractHrefPaths(html: string, hrefPrefix: string): string[] {
     if (href) out.push(href);
   }
   return out;
+}
+
+export function extractHrefById(
+  html: string,
+  tag: string,
+  id: string,
+): string | null {
+  const re = new RegExp(`<${tag}\\b([^>]*\\bid=["']${id}["'][^>]*)>`, 'i');
+  const attributes = html.match(re)?.[1];
+  if (!attributes) return null;
+  const href = attributes.match(/\bhref=["']([^"']+)["']/i)?.[1];
+  return href ? decodeHtmlEntities(href) : null;
 }

@@ -1,13 +1,14 @@
 name: Source request
-description: Propose a new source to ingest (include license and link).
-labels: ["source"]
+description: Propose a new source to ingest. License terms are required.
+labels: ['source']
 body:
   - type: markdown
     attributes:
       value: |
-        SynAc ingests third-party sources. Licensing and attribution matter.
+        SynAc ingests third-party sources. A source contributes content only
+        when its license terms are complete and recorded.
 
-        Please include the source’s license terms and a stable URL.
+        See `docs/content/licensing.md` for what SynAc does with each field.
   - type: input
     id: name
     attributes:
@@ -23,11 +24,55 @@ body:
     validations:
       required: true
   - type: input
-    id: license
+    id: license_url
     attributes:
-      label: License / terms URL
-      description: Link to the license or terms governing reuse/attribution.
+      label: License or terms URL
+      description: Link to the license or terms that govern reuse and attribution.
       placeholder: https://...
+    validations:
+      required: true
+  - type: dropdown
+    id: license_type
+    attributes:
+      label: License type
+      description: Pick the closest match. Choose OTHER if none fits and describe it below.
+      options:
+        - PUBLIC_DOMAIN
+        - US_GOV_PD
+        - CC_BY_4_0
+        - CC_BY_SA_4_0
+        - APACHE_2_0
+        - MIT
+        - OTHER
+    validations:
+      required: true
+  - type: textarea
+    id: allowed_use
+    attributes:
+      label: Allowed use
+      description: What does the license permit? Note any limit on commercial use, redistribution, or derivative works.
+    validations:
+      required: true
+  - type: textarea
+    id: attribution
+    attributes:
+      label: Attribution requirements
+      description: Exactly what the source requires SynAc to display. Quote the license text if it specifies wording.
+    validations:
+      required: true
+  - type: textarea
+    id: access
+    attributes:
+      label: Robots and rate-limit notes
+      description: What do the site's robots.txt and terms say about automated access? Note any published rate limit, required user agent, or API key.
+    validations:
+      required: true
+  - type: input
+    id: contact
+    attributes:
+      label: Contact at the source
+      description: An email address or contact page for license questions and takedown requests.
+      placeholder: https://... or name@example.com
     validations:
       required: true
   - type: textarea
@@ -40,14 +85,14 @@ body:
   - type: textarea
     id: format
     attributes:
-      label: Format + access method
-      description: How is the source accessed? (HTML pages, PDF, CSV export, API, Git repo, etc.)
+      label: Format and access method
+      description: How is the source read? HTML pages, PDF, CSV export, API, or git repository.
     validations:
       required: true
   - type: textarea
     id: examples
     attributes:
-      label: Example entries / terms
+      label: Example entries
       description: A few representative terms that would be valuable to include.
       placeholder: |
         - Term A
@@ -55,4 +100,3 @@ body:
         - Term C
     validations:
       required: false
-

@@ -26,8 +26,14 @@
   flex-wrap: wrap;
 }
 
+/* 24px minimum target. inline-block keeps the text baseline where the
+   baseline-aligned footer row expects it; inline-flex would not. */
 .links a {
+  display: inline-block;
+  min-height: 24px;
+  padding-block: 2px;
   font-size: var(--text-sm);
+  line-height: 20px;
   color: var(--fg-muted);
   transition: color var(--dur-hover) var(--ease);
 }

@@ -1,11 +1,17 @@
 import net from 'node:net';
 
-function parseIpv4(value: string): number[] | null {
+function parseIpv4(value: string): [number, number, number, number] | null {
   const parts = value.split('.');
   if (parts.length !== 4) return null;
-  const octets = parts.map((p) => Number(p));
-  if (octets.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return null;
-  return octets;
+  const [a, b, c, d] = parts.map((p) => Number(p));
+  const octets = [a, b, c, d];
+  if (
+    octets.some(
+      (n) => n === undefined || !Number.isInteger(n) || n < 0 || n > 255,
+    )
+  )
+    return null;
+  return [a!, b!, c!, d!];
 }
 
 export function isForbiddenIp(address: string): boolean {
@@ -63,11 +69,13 @@ export function isForbiddenHostname(hostname: string): boolean {
   return false;
 }
 
-export function isAllowedHostname(hostname: string, allowedHosts: string[]): boolean {
+export function isAllowedHostname(
+  hostname: string,
+  allowedHosts: string[],
+): boolean {
   const h = hostname.trim().toLowerCase();
   return allowedHosts.some((allowed) => {
     const a = allowed.trim().toLowerCase();
     return h === a || h.endsWith(`.${a}`);
   });
 }
-

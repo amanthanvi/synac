@@ -68,6 +68,8 @@ export function safeCodexEnvironment(
   const allowed = new Set([
     'APPDATA',
     'CODEX_HOME',
+    // Linux and macOS locate ~/.codex through HOME the way Windows uses USERPROFILE.
+    'HOME',
     'COMSPEC',
     'HOMEDRIVE',
     'HOMEPATH',
@@ -361,6 +363,9 @@ async function runAttempt(
       stderr += chunk;
     });
     child.on('error', rejectAttempt);
+    // A child that exits before reading its prompt closes the pipe; the
+    // close handler below reports that exit rather than an unhandled EPIPE.
+    child.stdin.on('error', () => undefined);
     const timer = setTimeout(() => {
       timedOut = true;
       child.kill();

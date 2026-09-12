@@ -1,5 +1,5 @@
 // Curated, site-facing changelog entries.
-// CHANGELOG.md in the repository is the canonical release log — keep the two
+// CHANGELOG.md in the repository is the canonical release log, so keep the two
 // in sync when cutting a release.
 export type ChangelogEntry = {
   version: string;
@@ -7,6 +7,14 @@ export type ChangelogEntry = {
   title: string;
   sections: Array<{ title: string; items: string[] }>;
 };
+
+/** The anchor a changelog entry is linked by, on the page and in the feed. */
+export function changelogAnchorId(version: string): string {
+  return `v-${version
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')}`;
+}
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
@@ -132,7 +140,9 @@ export const CHANGELOG: ChangelogEntry[] = [
       },
       {
         title: 'Ingest',
-        items: ['Ingest system with validation, review gates, and audit trail.'],
+        items: [
+          'Ingest system with validation, review gates, and audit trail.',
+        ],
       },
     ],
   },

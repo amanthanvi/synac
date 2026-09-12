@@ -8,7 +8,9 @@ export function TypeMarker({
   className?: string;
 }) {
   return (
-    <span className={className ? `${styles.marker} ${className}` : styles.marker}>
+    <span
+      className={className ? `${styles.marker} ${className}` : styles.marker}
+    >
       {type === 'TERM' ? 'term' : 'acronym'}
     </span>
   );

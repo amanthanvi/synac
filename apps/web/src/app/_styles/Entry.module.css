@@ -1,7 +1,7 @@
 /* Entry page — dictionary structure: headword block, numbered senses. */
 
 /* The content column sits at the same x-position with or without the rail;
-   the sense TOC occupies the right margin beside it. */
+   the sense nav occupies the right margin beside it. */
 .layout,
 .layoutWithToc {
   max-width: var(--content-max);
@@ -100,7 +100,10 @@
   min-width: 0;
 }
 
+/* Inline, so the baseline row keeps its alignment; the padding is what
+   carries the pointer target to 24px. */
 .metaTagLink {
+  padding-block: 5px;
   color: var(--fg-muted);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -157,12 +160,20 @@
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-tight);
   margin-bottom: calc(-1 * var(--space-2));
+  overflow-wrap: anywhere;
 }
 
 .senseHeadingDetail {
   font-size: var(--text-body);
   font-weight: var(--weight-body);
   letter-spacing: normal;
+  color: var(--fg-muted);
+}
+
+.senseNote {
+  margin-top: calc(-1 * var(--space-2));
+  font-size: var(--text-ui);
+  line-height: var(--text-ui-lh);
   color: var(--fg-muted);
 }
 
@@ -173,6 +184,63 @@
 
 .muted {
   color: var(--fg-subtle);
+}
+
+/* Per-sense permalink */
+.senseCopyWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
+.senseCopy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  transition:
+    color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease),
+    opacity var(--dur-hover) var(--ease);
+}
+
+.senseCopy:hover {
+  color: var(--fg);
+  background: var(--bg-2);
+}
+
+.senseCopyStatus {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-body);
+  letter-spacing: normal;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+/* Touch keeps the control visible; a mouse only needs it on the active sense. */
+@media (hover: hover) and (pointer: fine) {
+  .senseCopy {
+    opacity: 0;
+  }
+
+  .sense:hover .senseCopy,
+  .sense:focus-within .senseCopy {
+    opacity: 1;
+  }
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 /* Examples */
@@ -201,7 +269,7 @@
   border-left: 1px solid var(--border-strong);
 }
 
-/* Sources */
+/* Sources and attestations */
 .sources {
   display: grid;
   gap: var(--space-2);
@@ -250,21 +318,155 @@
 }
 
 .sourceMeta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   font-size: var(--text-xs);
   line-height: var(--text-xs-lh);
   color: var(--fg-subtle);
 }
 
+.locator {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* License and attribution: legal text, not fine print. */
 .sourceNote {
-  font-size: var(--text-xs);
-  line-height: var(--text-xs-lh);
-  color: var(--fg-subtle);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--fg-muted);
   max-width: var(--measure);
+}
+
+.noteLink {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+  transition: color var(--dur-hover) var(--ease);
+}
+
+.noteLink:hover {
+  color: var(--fg);
+}
+
+/* Disclosures: compare wording, cite */
+.disclosure {
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  min-width: 0;
+}
+
+.disclosureSummary {
+  width: fit-content;
+  min-height: 24px;
+  padding-block: 3px;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease);
+}
+
+.disclosureSummary::marker {
+  color: var(--fg-subtle);
+}
+
+.disclosureSummary:hover {
+  color: var(--fg);
+}
+
+.disclosureBody {
+  margin-top: var(--space-3);
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--border);
+  display: grid;
+  gap: var(--space-3);
+  max-width: var(--measure);
+}
+
+.compareItem {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.compareSource {
+  font-weight: var(--weight-medium);
+  color: var(--fg-subtle);
+}
+
+.compareText {
+  color: var(--fg-muted);
+  line-height: 1.6;
+}
+
+.compareText mark {
+  color: var(--fg);
+}
+
+.citeLine {
+  color: var(--fg-muted);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.codeScroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-2);
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--fg);
+  padding: var(--space-3) var(--space-4);
+}
+
+/* Quiet meta links: edit, report, citation record */
+.metaLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  width: fit-content;
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--fg-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+  transition: color var(--dur-hover) var(--ease);
+}
+
+.metaLink:hover {
+  color: var(--fg);
+}
+
+.senseFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+}
+
+.senseFoot .disclosure[open] {
+  flex-basis: 100%;
+}
+
+.entryMeta {
+  margin-top: var(--space-7);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
 }
 
 /* Relations */
 .relations {
-  margin-top: var(--space-7);
+  margin-top: var(--space-5);
   padding-top: var(--space-5);
   border-top: 1px solid var(--border);
   display: grid;
@@ -273,7 +475,7 @@
 
 .relationGroup {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .relationTitle {
@@ -284,7 +486,69 @@
 
 .relationList {
   list-style: none;
+  display: grid;
+  max-width: var(--measure);
+}
+
+.relationItem {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+}
+
+.relationRow {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 24px;
+}
+
+.relationLink {
+  font-size: var(--text-body);
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+  transition:
+    color var(--dur-hover) var(--ease),
+    text-decoration-color var(--dur-hover) var(--ease);
+}
+
+.relationLink:hover {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.relationToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  transition:
+    color var(--dur-hover) var(--ease),
+    background var(--dur-hover) var(--ease);
+}
+
+.relationToggle:hover {
+  color: var(--fg);
+  background: var(--bg-2);
+}
+
+.relationPanel {
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--border);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm-lh);
+  color: var(--fg-muted);
+  max-width: var(--measure);
+}
+
+.relationPanel[hidden] {
+  display: none;
 }

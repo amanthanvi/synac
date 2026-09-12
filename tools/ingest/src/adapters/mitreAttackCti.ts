@@ -1,7 +1,13 @@
 import { slugify } from '@synac/content-tools';
 
 import { safeFetch } from '../net/safeFetch.js';
-import { finalizeBundle, type AdapterContext, type DraftEntry } from '../bundle.js';
+import { conditionalHeaders, documentValidators } from '../net/conditional.js';
+import {
+  finalizeBundle,
+  shortContentType,
+  type AdapterContext,
+  type DraftEntry,
+} from '../bundle.js';
 import type { BundleFile } from '@synac/content-tools';
 
 export const ADAPTER_VERSION = 'mitre-attack-cti/1.0.0';
@@ -30,11 +36,17 @@ export type AttackPattern = {
 };
 
 function getAttackExternalId(pattern: StixAttackPattern): string | null {
-  const refs = Array.isArray(pattern.external_references) ? pattern.external_references : [];
+  const refs = Array.isArray(pattern.external_references)
+    ? pattern.external_references
+    : [];
   for (const ref of refs) {
     const sourceName = ref?.source_name;
     const externalId = ref?.external_id;
-    if (sourceName === 'mitre-attack' && typeof externalId === 'string' && externalId.trim()) {
+    if (
+      sourceName === 'mitre-attack' &&
+      typeof externalId === 'string' &&
+      externalId.trim()
+    ) {
       return externalId.trim();
     }
   }
@@ -71,7 +83,10 @@ function summarize(description: string): string {
 }
 
 /** Maps ATT&CK techniques onto bundle entries, deduplicating slug collisions. */
-export function bundleEntriesFromPatterns(patterns: AttackPattern[], maxItems: number): DraftEntry[] {
+export function bundleEntriesFromPatterns(
+  patterns: AttackPattern[],
+  maxItems: number,
+): DraftEntry[] {
   const out: DraftEntry[] = [];
   const seenKeys = new Set<string>();
 
@@ -112,10 +127,13 @@ export function bundleEntriesFromPatterns(patterns: AttackPattern[], maxItems: n
   return out;
 }
 
-export async function runMitreAttackCti(ctx: AdapterContext): Promise<BundleFile> {
+export async function runMitreAttackCti(
+  ctx: AdapterContext,
+): Promise<BundleFile> {
   const url = new URL(ctx.source.baseUrl);
+  const fetchImpl = ctx.fetch ?? safeFetch;
 
-  const res = await safeFetch({
+  const res = await fetchImpl({
     url: url.toString(),
     allowedHosts: [url.hostname],
     allowedContentTypePrefixes: ['application/json', 'text/plain'],
@@ -124,15 +142,27 @@ export async function runMitreAttackCti(ctx: AdapterContext): Promise<BundleFile
     maxBytes: 60 * 1024 * 1024,
     headers: {
       'user-agent': USER_AGENT,
+      ...conditionalHeaders(ctx.previous, url.toString(), ADAPTER_VERSION),
     },
   });
+  // A 304 answers the conditional request above: the copy recorded in the
+  // previous bundle is still current, so reuse it whole.
+  if (res.status === 304 && ctx.previous) return ctx.previous;
   if (res.status !== 200) {
-    throw new Error(`MITRE CTI fetch failed (${res.status}) for ${url.toString()}`);
+    throw new Error(
+      `MITRE CTI fetch failed (${res.status}) for ${url.toString()}`,
+    );
   }
 
-  // Upstream unchanged: keep the previous bundle byte-identical.
-  const previousDocument = ctx.previous?.documents.find((doc) => doc.key === DOCUMENT_KEY);
-  if (ctx.previous && previousDocument?.contentSha256 === res.sha256) {
+  // Upstream unchanged and parsed by this adapter version: keep the previous
+  // bundle byte-identical. A version bump forces a reparse so parser changes land.
+  const previousDocument = ctx.previous?.documents.find(
+    (doc) => doc.key === DOCUMENT_KEY,
+  );
+  if (
+    ctx.previous?.adapterVersion === ADAPTER_VERSION &&
+    previousDocument?.contentSha256 === res.sha256
+  ) {
     return ctx.previous;
   }
 
@@ -153,9 +183,10 @@ export async function runMitreAttackCti(ctx: AdapterContext): Promise<BundleFile
         key: DOCUMENT_KEY,
         url: url.toString(),
         title: 'MITRE ATT&CK CTI (STIX bundle)',
-        contentType: res.contentType.split(';')[0]!.trim() || 'application/json',
+        contentType: shortContentType(res.contentType, 'application/json'),
         contentSha256: res.sha256,
         fetchedAt: ctx.now.toISOString().replace(/\.\d{3}Z$/, 'Z'),
+        ...documentValidators(res),
       },
     ],
     entries: bundleEntriesFromPatterns(patterns, ctx.maxItems),

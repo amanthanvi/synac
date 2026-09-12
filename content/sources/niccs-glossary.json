@@ -6,12 +6,17 @@
     "type": "US_GOV_PD",
     "url": "https://www.dhs.gov/website-policies",
     "notes": "U.S. Government work, public domain in the United States (17 U.S.C. § 105).",
+    "publicStatement": "Public domain (U.S. Government work); attribution requested.",
+    "contentMode": "QUOTED",
     "allowedUse": "Reproduce definitions with attribution to NICCS/CISA.",
     "attributionRequirements": "NICCS Cybersecurity Vocabulary, Cybersecurity and Infrastructure Security Agency (CISA)"
   },
   "accessMethod": "HTML",
   "trustTier": "TIER1",
   "enabled": true,
-  "ingest": { "adapter": "niccsGlossary", "schedule": "weekly" },
+  "ingest": {
+    "adapter": "niccsGlossary",
+    "schedule": "weekly"
+  },
   "lastVerifiedAt": "2026-02-10"
 }

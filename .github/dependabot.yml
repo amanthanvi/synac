@@ -1,14 +1,42 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
+      day: 'monday'
+      time: '05:00'
+      timezone: 'Etc/UTC'
     open-pull-requests-limit: 10
+    groups:
+      # One pull request a week for the low-risk moves. Majors stay separate
+      # so each one gets its own review.
+      npm-minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - 'minor'
+          - 'patch'
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - '*'
+    commit-message:
+      prefix: 'build(deps)'
+      prefix-development: 'build(deps-dev)'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
+      day: 'monday'
+      time: '05:00'
+      timezone: 'Etc/UTC'
     open-pull-requests-limit: 10
-
+    groups:
+      actions-minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - 'minor'
+          - 'patch'
+    commit-message:
+      prefix: 'build(deps)'

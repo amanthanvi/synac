@@ -6,6 +6,8 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(dirname, '../..');
 
 const nextConfig: NextConfig = {
+  // @synac/shared ships TypeScript source; Next compiles it with the app.
+  transpilePackages: ['@synac/shared'],
   turbopack: {
     root: repoRoot,
   },

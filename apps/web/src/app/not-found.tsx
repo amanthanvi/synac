@@ -17,7 +17,8 @@ export default function NotFound() {
         <Link className={layoutStyles.inlineLink} href="/">
           home page
         </Link>
-        , <Link className={layoutStyles.inlineLink} href="/terms">
+        ,{' '}
+        <Link className={layoutStyles.inlineLink} href="/terms">
           terms
         </Link>
         , or{' '}

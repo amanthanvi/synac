@@ -22,12 +22,16 @@ type EntryResult = {
   primarySlug: string;
   summaryText: string | null;
   snippet: string | null;
+  senseSummary: string | null;
 };
 
 type PaletteItem =
   | { kind: 'search'; id: string; label: string; href: string }
   | { kind: 'entry'; id: string; href: string; entry: EntryResult }
   | { kind: 'nav'; id: string; label: string; href: string };
+
+/** 'busy' is the rate limiter refusing, not an empty result set. */
+type SearchStatus = 'idle' | 'loading' | 'ready' | 'busy' | 'error';
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'nav-terms', label: 'Browse terms', href: '/terms' },
@@ -38,6 +42,9 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'nav-about', label: 'About', href: '/about' },
   { id: 'nav-changelog', label: 'Changelog', href: '/changelog' },
 ];
+
+/** Page furniture behind the dialog; both live outside React's tree. */
+const INERT_SELECTORS = ['#content', '#site-header'];
 
 function isEditableTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
@@ -73,7 +80,7 @@ export function SearchPalette() {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [entries, setEntries] = useState<EntryResult[]>([]);
-  const [searching, setSearching] = useState(false);
+  const [status, setStatus] = useState<SearchStatus>('idle');
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -83,7 +90,7 @@ export function SearchPalette() {
     if (!open || q.length < 2) return;
 
     const controller = new AbortController();
-    setSearching(true);
+    setStatus('loading');
     const handle = window.setTimeout(async () => {
       try {
         const response = await fetch(
@@ -92,16 +99,22 @@ export function SearchPalette() {
             signal: controller.signal,
           },
         );
+        if (response.status === 429) {
+          setEntries([]);
+          setActiveIndex(0);
+          setStatus('busy');
+          return;
+        }
         if (!response.ok) throw new Error(`search ${response.status}`);
         const body = (await response.json()) as { results?: EntryResult[] };
         setEntries((body.results ?? []).slice(0, 8));
         setActiveIndex(0);
-        setSearching(false);
+        setStatus('ready');
       } catch (error) {
         if ((error as Error).name !== 'AbortError') {
           setEntries([]);
           setActiveIndex(0);
-          setSearching(false);
+          setStatus('error');
         }
       }
     }, 150);
@@ -151,15 +164,14 @@ export function SearchPalette() {
     setOpen(false);
     setQuery('');
     setEntries([]);
-    setSearching(false);
+    setStatus('idle');
     setActiveIndex(0);
-    triggerRef.current?.focus();
   }
 
   function openPalette() {
     setQuery('');
     setEntries([]);
-    setSearching(false);
+    setStatus('idle');
     setActiveIndex(0);
     setOpen(true);
   }
@@ -169,7 +181,7 @@ export function SearchPalette() {
     setQuery(value);
     if (nextQuery === q) return;
     setEntries([]);
-    setSearching(nextQuery.length >= 2);
+    setStatus(nextQuery.length >= 2 ? 'loading' : 'idle');
     setActiveIndex(0);
   }
 
@@ -198,12 +210,8 @@ export function SearchPalette() {
 
       if (!open) return;
 
-      // The input is the dialog's only focusable element; keep focus inside.
-      if (key === 'tab') {
-        e.preventDefault();
-        inputRef.current?.focus();
-        return;
-      }
+      // Tab is deliberately not intercepted: the sentinels around the dialog
+      // keep focus inside, and Shift+Tab stays a real Tab for the browser.
 
       if (key === 'escape') {
         e.preventDefault();
@@ -237,22 +245,49 @@ export function SearchPalette() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex, items, open]);
 
+  // Focus, scroll lock, the inert screen behind the dialog, and focus restore
+  // all share one lifetime; the cleanup lifts inert before it restores focus so
+  // the trigger inside the header is focusable again.
   useEffect(() => {
     if (!open) return;
-    const handle = window.setTimeout(() => inputRef.current?.focus(), 0);
-    return () => window.clearTimeout(handle);
-  }, [open]);
 
-  useEffect(() => {
-    if (!open) return;
+    const restoreTo = triggerRef.current;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+
+    const blocked = INERT_SELECTORS.flatMap((selector) => {
+      const node = document.querySelector(selector);
+      return node ? [node] : [];
+    });
+    for (const node of blocked) node.setAttribute('inert', '');
+
+    const handle = window.setTimeout(() => inputRef.current?.focus(), 0);
+
     return () => {
+      window.clearTimeout(handle);
       document.body.style.overflow = previousOverflow;
+      for (const node of blocked) node.removeAttribute('inert');
+      restoreTo?.focus();
     };
   }, [open]);
 
   const activeItem = items[activeIndex];
+  const resultCount = entries.length;
+  const announcement = !q
+    ? ''
+    : status === 'busy'
+      ? 'Search is busy, try again'
+      : status === 'error'
+        ? 'Search is unavailable'
+        : status !== 'ready'
+          ? ''
+          : resultCount === 0
+            ? 'No results'
+            : `${resultCount} ${resultCount === 1 ? 'result' : 'results'}`;
+
+  function focusInput() {
+    inputRef.current?.focus();
+  }
 
   return (
     <>
@@ -295,6 +330,11 @@ export function SearchPalette() {
         ? createPortal(
             <div className={styles.overlay} onMouseDown={close}>
               <div
+                className={styles.sentinel}
+                tabIndex={0}
+                onFocus={focusInput}
+              />
+              <div
                 className={styles.dialog}
                 role="dialog"
                 aria-modal="true"
@@ -332,6 +372,7 @@ export function SearchPalette() {
                     role="combobox"
                     aria-expanded="true"
                     aria-controls={listboxId}
+                    aria-autocomplete="list"
                     aria-activedescendant={
                       activeItem ? `${listboxId}-${activeItem.id}` : undefined
                     }
@@ -339,7 +380,7 @@ export function SearchPalette() {
                     autoCorrect="off"
                     spellCheck={false}
                   />
-                  {searching ? (
+                  {status === 'loading' ? (
                     <span className={styles.searching} aria-hidden="true" />
                   ) : (
                     <kbd className={styles.escHint} aria-hidden="true">
@@ -373,11 +414,20 @@ export function SearchPalette() {
                             </span>
                             <TypeMarker type={item.entry.entryType} />
                           </span>
-                          {item.entry.snippet || item.entry.summaryText ? (
+                          {/* Same precedence as /search: the highlighted
+                              snippet explains the match, and senseSummary (a
+                              list of sense labels) only fills a gap. */}
+                          {item.entry.snippet ? (
                             <span className={styles.entrySummary}>
-                              {item.entry.snippet
-                                ? renderHeadline(item.entry.snippet)
-                                : item.entry.summaryText}
+                              {renderHeadline(item.entry.snippet)}
+                            </span>
+                          ) : item.entry.senseSummary ? (
+                            <span className={styles.entrySummary}>
+                              {item.entry.senseSummary}
+                            </span>
+                          ) : item.entry.summaryText ? (
+                            <span className={styles.entrySummary}>
+                              {item.entry.summaryText}
                             </span>
                           ) : null}
                         </span>
@@ -391,13 +441,31 @@ export function SearchPalette() {
                   ))}
                 </ul>
 
-                {q && !searching && entries.length === 0 ? (
+                {q && status === 'busy' ? (
+                  <div className={styles.empty}>
+                    Search is busy, try again. Press Enter for full-text search.
+                  </div>
+                ) : q && status === 'error' ? (
+                  <div className={styles.empty}>
+                    Search is unavailable right now. Press Enter for full-text
+                    search.
+                  </div>
+                ) : q && status === 'ready' && entries.length === 0 ? (
                   <div className={styles.empty}>
                     No entries match “{q}” yet. Press Enter for full-text
                     search.
                   </div>
                 ) : null}
+
+                <p className="srOnly" role="status" aria-live="polite">
+                  {announcement}
+                </p>
               </div>
+              <div
+                className={styles.sentinel}
+                tabIndex={0}
+                onFocus={focusInput}
+              />
             </div>,
             document.body,
           )

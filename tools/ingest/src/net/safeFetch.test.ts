@@ -68,7 +68,7 @@ describe('safeFetch response timeout', () => {
     let bodyController: ReadableStreamDefaultController<Uint8Array> | undefined;
     let requestSignal: AbortSignal | undefined;
     const fetchMock = vi.fn(
-      async (_url: string | URL | Request, init?: RequestInit) => {
+      (_url: string | URL | Request, init?: RequestInit) => {
         requestSignal = init?.signal ?? undefined;
         const body = new ReadableStream<Uint8Array>({
           start(controller) {
@@ -82,10 +82,12 @@ describe('safeFetch response timeout', () => {
           },
         });
 
-        return new Response(body, {
-          status: 200,
-          headers: { 'content-type': 'text/plain' },
-        });
+        return Promise.resolve(
+          new Response(body, {
+            status: 200,
+            headers: { 'content-type': 'text/plain' },
+          }),
+        );
       },
     );
     vi.stubGlobal('fetch', fetchMock);

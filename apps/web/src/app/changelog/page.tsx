@@ -1,10 +1,28 @@
+import type { Metadata } from 'next';
+
 import { PageHeader } from '@/components/PageHeader';
-import { CHANGELOG } from '@/lib/changelog';
+import { CHANGELOG, changelogAnchorId } from '@/lib/changelog';
 
 import layoutStyles from '../_styles/Layout.module.css';
 import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
+
+const title = 'Changelog';
+const description = 'Versioned changes to SynAc: what shipped, when, and why.';
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical: '/changelog' },
+  openGraph: { title, description, images: '/opengraph-image.png' },
+  twitter: {
+    card: 'summary_large_image',
+    title,
+    description,
+    images: '/twitter-image.png',
+  },
+};
 
 export default function ChangelogPage() {
   return (
@@ -23,7 +41,7 @@ export default function ChangelogPage() {
           {CHANGELOG.map((entry) => (
             <li
               key={entry.version}
-              id={`v-${entry.version.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+              id={changelogAnchorId(entry.version)}
               className={styles.entry}
             >
               <div className={styles.entryHeader}>

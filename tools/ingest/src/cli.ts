@@ -13,7 +13,11 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
-import { bundleFileSchema, sourceFileSchema, type SourceFile } from '@synac/content-tools';
+import {
+  bundleFileSchema,
+  sourceFileSchema,
+  type SourceFile,
+} from '@synac/content-tools';
 
 import type { Adapter } from './bundle.js';
 import { runRfc4949 } from './adapters/rfc4949.js';
@@ -31,7 +35,8 @@ const ADAPTERS: Record<string, Adapter> = {
 };
 
 const repoRoot = path.resolve(import.meta.dirname, '../../..');
-const contentDir = process.env.SYNAC_CONTENT_DIR ?? path.join(repoRoot, 'content');
+const contentDir =
+  process.env.SYNAC_CONTENT_DIR ?? path.join(repoRoot, 'content');
 
 async function readJson<T>(filePath: string): Promise<T | null> {
   try {
@@ -47,10 +52,13 @@ async function loadSource(slug: string): Promise<SourceFile | null> {
   return sourceFileSchema.parse(raw);
 }
 
-async function runSource(source: SourceFile): Promise<'updated' | 'unchanged' | 'skipped'> {
+async function runSource(
+  source: SourceFile,
+): Promise<'updated' | 'unchanged' | 'skipped'> {
   if (!source.enabled || !source.ingest) return 'skipped';
   const adapter = ADAPTERS[source.ingest.adapter];
-  if (!adapter) throw new Error(`${source.slug}: unknown adapter ${source.ingest.adapter}`);
+  if (!adapter)
+    throw new Error(`${source.slug}: unknown adapter ${source.ingest.adapter}`);
 
   const bundlePath = path.join(contentDir, 'generated', `${source.slug}.json`);
   const previousRaw = await readJson(bundlePath);
@@ -80,7 +88,9 @@ if (!all && !requested) {
 
 const { readdir } = await import('node:fs/promises');
 const slugs = all
-  ? (await readdir(path.join(contentDir, 'sources'))).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, ''))
+  ? (await readdir(path.join(contentDir, 'sources')))
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.replace(/\.json$/, ''))
   : [requested!];
 
 let failures = 0;

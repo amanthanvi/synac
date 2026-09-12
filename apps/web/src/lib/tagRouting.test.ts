@@ -4,15 +4,15 @@ import {
   nextTagPagePath,
   parseTagEntryType,
   parseTagPage,
-  tagRedirectPath,
+  tagPagePath,
 } from './tagRouting';
 
 describe('tag routing', () => {
-  test('preserves validated filters and clamps pagination in redirect URLs', () => {
-    expect(tagRedirectPath('identity-access', 'ACRONYM', 7)).toBe(
+  test('preserves validated filters and clamps pagination in tag URLs', () => {
+    expect(tagPagePath('identity-access', 'ACRONYM', 7)).toBe(
       '/tags/identity-access?type=ACRONYM&page=7',
     );
-    expect(tagRedirectPath('identity-access', undefined, 101)).toBe(
+    expect(tagPagePath('identity-access', undefined, 101)).toBe(
       '/tags/identity-access?page=100',
     );
     expect(parseTagEntryType('invalid')).toBeUndefined();

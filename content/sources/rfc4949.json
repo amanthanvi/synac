@@ -6,12 +6,17 @@
     "type": "OTHER",
     "url": "https://www.rfc-editor.org/copyright/",
     "notes": "IETF RFC; reproduction permitted with attribution per RFC Editor copyright policy.",
+    "publicStatement": "Reproduced from IETF RFC 4949 with attribution, per the RFC Editor copyright policy.",
+    "contentMode": "QUOTED",
     "allowedUse": "Reproduce definitions with attribution to the RFC and the IETF.",
     "attributionRequirements": "RFC 4949, Internet Security Glossary, Version 2 (IETF, August 2007)"
   },
   "accessMethod": "TEXT",
   "trustTier": "TIER1",
   "enabled": true,
-  "ingest": { "adapter": "rfc4949Glossary", "schedule": "monthly" },
+  "ingest": {
+    "adapter": "rfc4949Glossary",
+    "schedule": "monthly"
+  },
   "lastVerifiedAt": "2026-02-10"
 }

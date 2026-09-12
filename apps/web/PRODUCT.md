@@ -8,7 +8,7 @@ web
 
 ## Users
 
-Security practitioners — analysts, engineers, responders, students — who hit an overloaded term or acronym mid-task and need to answer: "What does this mean *here*? Which definition is backed by an actual source?" They arrive from search engines or a shared deep link, usually mid-work, and leave as soon as they have the answer.
+Security practitioners — analysts, engineers, responders, students — who hit an overloaded term or acronym mid-task and need to answer: "What does this mean _here_? Which definition is backed by an actual source?" They arrive from search engines or a shared deep link, usually mid-work, and leave as soon as they have the answer.
 
 ## Product Purpose
 
@@ -20,12 +20,12 @@ Senses (multiple meanings) are first-class — one entry carries several sourced
 
 ## Operating Context
 
-Looked up mid-task from a browser, often beside terminals, ticket queues, or documents; sessions are short and purposeful. Content is ingested from authoritative sources (e.g. NIST, MITRE ATT&CK, ETSI) under their licenses; attribution and license notes are a legal and ethical requirement of display, not decoration. An internal `/admin` area (Clerk-gated) exists for curation and is out of scope for public design work but shares the global token layer.
+Looked up mid-task from a browser, often beside terminals, ticket queues, or documents; sessions are short and purposeful. Content is ingested from authoritative sources (e.g. NIST, MITRE ATT&CK, ETSI) under their licenses; attribution and license notes are a legal and ethical requirement of display, not decoration.
 
 ## Capabilities and Constraints
 
-- Next.js 16 App Router, React 19, CSS Modules (no Tailwind), Convex data backend behind `@synac/db`; react-markdown for definition bodies.
-- Public routes: home, search, terms, acronyms, term/[slug], acronym/[slug], tags(+slug), sources(+slug), recent, changelog(+RSS), about, legal, sign-in/up, not-found, error.
+- Next.js 16 App Router, React 19, CSS Modules (no Tailwind), Convex data backend read through `apps/web/src/lib/convex.ts`; react-markdown for definition bodies.
+- Public routes: home, search, terms, acronyms, term/[slug], acronym/[slug], tags(+slug), sources(+slug), recent, changelog(+RSS), about, legal, not-found, error.
 - Strict CSP with nonce for inline scripts; theme via `data-theme` + localStorage with system-preference default.
 - Entries can have 1–12+ senses; senses carry citations (quoted/paraphrased/summarized), examples, license/attribution notes; acronyms carry expansions ("stands for") and alternates.
 - Deep links to senses (`#sense-<id>`) and canonical redirects must keep working.

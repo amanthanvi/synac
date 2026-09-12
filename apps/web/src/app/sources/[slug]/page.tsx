@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { api, getConvexClient } from '@/lib/convex';
+import { readSource, readSourceCitedEntries } from '@/lib/convex';
 import { formatDate } from '@/lib/dates';
 import { EntryRow, EntryRowList } from '@/components/EntryRow';
 import { PageHeader } from '@/components/PageHeader';
@@ -9,50 +9,72 @@ import { Pagination } from '@/components/Pagination';
 import { KeyValueList } from '@/components/ui/KeyValue';
 
 import layoutStyles from '../../_styles/Layout.module.css';
-import browseStyles from '../../_styles/Browse.module.css';
 import styles from './page.module.css';
 
 export const revalidate = 900;
+
+const PAGE_SIZE = 50;
 
 type SourcePageProps = {
   params: Promise<{ slug: string }>;
   searchParams?: Promise<{ page?: string }>;
 };
 
-export async function generateMetadata({ params }: SourcePageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: SourcePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const source = await getConvexClient().query(api.sources.bySlug, { slug });
+  const source = await readSource(slug);
 
   if (!source) {
     return { title: 'Source not found' };
   }
 
+  const description = `License notes and attribution requirements for ${source.name}.`;
+
   return {
     title: source.name,
-    description: `License notes and attribution requirements for ${source.name}.`,
+    description,
     alternates: { canonical: `/sources/${source.slug}` },
+    openGraph: {
+      title: source.name,
+      description,
+      images: '/opengraph-image.png',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: source.name,
+      description,
+      images: '/twitter-image.png',
+    },
   };
 }
 
-export default async function SourcePage({ params, searchParams }: SourcePageProps) {
+export default async function SourcePage({
+  params,
+  searchParams,
+}: SourcePageProps) {
   const { slug } = await params;
-  const client = getConvexClient();
-  const source = await client.query(api.sources.bySlug, { slug });
+  const source = await readSource(slug);
 
   if (!source) notFound();
 
   const sp = (await searchParams) ?? {};
-  const page = Math.max(1, Number(sp.page ?? 1) || 1);
-  const pageSize = 50;
+  // convex/sources.ts clamps the page to 10; do not link past what it serves.
+  const page = Math.max(1, Math.min(10, Number(sp.page ?? 1) || 1));
 
-  const { entries: citedEntries, hasMore } = await client.query(api.sources.citedEntries, {
-    sourceSlug: source.slug,
+  const { entries: citedEntries, hasMore } = await readSourceCitedEntries(
+    source.slug,
     page,
-    pageSize,
-  });
+    PAGE_SIZE,
+  );
 
-  const prevHref = page > 1 ? `/sources/${source.slug}?page=${page - 1}` : undefined;
-  const nextHref = hasMore ? `/sources/${source.slug}?page=${page + 1}` : undefined;
+  const prevHref =
+    page > 1 ? `/sources/${source.slug}?page=${page - 1}` : undefined;
+  const nextHref =
+    hasMore && page < 10
+      ? `/sources/${source.slug}?page=${page + 1}`
+      : undefined;
 
   return (
     <div className={layoutStyles.pageNarrow}>
@@ -78,16 +100,27 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
                   </a>
                 ),
               },
-              { label: 'Verified', value: `Verified ${formatDate(new Date(source.lastVerifiedAt))}` },
+              {
+                label: 'Verified',
+                value: formatDate(new Date(source.lastVerifiedAt)),
+              },
               { label: 'License', value: source.licenseType },
-              { label: 'Trust', value: source.trustTier.replace(/_/g, ' ').toLowerCase() },
-              { label: 'Cited by', value: `${source.citedEntryCount.toLocaleString()} entries` },
+              {
+                label: 'Trust',
+                value: source.trustTier.replace(/^TIER(\d+)$/, 'Tier $1'),
+              },
+              {
+                label: 'Cited by',
+                value: `${source.citedEntryCount.toLocaleString()} entries`,
+              },
             ]}
           />
 
           <div className={styles.section}>
             <h2 className={styles.sectionLabel}>Attribution</h2>
-            <p className={styles.sectionText}>{source.attributionRequirements}</p>
+            <p className={styles.sectionText}>
+              {source.attributionRequirements}
+            </p>
           </div>
 
           <div className={styles.section}>
@@ -105,7 +138,12 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
           {source.licenseUrl ? (
             <div className={styles.section}>
               <h2 className={styles.sectionLabel}>License terms</h2>
-              <a className={styles.link} href={source.licenseUrl} target="_blank" rel="noopener noreferrer">
+              <a
+                className={styles.link}
+                href={source.licenseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {source.licenseUrl}
               </a>
             </div>
@@ -116,7 +154,7 @@ export default async function SourcePage({ params, searchParams }: SourcePagePro
           <h2 className={styles.sectionLabel}>Cited entries</h2>
 
           {citedEntries.length === 0 ? (
-            <p className={browseStyles.empty}>No cited entries yet.</p>
+            <p className={layoutStyles.bodyText}>No cited entries yet.</p>
           ) : (
             <>
               <EntryRowList>

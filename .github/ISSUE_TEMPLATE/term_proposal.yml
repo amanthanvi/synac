@@ -27,10 +27,29 @@ body:
       description: Your own wording, or a short quote with the citation below.
     validations:
       required: true
+  - type: dropdown
+    id: wording_origin
+    attributes:
+      label: Is your definition quoted from the source or your own?
+      description: SynAc records this so the entry carries the right license. Quoted wording stays under the source's license.
+      options:
+        - My own wording
+        - Quoted verbatim from the source
+        - Paraphrased from the source
+    validations:
+      required: true
   - type: input
     id: citation
     attributes:
       label: Supporting source (URL)
+      placeholder: https://...
+    validations:
+      required: true
+  - type: input
+    id: license_url
+    attributes:
+      label: License or terms URL of that source
+      description: Link to the license or terms that govern reuse and attribution.
       placeholder: https://...
     validations:
       required: true

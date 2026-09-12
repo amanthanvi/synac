@@ -5,7 +5,11 @@ build
 .turbo
 pnpm-lock.yaml
 apps/web/next-env.d.ts
-packages/db/src/generated
+**/_generated
+apps/e2e/test-results
+apps/e2e/playwright-report
+coverage
+.lighthouseci
 experiments/tagging/production-backfill/entry-index.json
 experiments/tagging/production-backfill/manifest.json
 experiments/tagging/production-backfill/api-batch*/
@@ -13,3 +17,4 @@ experiments/tagging/production-backfill/codex-cli/
 experiments/tagging/production-backfill/candidates.json
 experiments/tagging/production-backfill/local-review-progress*.jsonl
 experiments/tagging/production-backfill/reviewed-candidates.json
+.vercel

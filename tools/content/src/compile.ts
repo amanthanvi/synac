@@ -3,9 +3,11 @@ import { createHash } from 'node:crypto';
 import {
   type BundleEntry,
   type BundleFile,
+  type CompiledAttestation,
   type CompiledCitation,
   type CompiledDataset,
   type CompiledEntry,
+  type CompiledEntryTag,
   type CompiledSense,
   type CompiledSource,
   type EntryType,
@@ -24,9 +26,18 @@ import {
 } from './tagging.js';
 import {
   compactSearchDocument,
+  definitionSimilarity,
   markdownToText,
   normalizeTitle,
+  normalizeWhitespace,
 } from './text.js';
+
+/** Two definitions this alike are one meaning; the lower bound only warns. */
+const ATTACH_SIMILARITY = 0.8;
+const AMBIGUOUS_SIMILARITY = 0.5;
+const MAX_MATCH_TERMS = 60;
+const MAX_SNIPPET_CHARS = 300;
+const EDITORIAL_LABEL_FALLBACK = 'Editorial';
 
 export type ContentInput = {
   sources: SourceFile[];
@@ -38,8 +49,22 @@ export type ContentInput = {
   overrides: Map<string, OverrideFile>;
 };
 
+/**
+ * The ungrouped, pre-dedupe shape of every entry. Tag classification hashes
+ * this view, so grouping senses for display never stales an assignment.
+ */
+export type ClassificationView = {
+  entries: CompiledEntry[];
+  senses: CompiledSense[];
+};
+
 export type CompileResult =
-  | { ok: true; dataset: CompiledDataset; warnings: string[] }
+  | {
+      ok: true;
+      dataset: CompiledDataset;
+      classification: ClassificationView;
+      warnings: string[];
+    }
   | { ok: false; errors: string[]; warnings: string[] };
 
 export type CompileOptions = {
@@ -79,6 +104,157 @@ type MergedEntry = {
   contributions: Array<{ source: SourceFile; entry: BundleEntry }>;
   override: OverrideFile | undefined;
 };
+
+type SenseGrouping = {
+  senses: CompiledSense[];
+  /** Pairs kept apart but too alike to tell one from the other unlabelled. */
+  ambiguous: Array<{ keys: [string, string]; similarity: number }>;
+};
+
+/** A merged sense speaks for its source through its own citation. */
+function attestationOf(sense: CompiledSense): CompiledAttestation[] {
+  const citation = sense.citations[0];
+  if (!citation) return [];
+  return [
+    {
+      key: sense.key,
+      sourceSlug: citation.sourceSlug,
+      sourceName: citation.sourceName,
+      definitionMd: sense.definitionMd,
+      definitionText: sense.definitionText,
+      citation,
+    },
+  ];
+}
+
+function dedupeCitations(citations: CompiledCitation[]): CompiledCitation[] {
+  const seen = new Set<string>();
+  const result: CompiledCitation[] = [];
+  for (const citation of citations) {
+    const identity = `${citation.sourceSlug}\0${citation.url}`;
+    if (seen.has(identity)) continue;
+    seen.add(identity);
+    result.push(citation);
+  }
+  return result;
+}
+
+/**
+ * Folds near-duplicate source definitions into one sense with an attestation
+ * per source. The first sense of a group (trust order, or the explicit
+ * groupSenses primary) supplies the rendered wording.
+ */
+function groupEntrySenses(
+  key: string,
+  senses: CompiledSense[],
+  override: OverrideFile | undefined,
+  errors: string[],
+): SenseGrouping {
+  const byKey = new Map(senses.map((sense) => [sense.key, sense]));
+  const primaryOf = new Map<string, string>();
+  for (const group of override?.groupSenses ?? []) {
+    for (const memberKey of group) {
+      const member = byKey.get(memberKey);
+      if (!member) {
+        errors.push(
+          `override ${key}: groupSenses key ${memberKey} matches no sense`,
+        );
+      } else if (member.isEditorial) {
+        errors.push(
+          `override ${key}: groupSenses cannot merge editorial sense ${memberKey}`,
+        );
+      }
+    }
+    for (const memberKey of group.slice(1)) {
+      if (memberKey === group[0]) continue;
+      if (primaryOf.has(memberKey)) {
+        errors.push(
+          `override ${key}: sense ${memberKey} appears in more than one groupSenses list`,
+        );
+      }
+      primaryOf.set(memberKey, group[0] ?? memberKey);
+    }
+  }
+  const grouped = new Set((override?.groupSenses ?? []).flat());
+  const split = new Set(override?.splitSenses ?? []);
+  for (const splitKey of split) {
+    if (!byKey.has(splitKey)) {
+      errors.push(
+        `override ${key}: splitSenses key ${splitKey} matches no sense`,
+      );
+    }
+    if (grouped.has(splitKey)) {
+      errors.push(
+        `override ${key}: sense ${splitKey} is in both groupSenses and splitSenses`,
+      );
+    }
+  }
+
+  const ambiguous: SenseGrouping['ambiguous'] = [];
+  const leaders: CompiledSense[] = [];
+  // A reviewed group primary must stay a leader; attaching it elsewhere would
+  // leave its members pointing at a sense that is never emitted.
+  const explicitPrimaries = new Set(primaryOf.values());
+  for (const sense of senses) {
+    if (primaryOf.has(sense.key)) continue;
+    if (sense.isEditorial || explicitPrimaries.has(sense.key)) {
+      leaders.push(sense);
+      continue;
+    }
+    let best: { leader: CompiledSense; similarity: number } | undefined;
+    for (const leader of leaders) {
+      if (leader.isEditorial) continue;
+      const similarity = definitionSimilarity(
+        leader.definitionText,
+        sense.definitionText,
+      );
+      if (!best || similarity > best.similarity) best = { leader, similarity };
+    }
+    if (best && best.similarity >= ATTACH_SIMILARITY) {
+      if (!split.has(sense.key) && !split.has(best.leader.key)) {
+        primaryOf.set(sense.key, best.leader.key);
+        continue;
+      }
+    } else if (best && best.similarity >= AMBIGUOUS_SIMILARITY) {
+      ambiguous.push({
+        keys: [best.leader.key, sense.key],
+        similarity: best.similarity,
+      });
+    }
+    leaders.push(sense);
+  }
+
+  const members = new Map<string, CompiledSense[]>();
+  for (const sense of senses) {
+    const primaryKey = primaryOf.get(sense.key);
+    if (primaryKey === undefined) continue;
+    members.set(primaryKey, [...(members.get(primaryKey) ?? []), sense]);
+  }
+  const compiled = leaders.map((leader, index) => {
+    const attestations = (members.get(leader.key) ?? []).flatMap((sense) =>
+      attestationOf(sense),
+    );
+    return {
+      ...leader,
+      order: index,
+      isPreferred: index === 0,
+      attestations,
+      citations: dedupeCitations([
+        ...leader.citations,
+        ...attestations.map((attestation) => attestation.citation),
+      ]),
+    };
+  });
+  const compiledByKey = new Map(compiled.map((sense) => [sense.key, sense]));
+  for (const { keys } of ambiguous) {
+    const left = compiledByKey.get(keys[0]);
+    const right = compiledByKey.get(keys[1]);
+    if (!left || !right || left.label || right.label) continue;
+    left.needsLabel = true;
+    right.needsLabel = true;
+  }
+  return { senses: compiled, ambiguous };
+}
 
 export function compileContent(
   input: ContentInput,
@@ -276,6 +452,14 @@ export function compileContent(
       );
       continue;
     }
+    const mode = source.license.contentMode;
+    if (mode !== 'QUOTED' && bundle.entries.some((e) => e.senses.length > 0)) {
+      // Adapters copy source wording; summaries and paraphrases are written by hand.
+      errors.push(
+        `bundle ${bundle.source}: source declares contentMode ${mode} but bundle senses carry source wording; write ${mode.toLowerCase()} senses in content/overrides/ instead`,
+      );
+      continue;
+    }
     const documentKeys = new Set(bundle.documents.map((doc) => doc.key));
     const seenInBundle = new Set<string>();
     for (const entry of bundle.entries) {
@@ -353,9 +537,14 @@ export function compileContent(
     }
   }
 
-  // Build compiled entries.
+  // Build compiled entries. The classification views below are the ungrouped,
+  // pre-dedupe shape of each entry: grouping near-duplicate senses or dropping
+  // a summary that repeats the first sense is presentation, so it must not
+  // stale accepted tag assignments.
   const entries: CompiledEntry[] = [];
   const senses: CompiledSense[] = [];
+  const classificationEntries: CompiledEntry[] = [];
+  const classificationSenses: CompiledSense[] = [];
   const suppressedKeys = new Set<string>();
 
   const orderedMerged = [...merged.values()].sort((a, b) =>
@@ -377,7 +566,7 @@ export function compileContent(
     );
 
     // Senses: bundle senses in source-precedence order, then editorial senses.
-    const entrySenses: CompiledSense[] = [];
+    const ungroupedSenses: CompiledSense[] = [];
     const suppressSenses = new Set(override?.suppressSenses ?? []);
     const usedSuppressions = new Set<string>();
     for (const { source, entry } of contributions) {
@@ -392,6 +581,7 @@ export function compileContent(
           continue;
         }
         const document = documents.get(sense.citation.documentKey);
+        const definitionText = markdownToText(sense.definitionMd);
         const citations: CompiledCitation[] = document
           ? [
               {
@@ -401,19 +591,27 @@ export function compileContent(
                 documentTitle: document.title,
                 citationText: sense.citation.citationText,
                 licenseNote: source.license.notes,
+                licenseUrl: source.license.url,
+                publicStatement: source.license.publicStatement,
+                contentMode: source.license.contentMode,
+                documentSha256: document.contentSha256,
                 attributionText: source.license.attributionRequirements,
                 accessedAt: Date.parse(document.fetchedAt),
                 locator: sense.citation.locator,
               },
             ]
           : [];
-        entrySenses.push({
+        ungroupedSenses.push({
           entryKey: key,
           key: namespacedKey,
-          order: entrySenses.length,
+          order: ungroupedSenses.length,
           label: sense.label,
+          labelFallback: source.name,
+          disambiguationNote: undefined,
+          needsLabel: false,
+          normalizedLabel: '',
           definitionMd: sense.definitionMd,
-          definitionText: markdownToText(sense.definitionMd),
+          definitionText,
           expandedForm: sense.expandedForm,
           isEditorial: false,
           editorialRationale: undefined,
@@ -422,16 +620,21 @@ export function compileContent(
             md,
             text: markdownToText(md),
           })),
+          attestations: [],
           citations,
         });
       }
     }
     for (const [index, sense] of (override?.editorialSenses ?? []).entries()) {
-      entrySenses.push({
+      ungroupedSenses.push({
         entryKey: key,
         key: `editorial:${index}`,
-        order: entrySenses.length,
+        order: ungroupedSenses.length,
         label: sense.label,
+        labelFallback: EDITORIAL_LABEL_FALLBACK,
+        disambiguationNote: undefined,
+        needsLabel: false,
+        normalizedLabel: '',
         definitionMd: sense.definitionMd,
         definitionText: markdownToText(sense.definitionMd),
         expandedForm: sense.expandedForm,
@@ -442,6 +645,7 @@ export function compileContent(
           md,
           text: markdownToText(md),
         })),
+        attestations: [],
         citations: [],
       });
     }
@@ -452,7 +656,7 @@ export function compileContent(
         );
       }
     }
-    if (entrySenses.length === 0) {
+    if (ungroupedSenses.length === 0) {
       errors.push(
         `entry ${key}: all senses suppressed; suppress the entry instead`,
       );
@@ -460,7 +664,7 @@ export function compileContent(
     }
 
     if (override?.preferredSense) {
-      const preferredIndex = entrySenses.findIndex(
+      const preferredIndex = ungroupedSenses.findIndex(
         (sense) => sense.key === override.preferredSense,
       );
       if (preferredIndex < 0) {
@@ -468,14 +672,47 @@ export function compileContent(
           `override ${key}: preferredSense ${override.preferredSense} matches no sense`,
         );
       } else if (preferredIndex > 0) {
-        const [preferred] = entrySenses.splice(preferredIndex, 1);
-        entrySenses.unshift(preferred);
+        // preferredIndex came from findIndex over this array, so the splice
+        // always removes exactly one sense.
+        const [preferred] = ungroupedSenses.splice(preferredIndex, 1);
+        if (preferred) ungroupedSenses.unshift(preferred);
       }
     }
-    entrySenses.forEach((sense, index) => {
+    ungroupedSenses.forEach((sense, index) => {
       sense.order = index;
       sense.isPreferred = index === 0;
     });
+
+    const grouping = groupEntrySenses(key, ungroupedSenses, override, errors);
+    const entrySenses = grouping.senses;
+    const sensesByKey = new Map(
+      entrySenses.map((sense) => [sense.key, sense] as const),
+    );
+    for (const [senseKey, label] of Object.entries(
+      override?.labelSenses ?? {},
+    )) {
+      const sense = sensesByKey.get(senseKey);
+      if (!sense) {
+        errors.push(
+          `override ${key}: labelSenses key ${senseKey} matches no sense`,
+        );
+        continue;
+      }
+      sense.label = label;
+      sense.needsLabel = false;
+    }
+    for (const [senseKey, note] of Object.entries(
+      override?.disambiguationNotes ?? {},
+    )) {
+      const sense = sensesByKey.get(senseKey);
+      if (!sense) {
+        errors.push(
+          `override ${key}: disambiguationNotes key ${senseKey} matches no sense`,
+        );
+        continue;
+      }
+      sense.disambiguationNote = note;
+    }
 
     const primary = contributions[0]?.entry;
     const title = override?.title ?? primary?.title;
@@ -501,11 +738,46 @@ export function compileContent(
       aliases.push(alias);
     }
 
-    const tags = new Set<string>(contributions.flatMap((c) => c.entry.tags));
+    for (const sense of entrySenses) {
+      sense.normalizedLabel = normalizeTitle(
+        sense.label ?? sense.expandedForm ?? title,
+      );
+    }
+    const needsLabel = entrySenses.filter((sense) => sense.needsLabel);
+    if (needsLabel.length > 0) {
+      const flagged = new Set(needsLabel.map((sense) => sense.key));
+      const similarity = Math.max(
+        ...grouping.ambiguous
+          .filter(({ keys }) => flagged.has(keys[0]) && flagged.has(keys[1]))
+          .map(({ similarity: value }) => value),
+      );
+      warnings.push(
+        `entry ${key}: senses ${needsLabel.map((sense) => sense.key).join(', ')} ` +
+          `need labels (similarity ${similarity.toFixed(2)}); add labelSenses in ` +
+          `content/overrides/${item.entryType.toLowerCase()}/${item.slug}.json`,
+      );
+    }
+
+    const tags = new Map<string, CompiledEntryTag>();
+    for (const tag of contributions.flatMap((c) => c.entry.tags)) {
+      tags.set(tag, { slug: tag, assignedBy: 'EDITORIAL', score: undefined });
+    }
 
     const summaryMd =
       override?.summaryMd ??
       contributions.find((c) => c.entry.summaryMd)?.entry.summaryMd;
+    const summaryText = summaryMd ? markdownToText(summaryMd) : undefined;
+    // The UI renders the first sense right below the title, so a derived
+    // summary that repeats it would print the same sentence twice.
+    const summaryRepeatsFirstSense =
+      !override?.summaryMd &&
+      summaryText !== undefined &&
+      normalizeWhitespace(summaryText) ===
+        normalizeWhitespace(entrySenses[0]?.definitionText ?? '');
+    const publicSummaryMd = summaryRepeatsFirstSense ? undefined : summaryMd;
+    const publicSummaryText = summaryRepeatsFirstSense
+      ? undefined
+      : summaryText;
     const updatedAt = Math.max(
       ...contributions.map((c) => dateMs(c.entry.updatedAt)),
       override?.updatedAt ? dateMs(override.updatedAt) : 0,
@@ -516,15 +788,27 @@ export function compileContent(
       ),
     ].sort();
 
-    // For acronyms the browse/search UIs show a compact expansion summary.
+    // Browse and search show a compact list of the meanings an entry carries.
     const senseSummary =
-      item.entryType === 'ACRONYM'
+      entrySenses.length > 1
         ? entrySenses
             .slice(0, 3)
-            .map((sense) => (sense.label ?? sense.expandedForm ?? '').trim())
+            .map((sense) =>
+              (sense.label ?? sense.expandedForm ?? sense.labelFallback).trim(),
+            )
             .filter(Boolean)
             .join(' · ') || undefined
         : undefined;
+    const matchTerms = [
+      ...new Set(
+        [
+          ...aliases,
+          ...entrySenses.flatMap((sense) => [sense.expandedForm, sense.label]),
+        ]
+          .map((value) => (value ? normalizeTitle(value) : ''))
+          .filter(Boolean),
+      ),
+    ].slice(0, MAX_MATCH_TERMS);
     const compiled: CompiledEntry = {
       key,
       entryType: item.entryType,
@@ -532,8 +816,14 @@ export function compileContent(
       title,
       normalizedTitle: normalizeTitle(title),
       aliases,
-      summaryMd,
-      summaryText: summaryMd ? markdownToText(summaryMd) : undefined,
+      summaryMd: publicSummaryMd,
+      summaryText: publicSummaryText,
+      snippetText: (
+        publicSummaryText ??
+        entrySenses[0]?.definitionText ??
+        ''
+      ).slice(0, MAX_SNIPPET_CHARS),
+      matchTerms,
       editorialNotes: override?.editorialNotes,
       updatedAt,
       senseCount: entrySenses.length,
@@ -542,22 +832,29 @@ export function compileContent(
         title,
         normalizeTitle(title),
         item.slug,
-        summaryMd ? markdownToText(summaryMd) : undefined,
+        publicSummaryText,
         ...entrySenses.flatMap((sense) => [
           sense.label,
           sense.expandedForm,
           sense.definitionText,
+          ...sense.attestations.map(
+            (attestation) => attestation.definitionText,
+          ),
         ]),
         ...aliases,
       ]),
-      tagSlugs: [...tags].sort(),
+      tags: [],
+      tagSlugs: [],
       citedSourceSlugs,
     };
     const entryAssignments = assignmentsByEntry.get(key) ?? [];
     if (entryAssignments.length > 0) assignmentEntriesApplied.add(key);
+    const classificationEntry: CompiledEntry = summaryRepeatsFirstSense
+      ? { ...compiled, summaryMd, summaryText }
+      : compiled;
     const actualEntryContentHash = classificationEntryHash(
-      compiled,
-      entrySenses,
+      classificationEntry,
+      ungroupedSenses,
     );
     for (const assignment of entryAssignments) {
       if (assignment.entryContentHash !== actualEntryContentHash) {
@@ -566,7 +863,13 @@ export function compileContent(
         );
         continue;
       }
-      tags.add(assignment.tagSlug);
+      if (!tags.has(assignment.tagSlug)) {
+        tags.set(assignment.tagSlug, {
+          slug: assignment.tagSlug,
+          assignedBy: 'AUTO',
+          score: assignment.score,
+        });
+      }
     }
     for (const tag of override?.addTags ?? []) {
       if (!publishedTagSlugs.has(tag)) {
@@ -575,7 +878,7 @@ export function compileContent(
         );
         continue;
       }
-      tags.add(tag);
+      tags.set(tag, { slug: tag, assignedBy: 'EDITORIAL', score: undefined });
     }
     for (const tag of override?.removeTags ?? []) {
       if (!publishedTagSlugs.has(tag)) {
@@ -586,9 +889,14 @@ export function compileContent(
       }
       tags.delete(tag);
     }
-    compiled.tagSlugs = [...tags].sort();
+    compiled.tags = [...tags.values()].sort((a, b) =>
+      a.slug.localeCompare(b.slug),
+    );
+    compiled.tagSlugs = compiled.tags.map((tag) => tag.slug);
     entries.push(compiled);
     senses.push(...entrySenses);
+    classificationEntries.push(classificationEntry);
+    classificationSenses.push(...ungroupedSenses);
   }
 
   for (const entryKeyWithAssignments of assignmentsByEntry.keys()) {
@@ -599,7 +907,10 @@ export function compileContent(
     }
   }
   if (input.tagAssignments) {
-    const actualCorpusHash = classificationCorpusHash(entries, senses);
+    const actualCorpusHash = classificationCorpusHash(
+      classificationEntries,
+      classificationSenses,
+    );
     if (input.tagAssignments.run.corpusHash !== actualCorpusHash) {
       errors.push(
         `tag assignments: corpus hash ${input.tagAssignments.run.corpusHash} does not match ${actualCorpusHash}`,
@@ -708,9 +1019,14 @@ export function compileContent(
     }
   }
   const tagEntryCounts = new Map<string, number>();
+  const tagEditorialCounts = new Map<string, number>();
+  const tagAutoCounts = new Map<string, number>();
   for (const entry of entries) {
-    for (const tagSlug of entry.tagSlugs) {
-      tagEntryCounts.set(tagSlug, (tagEntryCounts.get(tagSlug) ?? 0) + 1);
+    for (const tag of entry.tags) {
+      tagEntryCounts.set(tag.slug, (tagEntryCounts.get(tag.slug) ?? 0) + 1);
+      const lane =
+        tag.assignedBy === 'EDITORIAL' ? tagEditorialCounts : tagAutoCounts;
+      lane.set(tag.slug, (lane.get(tag.slug) ?? 0) + 1);
     }
   }
 
@@ -755,6 +1071,8 @@ export function compileContent(
       licenseType: source.license.type,
       licenseUrl: source.license.url,
       licenseNotes: source.license.notes,
+      publicStatement: source.license.publicStatement,
+      contentMode: source.license.contentMode,
       allowedUse: source.license.allowedUse,
       attributionRequirements: source.license.attributionRequirements,
       trustTier: source.trustTier,
@@ -774,6 +1092,8 @@ export function compileContent(
         name: tag.name,
         description: tag.description,
         entryCount: tagEntryCounts.get(tag.slug) ?? 0,
+        editorialCount: tagEditorialCounts.get(tag.slug) ?? 0,
+        autoCount: tagAutoCounts.get(tag.slug) ?? 0,
       }))
       .sort((a, b) => a.slug.localeCompare(b.slug)),
     entries,
@@ -808,5 +1128,13 @@ export function compileContent(
     )
     .digest('hex');
 
-  return { ok: true, dataset, warnings };
+  return {
+    ok: true,
+    dataset,
+    classification: {
+      entries: classificationEntries,
+      senses: classificationSenses,
+    },
+    warnings,
+  };
 }

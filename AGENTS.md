@@ -27,10 +27,13 @@ Source of truth: `docs/architecture/overview.md` (architecture) + `SPEC.md` (pro
 - No TS suppression (`as any`, `@ts-ignore`, `@ts-expect-error`, `as never`).
 - No CSS frameworks (Tailwind/styled-components/etc). CSS Modules only.
 - There is no auth surface; do not add accounts, sessions, or admin routes.
+- `convex/` and `tests/convex/` are linted by `pnpm lint:convex` and typechecked by `pnpm typecheck:convex`. New Convex code must pass both.
+- `tsconfig.base.json` enables `noUncheckedIndexedAccess`, `noImplicitOverride`, and `noFallthroughCasesInSwitch`. Narrow an index access before you use it; do not reach for a suppression.
 
 ## Golden commands
 
-- Full verification gate: `pnpm gate`
+- Full verification gate: `pnpm gate`. It runs, in order: `lint`, `lint:convex`, `format`, `typecheck`, `typecheck:convex`, `test`, `tagging:check`, `content:check`, `content:history`, `build`.
+- End-to-end suite: `pnpm --filter @synac/e2e test:e2e`. It needs a running local stack and is not part of `pnpm gate`.
 - Content validation: `pnpm content:check`
 - Convex tests: `pnpm test:convex`
 - Local backend: `CONVEX_AGENT_MODE=anonymous npx convex dev`, then `pnpm --filter @synac/content-tools sync`

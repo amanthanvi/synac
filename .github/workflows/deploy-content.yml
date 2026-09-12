@@ -16,7 +16,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
         with:
           fetch-depth: 0
 
@@ -26,7 +26,7 @@ jobs:
           version: 10.34.4
 
       - name: Setup Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .node-version
           cache: pnpm
@@ -38,6 +38,8 @@ jobs:
         run: pnpm gate
         env:
           SYNAC_ASSIGNMENTS_BASE_REF: ${{ github.event.before }}
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          SYNAC_RATE_LIMIT_SALT: ci-placeholder-salt
 
       - name: Deploy Convex functions
         run: npx convex deploy
@@ -48,3 +50,26 @@ jobs:
         run: pnpm --filter @synac/content-tools sync -- --prod
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+
+      # Pages read through a tagged server-side data cache. Without this call
+      # the new generation stays invisible until the cache entries expire.
+      - name: Revalidate cached pages
+        env:
+          SITE_URL: ${{ vars.SYNAC_SITE_URL || 'https://synac.app' }}
+          REVALIDATE_SECRET: ${{ secrets.SYNAC_REVALIDATE_SECRET }}
+        run: |
+          if [ -z "$REVALIDATE_SECRET" ]; then
+            echo "SYNAC_REVALIDATE_SECRET is not set; cached pages will go stale."
+            exit 1
+          fi
+          status=$(curl -sS -o revalidate.json -w '%{http_code}' \
+            -X POST "$SITE_URL/api/v1/internal/revalidate" \
+            -H "Authorization: Bearer $REVALIDATE_SECRET" \
+            -H 'Content-Type: application/json' \
+            -d '{"tags":["content"]}')
+          cat revalidate.json
+          echo
+          if [ "$status" != "200" ]; then
+            echo "Revalidate returned HTTP $status."
+            exit 1
+          fi
