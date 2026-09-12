@@ -20,7 +20,7 @@
     "format:write": "prettier . --write --ignore-path ../../.prettierignore"
   },
   "devDependencies": {
-    "@types/node": "^25.9.5",
+    "@types/node": "^25.9.6",
     "eslint": "^9.39.5",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
