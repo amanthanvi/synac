@@ -141,9 +141,9 @@ export async function bootstrapFromExport(
       license: {
         type: LICENSE_TYPE_MAP[str(source, 'licenseType') ?? ''] ?? 'OTHER',
         notes: str(source, 'licenseNotes'),
-        // The export carries no reproduction mode; the strictest one is the
-        // safe default for a human to relax during review.
-        contentMode: 'SUMMARIZED',
+        // Every pre-cutover adapter stored source wording verbatim, so the
+        // bundles this tool writes are quotations whatever the export says.
+        contentMode: 'QUOTED',
         allowedUse: str(source, 'allowedUse') ?? 'REVIEW REQUIRED',
         attributionRequirements:
           str(source, 'attributionRequirements') ?? 'REVIEW REQUIRED',

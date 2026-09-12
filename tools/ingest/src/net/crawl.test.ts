@@ -104,23 +104,57 @@ describe('createCrawler', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
-  it('crawls when robots.txt is unreadable', async () => {
-    const fetchImpl = vi.fn((options: SafeFetchOptions) => {
-      if (options.url.endsWith('/robots.txt'))
-        throw new Error('Disallowed content-type: text/html');
-      return Promise.resolve(response(options.url, '<html></html>'));
-    });
-    const crawler = createCrawler({
-      userAgent: 'test',
-      fetchImpl,
-      minDelayMs: 0,
-    });
+  it('crawls when robots.txt is missing or is an HTML page', async () => {
+    for (const robots of [
+      response('https://example.gov/robots.txt', 'Not found', 404),
+      response('https://example.gov/robots.txt', '<html>Home</html>'),
+    ]) {
+      const fetchImpl = vi.fn((options: SafeFetchOptions) =>
+        Promise.resolve(
+          options.url.endsWith('/robots.txt')
+            ? robots
+            : response(options.url, '<html></html>'),
+        ),
+      );
+      const crawler = createCrawler({
+        userAgent: 'test',
+        fetchImpl,
+        minDelayMs: 0,
+      });
 
-    const res = await crawler.fetch({
-      ...PAGE_OPTIONS,
-      url: 'https://example.gov/glossary',
-    });
-    expect(res.status).toBe(200);
+      const res = await crawler.fetch({
+        ...PAGE_OPTIONS,
+        url: 'https://example.gov/glossary',
+      });
+      expect(res.status).toBe(200);
+    }
+  });
+
+  it('refuses to crawl a host whose robots.txt cannot be read', async () => {
+    for (const robots of [
+      () => Promise.reject(new Error('ETIMEDOUT')),
+      () =>
+        Promise.resolve(
+          response('https://example.gov/robots.txt', 'Gateway', 502),
+        ),
+    ]) {
+      const fetchImpl = vi.fn((options: SafeFetchOptions) =>
+        options.url.endsWith('/robots.txt')
+          ? robots()
+          : Promise.resolve(response(options.url, '<html></html>')),
+      );
+      const crawler = createCrawler({
+        userAgent: 'test',
+        fetchImpl,
+        minDelayMs: 0,
+      });
+
+      await expect(
+        crawler.fetch({ ...PAGE_OPTIONS, url: 'https://example.gov/glossary' }),
+      ).rejects.toThrow('robots.txt unreachable for example.gov');
+      // The page itself was never requested.
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    }
   });
 
   it('paces concurrent request starts per host and fetches robots.txt once', async () => {

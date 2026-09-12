@@ -112,23 +112,30 @@ export function createCrawler(input: {
   const robotsByHost = new Map<string, Promise<RobotsRules>>();
   const nextStartByHost = new Map<string, number>();
 
+  // RFC 9309: a 4xx means the site publishes no policy and an HTML page at
+  // the path (csrc.nist.gov redirects there) parses to no rules, but a server
+  // error or a network failure means full disallow until it can be read.
   const loadRobots = async (url: URL): Promise<RobotsRules> => {
+    const unreachable = (reason: string) =>
+      new Error(`robots.txt unreachable for ${url.hostname}: ${reason}`);
+    let response: SafeFetchResult;
     try {
-      const response = await fetchImpl({
+      response = await fetchImpl({
         url: new URL('/robots.txt', url.origin).toString(),
         allowedHosts: [url.hostname],
-        allowedContentTypePrefixes: ['text/plain'],
+        // Any type: what the status code says matters, not the body's type.
+        allowedContentTypePrefixes: [''],
         maxRedirects: 3,
         timeoutMs: ROBOTS_TIMEOUT_MS,
         maxBytes: ROBOTS_MAX_BYTES,
         headers: { 'user-agent': input.userAgent },
       });
-      if (response.status !== 200) return NO_RULES;
-      return parseRobotsTxt(response.body.toString('utf8'));
-    } catch {
-      // No readable robots.txt (missing, redirected to HTML, unreachable).
-      return NO_RULES;
+    } catch (error) {
+      throw unreachable(error instanceof Error ? error.message : String(error));
     }
+    if (response.status >= 500) throw unreachable(`HTTP ${response.status}`);
+    if (response.status !== 200) return NO_RULES;
+    return parseRobotsTxt(response.body.toString('utf8'));
   };
 
   const reserveStart = (hostname: string, delayMs: number): Promise<void> => {

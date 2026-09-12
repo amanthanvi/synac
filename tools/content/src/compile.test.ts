@@ -962,7 +962,7 @@ function twoSourceInput(
           url: 'https://www.dhs.gov/website-policies',
           notes: 'U.S. Government work.',
           publicStatement: 'Public domain (U.S. Government work).',
-          contentMode: 'SUMMARIZED',
+          contentMode: 'QUOTED',
           allowedUse: 'Reproduce with attribution',
           attributionRequirements: 'NICCS, CISA',
         },
@@ -1057,6 +1057,63 @@ describe('sense attestations', () => {
     );
     expect(at(labelled.dataset.entries, 0).senseSummary).toBe(
       'Authentication bypass · Login bypass',
+    );
+  });
+
+  it('keeps a reviewed group primary as a leader when it resembles an earlier sense', () => {
+    // rfc4949 leads by trust tier; niccs-glossary is the reviewed primary of a
+    // group with a third source but is near-identical to rfc4949's wording.
+    const input = twoSourceInput(NEAR_DUPLICATE, {
+      groupSenses: [['niccs-glossary:s1', 'mitre-attack-cti:s1']],
+    });
+    input.sources.push(
+      makeSource({
+        slug: 'mitre-attack-cti',
+        name: 'MITRE ATT&CK',
+        trustTier: 'TIER2',
+      }),
+    );
+    const niccs = at(input.bundles, 1);
+    input.bundles.push({
+      ...niccs,
+      source: 'mitre-attack-cti',
+      entries: niccs.entries.map((entry) => ({
+        ...entry,
+        senses: entry.senses.map((sense) => ({
+          ...sense,
+          definitionMd: RELATED_DEFINITION,
+        })),
+      })),
+    });
+
+    const result = compileContent(input);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.dataset.senses.map((sense) => sense.key)).toEqual([
+      'rfc4949:s1',
+      'niccs-glossary:s1',
+    ]);
+    // The third source survives as the group's attestation instead of vanishing.
+    expect(at(result.dataset.senses, 1).attestations.map((a) => a.key)).toEqual(
+      ['mitre-attack-cti:s1'],
+    );
+  });
+
+  it('rejects bundle senses from a source that declares a summarized mode', () => {
+    const source = makeSource();
+    const result = compileContent(
+      makeInput({
+        sources: [
+          makeSource({
+            license: { ...source.license, contentMode: 'SUMMARIZED' },
+          }),
+        ],
+      }),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors).toContain(
+      'bundle rfc4949: source declares contentMode SUMMARIZED but bundle senses carry source wording; write summarized senses in content/overrides/ instead',
     );
   });
 

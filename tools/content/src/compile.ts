@@ -178,9 +178,12 @@ function groupEntrySenses(
 
   const ambiguous: SenseGrouping['ambiguous'] = [];
   const leaders: CompiledSense[] = [];
+  // A reviewed group primary must stay a leader; attaching it elsewhere would
+  // leave its members pointing at a sense that is never emitted.
+  const explicitPrimaries = new Set(primaryOf.values());
   for (const sense of senses) {
     if (primaryOf.has(sense.key)) continue;
-    if (sense.isEditorial) {
+    if (sense.isEditorial || explicitPrimaries.has(sense.key)) {
       leaders.push(sense);
       continue;
     }
@@ -432,6 +435,14 @@ export function compileContent(
     if (!source.enabled) {
       warnings.push(
         `bundle ${bundle.source}: source is disabled; skipping its content`,
+      );
+      continue;
+    }
+    const mode = source.license.contentMode;
+    if (mode !== 'QUOTED' && bundle.entries.some((e) => e.senses.length > 0)) {
+      // Adapters copy source wording; summaries and paraphrases are written by hand.
+      errors.push(
+        `bundle ${bundle.source}: source declares contentMode ${mode} but bundle senses carry source wording; write ${mode.toLowerCase()} senses in content/overrides/ instead`,
       );
       continue;
     }

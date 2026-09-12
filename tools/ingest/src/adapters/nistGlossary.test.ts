@@ -52,9 +52,9 @@ function htmlResponse(
   };
 }
 
-/** csrc.nist.gov redirects /robots.txt to an HTML page, which safeFetch rejects. */
-function robotsUnavailable(url: string): never {
-  throw new Error(`Disallowed content-type: text/html for ${url}`);
+/** csrc.nist.gov redirects /robots.txt to an HTML page, which parses to no rules. */
+function robotsHtml(url: string): Promise<SafeFetchResult> {
+  return Promise.resolve(htmlResponse(url, '<html></html>', 'b'.repeat(64)));
 }
 
 describe('nist glossary term page parsing', () => {
@@ -178,7 +178,7 @@ describe('nist glossary ingest', () => {
       '<a href="/glossary/term/security_domain">security domain</a>',
     ].join('');
     const fetchImpl = vi.fn((options: SafeFetchOptions) => {
-      if (options.url === ROBOTS_URL) robotsUnavailable(options.url);
+      if (options.url === ROBOTS_URL) return robotsHtml(options.url);
       if (options.url === INDEX_URL) {
         return Promise.resolve(
           htmlResponse(INDEX_URL, indexHtml, 'a'.repeat(64)),
@@ -243,7 +243,7 @@ describe('nist glossary ingest', () => {
 
     const fetchFor = (definition: string, sha: string) =>
       vi.fn((options: SafeFetchOptions) => {
-        if (options.url === ROBOTS_URL) robotsUnavailable(options.url);
+        if (options.url === ROBOTS_URL) return robotsHtml(options.url);
         if (options.url === INDEX_URL) {
           return Promise.resolve(
             htmlResponse(INDEX_URL, indexHtml, 'a'.repeat(64)),
@@ -305,7 +305,7 @@ describe('nist glossary ingest', () => {
       });
 
     const fetchImpl = vi.fn(async (options: SafeFetchOptions) => {
-      if (options.url === ROBOTS_URL) robotsUnavailable(options.url);
+      if (options.url === ROBOTS_URL) return robotsHtml(options.url);
       if (options.url === INDEX_URL)
         return htmlResponse(INDEX_URL, indexHtml, 'a'.repeat(64));
 
@@ -374,7 +374,7 @@ describe('nist glossary ingest', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
 
     const fetchImpl = vi.fn((options: SafeFetchOptions) => {
-      if (options.url === ROBOTS_URL) robotsUnavailable(options.url);
+      if (options.url === ROBOTS_URL) return robotsHtml(options.url);
       if (options.url === INDEX_URL) {
         return Promise.resolve(
           htmlResponse(INDEX_URL, indexHtml, 'a'.repeat(64)),

@@ -85,6 +85,29 @@ function fromReportsJson(payload: unknown): Violation[] {
   return violations;
 }
 
+/** Reads the body up to maxBytes; null when it is longer than that. */
+async function readBodyUpTo(
+  request: Request,
+  maxBytes: number,
+): Promise<string | null> {
+  if (Number(request.headers.get('content-length')) > maxBytes) return null;
+  if (!request.body) return '';
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  return new TextDecoder().decode(Buffer.concat(chunks));
+}
+
 export async function POST(request: Request): Promise<Response> {
   const verdict = await enforceRateLimit(request.headers);
   if (!verdict.allowed) {
@@ -99,8 +122,8 @@ export async function POST(request: Request): Promise<Response> {
     });
   }
 
-  const raw = await request.text();
-  if (raw.length <= MAX_BODY_BYTES) {
+  const raw = await readBodyUpTo(request, MAX_BODY_BYTES);
+  if (raw !== null) {
     let payload: unknown = null;
     try {
       payload = JSON.parse(raw);

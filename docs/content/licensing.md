@@ -27,9 +27,14 @@ the source cited as the basis. No source wording is reproduced.
 and cited to it, without reproducing the original sentences.
 
 The rule for share-alike sources is fixed. A share-alike source, for example
-one under CC BY-SA 4.0, is always `SUMMARIZED`. Reproducing its wording would
-place the SynAc editorial layer under the share-alike terms, which is not an
-outcome the project accepts.
+one under CC BY-SA 4.0, is always `QUOTED`. The quoted text stays under the
+source's license and is attributed as such. Summaries and paraphrases are
+derived works that would carry the share-alike terms into the SynAc editorial
+layer, which is not an outcome the project accepts.
+
+A generated bundle can only ever carry source wording, so the compiler rejects
+bundle senses from a source that declares `SUMMARIZED` or `PARAPHRASED`. Those
+modes are for senses a maintainer writes by hand in `content/overrides/`.
 
 ## Public statement
 

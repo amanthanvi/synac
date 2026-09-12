@@ -20,6 +20,7 @@ type OpenApiSchema = {
   items?: OpenApiSchema;
   enum?: string[];
   $ref?: string;
+  oneOf?: OpenApiSchema[];
   const?: string;
   additionalProperties?: boolean;
 };
@@ -399,7 +400,7 @@ const schemas: Record<string, OpenApiSchema> = {
   }),
   SearchPage: object({
     results: arrayOf({
-      ...ref('EntrySearchResult'),
+      oneOf: [ref('EntrySearchResult'), ref('SenseSearchResult')],
       description:
         'EntrySearchResult when scope is entries, SenseSearchResult when scope is senses.',
     }),

@@ -60,6 +60,8 @@ jobs:
       - name: Capture the content diff
         id: diff
         run: |
+          # A first ingest of a new source creates an untracked bundle.
+          git add --intent-to-add content/
           if git diff --quiet -- content/; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
