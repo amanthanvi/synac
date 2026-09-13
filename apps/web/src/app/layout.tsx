@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
+import { Analytics } from '@vercel/analytics/next';
 
 import { getSiteUrl } from '@/lib/sitemap';
 import { PageShell } from '@/components/PageShell';
@@ -82,6 +83,7 @@ export default async function RootLayout({
           <PageShell>{children}</PageShell>
         </main>
         <SiteFooter />
+        <Analytics />
       </body>
     </html>
   );
