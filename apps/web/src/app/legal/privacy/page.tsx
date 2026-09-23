@@ -76,14 +76,17 @@ export default function PrivacyPage() {
             <strong>Aggregate traffic statistics.</strong> Vercel Web Analytics
             counts page views. Each page view reports the page address with its
             query string removed, so search terms are left out of it, along with
-            the page&apos;s route, the referring page, the browser, operating
-            system, device type, brand, and model, and an approximate location
-            (country, region, and city). The script sets no cookies. To tell
-            visitors apart, Vercel uses a hash created from the request, which
-            Vercel states it discards after 24 hours, and Vercel states that it
-            collects no identifiers that track visitors across sites. SynAc sees
-            only aggregate reports. Browsers that send a Global Privacy Control
-            signal are not counted.
+            the page&apos;s route, the browser, operating system, device type,
+            brand, and model, and an approximate location (country, region, and
+            city). When you arrive from another site, it also reports the
+            address of the page that linked here, as your browser reports it.
+            The script sets no cookies. Vercel tells visitors apart with a hash
+            created from the request and states that a visitor session is
+            discarded after 24 hours; Vercel&apos;s records include a device
+            identifier, and Vercel states that it collects no identifiers that
+            track visitors across sites. SynAc sees only aggregate reports.
+            Browsers that send a Global Privacy Control signal send no page
+            views.
           </li>
           <li>
             <strong>Performance measurements.</strong> Vercel Speed Insights
@@ -97,7 +100,7 @@ export default function PrivacyPage() {
             include a device identifier, and Vercel states that Speed Insights
             collects nothing that would let it reconstruct a browsing session or
             identify a user. SynAc sees only aggregate reports. Browsers that
-            send a Global Privacy Control signal are not measured.
+            send a Global Privacy Control signal send no measurements.
           </li>
           <li>
             <strong>Operational logs.</strong> Diagnostic events carry a request
