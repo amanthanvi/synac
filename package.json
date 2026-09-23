@@ -40,16 +40,16 @@
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9.39.5",
-    "@types/node": "^25.9.5",
-    "convex-test": "^0.0.54",
+    "@types/node": "^25.9.7",
+    "convex-test": "^0.0.59",
     "eslint": "^9.39.5",
     "globals": "^17.12.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.69.0",
-    "vitest": "^5.0.0"
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^5.0.1"
   },
   "dependencies": {
-    "@convex-dev/rate-limiter": "^0.3.2",
-    "convex": "^1.45.0"
+    "@convex-dev/rate-limiter": "^0.4.0",
+    "convex": "^1.46.0"
   }
 }
