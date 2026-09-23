@@ -1,20 +1,30 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 
-import { withoutQueryString } from './insights';
+import {
+  beforeInsightsSend,
+  prepareInsightsEvent,
+  withoutQueryString,
+} from './insights';
 
 describe('withoutQueryString', () => {
   test('drops the search query from a reported URL', () => {
     const event = withoutQueryString({
-      type: 'pageview',
+      type: 'vital',
       url: 'https://synac.app/search?q=my%20secret&scope=senses',
     });
     expect(event).toEqual({
-      type: 'pageview',
+      type: 'vital',
       url: 'https://synac.app/search',
     });
   });
 
-  test('keeps the fragment, so sense deep links still group', () => {
+  test('drops an empty query string', () => {
+    expect(withoutQueryString({ url: 'https://synac.app/search?' }).url).toBe(
+      'https://synac.app/search',
+    );
+  });
+
+  test('keeps the fragment', () => {
     expect(
       withoutQueryString({
         url: 'https://synac.app/term/domain?ref=x#s-network-domain',
@@ -34,5 +44,38 @@ describe('withoutQueryString', () => {
       route: '/terms',
     };
     expect(withoutQueryString(event)).toBe(event);
+  });
+});
+
+describe('prepareInsightsEvent', () => {
+  const event = { type: 'vital', url: 'https://synac.app/search?q=secret' };
+
+  test('drops every report when the browser sends Global Privacy Control', () => {
+    expect(prepareInsightsEvent(event, true)).toBeNull();
+  });
+
+  test('strips the query string otherwise', () => {
+    expect(prepareInsightsEvent(event, false)).toEqual({
+      type: 'vital',
+      url: 'https://synac.app/search',
+    });
+  });
+});
+
+describe('beforeInsightsSend', () => {
+  const event = { type: 'vital', url: 'https://synac.app/search?q=secret' };
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  test('strips the query string when there is no signal', () => {
+    vi.stubGlobal('navigator', {});
+    expect(beforeInsightsSend(event)?.url).toBe('https://synac.app/search');
+  });
+
+  test('drops the report when navigator.globalPrivacyControl is true', () => {
+    vi.stubGlobal('navigator', { globalPrivacyControl: true });
+    expect(beforeInsightsSend(event)).toBeNull();
   });
 });

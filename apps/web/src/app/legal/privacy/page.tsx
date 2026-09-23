@@ -51,10 +51,9 @@ export default function PrivacyPage() {
           for your name, email address, payment details, or profile information.
           SynAc sets no cookies and uses no local storage for readers, apart
           from the theme preference you choose yourself, which never leaves your
-          browser. There is no advertising script, and SynAc keeps no reading
-          history: it sees page views only as aggregate counts. Two Vercel
-          measurement scripts, Web Analytics and Speed Insights, count page
-          views and report how quickly pages load; both are described below.
+          browser. There is no advertising script, and SynAc keeps no view
+          counts or reading history of its own. One Vercel measurement script,
+          Speed Insights, reports how quickly pages load; it is described below.
         </p>
         <p>SynAc processes limited technical information:</p>
         <ul>
@@ -73,24 +72,18 @@ export default function PrivacyPage() {
             database, and the hash is not used to identify or profile a reader.
           </li>
           <li>
-            <strong>Aggregate traffic statistics.</strong> Vercel Web Analytics
-            counts page views. For each one it sends Vercel the page address
-            with any query string removed, so search terms are never included,
-            along with the referring page, the browser and operating system with
-            their versions, the device type, and an approximate location
-            (country, region, and city) that Vercel derives from the request. It
-            sets no cookies. To count unique visitors, Vercel uses a hash of the
-            request that it discards after 24 hours, and it does not follow
-            visitors across other sites. SynAc sees only aggregate reports.
-          </li>
-          <li>
             <strong>Performance measurements.</strong> Vercel Speed Insights
-            measures how quickly each page loads and responds to input (Core Web
-            Vitals). With each measurement it sends Vercel the page address with
-            any query string removed, so search terms are never included, along
-            with the browser, operating system, device type, connection speed,
-            and country. It sets no cookies and does not identify visitors, and
-            SynAc sees only aggregate reports.
+            measures how quickly pages load and respond to input (Core Web
+            Vitals). Each measurement reports the page address with its query
+            string removed, so search terms are left out of it, along with the
+            page&apos;s route, the page element involved and whether a click or
+            key press triggered it, the browser, operating system, device type
+            and brand, connection speed, and an approximate location (country,
+            region, and city). The script sets no cookies. Vercel&apos;s records
+            include a device identifier, and Vercel states that Speed Insights
+            collects nothing that would let it reconstruct a browsing session or
+            identify a user. SynAc sees only aggregate reports. Browsers that
+            send a Global Privacy Control signal are not measured.
           </li>
           <li>
             <strong>Operational logs.</strong> Diagnostic events carry a request
@@ -110,9 +103,6 @@ export default function PrivacyPage() {
         <p>SynAc uses this limited information to:</p>
         <ul>
           <li>deliver, maintain, troubleshoot, and secure the site;</li>
-          <li>
-            count page views and see, in aggregate, how readers find the site;
-          </li>
           <li>measure page performance and find slow pages;</li>
           <li>enforce rate limits and prevent abuse; and</li>
           <li>
@@ -125,10 +115,6 @@ export default function PrivacyPage() {
           SynAc uses{' '}
           <a href="https://vercel.com/legal/privacy-notice">Vercel</a> for web
           hosting and for{' '}
-          <a href="https://vercel.com/docs/analytics/privacy-policy">
-            Web Analytics
-          </a>{' '}
-          and{' '}
           <a href="https://vercel.com/docs/speed-insights/privacy-policy">
             Speed Insights
           </a>
@@ -152,10 +138,9 @@ export default function PrivacyPage() {
         <p>
           Rate-limit counters are short-lived and expire with their window; they
           hold a hash and a count, never a raw identifier. Hosting and security
-          logs, Web Analytics page views, and Speed Insights measurements may be
-          retained by service providers according to their policies. Public
-          GitHub activity and legal records may be kept as reasonably necessary
-          for their purpose.
+          logs, and Speed Insights measurements, may be retained by service
+          providers according to their policies. Public GitHub activity and
+          legal records may be kept as reasonably necessary for their purpose.
         </p>
 
         <h2>Your choices and rights</h2>
@@ -164,8 +149,9 @@ export default function PrivacyPage() {
           correction, deletion, or restriction of personal information. Because
           SynAc has no user accounts, no cookies, and no reading history, it
           generally holds nothing that can be associated with a particular
-          person. Blocking Vercel&apos;s measurement scripts with a content
-          blocker does not affect how the site works.
+          person. If your browser sends a Global Privacy Control signal,
+          SynAc&apos;s pages send no Speed Insights measurements for your
+          visits.
         </p>
 
         <h2>Security and external links</h2>
