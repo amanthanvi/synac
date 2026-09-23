@@ -6,10 +6,13 @@ The website also has an in-app changelog at `/changelog`. That view is curated f
 
 ## Unreleased
 
+- Vercel Web Analytics counts page views in aggregate, without cookies, with
+  the same query-string removal and Global Privacy Control opt-out as Speed
+  Insights. The privacy policy lists what Vercel receives.
 - Vercel Speed Insights measures page performance (Core Web Vitals). The
   reported page address has its query string removed, so search terms stay out
-  of it, and browsers that send Global Privacy Control are not measured. The
-  privacy policy lists what Vercel receives.
+  of it, and browsers that send Global Privacy Control send no measurements.
+  The privacy policy lists what Vercel receives.
 
 ## v0.2.0 (2026-09-11)
 

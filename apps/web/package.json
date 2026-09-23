@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@synac/shared": "workspace:*",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "convex": "^1.46.0",
     "geist": "^1.7.2",
