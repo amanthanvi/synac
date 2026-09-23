@@ -89,8 +89,8 @@ export function SearchPalette() {
   useEffect(() => {
     if (!open || q.length < 2) return;
 
+    // updateQuery already set status to 'loading' for this query.
     const controller = new AbortController();
-    setStatus('loading');
     const handle = window.setTimeout(async () => {
       try {
         const response = await fetch(
