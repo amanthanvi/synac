@@ -34,7 +34,7 @@ export default function PrivacyPage() {
       <div className={proseStyles.prose}>
         <p>
           <strong>Last updated:</strong>{' '}
-          <time dateTime="2026-09-10">September 10, 2026</time>
+          <time dateTime="2026-09-23">September 23, 2026</time>
         </p>
 
         <h2>Who operates SynAc</h2>
@@ -51,8 +51,10 @@ export default function PrivacyPage() {
           for your name, email address, payment details, or profile information.
           SynAc sets no cookies and uses no local storage for readers, apart
           from the theme preference you choose yourself, which never leaves your
-          browser. There is no analytics script, no advertising script, and no
-          view counting: SynAc does not record which entries you read.
+          browser. There is no advertising script and no view counting: SynAc
+          does not record which entries you read. The one measurement script,
+          Vercel Speed Insights, reports how quickly pages load and is described
+          below.
         </p>
         <p>SynAc processes limited technical information:</p>
         <ul>
@@ -69,6 +71,15 @@ export default function PrivacyPage() {
             string when no forwarded address is present. The raw address, the
             raw user-agent, and the salt are never written to the application
             database, and the hash is not used to identify or profile a reader.
+          </li>
+          <li>
+            <strong>Performance measurements.</strong> Vercel Speed Insights
+            measures how quickly each page loads and responds to input (Core Web
+            Vitals). With each measurement it sends Vercel the page address with
+            any query string removed, so search terms are never included, along
+            with the browser, operating system, device type, connection speed,
+            and country. It sets no cookies and does not identify visitors, and
+            SynAc sees only aggregate reports.
           </li>
           <li>
             <strong>Operational logs.</strong> Diagnostic events carry a request
@@ -88,6 +99,7 @@ export default function PrivacyPage() {
         <p>SynAc uses this limited information to:</p>
         <ul>
           <li>deliver, maintain, troubleshoot, and secure the site;</li>
+          <li>measure page performance and find slow pages;</li>
           <li>enforce rate limits and prevent abuse; and</li>
           <li>
             respond to issues, correction requests, and legal obligations.
@@ -98,8 +110,12 @@ export default function PrivacyPage() {
         <p>
           SynAc uses{' '}
           <a href="https://vercel.com/legal/privacy-notice">Vercel</a> for web
-          hosting and <a href="https://www.convex.dev/legal/privacy">Convex</a>{' '}
-          for the application database. These providers process information on
+          hosting and for{' '}
+          <a href="https://vercel.com/docs/speed-insights/privacy-policy">
+            Speed Insights
+          </a>
+          , and <a href="https://www.convex.dev/legal/privacy">Convex</a> for
+          the application database. These providers process information on
           SynAc&apos;s behalf under their own privacy terms. Project
           contributions and issue discussions take place on{' '}
           <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">
@@ -118,9 +134,9 @@ export default function PrivacyPage() {
         <p>
           Rate-limit counters are short-lived and expire with their window; they
           hold a hash and a count, never a raw identifier. Hosting and security
-          logs may be retained by service providers according to their policies.
-          Public GitHub activity and legal records may be kept as reasonably
-          necessary for their purpose.
+          logs, and Speed Insights measurements, may be retained by service
+          providers according to their policies. Public GitHub activity and
+          legal records may be kept as reasonably necessary for their purpose.
         </p>
 
         <h2>Your choices and rights</h2>
@@ -129,7 +145,8 @@ export default function PrivacyPage() {
           correction, deletion, or restriction of personal information. Because
           SynAc has no user accounts, no cookies, and no reading history, it
           generally holds nothing that can be associated with a particular
-          person.
+          person. Blocking Vercel&apos;s measurement script with a content
+          blocker does not affect how the site works.
         </p>
 
         <h2>Security and external links</h2>

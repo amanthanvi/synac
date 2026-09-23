@@ -2,12 +2,12 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
-import { Analytics } from '@vercel/analytics/next';
 
 import { getSiteUrl } from '@/lib/sitemap';
 import { PageShell } from '@/components/PageShell';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
+import { VercelInsights } from '@/components/VercelInsights';
 import './globals.css';
 
 const themeInitScript = `(() => {
@@ -83,7 +83,7 @@ export default async function RootLayout({
           <PageShell>{children}</PageShell>
         </main>
         <SiteFooter />
-        <Analytics />
+        <VercelInsights />
       </body>
     </html>
   );

@@ -4,6 +4,13 @@ SynAc ships `v0.x` releases. This file tracks user-visible changes.
 
 The website also has an in-app changelog at `/changelog`. That view is curated for the site. This file is the canonical release log for the repository.
 
+## Unreleased
+
+- Vercel Speed Insights measures page performance (Core Web Vitals). It sets
+  no cookies and does not identify visitors, and query strings, search terms
+  included, are removed before anything is sent. The privacy policy lists what
+  Vercel receives.
+
 ## v0.2.0 (2026-09-11)
 
 Meanings, provenance, and a public API.
