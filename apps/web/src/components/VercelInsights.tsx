@@ -1,5 +1,6 @@
 'use client';
 
+import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { beforeInsightsSend } from '@/lib/insights';
@@ -13,5 +14,10 @@ import { beforeInsightsSend } from '@/lib/insights';
 export function VercelInsights() {
   if (process.env.NODE_ENV !== 'production') return null;
 
-  return <SpeedInsights beforeSend={beforeInsightsSend} />;
+  return (
+    <>
+      <Analytics beforeSend={beforeInsightsSend} />
+      <SpeedInsights beforeSend={beforeInsightsSend} />
+    </>
+  );
 }
