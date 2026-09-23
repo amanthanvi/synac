@@ -6,10 +6,10 @@ The website also has an in-app changelog at `/changelog`. That view is curated f
 
 ## Unreleased
 
-- Vercel Speed Insights measures page performance (Core Web Vitals). It sets
-  no cookies and does not identify visitors, and query strings, search terms
-  included, are removed before anything is sent. The privacy policy lists what
-  Vercel receives.
+- Vercel Speed Insights measures page performance (Core Web Vitals). The
+  reported page address has its query string removed, so search terms stay out
+  of it, and browsers that send Global Privacy Control are not measured. The
+  privacy policy lists what Vercel receives.
 
 ## v0.2.0 (2026-09-11)
 
