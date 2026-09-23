@@ -1,5 +1,6 @@
 'use client';
 
+import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { withoutQueryString } from '@/lib/insights';
@@ -9,5 +10,10 @@ import { withoutQueryString } from '@/lib/insights';
  * cannot pass `beforeSend` across the client boundary, so it lives here.
  */
 export function VercelInsights() {
-  return <SpeedInsights beforeSend={withoutQueryString} />;
+  return (
+    <>
+      <Analytics beforeSend={withoutQueryString} />
+      <SpeedInsights beforeSend={withoutQueryString} />
+    </>
+  );
 }

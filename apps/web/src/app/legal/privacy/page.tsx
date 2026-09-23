@@ -51,10 +51,10 @@ export default function PrivacyPage() {
           for your name, email address, payment details, or profile information.
           SynAc sets no cookies and uses no local storage for readers, apart
           from the theme preference you choose yourself, which never leaves your
-          browser. There is no advertising script and no view counting: SynAc
-          does not record which entries you read. The one measurement script,
-          Vercel Speed Insights, reports how quickly pages load and is described
-          below.
+          browser. There is no advertising script, and SynAc keeps no reading
+          history: it sees page views only as aggregate counts. Two Vercel
+          measurement scripts, Web Analytics and Speed Insights, count page
+          views and report how quickly pages load; both are described below.
         </p>
         <p>SynAc processes limited technical information:</p>
         <ul>
@@ -71,6 +71,17 @@ export default function PrivacyPage() {
             string when no forwarded address is present. The raw address, the
             raw user-agent, and the salt are never written to the application
             database, and the hash is not used to identify or profile a reader.
+          </li>
+          <li>
+            <strong>Aggregate traffic statistics.</strong> Vercel Web Analytics
+            counts page views. For each one it sends Vercel the page address
+            with any query string removed, so search terms are never included,
+            along with the referring page, the browser and operating system with
+            their versions, the device type, and an approximate location
+            (country, region, and city) that Vercel derives from the request. It
+            sets no cookies. To count unique visitors, Vercel uses a hash of the
+            request that it discards after 24 hours, and it does not follow
+            visitors across other sites. SynAc sees only aggregate reports.
           </li>
           <li>
             <strong>Performance measurements.</strong> Vercel Speed Insights
@@ -99,6 +110,9 @@ export default function PrivacyPage() {
         <p>SynAc uses this limited information to:</p>
         <ul>
           <li>deliver, maintain, troubleshoot, and secure the site;</li>
+          <li>
+            count page views and see, in aggregate, how readers find the site;
+          </li>
           <li>measure page performance and find slow pages;</li>
           <li>enforce rate limits and prevent abuse; and</li>
           <li>
@@ -111,6 +125,10 @@ export default function PrivacyPage() {
           SynAc uses{' '}
           <a href="https://vercel.com/legal/privacy-notice">Vercel</a> for web
           hosting and for{' '}
+          <a href="https://vercel.com/docs/analytics/privacy-policy">
+            Web Analytics
+          </a>{' '}
+          and{' '}
           <a href="https://vercel.com/docs/speed-insights/privacy-policy">
             Speed Insights
           </a>
@@ -134,9 +152,10 @@ export default function PrivacyPage() {
         <p>
           Rate-limit counters are short-lived and expire with their window; they
           hold a hash and a count, never a raw identifier. Hosting and security
-          logs, and Speed Insights measurements, may be retained by service
-          providers according to their policies. Public GitHub activity and
-          legal records may be kept as reasonably necessary for their purpose.
+          logs, Web Analytics page views, and Speed Insights measurements may be
+          retained by service providers according to their policies. Public
+          GitHub activity and legal records may be kept as reasonably necessary
+          for their purpose.
         </p>
 
         <h2>Your choices and rights</h2>
@@ -145,7 +164,7 @@ export default function PrivacyPage() {
           correction, deletion, or restriction of personal information. Because
           SynAc has no user accounts, no cookies, and no reading history, it
           generally holds nothing that can be associated with a particular
-          person. Blocking Vercel&apos;s measurement script with a content
+          person. Blocking Vercel&apos;s measurement scripts with a content
           blocker does not affect how the site works.
         </p>
 

@@ -6,6 +6,10 @@ The website also has an in-app changelog at `/changelog`. That view is curated f
 
 ## Unreleased
 
+- Vercel Web Analytics counts page views in aggregate. It sets no cookies,
+  tells visitors apart only by a request hash that Vercel discards after 24
+  hours, and gets the same query-string removal as Speed Insights. The privacy
+  policy lists what Vercel receives.
 - Vercel Speed Insights measures page performance (Core Web Vitals). It sets
   no cookies and does not identify visitors, and query strings, search terms
   included, are removed before anything is sent. The privacy policy lists what
