@@ -16,10 +16,10 @@
     "@synac/content-tools": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^25.9.7",
+    "@types/node": "^25.9.8",
     "eslint": "^9.39.5",
-    "prettier": "^3.9.8",
-    "tsx": "^4.23.13",
+    "prettier": "^3.9.9",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vitest": "^5.0.1"
   }
