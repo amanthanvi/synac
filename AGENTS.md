@@ -39,6 +39,11 @@ Source of truth: `docs/architecture/overview.md` (architecture) + `SPEC.md` (pro
 - Local backend: `CONVEX_AGENT_MODE=anonymous npx convex dev`, then `pnpm --filter @synac/content-tools sync`
 - Regenerate a bundle: `pnpm ingest -- --source rfc4949`
 
+## Cloud Agent notes
+
+- Node must be `24` (see `.node-version`). If the base image ships an older `node` ahead of nvm on `PATH` (e.g. `/exec-daemon/node`), put the nvm Node 24 bin directory first: `export PATH="$NVM_DIR/versions/node/$(nvm version 24)/bin:$PATH"`.
+- After the anonymous Convex backend is ready, set `npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev` before `pnpm --filter @synac/content-tools sync`. Web env placeholders: `SYNAC_CONVEX_SERVICE_KEY=local-dev`, `SYNAC_RATE_LIMIT_SALT=local-dev`, `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210`.
+
 ## Design system
 
 - Tokens live in `apps/web/src/app/globals.css` (single source of truth).
