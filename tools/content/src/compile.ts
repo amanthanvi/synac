@@ -360,6 +360,12 @@ export function compileContent(
       ? input.tagAssignments
       : undefined;
   const runId = tagAssignments?.run.runId;
+  const classifiedHashes = new Map(
+    (tagAssignments?.classifiedEntries ?? []).map((row) => [
+      row.entryKey,
+      row.entryContentHash,
+    ]),
+  );
   if (tagAssignments) {
     const taxonomyVersionText = input.tags.taxonomyVersion ?? '1';
     if (tagAssignments.taxonomyVersion !== taxonomyVersionText) {
@@ -425,8 +431,7 @@ export function compileContent(
       }
       // The run classified each entry once, so every row for an entry must
       // carry the hash recorded for that entry.
-      const classifiedHash =
-        tagAssignments.classifiedEntries[assignment.entryKey];
+      const classifiedHash = classifiedHashes.get(assignment.entryKey);
       if (classifiedHash === undefined) {
         errors.push(
           `tag assignments: ${assignment.entryKey} -> ${assignment.tagSlug} names an entry run ${runId} did not classify`,
@@ -961,11 +966,11 @@ export function compileContent(
     const changedKeys: string[] = [];
     const removedKeys: string[] = [];
     for (const [key, hash] of liveEntryHashes) {
-      const classifiedHash = tagAssignments.classifiedEntries[key];
+      const classifiedHash = classifiedHashes.get(key);
       if (classifiedHash === undefined) newKeys.push(key);
       else if (classifiedHash !== hash) changedKeys.push(key);
     }
-    for (const key of Object.keys(tagAssignments.classifiedEntries)) {
+    for (const key of classifiedHashes.keys()) {
       if (!liveEntryHashes.has(key) && !isSuppressed(key))
         removedKeys.push(key);
     }

@@ -253,8 +253,28 @@ export const tagAssignmentsFileV2Schema = z
     /**
      * Every entry the run classified, with the classification hash it saw.
      * An entry whose live hash differs is stale on its own; the rest stay valid.
+     * A list of rows rather than a key -> hash map: secret scanners read an
+     * entry key such as `ACRONYM:api` followed by a hash as a leaked API key.
      */
-    classifiedEntries: z.record(entryKeyValue, sha256),
+    classifiedEntries: z
+      .array(
+        z
+          .object({ entryKey: entryKeyValue, entryContentHash: sha256 })
+          .strict(),
+      )
+      .superRefine((rows, ctx) => {
+        const seen = new Set<string>();
+        for (const [index, row] of rows.entries()) {
+          if (seen.has(row.entryKey)) {
+            ctx.addIssue({
+              code: 'custom',
+              path: [index, 'entryKey'],
+              message: `duplicate classified entry ${row.entryKey}`,
+            });
+          }
+          seen.add(row.entryKey);
+        }
+      }),
   })
   .strict();
 

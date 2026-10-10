@@ -85,24 +85,23 @@ export function classificationEntryHashes(
   );
 }
 
+/** Entry hashes as `classifiedEntries` rows, in entry-key order. */
+export function classifiedEntryRows(
+  entryHashes: Readonly<Record<string, string>>,
+): Array<{ entryKey: string; entryContentHash: string }> {
+  return Object.entries(entryHashes)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([entryKey, entryContentHash]) => ({ entryKey, entryContentHash }));
+}
+
 /**
- * The whole-corpus hash the offline manifests bind. It depends only on the
- * per-entry hashes, so it can be recomputed from an artifact's
- * classifiedEntries.
+ * The whole-corpus hash the offline manifests bind: the hash of the
+ * `classifiedEntries` rows, so an artifact's rows reproduce it.
  */
 export function corpusHashFromEntryHashes(
   entryHashes: Readonly<Record<string, string>>,
 ): string {
-  return sha256(
-    JSON.stringify(
-      Object.entries(entryHashes)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([entryKey, entryContentHash]) => ({
-          entryKey,
-          entryContentHash,
-        })),
-    ),
-  );
+  return sha256(JSON.stringify(classifiedEntryRows(entryHashes)));
 }
 
 export function classificationCorpusHash(

@@ -5,10 +5,7 @@ import type {
   TagAssignmentsFile,
   TagsFile,
 } from '../../../tools/content/src/model.ts';
-import {
-  corpusHashFromEntryHashes,
-  stableJsonHash,
-} from '../../../tools/content/src/tagging.ts';
+import { stableJsonHash } from '../../../tools/content/src/tagging.ts';
 import {
   buildAssignmentEmission,
   REMOVED_ENTRY_HASH,
@@ -294,19 +291,22 @@ test('emission records the per-entry hash of every classified entry', () => {
   assert.equal('corpusHash' in artifact.run, false);
   assert.deepEqual(
     artifact.classifiedEntries,
-    Object.fromEntries(
-      input.corpus.entries.map((row) => [row.entryKey, row.entryContentHash]),
-    ),
+    input.corpus.entries
+      .map(({ entryKey, entryContentHash }) => ({ entryKey, entryContentHash }))
+      .sort((left, right) => left.entryKey.localeCompare(right.entryKey)),
   );
   assert.equal(
-    corpusHashFromEntryHashes(artifact.classifiedEntries),
+    sha256Text(JSON.stringify(artifact.classifiedEntries)),
     input.corpus.corpusHash,
   );
-  for (const row of artifact.assignments) {
-    assert.equal(
-      artifact.classifiedEntries[row.entryKey],
+  const classified = new Map(
+    artifact.classifiedEntries.map((row) => [
+      row.entryKey,
       row.entryContentHash,
-    );
+    ]),
+  );
+  for (const row of artifact.assignments) {
+    assert.equal(classified.get(row.entryKey), row.entryContentHash);
   }
 });
 

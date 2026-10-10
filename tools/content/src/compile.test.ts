@@ -12,6 +12,7 @@ import {
 } from './model.js';
 import {
   classificationEntryHashes,
+  classifiedEntryRows,
   corpusHashFromEntryHashes,
   stableJsonHash,
   tagTaxonomyHash,
@@ -186,7 +187,7 @@ function releaseFor(
       };
     }),
     removals: [],
-    classifiedEntries,
+    classifiedEntries: classifiedEntryRows(classifiedEntries),
   };
 }
 
@@ -442,7 +443,7 @@ describe('compileContent', () => {
         },
         assignments: [],
         removals: [],
-        classifiedEntries: {},
+        classifiedEntries: [],
       }).success,
     ).toBe(false);
 
@@ -487,7 +488,9 @@ describe('compileContent', () => {
       run,
       assignments: [],
       removals: [],
-      classifiedEntries: { 'TERM:back-door': 'a'.repeat(64) },
+      classifiedEntries: [
+        { entryKey: 'TERM:back-door', entryContentHash: 'a'.repeat(64) },
+      ],
     };
     expect(tagAssignmentsFileSchema.safeParse(released).success).toBe(true);
     // Version 2 replaces the whole-corpus hash with per-entry hashes.
@@ -506,7 +509,27 @@ describe('compileContent', () => {
     expect(
       tagAssignmentsFileSchema.safeParse({
         ...released,
-        classifiedEntries: { 'not-an-entry-key': 'a'.repeat(64) },
+        classifiedEntries: [
+          { entryKey: 'not-an-entry-key', entryContentHash: 'a'.repeat(64) },
+        ],
+      }).success,
+    ).toBe(false);
+    const duplicate = tagAssignmentsFileSchema.safeParse({
+      ...released,
+      classifiedEntries: [
+        ...released.classifiedEntries,
+        { entryKey: 'TERM:back-door', entryContentHash: 'b'.repeat(64) },
+      ],
+    });
+    expect(duplicate.success).toBe(false);
+    expect(duplicate.error?.issues.map((issue) => issue.message)).toEqual([
+      'duplicate classified entry TERM:back-door',
+    ]);
+    // A key -> hash map reads as a leaked API key to secret scanners.
+    expect(
+      tagAssignmentsFileSchema.safeParse({
+        ...released,
+        classifiedEntries: { 'TERM:back-door': 'a'.repeat(64) },
       }).success,
     ).toBe(false);
     // Version 1 stays readable so the history gate and migration can load it.
@@ -851,7 +874,7 @@ describe('compileContent', () => {
           taxonomyHash: release.taxonomyHash,
           run: {
             ...release.run,
-            corpusHash: corpusHashFromEntryHashes(release.classifiedEntries),
+            corpusHash: corpusHashFromEntryHashes(liveEntryHashes(input)),
           },
           assignments: release.assignments,
           removals: [],

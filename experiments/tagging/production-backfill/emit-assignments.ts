@@ -15,6 +15,7 @@ import {
 import {
   classificationCorpusHash,
   classificationEntryHash,
+  classifiedEntryRows,
   corpusHashFromEntryHashes,
   stableJsonHash,
   tagTaxonomyHash,
@@ -792,17 +793,19 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
   ) {
     throw new Error('current compiled corpus drift from production manifest');
   }
-  const classifiedEntries = Object.fromEntries(
-    [...input.corpus.entries]
-      .sort((left, right) => left.entryKey.localeCompare(right.entryKey))
-      .map((entry) => [entry.entryKey, entry.entryContentHash]),
+  const entryHashes = Object.fromEntries(
+    input.corpus.entries.map((entry) => [
+      entry.entryKey,
+      entry.entryContentHash,
+    ]),
   );
   if (
-    Object.keys(classifiedEntries).length !== input.corpus.entries.length ||
-    corpusHashFromEntryHashes(classifiedEntries) !== input.corpus.corpusHash
+    Object.keys(entryHashes).length !== input.corpus.entries.length ||
+    corpusHashFromEntryHashes(entryHashes) !== input.corpus.corpusHash
   ) {
     throw new Error('current corpus entries drift from the corpus hash');
   }
+  const classifiedEntries = classifiedEntryRows(entryHashes);
   const publishedTagSlugs = publishedTags(input.tags);
   const taxonomyHash = tagTaxonomyHash(input.tags);
   const rubric = validateRubric(input.rubric, production, publishedTagSlugs);

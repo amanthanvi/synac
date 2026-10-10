@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 import { describe, expect, it } from 'vitest';
 
 import { validateAssignmentHistory } from './check-tag-history.js';
@@ -9,6 +11,7 @@ import {
 import type { BundleFile, TagAssignmentsFileV1, TagsFile } from './model.js';
 import {
   classificationEntryHashes,
+  classifiedEntryRows,
   corpusHashFromEntryHashes,
   stableJsonHash,
   tagTaxonomyHash,
@@ -163,11 +166,15 @@ describe('migrateContent', () => {
     const migrated = migrateContent(input, legacy);
 
     expect(migrated.schemaVersion).toBe(2);
-    expect(migrated.classifiedEntries).toEqual(liveEntryHashes(input));
-    expect(Object.keys(migrated.classifiedEntries)).toHaveLength(ENTRY_COUNT);
-    expect(corpusHashFromEntryHashes(migrated.classifiedEntries)).toBe(
-      legacy.run.corpusHash,
+    expect(migrated.classifiedEntries).toEqual(
+      classifiedEntryRows(liveEntryHashes(input)),
     );
+    expect(migrated.classifiedEntries).toHaveLength(ENTRY_COUNT);
+    expect(
+      createHash('sha256')
+        .update(JSON.stringify(migrated.classifiedEntries))
+        .digest('hex'),
+    ).toBe(legacy.run.corpusHash);
     expect('corpusHash' in migrated.run).toBe(false);
     expect(migrated.assignments).toEqual(legacy.assignments);
     expect(migrated.removals).toEqual([]);

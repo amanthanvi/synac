@@ -41,9 +41,10 @@ function artifact(
       runId,
     })),
     removals: [],
-    classifiedEntries: Object.fromEntries(
-      pairs.map(([entryKey]) => [entryKey, '2'.repeat(64)]),
-    ),
+    classifiedEntries: pairs.map(([entryKey]) => ({
+      entryKey,
+      entryContentHash: '2'.repeat(64),
+    })),
   };
 }
 

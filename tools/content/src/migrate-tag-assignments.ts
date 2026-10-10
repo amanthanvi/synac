@@ -11,6 +11,7 @@ import {
 } from './model.js';
 import {
   classificationEntryHashes,
+  classifiedEntryRows,
   corpusHashFromEntryHashes,
   stableJsonHash,
 } from './tagging.js';
@@ -84,7 +85,7 @@ export function migrateTagAssignments(
     },
     assignments: legacy.assignments,
     removals: [],
-    classifiedEntries: liveEntryHashes,
+    classifiedEntries: classifiedEntryRows(liveEntryHashes),
   });
 }
 
@@ -136,7 +137,7 @@ async function main(): Promise<void> {
   await writeFile(outPath, `${JSON.stringify(migrated, null, 2)}\n`);
   console.log(
     `migrated ${outPath} to schemaVersion 2: ${migrated.assignments.length} assignments, ` +
-      `${Object.keys(migrated.classifiedEntries).length} classified entries`,
+      `${migrated.classifiedEntries.length} classified entries`,
   );
 }
 
