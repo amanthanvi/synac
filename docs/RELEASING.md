@@ -59,15 +59,51 @@ assignments, manifests, hashes, and aggregate reports enter Git.
 4. Emit `content/tag-assignments.json` and its deterministic report with
    `emit-assignments.ts`. Never edit the artifact by hand.
 5. Review added/removed pairs, per-Tag counts, corpus coverage, provenance
-   hashes, and any explicit removal records; then run `pnpm gate`.
-6. Merge through the normal content PR. Deployment stages and verifies the
-   complete generation before the atomic activation described above.
+   hashes, and any explicit removal records; then run `pnpm gate` and
+   `pnpm content:check:strict`.
+6. Merge through the normal content PR. CI runs the strict check on every pull
+   request that changes `content/tags.json` or `content/tag-assignments.json`.
+   Deployment stages and verifies the complete generation before the atomic
+   activation described above.
 
-Taxonomy v2 fails closed without a release assignment artifact. Changed Entry
-text invalidates its assignment hash. Removing a prior accepted pair requires
-a reviewed removal record. If inference or review fails, commit nothing; the
-previous content generation remains production-active. Rollback is a reviewed
-revert of the taxonomy/assignment commit followed by the normal sync.
+Taxonomy v2 fails closed without a release assignment artifact. Removing a
+prior accepted pair requires a reviewed removal record. If inference or review
+fails, commit nothing; the previous content generation remains
+production-active. Rollback is a reviewed revert of the taxonomy/assignment
+commit followed by the normal sync.
+
+### Between tagging runs
+
+The artifact records the classification hash of every Entry the run saw
+(`classifiedEntries`), and each assignment carries the hash of its own Entry.
+Editing one Entry invalidates only that Entry's automatic tags.
+
+`pnpm content:check`, and so `pnpm gate` and the `Deploy` workflow, reports
+drift from the classified corpus as warnings:
+
+- An Entry whose classified text changed loses its automatic tags until the
+  next tagging run. The check names each dropped pair. An `addTags` override
+  keeps a tag by hand in the meantime.
+- New and removed Entries are counted in one summary warning.
+- A suppressed Entry never blocks the check. Its tags stop serving, and the
+  check warns if it was a Tag contract example.
+- The release floors, 30% Entry coverage and 25 Entries per published Tag, are
+  advisory. New untagged Entries and dropped stale tags can only lower them,
+  and only a tagging run can raise them, so failing a content PR on them would
+  block content without fixing anything.
+
+`pnpm content:check:strict` turns each of those warnings into an error, except
+the suppression warnings: a takedown never waits on a tagging run. Both modes
+fail on integrity problems: a taxonomy or thresholds hash mismatch, a foreign
+run ID, a duplicate pair, a score below its threshold, a row whose hash is not
+the one its run classified, and a published Tag above the 5000-Entry UI limit.
+Any edit to `content/tags.json` changes the taxonomy hash, so it needs a new
+tagging run in both modes.
+
+A `schemaVersion` 1 artifact bound one hash over the whole corpus. Compile
+rejects it. Convert it with
+`pnpm --filter @synac/content-tools migrate:tag-assignments`, which succeeds
+only when the live corpus reproduces that corpus hash exactly.
 
 ## Required configuration
 
