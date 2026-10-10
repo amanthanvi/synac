@@ -4,10 +4,12 @@ import { entryType } from './schema';
 import { tagNames, type EntrySummary } from './publicEntries';
 import { activeGeneration } from './lib/contentGeneration';
 
-// Browse letter buckets scan at most this many index rows. The page cap (10)
-// bounds what the UI can show anyway; a bucket larger than this signals the
-// taxonomy needs finer letters, not a bigger scan.
+// Browse letter buckets scan at most this many index rows. A bucket larger
+// than this is truncated. Keep BROWSE_PAGE_MAX in sync with
+// apps/web/src/lib/publicBrowse.ts: past this page the handler re-serves the
+// last page, and hasMore can still be true when more matches exist.
 const LETTER_SCAN_LIMIT = 1000;
+const BROWSE_PAGE_MAX = 10;
 
 function letterRange(letter: string): { start: string; end: string } {
   if (letter === '0-9') return { start: '0', end: '9￿' };
@@ -35,7 +37,7 @@ export const browse = query({
         hasMore: false,
       };
     }
-    const page = Math.max(1, Math.min(10, Math.floor(args.page)));
+    const page = Math.max(1, Math.min(BROWSE_PAGE_MAX, Math.floor(args.page)));
     const pageSize = Math.max(1, Math.min(100, Math.floor(args.pageSize)));
 
     const allTags = await ctx.db

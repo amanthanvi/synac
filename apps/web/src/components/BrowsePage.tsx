@@ -5,6 +5,8 @@ import { formatDate } from '@/lib/dates';
 import { entryPath } from '@/lib/publicEntryPage';
 import {
   BROWSE_LETTERS,
+  browseNeedsRefineHint,
+  browseNextHref,
   buildBrowseHref,
   normalizeBrowseLetter,
   normalizeBrowsePage,
@@ -141,8 +143,30 @@ export async function BrowsePage({
           <Pagination
             page={page}
             prevHref={page > 1 ? hrefFor(page - 1, letter) : undefined}
-            nextHref={hasMore ? hrefFor(page + 1, letter) : undefined}
+            nextHref={browseNextHref({
+              basePath: config.basePath,
+              letter,
+              page,
+              sort,
+              query,
+              tagSlug,
+              hasMore,
+            })}
           />
+          {browseNeedsRefineHint(page, hasMore) ? (
+            <p className={styles.capNote}>
+              This is the last page browse can show. More {config.plural} match
+              this letter.{' '}
+              <a className={styles.capLink} href="#browse-filter">
+                Search within this letter
+              </a>{' '}
+              or{' '}
+              <a className={styles.capLink} href="#browse-tags">
+                choose a tag
+              </a>{' '}
+              to reach them.
+            </p>
+          ) : null}
         </>
       )}
     </div>

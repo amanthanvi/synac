@@ -333,7 +333,9 @@ const schemas: Record<string, OpenApiSchema> = {
       page: num(),
       pageSize: num(),
       total: num('Matches in this letter bucket.'),
-      hasMore: bool(),
+      hasMore: bool(
+        'False on the last page browse will serve. A letter with more matches than the 10-page cap still reports false on that last page; total is the larger count.',
+      ),
     }),
   }),
   Tag: object({
