@@ -3,7 +3,11 @@ import { v } from 'convex/values';
 import { components } from './_generated/api';
 import { mutation } from './_generated/server';
 import { requireServiceKey } from './lib/serviceKey';
-import { RATE_LIMIT_PER_MINUTE } from './rateLimitPolicy';
+import {
+  LEGACY_SHARED_PER_MINUTE,
+  LEGACY_SHARED_SCOPE,
+  RATE_LIMIT_PER_MINUTE,
+} from './rateLimitPolicy';
 
 const limiter = new RateLimiter(components.rateLimiter, {
   search: {
@@ -21,6 +25,13 @@ const limiter = new RateLimiter(components.rateLimiter, {
     rate: RATE_LIMIT_PER_MINUTE.csp_report,
     period: MINUTE,
   },
+  // Previous single bucket. Kept so an older web deploy still has a budget
+  // while Vercel and Convex update separately.
+  api_v1_search: {
+    kind: 'fixed window',
+    rate: LEGACY_SHARED_PER_MINUTE,
+    period: MINUTE,
+  },
 });
 
 /** Buckets are keyed by a hash of the caller's IP or user agent, never by a raw value. */
@@ -33,7 +44,9 @@ const BUCKET_KEY = /^(ip|ua):[a-f0-9]{64}$/;
  * reach it, but the service key gates it to the Next.js server and the key
  * shape gates which bucket a caller may spend. Without both, an attacker could
  * drain another visitor's budget by naming their bucket. `scope` selects which
- * of the independent budgets in `rateLimitPolicy.ts` is spent.
+ * budget is spent. `api_v1_search` is the pre-split name, still accepted so an
+ * older web deploy keeps working after this function ships. The web client
+ * falls back to it when it reaches a backend that does not know the new names.
  */
 export const consume = mutation({
   args: {
@@ -42,6 +55,7 @@ export const consume = mutation({
       v.literal('search'),
       v.literal('api_read'),
       v.literal('csp_report'),
+      v.literal(LEGACY_SHARED_SCOPE),
     ),
     key: v.string(),
   },

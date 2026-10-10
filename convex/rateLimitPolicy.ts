@@ -22,3 +22,13 @@ export const RATE_LIMIT_PER_MINUTE = {
 } as const;
 
 export type RateLimitScope = keyof typeof RATE_LIMIT_PER_MINUTE;
+
+/**
+ * Scope the previous web deploy sends for every route. The mutation still
+ * accepts it, on its own window, so a Convex deploy and a Vercel deploy can
+ * land in either order. The web client falls back to it when a backend
+ * rejects the split names. It does not share a counter with the scopes above.
+ * Remove it once no deployed server sends it.
+ */
+export const LEGACY_SHARED_SCOPE = 'api_v1_search' as const;
+export const LEGACY_SHARED_PER_MINUTE = 60;

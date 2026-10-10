@@ -2,7 +2,11 @@ import { register } from '@convex-dev/rate-limiter/test';
 import { convexTest } from 'convex-test';
 import { describe, expect, test } from 'vitest';
 import { api } from '../../convex/_generated/api';
-import { RATE_LIMIT_PER_MINUTE } from '../../convex/rateLimitPolicy';
+import {
+  LEGACY_SHARED_PER_MINUTE,
+  LEGACY_SHARED_SCOPE,
+  RATE_LIMIT_PER_MINUTE,
+} from '../../convex/rateLimitPolicy';
 import schema from '../../convex/schema';
 import { modules } from './helpers';
 
@@ -65,6 +69,37 @@ describe('rateLimit scopes', () => {
         key,
       });
       expect(stillBlocked.allowed, `${scope} stays exhausted`).toBe(false);
+    }
+  });
+
+  test('the pre-split scope stays on its own budget', async () => {
+    process.env.SYNAC_CONVEX_SERVICE_KEY = SERVICE_KEY;
+    const t = convexTest(schema, modules);
+    register(t);
+    const key = bucketKey('d');
+
+    for (let spent = 0; spent < LEGACY_SHARED_PER_MINUTE; spent += 1) {
+      const verdict = await t.mutation(api.rateLimit.consume, {
+        serviceKey: SERVICE_KEY,
+        scope: LEGACY_SHARED_SCOPE,
+        key,
+      });
+      expect(verdict.allowed).toBe(true);
+    }
+    const blocked = await t.mutation(api.rateLimit.consume, {
+      serviceKey: SERVICE_KEY,
+      scope: LEGACY_SHARED_SCOPE,
+      key,
+    });
+    expect(blocked.allowed).toBe(false);
+
+    for (const scope of SCOPES) {
+      const verdict = await t.mutation(api.rateLimit.consume, {
+        serviceKey: SERVICE_KEY,
+        scope,
+        key,
+      });
+      expect(verdict.allowed, scope).toBe(true);
     }
   });
 });

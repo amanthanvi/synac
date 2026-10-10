@@ -5,6 +5,7 @@ import { cache } from 'react';
 
 import { api } from '../../../../convex/_generated/api';
 import type { RateLimitScope } from '../../../../convex/rateLimitPolicy';
+import { withLegacyScopeFallback } from './rateLimitCompat';
 import { collectEntrySlugs, type EntrySlugRecord } from './sitemapEntries';
 
 export type EntryType = 'TERM' | 'ACRONYM';
@@ -239,9 +240,12 @@ export async function consumeRateLimit(
   key: string,
   scope: RateLimitScope,
 ): Promise<{ allowed: boolean; retryAfterSeconds: number }> {
-  return getClient().mutation(api.rateLimit.consume, {
-    serviceKey: getServiceKey(),
-    scope,
-    key,
-  });
+  const serviceKey = getServiceKey();
+  return withLegacyScopeFallback(scope, (activeScope) =>
+    getClient().mutation(api.rateLimit.consume, {
+      serviceKey,
+      scope: activeScope,
+      key,
+    }),
+  );
 }
