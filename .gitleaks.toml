@@ -1,0 +1,22 @@
+title = "synac gitleaks config"
+
+[extend]
+useDefault = true
+
+# generic-api-key fires on sense-key slugs in the generated glossary bundles,
+# e.g. `"key": "2-o-liberty-alliance"`. These are public term identifiers, not
+# credentials. The allowlist requires BOTH a generated bundle path AND a line
+# that is only a `"key"` property holding a lowercase hyphenated slug with at
+# least one non-hex letter, so UUID- or hex-shaped values stay flagged. Every
+# other rule, and generic-api-key on any other path or line, is unaffected.
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Sense-key slugs in content/generated/*.json"
+condition = "AND"
+paths = ['''^content/generated/[^/]+\.json$''']
+regexTarget = "line"
+regexes = [
+  '''^\s*"key": "(?:(?:[a-z0-9]+-)+[a-z0-9]*[g-z][a-z0-9]*(?:-[a-z0-9]+)*|[a-z0-9]*[g-z][a-z0-9]*(?:-[a-z0-9]+)+)",?\s*$''',
+]
