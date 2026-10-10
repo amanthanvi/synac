@@ -1,5 +1,6 @@
 import { readBrowsePage, type EntryType } from '@/lib/convex';
 import { entryPath } from '@/lib/publicEntryPage';
+import { BROWSE_PAGE_MAX, browseOffersNextPage } from '@/lib/publicBrowse';
 
 import {
   handleReadRequest,
@@ -9,8 +10,7 @@ import {
   parsePageSize,
 } from './_shared';
 
-/** Convex clamps browse to these bounds; mirroring them keeps meta honest. */
-const MAX_BROWSE_PAGE = 10;
+/** Page size bounds mirrored from convex/publicBrowse.ts. */
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_PAGE_SIZE = 100;
 
@@ -21,7 +21,7 @@ export function browseResponse(
 ): Promise<Response> {
   return handleReadRequest(request, routeName, async (url) => {
     const letter = parseLetter(url.searchParams.get('letter'));
-    const page = parsePage(url.searchParams.get('page'), MAX_BROWSE_PAGE);
+    const page = parsePage(url.searchParams.get('page'), BROWSE_PAGE_MAX);
     const pageSize = parsePageSize(
       url.searchParams.get('pageSize'),
       DEFAULT_PAGE_SIZE,
@@ -58,7 +58,7 @@ export function browseResponse(
         page,
         pageSize,
         total: browse.totalMatches,
-        hasMore: browse.hasMore,
+        hasMore: browseOffersNextPage(page, browse.hasMore),
       },
     });
   });

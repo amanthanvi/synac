@@ -156,6 +156,83 @@ describe('publicBrowse', () => {
     });
     expect(wrongTag.activeTag).toBeNull();
   });
+
+  test('clamps a page past the cap onto the last served page', async () => {
+    const t = convexTest(schema, modules);
+    const entries = Array.from({ length: 11 }, (_, index) => {
+      const n = String(index).padStart(2, '0');
+      return makeEntryRow({
+        key: `TERM:c-term-${n}`,
+        slug: `c-term-${n}`,
+        title: `C Term ${n}`,
+        normalizedTitle: `c term ${n}`,
+        aliases: [],
+        tags: [],
+        tagSlugs: [],
+        senses: [
+          makeSenseRow({
+            key: `rfc4949:c-term-${n}`,
+            citations: [],
+          }),
+        ],
+      });
+    });
+    await seedDataset(t, 'v1', {
+      entries,
+      relationships: [],
+      redirects: [],
+      tagRedirects: [],
+      tags: [{ slug: 'malware', name: 'Malware', entryCount: 0 }],
+      sources: [
+        {
+          slug: 'rfc4949',
+          name: 'RFC 4949',
+          baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+          licenseType: 'OTHER',
+          allowedUse: 'Reproduce with attribution',
+          attributionRequirements: 'RFC 4949, IETF',
+          trustTier: 'TIER1',
+          enabled: true,
+          lastVerifiedAt: Date.parse('2026-01-15T00:00:00Z'),
+          citedEntryCount: entries.length,
+        },
+      ],
+    });
+
+    const args = {
+      entryType: 'TERM' as const,
+      letter: 'c',
+      pageSize: 1,
+      sort: 'title' as const,
+      query: '',
+      tagSlug: null,
+    };
+    const lastServed = await t.query(api.publicBrowse.browse, {
+      ...args,
+      page: 10,
+    });
+    const pastCap = await t.query(api.publicBrowse.browse, {
+      ...args,
+      page: 11,
+    });
+
+    expect(lastServed.entries.map((entry) => entry.slug)).toEqual([
+      'c-term-09',
+    ]);
+    expect(lastServed.totalMatches).toBe(11);
+    expect(lastServed.hasMore).toBe(true);
+    expect(pastCap.entries.map((entry) => entry.slug)).toEqual(
+      lastServed.entries.map((entry) => entry.slug),
+    );
+    expect(pastCap.hasMore).toBe(true);
+
+    const beforeCap = await t.query(api.publicBrowse.browse, {
+      ...args,
+      page: 9,
+    });
+    expect(beforeCap.entries.map((entry) => entry.slug)).toEqual(['c-term-08']);
+    expect(beforeCap.hasMore).toBe(true);
+  });
 });
 
 describe('search', () => {
