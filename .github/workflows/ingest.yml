@@ -11,22 +11,28 @@ on:
         required: false
         default: ''
 
-# The regenerate job only reads. Write access lives on the pull request job.
+# Every job but the pull request job only reads. Write access lives there.
 permissions:
   contents: read
 
+# Whole runs take turns. Overlapping runs would crawl the same hosts twice,
+# and an older run could publish after a newer one and roll the pull request
+# branch back. GitHub keeps one pending run per group: a third run replaces
+# the pending one, which then shows as cancelled and can be dispatched again.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
 jobs:
-  regenerate:
-    name: Regenerate bundles
+  plan:
+    name: Plan sources
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
-        with:
-          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -43,46 +49,177 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # The slug reaches the shell through the environment, never through
-      # workflow expression interpolation inside the script body.
-      - name: Regenerate bundles
+      # workflow expression interpolation inside the script body. An unknown
+      # or disabled slug fails here, before any job crawls.
+      - name: List sources
+        id: list
         env:
           SOURCE: ${{ github.event.inputs.source }}
         run: |
           if [ -n "$SOURCE" ]; then
-            pnpm --filter @synac/ingest-tools ingest -- --source "$SOURCE"
+            sources=$(pnpm --silent --filter @synac/ingest-tools ingest -- --list --source "$SOURCE")
           else
-            pnpm --filter @synac/ingest-tools ingest -- --all
+            sources=$(pnpm --silent --filter @synac/ingest-tools ingest -- --list)
           fi
+          echo "Sources: $sources"
+          echo "sources=$sources" >> "$GITHUB_OUTPUT"
+    outputs:
+      sources: ${{ steps.list.outputs.sources }}
+
+  # One job per source, so a slow or broken source cannot take the others
+  # down with it. Sources live on distinct hosts (a test in tools/ingest
+  # holds that), so parallel jobs keep each host at the crawler's pace.
+  regenerate:
+    name: Regenerate ${{ matrix.source }}
+    needs: plan
+    if: needs.plan.outputs.sources != '[]'
+    runs-on: ubuntu-latest
+    # The longest crawl is NIST: up to its 15,000-page maxItems cap at the
+    # crawler's 250 ms per-host floor is about 63 minutes, plus index pages
+    # and setup. Today's ~10,000 pages take about 42.
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        source: ${{ fromJSON(needs.plan.outputs.sources) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 10.34.4
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Regenerate bundle
+        env:
+          SOURCE: ${{ matrix.source }}
+        run: pnpm --filter @synac/ingest-tools ingest -- --source "$SOURCE"
 
       - name: Validate content
         run: pnpm content:check
 
-      - name: Capture the content diff
+      - name: Capture the bundle diff
         id: diff
+        env:
+          SOURCE: ${{ matrix.source }}
         run: |
           # A first ingest of a new source creates an untracked bundle.
           git add --intent-to-add content/
           if git diff --quiet -- content/; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            git diff -- content/ > content.patch
+            git diff -- content/ > "$SOURCE.patch"
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Upload the content diff
+      - name: Upload the bundle diff
         if: steps.diff.outputs.changed == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
+        with:
+          name: bundle-patch-${{ matrix.source }}
+          path: ${{ matrix.source }}.patch
+          retention-days: 3
+
+  # Runs after every source job finishes, whether it passed or not, and folds
+  # the sources that produced a validated diff into one patch.
+  combine:
+    name: Combine bundle diffs
+    needs: [plan, regenerate]
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.0
+
+      - name: Download the bundle diffs
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: bundle-patch-*
+          path: ${{ runner.temp }}/bundle-patches
+          merge-multiple: true
+
+      - name: Apply the bundle diffs
+        id: apply
+        env:
+          PATCH_DIR: ${{ runner.temp }}/bundle-patches
+        run: |
+          shopt -s nullglob
+          patches=("$PATCH_DIR"/*.patch)
+          if [ "${#patches[@]}" -eq 0 ]; then
+            echo "No source produced a validated change."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sources=()
+          for patch in "${patches[@]}"; do
+            git apply "$patch"
+            sources+=("$(basename "$patch" .patch)")
+          done
+          printf -v joined '%s, ' "${sources[@]}"
+          echo "Applied: ${joined%, }"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "sources=${joined%, }" >> "$GITHUB_OUTPUT"
+
+      - name: Setup pnpm
+        if: steps.apply.outputs.changed == 'true'
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 10.34.4
+
+      - name: Setup Node
+        if: steps.apply.outputs.changed == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        if: steps.apply.outputs.changed == 'true'
+        run: pnpm install --frozen-lockfile
+
+      # Each source passed on its own; this checks the sources together.
+      - name: Validate content
+        if: steps.apply.outputs.changed == 'true'
+        run: pnpm content:check
+
+      - name: Capture the content diff
+        if: steps.apply.outputs.changed == 'true'
+        run: |
+          git add --intent-to-add content/
+          git diff -- content/ > content.patch
+
+      - name: Upload the content diff
+        if: steps.apply.outputs.changed == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
           name: content-patch
           path: content.patch
           retention-days: 3
     outputs:
-      changed: ${{ steps.diff.outputs.changed }}
+      changed: ${{ steps.apply.outputs.changed }}
+      sources: ${{ steps.apply.outputs.sources }}
 
   pull-request:
     name: Open pull request
-    needs: regenerate
-    if: needs.regenerate.outputs.changed == 'true'
+    needs: combine
+    # A failed source job upstream would otherwise skip this job even though
+    # combine succeeded with the sources that did pass.
+    if: ${{ !cancelled() && needs.combine.result == 'success' && needs.combine.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -114,6 +251,12 @@ jobs:
             An automated ingest run regenerated one or more source bundles
             under `content/generated/`. Review the diff, then merge to publish.
             The deploy workflow syncs `main` into the Convex deployment.
+
+            Sources in this update: ${{ needs.combine.outputs.sources }}.
+            Each source runs in its own job; a source that failed or did not
+            change is left out of this diff. See the
+            [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            for every source's outcome.
 
             Bundles are machine-owned. To adjust how an entry is presented,
             edit `content/overrides/` instead of this diff.

@@ -84,8 +84,10 @@ next successful revalidate.
 `tools/ingest` holds one adapter per source (NIST CSRC, NICCS, RFC 4949,
 OWASP, MITRE ATT&CK) plus an SSRF-safe fetcher. Adapters are pure producers:
 fetch → parse → emit a bundle. A weekly scheduled workflow (`ingest.yml`)
-regenerates bundles and opens a pull request only when something changed;
-review happens as ordinary PR review.
+regenerates each source in its own job, so one slow or failing source does not
+block the rest, then folds the sources that changed and passed
+`content:check` into a single pull request; review happens as ordinary PR
+review.
 
 ## Decisions of record
 
