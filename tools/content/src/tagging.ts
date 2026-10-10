@@ -64,27 +64,50 @@ export function classificationEntryHash(
   return sha256(JSON.stringify(classificationEntryPayload(entry, senses)));
 }
 
-export function classificationCorpusHash(
+/** Entry key -> classification hash, in entry-key order. */
+export function classificationEntryHashes(
   entries: CompiledEntry[],
   senses: CompiledSense[],
-): string {
+): Record<string, string> {
   const sensesByEntry = new Map<string, CompiledSense[]>();
   for (const sense of senses) {
     const entrySenses = sensesByEntry.get(sense.entryKey) ?? [];
     entrySenses.push(sense);
     sensesByEntry.set(sense.entryKey, entrySenses);
   }
+  return Object.fromEntries(
+    [...entries]
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .map((entry) => [
+        entry.key,
+        classificationEntryHash(entry, sensesByEntry.get(entry.key) ?? []),
+      ]),
+  );
+}
+
+/**
+ * The whole-corpus hash the offline manifests bind. It depends only on the
+ * per-entry hashes, so it can be recomputed from an artifact's
+ * classifiedEntries.
+ */
+export function corpusHashFromEntryHashes(
+  entryHashes: Readonly<Record<string, string>>,
+): string {
   return sha256(
     JSON.stringify(
-      [...entries]
-        .sort((a, b) => a.key.localeCompare(b.key))
-        .map((entry) => ({
-          entryKey: entry.key,
-          entryContentHash: classificationEntryHash(
-            entry,
-            sensesByEntry.get(entry.key) ?? [],
-          ),
+      Object.entries(entryHashes)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([entryKey, entryContentHash]) => ({
+          entryKey,
+          entryContentHash,
         })),
     ),
   );
+}
+
+export function classificationCorpusHash(
+  entries: CompiledEntry[],
+  senses: CompiledSense[],
+): string {
+  return corpusHashFromEntryHashes(classificationEntryHashes(entries, senses));
 }

@@ -7,12 +7,12 @@ import {
   type BundleFile,
   type OverrideFile,
   type SourceFile,
-  type TagAssignmentsFile,
+  type TagAssignmentsFileV2,
   type TagsFile,
 } from './model.js';
 import {
-  classificationCorpusHash,
-  classificationEntryHash,
+  classificationEntryHashes,
+  corpusHashFromEntryHashes,
   stableJsonHash,
   tagTaxonomyHash,
 } from './tagging.js';
@@ -127,6 +127,68 @@ const emptyOverride: OverrideFile = {
   splitSenses: [],
   editorialSenses: [],
 };
+
+const RELEASE_RUN_ID = 'release-test';
+
+/** Live entry key -> classification hash, as a tagging run would see it now. */
+function liveEntryHashes(input: ContentInput): Record<string, string> {
+  const live = compileContent(
+    { ...input, tagAssignments: undefined },
+    { allowUnreleasedTagging: true },
+  );
+  if (!live.ok) throw new Error(live.errors.join('\n'));
+  return classificationEntryHashes(
+    live.classification.entries,
+    live.classification.senses,
+  );
+}
+
+/** A schemaVersion 2 release classified against exactly `input`. */
+function releaseFor(
+  input: ContentInput,
+  pairs: Array<[entryKey: string, tagSlug: string]>,
+  classifiedEntries: Record<string, string> = liveEntryHashes(input),
+): TagAssignmentsFileV2 {
+  const thresholds = Object.fromEntries(
+    input.tags.tags
+      .filter((tag) => (tag.lifecycle ?? 'PUBLISHED') === 'PUBLISHED')
+      .map((tag) => [tag.slug, 0.98]),
+  );
+  return {
+    schemaVersion: 2,
+    taxonomyVersion: input.tags.taxonomyVersion ?? '1',
+    taxonomyHash: tagTaxonomyHash(input.tags),
+    run: {
+      runId: RELEASE_RUN_ID,
+      model: 'test-model',
+      modelHash: 'b'.repeat(64),
+      promptHash: 'c'.repeat(64),
+      configHash: 'd'.repeat(64),
+      calibrationHash: 'e'.repeat(64),
+      certificationHash: 'f'.repeat(64),
+      thresholds,
+      thresholdsHash: stableJsonHash(thresholds),
+      labelOrigin: 'synthetic_ai_panel',
+      createdAt: '2026-08-10T00:00:00Z',
+      release: true,
+    },
+    assignments: pairs.map(([key, tagSlug]) => {
+      const entryContentHash = classifiedEntries[key];
+      if (!entryContentHash) throw new Error(`no live entry ${key}`);
+      return {
+        entryKey: key,
+        entryContentHash,
+        tagSlug,
+        authority: 'SYNTHETIC_REFERENCE',
+        lane: 'AUTO',
+        score: 0.99,
+        runId: RELEASE_RUN_ID,
+      };
+    }),
+    removals: [],
+    classifiedEntries,
+  };
+}
 
 describe('compileContent', () => {
   it('compiles a bundle entry with resolved citations and derived text', () => {
@@ -361,12 +423,11 @@ describe('compileContent', () => {
     ).toBe(false);
     expect(
       tagAssignmentsFileSchema.safeParse({
-        schemaVersion: 1,
+        schemaVersion: 2,
         taxonomyVersion: '2',
         taxonomyHash: 'a'.repeat(64),
         run: {
           runId: 'unreleased',
-          corpusHash: 'a'.repeat(64),
           model: 'test',
           modelHash: 'a'.repeat(64),
           promptHash: 'a'.repeat(64),
@@ -381,6 +442,7 @@ describe('compileContent', () => {
         },
         assignments: [],
         removals: [],
+        classifiedEntries: {},
       }).success,
     ).toBe(false);
 
@@ -404,30 +466,71 @@ describe('compileContent', () => {
     };
     expect(tagsFileSchema.safeParse(completeTags).success).toBe(true);
     const thresholds = { malware: 0.98 };
+    const run = {
+      runId: 'released',
+      model: 'test',
+      modelHash: 'a'.repeat(64),
+      promptHash: 'a'.repeat(64),
+      configHash: 'a'.repeat(64),
+      calibrationHash: 'a'.repeat(64),
+      certificationHash: 'a'.repeat(64),
+      thresholds,
+      thresholdsHash: stableJsonHash(thresholds),
+      labelOrigin: 'synthetic_ai_panel',
+      createdAt: '2026-08-10T00:00:00Z',
+      release: true,
+    };
+    const released = {
+      schemaVersion: 2,
+      taxonomyVersion: '2',
+      taxonomyHash: tagTaxonomyHash(completeTags),
+      run,
+      assignments: [],
+      removals: [],
+      classifiedEntries: { 'TERM:back-door': 'a'.repeat(64) },
+    };
+    expect(tagAssignmentsFileSchema.safeParse(released).success).toBe(true);
+    // Version 2 replaces the whole-corpus hash with per-entry hashes.
+    expect(
+      tagAssignmentsFileSchema.safeParse({
+        ...released,
+        run: { ...run, corpusHash: 'a'.repeat(64) },
+      }).success,
+    ).toBe(false);
+    expect(
+      tagAssignmentsFileSchema.safeParse({
+        ...released,
+        classifiedEntries: undefined,
+      }).success,
+    ).toBe(false);
+    expect(
+      tagAssignmentsFileSchema.safeParse({
+        ...released,
+        classifiedEntries: { 'not-an-entry-key': 'a'.repeat(64) },
+      }).success,
+    ).toBe(false);
+    // Version 1 stays readable so the history gate and migration can load it.
     expect(
       tagAssignmentsFileSchema.safeParse({
         schemaVersion: 1,
-        taxonomyVersion: '2',
-        taxonomyHash: tagTaxonomyHash(completeTags),
-        run: {
-          runId: 'released',
-          corpusHash: 'a'.repeat(64),
-          model: 'test',
-          modelHash: 'a'.repeat(64),
-          promptHash: 'a'.repeat(64),
-          configHash: 'a'.repeat(64),
-          calibrationHash: 'a'.repeat(64),
-          certificationHash: 'a'.repeat(64),
-          thresholds,
-          thresholdsHash: stableJsonHash(thresholds),
-          labelOrigin: 'synthetic_ai_panel',
-          createdAt: '2026-08-10T00:00:00Z',
-          release: true,
-        },
+        taxonomyVersion: released.taxonomyVersion,
+        taxonomyHash: released.taxonomyHash,
+        run: { ...run, corpusHash: 'a'.repeat(64) },
         assignments: [],
         removals: [],
       }).success,
     ).toBe(true);
+    expect(
+      tagAssignmentsFileSchema.safeParse({
+        schemaVersion: 1,
+        taxonomyVersion: released.taxonomyVersion,
+        taxonomyHash: released.taxonomyHash,
+        run: { ...run, corpusHash: 'a'.repeat(64) },
+        assignments: [],
+        removals: [],
+        classifiedEntries: released.classifiedEntries,
+      }).success,
+    ).toBe(false);
   });
 
   it('fails closed when taxonomy v2 publishes tags without an assignment artifact', () => {
@@ -494,49 +597,9 @@ describe('compileContent', () => {
     expect(baseline.ok).toBe(true);
     if (!baseline.ok) return;
     const entry = at(baseline.dataset.entries, 0);
-    const entryHash = classificationEntryHash(
-      entry,
-      baseline.dataset.senses.filter((sense) => sense.entryKey === entry.key),
-    );
-    const runId = 'test-run';
-    const tagAssignments: TagAssignmentsFile = {
-      schemaVersion: 1,
-      taxonomyVersion: '2',
-      taxonomyHash: tagTaxonomyHash(tags),
-      run: {
-        runId,
-        corpusHash: classificationCorpusHash(
-          baseline.dataset.entries,
-          baseline.dataset.senses,
-        ),
-        model: 'test-model',
-        modelHash: 'b'.repeat(64),
-        promptHash: 'c'.repeat(64),
-        configHash: 'd'.repeat(64),
-        calibrationHash: 'e'.repeat(64),
-        certificationHash: 'f'.repeat(64),
-        thresholds: { malware: 0.98, 'incident-response': 0.98 },
-        thresholdsHash: stableJsonHash({
-          malware: 0.98,
-          'incident-response': 0.98,
-        }),
-        labelOrigin: 'synthetic_ai_panel',
-        createdAt: '2026-08-10T00:00:00Z',
-        release: true,
-      },
-      assignments: [
-        {
-          entryKey: entry.key,
-          entryContentHash: entryHash,
-          tagSlug: 'malware',
-          authority: 'SYNTHETIC_REFERENCE',
-          lane: 'AUTO',
-          score: 0.99,
-          runId,
-        },
-      ],
-      removals: [],
-    };
+    const tagAssignments = releaseFor(makeInput({ tags, bundles: [bundle] }), [
+      [entry.key, 'malware'],
+    ]);
     const overrides = new Map([
       [
         entry.key,
@@ -666,41 +729,23 @@ describe('compileContent', () => {
         },
       ],
     };
-    const thresholds = { malware: 0.98 };
-    const tagAssignments: TagAssignmentsFile = {
-      schemaVersion: 1,
-      taxonomyVersion: '2',
-      taxonomyHash: tagTaxonomyHash(tags),
-      run: {
-        runId: 'removal-test',
-        corpusHash: classificationCorpusHash([], []),
-        model: 'test-model',
-        modelHash: 'a'.repeat(64),
-        promptHash: 'b'.repeat(64),
-        configHash: 'c'.repeat(64),
-        calibrationHash: 'd'.repeat(64),
-        certificationHash: 'e'.repeat(64),
-        thresholds,
-        thresholdsHash: stableJsonHash(thresholds),
-        labelOrigin: 'synthetic_ai_panel',
-        createdAt: '2026-08-10T00:00:00Z',
-        release: true,
-      },
-      assignments: [],
+    const tagAssignments: TagAssignmentsFileV2 = {
+      // The fixture fails compile on purpose, so it cannot supply live hashes.
+      ...releaseFor(makeInput({ tags, bundles: [] }), [], {}),
       removals: [
         {
           entryKey: 'TERM:alpha',
           tagSlug: 'old-tag',
           previousEntryContentHash: 'f'.repeat(64),
           reason: 'Reviewed retirement.',
-          runId: 'removal-test',
+          runId: RELEASE_RUN_ID,
         },
         {
           entryKey: 'TERM:alpha',
           tagSlug: 'old-tag',
           previousEntryContentHash: 'f'.repeat(64),
           reason: 'Duplicate reviewed retirement.',
-          runId: 'removal-test',
+          runId: RELEASE_RUN_ID,
         },
         {
           entryKey: 'TERM:beta',
@@ -739,7 +784,7 @@ describe('compileContent', () => {
     ).toBe(false);
   });
 
-  it('hard-fails stale, duplicate, foreign-run, unknown-entry, and non-published assignments', () => {
+  it('hard-fails duplicate, foreign-run, unclassified, mismatched, and non-published assignments in every mode', () => {
     const bundle = makeBundle();
     at(bundle.entries, 0).tags = [];
     const tags: TagsFile = {
@@ -754,74 +799,74 @@ describe('compileContent', () => {
       ],
       retiredTags: [],
     };
-    const row = {
-      entryKey: 'TERM:back-door' as const,
-      entryContentHash: '0'.repeat(64),
-      tagSlug: 'malware',
-      authority: 'SYNTHETIC_REFERENCE' as const,
-      lane: 'AUTO' as const,
-      score: 0.99,
-      runId: 'foreign',
-    };
-    const tagAssignments: TagAssignmentsFile = {
-      schemaVersion: 1,
-      taxonomyVersion: '2',
-      taxonomyHash: tagTaxonomyHash(tags),
-      run: {
-        runId: 'expected',
-        corpusHash: 'a'.repeat(64),
-        model: 'test-model',
-        modelHash: 'b'.repeat(64),
-        promptHash: 'c'.repeat(64),
-        configHash: 'd'.repeat(64),
-        calibrationHash: 'e'.repeat(64),
-        certificationHash: 'f'.repeat(64),
-        thresholds: { malware: 0.98 },
-        thresholdsHash: stableJsonHash({ malware: 0.98 }),
-        labelOrigin: 'synthetic_ai_panel',
-        createdAt: '2026-08-10T00:00:00Z',
-        release: true,
-      },
+    const release = releaseFor(makeInput({ tags, bundles: [bundle] }), [
+      ['TERM:back-door', 'malware'],
+    ]);
+    const row = at(release.assignments, 0);
+    const tagAssignments: TagAssignmentsFileV2 = {
+      ...release,
       assignments: [
-        row,
+        { ...row, runId: 'foreign' },
         { ...row },
-        { ...row, entryKey: 'TERM:missing', runId: 'expected' },
-        { ...row, tagSlug: 'incident-response', runId: 'expected' },
+        { ...row, entryKey: 'TERM:missing' },
+        { ...row, tagSlug: 'incident-response' },
+        { ...row, tagSlug: 'other-hash', entryContentHash: '0'.repeat(64) },
       ],
-      removals: [],
     };
+    for (const strictTagging of [false, true]) {
+      const result = compileContent(
+        makeInput({ tags, bundles: [bundle], tagAssignments }),
+        { allowUnreleasedTagging: true, strictTagging },
+      );
+      expect(result.ok).toBe(false);
+      if (result.ok) return;
+      expect(result.errors).toEqual(
+        expect.arrayContaining([
+          'tag assignments: duplicate TERM:back-door -> malware',
+          'tag assignments: TERM:back-door -> malware has a foreign run ID',
+          'tag assignments: TERM:missing -> malware names an entry run release-test did not classify',
+          'tag assignments: TERM:back-door references non-published tag incident-response',
+          'tag assignments: TERM:back-door -> other-hash hash does not match the hash run release-test classified',
+        ]),
+      );
+    }
+  });
+
+  it('rejects a schemaVersion 1 artifact with a migration hint', () => {
+    const bundle = makeBundle();
+    at(bundle.entries, 0).tags = [];
+    const tags: TagsFile = {
+      taxonomyVersion: '2',
+      tags: [{ slug: 'malware', name: 'Malware', lifecycle: 'PUBLISHED' }],
+      retiredTags: [],
+    };
+    const input = makeInput({ tags, bundles: [bundle] });
+    const release = releaseFor(input, [['TERM:back-door', 'malware']]);
     const result = compileContent(
-      makeInput({ tags, bundles: [bundle], tagAssignments }),
       {
-        allowUnreleasedTagging: true,
+        ...input,
+        tagAssignments: {
+          schemaVersion: 1,
+          taxonomyVersion: release.taxonomyVersion,
+          taxonomyHash: release.taxonomyHash,
+          run: {
+            ...release.run,
+            corpusHash: corpusHashFromEntryHashes(release.classifiedEntries),
+          },
+          assignments: release.assignments,
+          removals: [],
+        },
       },
+      { allowUnreleasedTagging: true },
     );
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(
-      result.errors.some((error) =>
-        error.includes('duplicate TERM:back-door -> malware'),
-      ),
-    ).toBe(true);
-    expect(
-      result.errors.some((error) => error.includes('foreign run ID')),
-    ).toBe(true);
-    expect(result.errors.some((error) => error.includes('is stale'))).toBe(
-      true,
-    );
-    expect(
-      result.errors.some((error) =>
-        error.includes('unknown or suppressed entry TERM:missing'),
-      ),
-    ).toBe(true);
-    expect(
-      result.errors.some((error) =>
-        error.includes('non-published tag incident-response'),
-      ),
-    ).toBe(true);
+    expect(result.errors).toEqual([
+      'tag assignments: schemaVersion 1 binds one whole-corpus hash; run `pnpm --filter @synac/content-tools migrate:tag-assignments` to record per-entry hashes',
+    ]);
   });
 
-  it('enforces release coverage and per-published-tag population floors', () => {
+  it('enforces release floors in strict mode and reports them as advisory by default', () => {
     const bundle = makeBundle();
     at(bundle.entries, 0).tags = [];
     for (const suffix of ['two', 'three', 'four']) {
@@ -836,67 +881,304 @@ describe('compileContent', () => {
       tags: [{ slug: 'malware', name: 'Malware', lifecycle: 'PUBLISHED' }],
       retiredTags: [],
     };
-    const baseline = compileContent(makeInput({ tags, bundles: [bundle] }), {
-      allowUnreleasedTagging: true,
-    });
-    expect(baseline.ok).toBe(true);
-    if (!baseline.ok) return;
-    const entry = at(baseline.dataset.entries, 0);
-    const entryHash = classificationEntryHash(
-      entry,
-      baseline.dataset.senses.filter((sense) => sense.entryKey === entry.key),
-    );
-    const runId = 'release-test';
-    const tagAssignments: TagAssignmentsFile = {
-      schemaVersion: 1,
-      taxonomyVersion: '2',
-      taxonomyHash: tagTaxonomyHash(tags),
-      run: {
-        runId,
-        corpusHash: classificationCorpusHash(
-          baseline.dataset.entries,
-          baseline.dataset.senses,
-        ),
-        model: 'test-model',
-        modelHash: 'b'.repeat(64),
-        promptHash: 'c'.repeat(64),
-        configHash: 'd'.repeat(64),
-        calibrationHash: 'e'.repeat(64),
-        certificationHash: 'f'.repeat(64),
-        thresholds: { malware: 0.98 },
-        thresholdsHash: stableJsonHash({ malware: 0.98 }),
-        labelOrigin: 'synthetic_ai_panel',
-        createdAt: '2026-08-10T00:00:00Z',
-        release: true,
-      },
-      assignments: [
-        {
-          entryKey: entry.key,
-          entryContentHash: entryHash,
-          tagSlug: 'malware',
-          authority: 'SYNTHETIC_REFERENCE',
-          lane: 'AUTO',
-          score: 0.99,
-          runId,
-        },
-      ],
-      removals: [],
+    const input = makeInput({ tags, bundles: [bundle] });
+    const released = {
+      ...input,
+      tagAssignments: releaseFor(input, [['TERM:back-door', 'malware']]),
     };
-    const result = compileContent(
-      makeInput({ tags, bundles: [bundle], tagAssignments }),
+    const coverageFloor =
+      'tag assignment release: entry coverage 25.00% is below the required 30.00%';
+    const tagFloor =
+      'tag assignment release: published tag malware has 1 entries; at least 25 required';
+
+    const strict = compileContent(released, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toEqual([coverageFloor, tagFloor]);
+
+    const lenient = compileContent(released);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([
+      `${coverageFloor} (release floor; content:check:strict enforces it)`,
+      `${tagFloor} (release floor; content:check:strict enforces it)`,
+    ]);
+  });
+});
+
+/**
+ * A released corpus of 30 entries, 26 of them tagged `malware`: comfortably
+ * above both release floors, so each test sees only the drift it introduces.
+ */
+describe('tag assignment drift', () => {
+  const TAGGED = 26;
+  const RUN = RELEASE_RUN_ID;
+  const termSlug = (index: number): string =>
+    `term-${String(index).padStart(3, '0')}`;
+  const termKey = (index: number): string => `TERM:${termSlug(index)}`;
+  const driftTags: TagsFile = {
+    taxonomyVersion: '2',
+    tags: [
+      {
+        slug: 'malware',
+        name: 'Malware',
+        lifecycle: 'PUBLISHED',
+        positiveExamples: [termSlug(0)],
+        hardNegatives: [termSlug(29)],
+      },
+    ],
+    retiredTags: [],
+  };
+  const summary = (added: number, changed: number, removed: number): string => {
+    const total = added + changed + removed;
+    const subject = total === 1 ? '1 entry differs' : `${total} entries differ`;
+    return (
+      `tag assignments: ${subject} from run ${RUN} ` +
+      `(${added} new, ${changed} changed, ${removed} removed); ` +
+      'the next tagging run classifies them, and content:check:strict fails until it does'
     );
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(
-      result.errors.some((error) =>
-        error.includes('25.00% is below the required 30.00%'),
-      ),
-    ).toBe(true);
-    expect(
-      result.errors.some((error) =>
-        error.includes('malware has 1 entries; at least 25 required'),
-      ),
-    ).toBe(true);
+  };
+  const floorSuffix = ' (release floor; content:check:strict enforces it)';
+
+  /** Entries term-000 upward; the same index always yields the same entry. */
+  function glossaryBundle(count: number): BundleFile {
+    const template = at(makeBundle().entries, 0);
+    const sense = at(template.senses, 0);
+    return makeBundle({
+      entries: Array.from({ length: count }, (_, index) => ({
+        ...template,
+        slug: termSlug(index),
+        title: `Term ${index}`,
+        aliases: [],
+        tags: [],
+        senses: [
+          {
+            ...sense,
+            definitionMd: `Security concept number ${index}.`,
+          },
+        ],
+      })),
+    });
+  }
+
+  function released(): ContentInput {
+    const input = makeInput({ tags: driftTags, bundles: [glossaryBundle(30)] });
+    const pairs = Array.from(
+      { length: TAGGED },
+      (_, index): [string, string] => [termKey(index), 'malware'],
+    );
+    return { ...input, tagAssignments: releaseFor(input, pairs) };
+  }
+
+  function withOverride(
+    input: ContentInput,
+    key: string,
+    override: Partial<OverrideFile>,
+  ): ContentInput {
+    const overrides = new Map(input.overrides);
+    overrides.set(key, { ...emptyOverride, ...override });
+    return { ...input, overrides };
+  }
+
+  const takedown: Partial<OverrideFile> = {
+    suppress: { reason: 'takedown', reference: undefined },
+  };
+  const rewrite: Partial<OverrideFile> = {
+    summaryMd: 'A rewritten summary that changes what the entry means.',
+  };
+
+  function tagsOf(result: ReturnType<typeof compileContent>, key: string) {
+    if (!result.ok) throw new Error(result.errors.join('\n'));
+    return result.dataset.entries.find((entry) => entry.key === key)?.tags;
+  }
+
+  it('passes a current release cleanly in both modes', () => {
+    const input = released();
+    for (const strictTagging of [false, true]) {
+      const result = compileContent(input, { strictTagging });
+      expect(result.ok).toBe(true);
+      expect(result.warnings).toEqual([]);
+      if (!result.ok) return;
+      expect(
+        result.dataset.entries.filter((entry) => entry.tagSlugs.length > 0),
+      ).toHaveLength(TAGGED);
+    }
+  });
+
+  it('drops only the automatic tags of the edited entry, with a warning', () => {
+    const edited = withOverride(released(), termKey(3), rewrite);
+    const lenient = compileContent(edited);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([
+      `tag assignments: ${termKey(3)} -> malware is stale: the entry changed after run ${RUN}; dropped until the next tagging run`,
+      summary(0, 1, 0),
+    ]);
+    expect(tagsOf(lenient, termKey(3))).toEqual([]);
+    expect(tagsOf(lenient, termKey(4))).toEqual([
+      { slug: 'malware', assignedBy: 'AUTO', score: 0.99 },
+    ]);
+
+    const strict = compileContent(edited, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toEqual([
+      `tag assignments: ${termKey(3)} -> malware is stale: the entry changed after run ${RUN}`,
+      `tag assignments: ${termKey(3)} changed after run ${RUN}`,
+    ]);
+  });
+
+  it('lets an editor restore a dropped tag with addTags', () => {
+    const edited = withOverride(released(), termKey(3), {
+      ...rewrite,
+      addTags: ['malware'],
+    });
+    const result = compileContent(edited);
+    expect(result.ok).toBe(true);
+    expect(tagsOf(result, termKey(3))).toEqual([
+      { slug: 'malware', assignedBy: 'EDITORIAL', score: undefined },
+    ]);
+  });
+
+  it('reports an upstream text change on an untagged entry as drift', () => {
+    const input = released();
+    const bundle = glossaryBundle(30);
+    at(at(bundle.entries, 28).senses, 0).definitionMd =
+      'A definition the source rewrote.';
+    const next = { ...input, bundles: [bundle] };
+
+    const lenient = compileContent(next);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([summary(0, 1, 0)]);
+
+    const strict = compileContent(next, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toEqual([
+      `tag assignments: ${termKey(28)} changed after run ${RUN}`,
+    ]);
+  });
+
+  it('never blocks a takedown, even in strict mode', () => {
+    const taggedTakedown = withOverride(released(), termKey(3), takedown);
+    const untaggedTakedown = withOverride(released(), termKey(27), takedown);
+    for (const strictTagging of [false, true]) {
+      const tagged = compileContent(taggedTakedown, { strictTagging });
+      expect(tagged.ok).toBe(true);
+      expect(tagged.warnings).toEqual([
+        `tag assignments: ${termKey(3)} -> malware is not served because the entry is suppressed`,
+      ]);
+      expect(tagsOf(tagged, termKey(3))).toBeUndefined();
+
+      const untagged = compileContent(untaggedTakedown, { strictTagging });
+      expect(untagged.ok).toBe(true);
+      expect(untagged.warnings).toEqual([]);
+      expect(tagsOf(untagged, termKey(27))).toBeUndefined();
+    }
+  });
+
+  it('never blocks a takedown of a contract example', () => {
+    const input = withOverride(released(), termKey(0), takedown);
+    for (const strictTagging of [false, true]) {
+      const result = compileContent(input, { strictTagging });
+      expect(result.ok).toBe(true);
+      expect(result.warnings).toEqual([
+        `tag assignments: ${termKey(0)} -> malware is not served because the entry is suppressed`,
+        `tag malware: positive example ${termSlug(0)} is suppressed`,
+      ]);
+    }
+  });
+
+  it('summarizes new entries by default and lists each one in strict mode', () => {
+    const next = { ...released(), bundles: [glossaryBundle(32)] };
+
+    const lenient = compileContent(next);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([summary(2, 0, 0)]);
+    expect(tagsOf(lenient, termKey(31))).toEqual([]);
+
+    const strict = compileContent(next, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toEqual([
+      `tag assignments: ${termKey(30)} is new since run ${RUN}`,
+      `tag assignments: ${termKey(31)} is new since run ${RUN}`,
+    ]);
+  });
+
+  it('drops the tags of an entry its source removed', () => {
+    const input = released();
+    const bundle = glossaryBundle(30);
+    bundle.entries.splice(5, 1);
+    const next = { ...input, bundles: [bundle] };
+
+    const lenient = compileContent(next);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([
+      `tag assignments: ${termKey(5)} -> malware belongs to an entry that no longer exists; dropped`,
+      summary(0, 0, 1),
+    ]);
+
+    const strict = compileContent(next, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toEqual([
+      `tag assignments: ${termKey(5)} -> malware belongs to an entry that no longer exists`,
+      `tag assignments: ${termKey(5)} was classified by run ${RUN} but no longer exists`,
+    ]);
+  });
+
+  it('reports a contract example its source removed as drift', () => {
+    const input = released();
+    const bundle = glossaryBundle(30);
+    bundle.entries.splice(29, 1);
+    const next = { ...input, bundles: [bundle] };
+
+    const lenient = compileContent(next);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([
+      summary(0, 0, 1),
+      `tag malware: hard negative ${termSlug(29)} is not a live entry; replace it in the next taxonomy release`,
+    ]);
+
+    const strict = compileContent(next, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toEqual([
+      `tag assignments: ${termKey(29)} was classified by run ${RUN} but no longer exists`,
+      `tag malware: hard negative ${termSlug(29)} is not a live entry`,
+    ]);
+  });
+
+  it('keeps serving when new untagged entries dilute coverage below the floor', () => {
+    // 26 tagged of 90 is 28.89%; only a tagging run can classify the rest.
+    const next = { ...released(), bundles: [glossaryBundle(90)] };
+
+    const lenient = compileContent(next);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([
+      summary(60, 0, 0),
+      `tag assignment release: entry coverage 28.89% is below the required 30.00%${floorSuffix}`,
+    ]);
+
+    const strict = compileContent(next, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toHaveLength(60);
+    expect(strict.errors).toContain(
+      `tag assignments: ${termKey(89)} is new since run ${RUN}`,
+    );
+  });
+
+  it('keeps serving when stale drops take a tag below its population floor', () => {
+    const input = withOverride(
+      withOverride(released(), termKey(1), rewrite),
+      termKey(2),
+      rewrite,
+    );
+    const result = compileContent(input);
+    expect(result.ok).toBe(true);
+    expect(result.warnings).toContain(
+      `tag assignment release: published tag malware has 24 entries; at least 25 required${floorSuffix}`,
+    );
   });
 });
 
