@@ -109,7 +109,7 @@ async function readBodyUpTo(
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const verdict = await enforceRateLimit(request.headers);
+  const verdict = await enforceRateLimit(request.headers, 'csp_report');
   if (!verdict.allowed) {
     return new Response(null, {
       status: 429,

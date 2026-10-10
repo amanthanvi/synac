@@ -9,6 +9,8 @@
  * deliberately answers 404 when it is unconfigured, so neither is advertised.
  */
 
+import { RATE_LIMIT_PER_MINUTE } from '../../../../convex/rateLimitPolicy';
+
 const DEFAULT_SITE_URL = 'https://synac.app';
 
 type OpenApiSchema = {
@@ -144,8 +146,7 @@ const NOT_FOUND: OpenApiResponse = {
 };
 
 const RATE_LIMITED: OpenApiResponse = {
-  description:
-    'The caller exceeded the shared rate limit for /api/v1. Retry-After carries the same value as retryAfterSeconds.',
+  description: `The caller exceeded this route's rate limit: ${RATE_LIMIT_PER_MINUTE.search} requests per minute for GET /api/v1/search, ${RATE_LIMIT_PER_MINUTE.api_read} per minute for every other read. The budgets are separate. Retry-After carries the same value as retryAfterSeconds.`,
   content: { 'application/json': { schema: ref('RateLimited') } },
   headers: {
     'Retry-After': {
@@ -672,7 +673,7 @@ export function buildOpenApiDocument(): OpenApiDocument {
       description: [
         'Read-only JSON over the SynAc corpus of security terms and acronyms.',
         'Every route is a GET, answers OPTIONS, and sends Access-Control-Allow-Origin: * so it can be called from any origin. Preflight allows GET and OPTIONS with the content-type and if-none-match headers.',
-        'Responses carry an ETag; send it back as If-None-Match to get a 304. All /api/v1 routes share one rate-limit budget keyed by caller address.',
+        `Responses carry an ETag; send it back as If-None-Match to get a 304. Rate limits are per caller. GET /api/v1/search allows ${RATE_LIMIT_PER_MINUTE.search} requests per minute, and the other GET routes share ${RATE_LIMIT_PER_MINUTE.api_read} requests per minute. Exhausting one budget does not exhaust the other.`,
         'The editorial layer is CC BY 4.0. Quoted source text stays under the license of its source, identified by licenseUrl and publicStatement on each citation.',
       ].join('\n\n'),
       license: {

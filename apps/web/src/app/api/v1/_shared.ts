@@ -12,7 +12,7 @@ import type {
 } from '@/lib/convex';
 import { logger } from '@/lib/logger';
 import { entryPath, senseHeadingText } from '@/lib/publicEntryPage';
-import { enforceRateLimit } from '@/lib/rateLimit';
+import { enforceRateLimit, type RateLimitScope } from '@/lib/rateLimit';
 
 const JSON_CONTENT_TYPE = 'application/json; charset=utf-8';
 
@@ -144,17 +144,19 @@ function rateLimitedResponse(request: Request, retryAfter: number): Response {
 }
 
 /**
- * Every v1 read route shares one rate-limit scope and one failure mode: an
- * unhandled error must never leak a stack or an internal message to a caller.
+ * One failure mode for every v1 read: an unhandled error must never leak a
+ * stack or an internal message to a caller. `scope` chooses which independent
+ * budget the request spends.
  */
-export async function handleReadRequest(
+async function handleReadRequest(
   request: Request,
   routeName: string,
   handler: (url: URL) => Promise<Response>,
+  scope: RateLimitScope,
 ): Promise<Response> {
   const requestId = requestIdOf(request);
   try {
-    const verdict = await enforceRateLimit(request.headers);
+    const verdict = await enforceRateLimit(request.headers, scope);
     if (!verdict.allowed) {
       logger.warn('api.v1.rate_limited', {
         route: routeName,
@@ -172,6 +174,23 @@ export async function handleReadRequest(
     });
     return errorResponse(request, 500, 'internal_error');
   }
+}
+
+/** GET /api/v1/search. Same budget as the /search page. */
+export function handleSearchRequest(
+  request: Request,
+  handler: (url: URL) => Promise<Response>,
+): Promise<Response> {
+  return handleReadRequest(request, 'search', handler, 'search');
+}
+
+/** Every other public GET /api/v1 read. */
+export function handleApiReadRequest(
+  request: Request,
+  routeName: string,
+  handler: (url: URL) => Promise<Response>,
+): Promise<Response> {
+  return handleReadRequest(request, routeName, handler, 'api_read');
 }
 
 export function parsePage(value: string | null, maxPage: number): number {

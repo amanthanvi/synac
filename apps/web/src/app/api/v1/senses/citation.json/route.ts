@@ -6,7 +6,7 @@ import { parseEntryTypeParam } from '@/lib/searchQuery';
 import {
   entryUrl,
   errorResponse,
-  handleReadRequest,
+  handleApiReadRequest,
   jsonResponse,
   optionsResponse,
   parseSlug,
@@ -30,7 +30,7 @@ function parseSenseKey(value: string | null): string | null {
 }
 
 export function GET(request: Request): Promise<Response> {
-  return handleReadRequest(request, 'senses.citation', async (url) => {
+  return handleApiReadRequest(request, 'senses.citation', async (url) => {
     const entryType = parseEntryTypeParam(url.searchParams.get('type'));
     if (!entryType) return errorResponse(request, 400, 'invalid_type');
     const slug = parseSlug(url.searchParams.get('slug'));
