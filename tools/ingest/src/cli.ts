@@ -91,6 +91,11 @@ const list = args.includes('--list');
 const sourceFlag = args.indexOf('--source');
 const requested = sourceFlag >= 0 ? args[sourceFlag + 1] : undefined;
 
+if (sourceFlag >= 0 && (!requested || requested.startsWith('--'))) {
+  console.error('usage: --source needs a source slug');
+  process.exit(1);
+}
+
 if (list) {
   try {
     const registry = await loadSourceRegistry(contentDir);

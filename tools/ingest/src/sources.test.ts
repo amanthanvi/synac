@@ -120,15 +120,16 @@ describe('the checked-in source registry', () => {
 });
 
 describe('ingest --list', () => {
-  let contentDir: string | undefined;
+  const contentDirs: string[] = [];
 
   afterEach(() => {
-    if (contentDir) rmSync(contentDir, { recursive: true, force: true });
-    contentDir = undefined;
+    for (const dir of contentDirs.splice(0))
+      rmSync(dir, { recursive: true, force: true });
   });
 
   function runList(...extra: string[]) {
-    contentDir = mkdtempSync(path.join(tmpdir(), 'synac-ingest-list-'));
+    const contentDir = mkdtempSync(path.join(tmpdir(), 'synac-ingest-list-'));
+    contentDirs.push(contentDir);
     mkdirSync(path.join(contentDir, 'sources'));
     for (const json of [
       sourceJson('beta'),
@@ -160,6 +161,14 @@ describe('ingest --list', () => {
     const result = runList('--source', 'beta');
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout)).toEqual(['beta']);
+  });
+
+  it('rejects --source without a slug instead of listing everything', () => {
+    for (const result of [runList('--source'), runList('--source', '--all')]) {
+      expect(result.status).toBe(1);
+      expect(result.stdout).toBe('');
+      expect(result.stderr).toContain('--source needs a source slug');
+    }
   });
 
   it('exits non-zero with nothing on stdout for an unusable --source', () => {
