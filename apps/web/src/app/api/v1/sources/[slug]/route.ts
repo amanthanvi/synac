@@ -2,7 +2,7 @@ import { readSource } from '@/lib/convex';
 
 import {
   errorResponse,
-  handleReadRequest,
+  handleApiReadRequest,
   jsonResponse,
   optionsResponse,
   parseSlug,
@@ -17,7 +17,7 @@ export function GET(
   request: Request,
   context: SourceContext,
 ): Promise<Response> {
-  return handleReadRequest(request, 'sources.bySlug', async () => {
+  return handleApiReadRequest(request, 'sources.bySlug', async () => {
     const slug = parseSlug((await context.params).slug);
     if (!slug) return errorResponse(request, 400, 'invalid_slug');
     const source = await readSource(slug);

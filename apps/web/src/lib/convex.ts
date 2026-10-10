@@ -4,6 +4,8 @@ import { unstable_cache } from 'next/cache';
 import { cache } from 'react';
 
 import { api } from '../../../../convex/_generated/api';
+import type { RateLimitScope } from '../../../../convex/rateLimitPolicy';
+import { withLegacyScopeFallback } from './rateLimitCompat';
 import { collectEntrySlugs, type EntrySlugRecord } from './sitemapEntries';
 
 export type EntryType = 'TERM' | 'ACRONYM';
@@ -236,10 +238,14 @@ export const readEntrySlugs: (
 /** Rate limiting is a write, so it never touches the content cache. */
 export async function consumeRateLimit(
   key: string,
+  scope: RateLimitScope,
 ): Promise<{ allowed: boolean; retryAfterSeconds: number }> {
-  return getClient().mutation(api.rateLimit.consume, {
-    serviceKey: getServiceKey(),
-    scope: 'api_v1_search',
-    key,
-  });
+  const serviceKey = getServiceKey();
+  return withLegacyScopeFallback(scope, (activeScope) =>
+    getClient().mutation(api.rateLimit.consume, {
+      serviceKey,
+      scope: activeScope,
+      key,
+    }),
+  );
 }

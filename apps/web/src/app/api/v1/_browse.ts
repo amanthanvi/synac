@@ -2,7 +2,7 @@ import { readBrowsePage, type EntryType } from '@/lib/convex';
 import { entryPath } from '@/lib/publicEntryPage';
 
 import {
-  handleReadRequest,
+  handleApiReadRequest,
   jsonResponse,
   parseLetter,
   parsePage,
@@ -19,7 +19,7 @@ export function browseResponse(
   entryType: EntryType,
   routeName: string,
 ): Promise<Response> {
-  return handleReadRequest(request, routeName, async (url) => {
+  return handleApiReadRequest(request, routeName, async (url) => {
     const letter = parseLetter(url.searchParams.get('letter'));
     const page = parsePage(url.searchParams.get('page'), MAX_BROWSE_PAGE);
     const pageSize = parsePageSize(

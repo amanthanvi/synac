@@ -10,7 +10,7 @@ import {
 import { entryPath } from '@/lib/publicEntryPage';
 
 import {
-  handleReadRequest,
+  handleSearchRequest,
   jsonResponse,
   optionsResponse,
   parseSlug,
@@ -19,7 +19,7 @@ import {
 export const runtime = 'nodejs';
 
 export function GET(request: Request): Promise<Response> {
-  return handleReadRequest(request, 'search', async (url) => {
+  return handleSearchRequest(request, async (url) => {
     const query = normalizeSearchQuery(url.searchParams.get('q') ?? '');
     const scope = parseSearchScope(url.searchParams.get('scope'));
     const page = parseSearchPage(url.searchParams.get('page'));

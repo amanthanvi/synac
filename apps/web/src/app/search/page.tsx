@@ -81,8 +81,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const isIgnoredQuery = query !== '' && isIgnoredSearchQuery(query);
   const willSearch = query !== '' && !isIgnoredQuery;
 
-  // Only a query that reaches the backend spends limiter budget; the empty and
-  // ignored-query states never query Convex.
+  // Only a query that reaches the backend spends the search budget, the same
+  // one as GET /api/v1/search. Empty and ignored queries do not.
   const rateLimit = willSearch
     ? await enforcePageRateLimit(await headers())
     : { allowed: true, retryAfterSeconds: 0 };
