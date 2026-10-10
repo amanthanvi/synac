@@ -78,3 +78,18 @@ jobs:
       # must not accumulate, so CI holds the line at zero.
       - name: Lint (no warnings)
         run: pnpm lint:strict
+
+      # Not part of `pnpm gate`: a pull request that changes the taxonomy or
+      # the assignment artifact is a tagging release, and a release must match
+      # the live corpus exactly. Content edits elsewhere only warn, so main
+      # never waits on a tagging run.
+      - name: Content check (strict, tagging releases)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if git diff --quiet "$BASE_SHA" HEAD -- content/tags.json content/tag-assignments.json; then
+            echo "No taxonomy or assignment change; strict tagging check skipped."
+          else
+            pnpm content:check:strict
+          fi
