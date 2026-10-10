@@ -16,10 +16,10 @@ import {
   type RelationshipType,
   type SourceFile,
   type TagAssignmentsFile,
+  type TagAssignmentsFileV2,
   type TagsFile,
 } from './model.js';
 import {
-  classificationCorpusHash,
   classificationEntryHash,
   stableJsonHash,
   tagTaxonomyHash,
@@ -70,6 +70,12 @@ export type CompileResult =
 export type CompileOptions = {
   /** Experiment-only escape hatch. Production check/sync must never set this. */
   allowUnreleasedTagging?: boolean;
+  /**
+   * Tagging-release mode. By default, drift between the live corpus and the
+   * corpus the tagging run classified only warns: a stale automatic tag is
+   * dropped and the release floors are advisory. Strict mode fails on both.
+   */
+  strictTagging?: boolean;
 };
 
 export function entryKey(entryType: EntryType, slug: string): string {
@@ -262,6 +268,19 @@ export function compileContent(
 ): CompileResult {
   const errors: string[] = [];
   const warnings: string[] = [];
+  const strictTagging = options.strictTagging ?? false;
+  /**
+   * The live corpus has moved away from the one the tagging run classified.
+   * Only a tagging run can catch up, so content edits merely warn unless a
+   * tagging release asks for strict mode.
+   */
+  const reportDrift = (message: string, outcome: string): void => {
+    if (strictTagging) errors.push(message);
+    else warnings.push(`${message}; ${outcome}`);
+  };
+  // A takedown must never wait for a tagging run, in either mode.
+  const isSuppressed = (key: string): boolean =>
+    input.overrides.get(key)?.suppress !== undefined;
 
   const sourcesBySlug = new Map<string, SourceFile>();
   for (const source of input.sources) {
@@ -328,33 +347,46 @@ export function compileContent(
 
   const assignmentsByEntry = new Map<
     string,
-    TagAssignmentsFile['assignments']
+    TagAssignmentsFileV2['assignments']
   >();
   const seenAssignmentPairs = new Set<string>();
-  const assignmentEntriesApplied = new Set<string>();
-  if (input.tagAssignments) {
+  if (input.tagAssignments?.schemaVersion === 1) {
+    errors.push(
+      'tag assignments: schemaVersion 1 binds one whole-corpus hash; run `pnpm --filter @synac/content-tools migrate:tag-assignments` to record per-entry hashes',
+    );
+  }
+  const tagAssignments: TagAssignmentsFileV2 | undefined =
+    input.tagAssignments?.schemaVersion === 2
+      ? input.tagAssignments
+      : undefined;
+  const runId = tagAssignments?.run.runId;
+  const classifiedHashes = new Map(
+    (tagAssignments?.classifiedEntries ?? []).map((row) => [
+      row.entryKey,
+      row.entryContentHash,
+    ]),
+  );
+  if (tagAssignments) {
     const taxonomyVersionText = input.tags.taxonomyVersion ?? '1';
-    if (input.tagAssignments.taxonomyVersion !== taxonomyVersionText) {
+    if (tagAssignments.taxonomyVersion !== taxonomyVersionText) {
       errors.push(
-        `tag assignments: taxonomy version ${input.tagAssignments.taxonomyVersion} does not match ${taxonomyVersionText}`,
+        `tag assignments: taxonomy version ${tagAssignments.taxonomyVersion} does not match ${taxonomyVersionText}`,
       );
     }
     const actualTaxonomyHash = tagTaxonomyHash(input.tags);
-    if (input.tagAssignments.taxonomyHash !== actualTaxonomyHash) {
+    if (tagAssignments.taxonomyHash !== actualTaxonomyHash) {
       errors.push(
-        `tag assignments: taxonomy hash ${input.tagAssignments.taxonomyHash} does not match ${actualTaxonomyHash}`,
+        `tag assignments: taxonomy hash ${tagAssignments.taxonomyHash} does not match ${actualTaxonomyHash}`,
       );
     }
-    const actualThresholdsHash = stableJsonHash(
-      input.tagAssignments.run.thresholds,
-    );
-    if (input.tagAssignments.run.thresholdsHash !== actualThresholdsHash) {
+    const actualThresholdsHash = stableJsonHash(tagAssignments.run.thresholds);
+    if (tagAssignments.run.thresholdsHash !== actualThresholdsHash) {
       errors.push(
-        `tag assignments: thresholds hash ${input.tagAssignments.run.thresholdsHash} does not match ${actualThresholdsHash}`,
+        `tag assignments: thresholds hash ${tagAssignments.run.thresholdsHash} does not match ${actualThresholdsHash}`,
       );
     }
     for (const tagSlug of publishedTagSlugs) {
-      const threshold = input.tagAssignments.run.thresholds[tagSlug];
+      const threshold = tagAssignments.run.thresholds[tagSlug];
       if (threshold === undefined) {
         errors.push(
           `tag assignments: missing AUTO threshold for published tag ${tagSlug}`,
@@ -365,14 +397,14 @@ export function compileContent(
         );
       }
     }
-    for (const tagSlug of Object.keys(input.tagAssignments.run.thresholds)) {
+    for (const tagSlug of Object.keys(tagAssignments.run.thresholds)) {
       if (!publishedTagSlugs.has(tagSlug)) {
         errors.push(
           `tag assignments: AUTO threshold references non-published tag ${tagSlug}`,
         );
       }
     }
-    for (const assignment of input.tagAssignments.assignments) {
+    for (const assignment of tagAssignments.assignments) {
       const pair = `${assignment.entryKey}\0${assignment.tagSlug}`;
       if (seenAssignmentPairs.has(pair)) {
         errors.push(
@@ -386,15 +418,27 @@ export function compileContent(
           `tag assignments: ${assignment.entryKey} references non-published tag ${assignment.tagSlug}`,
         );
       }
-      if (assignment.runId !== input.tagAssignments.run.runId) {
+      if (assignment.runId !== runId) {
         errors.push(
           `tag assignments: ${assignment.entryKey} -> ${assignment.tagSlug} has a foreign run ID`,
         );
       }
-      const threshold = input.tagAssignments.run.thresholds[assignment.tagSlug];
+      const threshold = tagAssignments.run.thresholds[assignment.tagSlug];
       if (threshold !== undefined && assignment.score < threshold) {
         errors.push(
           `tag assignments: ${assignment.entryKey} -> ${assignment.tagSlug} score ${assignment.score} is below AUTO threshold ${threshold}`,
+        );
+      }
+      // The run classified each entry once, so every row for an entry must
+      // carry the hash recorded for that entry.
+      const classifiedHash = classifiedHashes.get(assignment.entryKey);
+      if (classifiedHash === undefined) {
+        errors.push(
+          `tag assignments: ${assignment.entryKey} -> ${assignment.tagSlug} names an entry run ${runId} did not classify`,
+        );
+      } else if (classifiedHash !== assignment.entryContentHash) {
+        errors.push(
+          `tag assignments: ${assignment.entryKey} -> ${assignment.tagSlug} hash does not match the hash run ${runId} classified`,
         );
       }
       const rows = assignmentsByEntry.get(assignment.entryKey) ?? [];
@@ -402,7 +446,7 @@ export function compileContent(
       assignmentsByEntry.set(assignment.entryKey, rows);
     }
     const seenRemovals = new Set<string>();
-    for (const removal of input.tagAssignments.removals) {
+    for (const removal of tagAssignments.removals) {
       const pair = `${removal.entryKey}\0${removal.tagSlug}`;
       if (seenRemovals.has(pair))
         errors.push(
@@ -414,7 +458,7 @@ export function compileContent(
           `tag assignments: ${removal.entryKey} -> ${removal.tagSlug} is both assigned and removed`,
         );
       }
-      if (removal.runId !== input.tagAssignments.run.runId) {
+      if (removal.runId !== runId) {
         errors.push(
           `tag assignments: removal ${removal.entryKey} -> ${removal.tagSlug} has a foreign run ID`,
         );
@@ -429,8 +473,8 @@ export function compileContent(
       }
     }
     if (
-      input.tagAssignments.removals.length > 0 &&
-      !input.tagAssignments.run.previousAssignmentsHash
+      tagAssignments.removals.length > 0 &&
+      !tagAssignments.run.previousAssignmentsHash
     ) {
       errors.push('tag assignments: removals require previousAssignmentsHash');
     }
@@ -546,6 +590,8 @@ export function compileContent(
   const classificationEntries: CompiledEntry[] = [];
   const classificationSenses: CompiledSense[] = [];
   const suppressedKeys = new Set<string>();
+  /** Live entry key -> the classification hash a tagging run would see now. */
+  const liveEntryHashes = new Map<string, string>();
 
   const orderedMerged = [...merged.values()].sort((a, b) =>
     entryKey(a.entryType, a.slug).localeCompare(entryKey(b.entryType, b.slug)),
@@ -847,8 +893,6 @@ export function compileContent(
       tagSlugs: [],
       citedSourceSlugs,
     };
-    const entryAssignments = assignmentsByEntry.get(key) ?? [];
-    if (entryAssignments.length > 0) assignmentEntriesApplied.add(key);
     const classificationEntry: CompiledEntry = summaryRepeatsFirstSense
       ? { ...compiled, summaryMd, summaryText }
       : compiled;
@@ -856,10 +900,12 @@ export function compileContent(
       classificationEntry,
       ungroupedSenses,
     );
-    for (const assignment of entryAssignments) {
+    liveEntryHashes.set(key, actualEntryContentHash);
+    for (const assignment of assignmentsByEntry.get(key) ?? []) {
       if (assignment.entryContentHash !== actualEntryContentHash) {
-        errors.push(
-          `tag assignments: ${key} -> ${assignment.tagSlug} is stale (${assignment.entryContentHash} != ${actualEntryContentHash})`,
+        reportDrift(
+          `tag assignments: ${key} -> ${assignment.tagSlug} is stale: the entry changed after run ${runId}`,
+          'dropped until the next tagging run',
         );
         continue;
       }
@@ -899,45 +945,91 @@ export function compileContent(
     classificationSenses.push(...ungroupedSenses);
   }
 
-  for (const entryKeyWithAssignments of assignmentsByEntry.keys()) {
-    if (!assignmentEntriesApplied.has(entryKeyWithAssignments)) {
-      errors.push(
-        `tag assignments: references unknown or suppressed entry ${entryKeyWithAssignments}`,
-      );
+  if (tagAssignments) {
+    for (const [key, rows] of assignmentsByEntry) {
+      if (liveEntryHashes.has(key)) continue;
+      for (const row of rows) {
+        if (isSuppressed(key)) {
+          warnings.push(
+            `tag assignments: ${key} -> ${row.tagSlug} is not served because the entry is suppressed`,
+          );
+        } else {
+          reportDrift(
+            `tag assignments: ${key} -> ${row.tagSlug} belongs to an entry that no longer exists`,
+            'dropped',
+          );
+        }
+      }
     }
-  }
-  if (input.tagAssignments) {
-    const actualCorpusHash = classificationCorpusHash(
-      classificationEntries,
-      classificationSenses,
-    );
-    if (input.tagAssignments.run.corpusHash !== actualCorpusHash) {
-      errors.push(
-        `tag assignments: corpus hash ${input.tagAssignments.run.corpusHash} does not match ${actualCorpusHash}`,
-      );
+
+    const newKeys: string[] = [];
+    const changedKeys: string[] = [];
+    const removedKeys: string[] = [];
+    for (const [key, hash] of liveEntryHashes) {
+      const classifiedHash = classifiedHashes.get(key);
+      if (classifiedHash === undefined) newKeys.push(key);
+      else if (classifiedHash !== hash) changedKeys.push(key);
+    }
+    for (const key of classifiedHashes.keys()) {
+      if (!liveEntryHashes.has(key) && !isSuppressed(key))
+        removedKeys.push(key);
+    }
+    if (strictTagging) {
+      for (const key of newKeys) {
+        errors.push(`tag assignments: ${key} is new since run ${runId}`);
+      }
+      for (const key of changedKeys) {
+        errors.push(`tag assignments: ${key} changed after run ${runId}`);
+      }
+      for (const key of removedKeys) {
+        errors.push(
+          `tag assignments: ${key} was classified by run ${runId} but no longer exists`,
+        );
+      }
+    } else {
+      const driftCount =
+        newKeys.length + changedKeys.length + removedKeys.length;
+      if (driftCount > 0) {
+        const subject =
+          driftCount === 1 ? '1 entry differs' : `${driftCount} entries differ`;
+        warnings.push(
+          `tag assignments: ${subject} from run ${runId} ` +
+            `(${newKeys.length} new, ${changedKeys.length} changed, ${removedKeys.length} removed); ` +
+            'the next tagging run classifies them, and content:check:strict fails until it does',
+        );
+      }
     }
   }
 
   // Relationships: union of bundle + override relationships, both endpoints must exist.
   const entryKeys = new Set(entries.map((entry) => entry.key));
   if (taxonomyVersion >= 2) {
-    const exampleExists = (example: string): boolean =>
-      /^(TERM|ACRONYM):/.test(example)
-        ? entryKeys.has(example)
-        : entryKeys.has(`TERM:${example}`) ||
-          entryKeys.has(`ACRONYM:${example}`);
+    // Contract examples name entries, but only a taxonomy release can edit
+    // them, so a takedown or an upstream removal must not block content.
+    const checkExample = (
+      tagSlug: string,
+      kind: string,
+      example: string,
+    ): void => {
+      const candidates = /^(TERM|ACRONYM):/.test(example)
+        ? [example]
+        : [`TERM:${example}`, `ACRONYM:${example}`];
+      if (candidates.some((key) => entryKeys.has(key))) return;
+      if (candidates.some(isSuppressed)) {
+        warnings.push(`tag ${tagSlug}: ${kind} ${example} is suppressed`);
+        return;
+      }
+      reportDrift(
+        `tag ${tagSlug}: ${kind} ${example} is not a live entry`,
+        'replace it in the next taxonomy release',
+      );
+    };
     for (const tag of input.tags.tags) {
       for (const example of tag.positiveExamples ?? []) {
-        if (!exampleExists(example))
-          errors.push(
-            `tag ${tag.slug}: positive example ${example} is not a live entry`,
-          );
+        checkExample(tag.slug, 'positive example', example);
       }
       for (const example of tag.hardNegatives ?? []) {
-        if (!exampleExists(example))
-          errors.push(
-            `tag ${tag.slug}: hard negative ${example} is not a live entry`,
-          );
+        checkExample(tag.slug, 'hard negative', example);
       }
     }
   }
@@ -1040,18 +1132,28 @@ export function compileContent(
     ).length;
     const coverage =
       entries.length === 0 ? 0 : taggedEntryCount / entries.length;
+    // The floors grade a tagging run. New untagged entries and dropped stale
+    // tags can only lower them, and only a tagging run can raise them again.
+    const reportFloor = (message: string): void => {
+      if (strictTagging) errors.push(message);
+      else
+        warnings.push(
+          `${message} (release floor; content:check:strict enforces it)`,
+        );
+    };
     if (coverage < 0.3) {
-      errors.push(
+      reportFloor(
         `tag assignment release: entry coverage ${(coverage * 100).toFixed(2)}% is below the required 30.00%`,
       );
     }
     for (const tagSlug of publishedTagSlugs) {
       const count = tagEntryCounts.get(tagSlug) ?? 0;
       if (count < 25) {
-        errors.push(
+        reportFloor(
           `tag assignment release: published tag ${tagSlug} has ${count} entries; at least 25 required`,
         );
       }
+      // A UI limit, not a quality floor, so it binds in every mode.
       if (count > 5_000) {
         errors.push(
           `tag assignment release: published tag ${tagSlug} has ${count} entries; UI supports at most 5000`,

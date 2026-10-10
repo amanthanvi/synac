@@ -283,6 +283,49 @@ test('successful emission is sorted, AUTO-only, deterministic, and uses recomput
   );
 });
 
+test('emission records the per-entry hash of every classified entry', () => {
+  const input = makeFixture();
+  const { artifact } = buildAssignmentEmission(input);
+
+  assert.equal(artifact.schemaVersion, 2);
+  assert.equal('corpusHash' in artifact.run, false);
+  assert.deepEqual(
+    artifact.classifiedEntries,
+    input.corpus.entries
+      .map(({ entryKey, entryContentHash }) => ({ entryKey, entryContentHash }))
+      .sort((left, right) => left.entryKey.localeCompare(right.entryKey)),
+  );
+  assert.equal(
+    sha256Text(JSON.stringify(artifact.classifiedEntries)),
+    input.corpus.corpusHash,
+  );
+  const classified = new Map(
+    artifact.classifiedEntries.map((row) => [
+      row.entryKey,
+      row.entryContentHash,
+    ]),
+  );
+  for (const row of artifact.assignments) {
+    assert.equal(classified.get(row.entryKey), row.entryContentHash);
+  }
+});
+
+test('corpus entries that do not reproduce the bound corpus hash are rejected', () => {
+  const input = makeFixture();
+  input.corpus = {
+    ...input.corpus,
+    entries: input.corpus.entries.map((row, index) =>
+      index === 0
+        ? { ...row, entryContentHash: sha256Text('edited-entry') }
+        : row,
+    ),
+  };
+  assert.throws(
+    () => buildAssignmentEmission(input),
+    /current corpus entries drift from the corpus hash/,
+  );
+});
+
 test('duplicate accepted pairs are rejected', () => {
   const input = makeFixture();
   const reviewed = input.reviewed.value as {
