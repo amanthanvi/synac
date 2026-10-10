@@ -93,7 +93,10 @@ drift from the classified corpus as warnings:
   block content without fixing anything.
 
 `pnpm content:check:strict` turns each of those warnings into an error, except
-the suppression warnings: a takedown never waits on a tagging run. Both modes
+the suppression warnings: a takedown never waits on a tagging run. The floors
+count only served Entries, as the emitter does, so a takedown can still take a
+Tag below its floor. The default check warns, and the next tagging release has
+to restore the floor or stop publishing the Tag. Both modes
 fail on integrity problems: a taxonomy or thresholds hash mismatch, a foreign
 run ID, a duplicate pair, a score below its threshold, a row whose hash is not
 the one its run classified, and a published Tag above the 5000-Entry UI limit.

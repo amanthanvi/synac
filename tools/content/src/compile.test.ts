@@ -1075,6 +1075,31 @@ describe('tag assignment drift', () => {
     }
   });
 
+  it('passes a takedown that crosses a floor and leaves the floor to the next release', () => {
+    const input = withOverride(
+      withOverride(released(), termKey(3), takedown),
+      termKey(4),
+      takedown,
+    );
+    const floor =
+      'tag assignment release: published tag malware has 24 entries; at least 25 required';
+
+    const lenient = compileContent(input);
+    expect(lenient.ok).toBe(true);
+    expect(lenient.warnings).toEqual([
+      `tag assignments: ${termKey(3)} -> malware is not served because the entry is suppressed`,
+      `tag assignments: ${termKey(4)} -> malware is not served because the entry is suppressed`,
+      `${floor}${floorSuffix}`,
+    ]);
+
+    // The floors count served entries, as the emitter does, so a release
+    // after this takedown must restore the floor. The takedown is not drift.
+    const strict = compileContent(input, { strictTagging: true });
+    expect(strict.ok).toBe(false);
+    if (strict.ok) return;
+    expect(strict.errors).toEqual([floor]);
+  });
+
   it('never blocks a takedown of a contract example', () => {
     const input = withOverride(released(), termKey(0), takedown);
     for (const strictTagging of [false, true]) {
