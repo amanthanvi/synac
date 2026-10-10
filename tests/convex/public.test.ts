@@ -183,6 +183,20 @@ describe('publicBrowse', () => {
       redirects: [],
       tagRedirects: [],
       tags: [{ slug: 'malware', name: 'Malware', entryCount: 0 }],
+      sources: [
+        {
+          slug: 'rfc4949',
+          name: 'RFC 4949',
+          baseUrl: 'https://www.rfc-editor.org/rfc/rfc4949.txt',
+          licenseType: 'OTHER',
+          allowedUse: 'Reproduce with attribution',
+          attributionRequirements: 'RFC 4949, IETF',
+          trustTier: 'TIER1',
+          enabled: true,
+          lastVerifiedAt: Date.parse('2026-01-15T00:00:00Z'),
+          citedEntryCount: entries.length,
+        },
+      ],
     });
 
     const args = {
