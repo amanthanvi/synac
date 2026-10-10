@@ -7,12 +7,15 @@ import { compileContent } from '../../../tools/content/src/compile.js';
 import { loadContentDir } from '../../../tools/content/src/load.js';
 import {
   tagAssignmentsFileSchema,
+  tagAssignmentsFileV2Schema,
   type TagAssignmentsFile,
+  type TagAssignmentsFileV2,
   type TagsFile,
 } from '../../../tools/content/src/model.js';
 import {
   classificationCorpusHash,
   classificationEntryHash,
+  corpusHashFromEntryHashes,
   stableJsonHash,
   tagTaxonomyHash,
 } from '../../../tools/content/src/tagging.js';
@@ -87,7 +90,7 @@ export type WriteEmissionInput = {
   outputPath: string;
   reportPath: string;
   replace: boolean;
-  artifact: TagAssignmentsFile;
+  artifact: TagAssignmentsFileV2;
   report: JsonRecord;
   files?: FileOperations;
 };
@@ -778,7 +781,7 @@ function releaseFloors(
 }
 
 export function buildAssignmentEmission(input: BuildEmissionInput): {
-  artifact: TagAssignmentsFile;
+  artifact: TagAssignmentsFileV2;
   report: JsonRecord;
 } {
   const production = validateProductionManifest(input.productionManifest);
@@ -788,6 +791,17 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     production.corpusHash !== input.corpus.corpusHash
   ) {
     throw new Error('current compiled corpus drift from production manifest');
+  }
+  const classifiedEntries = Object.fromEntries(
+    [...input.corpus.entries]
+      .sort((left, right) => left.entryKey.localeCompare(right.entryKey))
+      .map((entry) => [entry.entryKey, entry.entryContentHash]),
+  );
+  if (
+    Object.keys(classifiedEntries).length !== input.corpus.entries.length ||
+    corpusHashFromEntryHashes(classifiedEntries) !== input.corpus.corpusHash
+  ) {
+    throw new Error('current corpus entries drift from the corpus hash');
   }
   const publishedTagSlugs = publishedTags(input.tags);
   const taxonomyHash = tagTaxonomyHash(input.tags);
@@ -974,7 +988,7 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     reviewedCandidatesHash: input.reviewed.artifactHash,
     sourceControlsHash: input.sourceControls?.artifactHash ?? null,
     emitter: {
-      assignmentSchemaVersion: 1,
+      assignmentSchemaVersion: 2,
       authority: 'SYNTHETIC_REFERENCE',
       lane: 'AUTO',
       score:
@@ -1044,12 +1058,11 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
   const certificationHash = hashJson(certificationBinding);
   const thresholdsHash = stableJsonHash(thresholds);
   const artifactValue = {
-    schemaVersion: 1 as const,
+    schemaVersion: 2 as const,
     taxonomyVersion: rubric.taxonomyVersion,
     taxonomyHash,
     run: {
       runId: input.runId,
-      corpusHash: input.corpus.corpusHash,
       model: `${production.model}:${production.reasoningEffort}`,
       modelHash,
       promptHash: production.promptHash,
@@ -1067,8 +1080,9 @@ export function buildAssignmentEmission(input: BuildEmissionInput): {
     },
     assignments,
     removals,
+    classifiedEntries,
   };
-  const parsed = tagAssignmentsFileSchema.safeParse(artifactValue);
+  const parsed = tagAssignmentsFileV2Schema.safeParse(artifactValue);
   if (!parsed.success)
     throw new Error(
       `emitted assignment artifact is invalid: ${parsed.error.message}`,

@@ -5,7 +5,10 @@ import type {
   TagAssignmentsFile,
   TagsFile,
 } from '../../../tools/content/src/model.ts';
-import { stableJsonHash } from '../../../tools/content/src/tagging.ts';
+import {
+  corpusHashFromEntryHashes,
+  stableJsonHash,
+} from '../../../tools/content/src/tagging.ts';
 import {
   buildAssignmentEmission,
   REMOVED_ENTRY_HASH,
@@ -280,6 +283,46 @@ test('successful emission is sorted, AUTO-only, deterministic, and uses recomput
   assert.equal(
     first.artifact.run.thresholdsHash,
     hashJson(hashInputs.thresholds),
+  );
+});
+
+test('emission records the per-entry hash of every classified entry', () => {
+  const input = makeFixture();
+  const { artifact } = buildAssignmentEmission(input);
+
+  assert.equal(artifact.schemaVersion, 2);
+  assert.equal('corpusHash' in artifact.run, false);
+  assert.deepEqual(
+    artifact.classifiedEntries,
+    Object.fromEntries(
+      input.corpus.entries.map((row) => [row.entryKey, row.entryContentHash]),
+    ),
+  );
+  assert.equal(
+    corpusHashFromEntryHashes(artifact.classifiedEntries),
+    input.corpus.corpusHash,
+  );
+  for (const row of artifact.assignments) {
+    assert.equal(
+      artifact.classifiedEntries[row.entryKey],
+      row.entryContentHash,
+    );
+  }
+});
+
+test('corpus entries that do not reproduce the bound corpus hash are rejected', () => {
+  const input = makeFixture();
+  input.corpus = {
+    ...input.corpus,
+    entries: input.corpus.entries.map((row, index) =>
+      index === 0
+        ? { ...row, entryContentHash: sha256Text('edited-entry') }
+        : row,
+    ),
+  };
+  assert.throws(
+    () => buildAssignmentEmission(input),
+    /current corpus entries drift from the corpus hash/,
   );
 });
 
