@@ -15,6 +15,14 @@ on:
 permissions:
   contents: read
 
+# Whole runs take turns. Overlapping runs would crawl the same hosts twice,
+# and an older run could publish after a newer one and roll the pull request
+# branch back. GitHub keeps one pending run per group: a third run replaces
+# the pending one, which then shows as cancelled and can be dispatched again.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
 jobs:
   plan:
     name: Plan sources
@@ -70,12 +78,6 @@ jobs:
     # crawler's 250 ms per-host floor is about 63 minutes, plus index pages
     # and setup. Today's ~10,000 pages take about 42.
     timeout-minutes: 90
-    # Two runs crawling one source at once would double its host's request
-    # rate, so they queue per source. GitHub keeps one pending job per group,
-    # which only ever drops a crawl of the same source in favour of a newer one.
-    concurrency:
-      group: ingest-${{ matrix.source }}
-      cancel-in-progress: false
     permissions:
       contents: read
     strategy:
@@ -220,10 +222,6 @@ jobs:
     if: ${{ !cancelled() && needs.combine.result == 'success' && needs.combine.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Runs push the same branch, so they take turns.
-    concurrency:
-      group: ingest-pull-request
-      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: write
