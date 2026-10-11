@@ -108,7 +108,7 @@ and the deploy fails after a successful build.
 
 1. Confirm CI is green on `main`.
 2. Update `CHANGELOG.md`, which is canonical, and mirror the entry in
-   `apps/web/src/changelog.ts`.
+   `apps/web/src/lib/changelog.ts`.
 3. Bump `version` in the root `package.json` and in every workspace
    `package.json`.
 4. Bump `version` in `CITATION.cff` to the same number.
