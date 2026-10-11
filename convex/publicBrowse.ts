@@ -9,7 +9,7 @@ import { activeGeneration } from './lib/contentGeneration';
 // apps/web/src/lib/publicBrowse.ts: past this page the handler re-serves the
 // last page, and hasMore can still be true when more matches exist.
 const LETTER_SCAN_LIMIT = 1000;
-const BROWSE_PAGE_MAX = 10;
+export const BROWSE_PAGE_MAX = 10;
 
 function letterRange(letter: string): { start: string; end: string } {
   if (letter === '0-9') return { start: '0', end: '9￿' };
