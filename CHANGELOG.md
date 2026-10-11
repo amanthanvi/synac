@@ -7,11 +7,12 @@ The website also has an in-app changelog at `/changelog`. That view is curated f
 ## Unreleased
 
 - The public API browse listing (`/api/v1/terms`, `/api/v1/acronyms`) stops at
-  page 10. `meta.hasMore` is now `false` on page 10 even when the letter has
-  more matches, and `meta.total` still counts the full bucket. Requests past
-  page 10 are served as page 10. The browse pages drop the Next link there and
-  tell readers how to narrow further: search within the letter or choose a tag
-  when neither is set, and tighten a filter that is already applied.
+  page 10. `meta.hasMore` is now `false` on page 10 even when more scanned
+  matches remain. `meta.total` is that scanned match count; a letter scan reads
+  at most 1,000 index rows. Requests past page 10 are served as page 10. The
+  browse pages drop the Next link there and tell readers how to narrow
+  further: search within the letter or choose a tag when neither is set, and
+  tighten a filter that is already applied.
 - Vercel Web Analytics counts page views in aggregate, without cookies, with
   the same query-string removal and Global Privacy Control opt-out as Speed
   Insights. The privacy policy lists what Vercel receives.
