@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/dates';
 import { entryPath } from '@/lib/publicEntryPage';
 import {
   BROWSE_LETTERS,
+  browseCapHint,
   browseNeedsRefineHint,
   browseNextHref,
   buildBrowseHref,
@@ -85,6 +86,11 @@ export async function BrowsePage({
   );
 
   const tagSlug = activeTag?.slug ?? null;
+  const capHint = browseCapHint({
+    plural: config.plural,
+    hasQuery: query.length > 0,
+    hasTag: tagSlug !== null,
+  });
   const hrefFor = (nextPage: number, nextLetter: string) =>
     buildBrowseHref({
       basePath: config.basePath,
@@ -155,27 +161,15 @@ export async function BrowsePage({
           />
           {browseNeedsRefineHint(page, hasMore) ? (
             <p className={styles.capNote}>
-              This is the last page browse can show. More {config.plural} match
-              this letter.{' '}
-              {tagSlug !== null || query !== '' ? (
-                <>
-                  <a className={styles.capLink} href="#browse-filter">
-                    Narrow the search
-                  </a>{' '}
-                  to reach them.
-                </>
-              ) : (
-                <>
-                  <a className={styles.capLink} href="#browse-filter">
-                    Search within this letter
-                  </a>{' '}
-                  or{' '}
-                  <a className={styles.capLink} href="#browse-tags">
-                    choose a tag
-                  </a>{' '}
-                  to reach them.
-                </>
-              )}
+              {capHint.intro}{' '}
+              <a className={styles.capLink} href="#browse-filter">
+                {capHint.searchLabel}
+              </a>{' '}
+              or{' '}
+              <a className={styles.capLink} href="#browse-tags">
+                {capHint.tagLabel}
+              </a>{' '}
+              {capHint.closing}
             </p>
           ) : null}
         </>

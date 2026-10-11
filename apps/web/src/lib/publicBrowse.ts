@@ -64,6 +64,34 @@ export function browseNeedsRefineHint(page: number, hasMore: boolean): boolean {
   return hasMore && page >= BROWSE_PAGE_MAX;
 }
 
+/**
+ * Copy for the cap hint. A search or tag that is already applied is not
+ * offered again as if it were unused; the hint asks to narrow further.
+ */
+export function browseCapHint(input: {
+  plural: string;
+  hasQuery: boolean;
+  hasTag: boolean;
+}): {
+  intro: string;
+  searchLabel: string;
+  tagLabel: string;
+  closing: string;
+} {
+  const intro =
+    input.hasQuery || input.hasTag
+      ? `This is the last page browse can show. More ${input.plural} still match.`
+      : `This is the last page browse can show. More ${input.plural} match this letter.`;
+  return {
+    intro,
+    searchLabel: input.hasQuery
+      ? 'Narrow the search'
+      : 'Search within this letter',
+    tagLabel: input.hasTag ? 'choose a different tag' : 'choose a tag',
+    closing: 'to reach them.',
+  };
+}
+
 /** The only builder for the browse Next link. Undefined at the page cap. */
 export function browseNextHref(input: {
   basePath: BrowseBasePath;

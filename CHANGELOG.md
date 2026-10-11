@@ -10,7 +10,8 @@ The website also has an in-app changelog at `/changelog`. That view is curated f
   page 10. `meta.hasMore` is now `false` on page 10 even when the letter has
   more matches, and `meta.total` still counts the full bucket. Requests past
   page 10 are served as page 10. The browse pages drop the Next link there and
-  tell readers to narrow the search or choose a tag.
+  tell readers how to narrow further: search within the letter or choose a tag
+  when neither is set, and tighten a filter that is already applied.
 - Vercel Web Analytics counts page views in aggregate, without cookies, with
   the same query-string removal and Global Privacy Control opt-out as Speed
   Insights. The privacy policy lists what Vercel receives.

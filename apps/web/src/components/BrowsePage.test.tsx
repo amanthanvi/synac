@@ -60,11 +60,11 @@ describe('BrowsePage refine hint at the page cap', () => {
     const html = await renderTerms({ letter: 'c', page: '10', q: 'cyber' });
 
     expect(html).toContain('Narrow the search');
+    expect(html).toContain('>choose a tag<');
     expect(html).not.toContain('Search within this letter');
-    expect(html).not.toContain('choose a tag');
   });
 
-  test('says to narrow the search when a tag is active', async () => {
+  test('does not repeat a tag that is already applied', async () => {
     vi.mocked(readBrowsePage).mockResolvedValue({
       ...cappedBrowse,
       activeTag: { slug: 'cryptography', name: 'Cryptography' },
@@ -75,8 +75,28 @@ describe('BrowsePage refine hint at the page cap', () => {
       tag: 'cryptography',
     });
 
+    expect(html).toContain('Search within this letter');
+    expect(html).toContain('choose a different tag');
+    expect(html).not.toContain('>choose a tag<');
+    expect(html).not.toContain('Narrow the search');
+  });
+
+  test('asks to narrow further when a search and a tag are both active', async () => {
+    vi.mocked(readBrowsePage).mockResolvedValue({
+      ...cappedBrowse,
+      activeTag: { slug: 'cryptography', name: 'Cryptography' },
+    });
+    const html = await renderTerms({
+      letter: 'c',
+      page: '10',
+      q: 'cyber',
+      tag: 'cryptography',
+    });
+
     expect(html).toContain('Narrow the search');
-    expect(html).not.toContain('choose a tag');
+    expect(html).toContain('choose a different tag');
+    expect(html).not.toContain('Search within this letter');
+    expect(html).not.toContain('>choose a tag<');
   });
 
   test('omits the hint and keeps a Next link to page 10 on an uncapped page', async () => {

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
   BROWSE_PAGE_MAX,
+  browseCapHint,
   browseNeedsRefineHint,
   browseNextHref,
   browseOffersNextPage,
@@ -61,5 +62,42 @@ describe('browse page cap', () => {
     expect(browseNeedsRefineHint(BROWSE_PAGE_MAX, false)).toBe(false);
     expect(browseNeedsRefineHint(9, true)).toBe(false);
     expect(browseNeedsRefineHint(1, false)).toBe(false);
+  });
+
+  test('does not offer a search or tag that is already applied', () => {
+    const plain = browseCapHint({
+      plural: 'terms',
+      hasQuery: false,
+      hasTag: false,
+    });
+    expect(plain.intro).toContain('match this letter');
+    expect(plain.searchLabel).toBe('Search within this letter');
+    expect(plain.tagLabel).toBe('choose a tag');
+
+    const queryOnly = browseCapHint({
+      plural: 'terms',
+      hasQuery: true,
+      hasTag: false,
+    });
+    expect(queryOnly.intro).toContain('still match');
+    expect(queryOnly.searchLabel).toBe('Narrow the search');
+    expect(queryOnly.tagLabel).toBe('choose a tag');
+
+    const tagOnly = browseCapHint({
+      plural: 'acronyms',
+      hasQuery: false,
+      hasTag: true,
+    });
+    expect(tagOnly.intro).toContain('acronyms');
+    expect(tagOnly.searchLabel).toBe('Search within this letter');
+    expect(tagOnly.tagLabel).toBe('choose a different tag');
+
+    const both = browseCapHint({
+      plural: 'terms',
+      hasQuery: true,
+      hasTag: true,
+    });
+    expect(both.searchLabel).toBe('Narrow the search');
+    expect(both.tagLabel).toBe('choose a different tag');
   });
 });
