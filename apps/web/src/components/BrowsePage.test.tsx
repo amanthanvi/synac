@@ -79,7 +79,7 @@ describe('BrowsePage refine hint at the page cap', () => {
     expect(html).not.toContain('choose a tag');
   });
 
-  test('omits the hint and Next link on a page that is not capped', async () => {
+  test('omits the hint and keeps a Next link to page 10 on an uncapped page', async () => {
     const html = await renderTerms({ letter: 'c', page: '9' });
 
     expect(html).not.toContain('This is the last page browse can show');
