@@ -157,14 +157,25 @@ export async function BrowsePage({
             <p className={styles.capNote}>
               This is the last page browse can show. More {config.plural} match
               this letter.{' '}
-              <a className={styles.capLink} href="#browse-filter">
-                Search within this letter
-              </a>{' '}
-              or{' '}
-              <a className={styles.capLink} href="#browse-tags">
-                choose a tag
-              </a>{' '}
-              to reach them.
+              {tagSlug !== null || query !== '' ? (
+                <>
+                  <a className={styles.capLink} href="#browse-filter">
+                    Narrow the search
+                  </a>{' '}
+                  to reach them.
+                </>
+              ) : (
+                <>
+                  <a className={styles.capLink} href="#browse-filter">
+                    Search within this letter
+                  </a>{' '}
+                  or{' '}
+                  <a className={styles.capLink} href="#browse-tags">
+                    choose a tag
+                  </a>{' '}
+                  to reach them.
+                </>
+              )}
             </p>
           ) : null}
         </>
