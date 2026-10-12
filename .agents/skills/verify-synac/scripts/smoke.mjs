@@ -54,6 +54,7 @@ function main() {
         ...process.env,
         E2E_BASE_URL: baseUrl,
         VERIFY_EVIDENCE_DIR: evidenceDir,
+        NODE_PATH: path.join(root, 'apps/e2e/node_modules'),
       },
     },
   );

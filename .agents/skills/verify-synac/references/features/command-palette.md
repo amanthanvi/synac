@@ -20,6 +20,7 @@ Click `Search` in the header, or press Ctrl+K (Command+K on macOS). Type, then E
 Wait until the header button `Search` is visible so the listener is attached. Press `Control+KeyK` until the combobox `Search terms and acronyms` is visible. Fill `soc`. The first option is `Search for "soc"`. Enter lands on `/search` or an entry. Screenshot `palette.png`.
 
 ```bash
+NODE_PATH="$PWD/apps/e2e/node_modules" \
 node apps/e2e/node_modules/@playwright/test/cli.js test \
   --config .agents/skills/verify-synac/playwright.config.mjs \
   .agents/skills/verify-synac/scripts/drive.spec.ts \

@@ -18,7 +18,7 @@ Open a search result, a browse row, or a direct URL such as `/term/access-contro
 
 `drive.spec.ts` test `entry page copy link and citation record`.
 
-Open `/term/access-control`. The heading is `access control`. Click the first `#sense-` link and expect that fragment in the URL. Click `Copy link to this sense` and expect the status `Link copied`. Read the clipboard. It contains `/term/access-control#`. Open `Cite`, follow `Citation record (JSON)`, and expect HTTP 200 whose body names `rfc4949`. Screenshot `entry-access-control.png`.
+Open `/term/access-control`. The heading is `access control`. Click the first visible `#sense-` link (the mobile chip row is hidden at desktop width) and expect that fragment in the URL. Click `Copy link to this sense` and expect the status `Link copied`. Read the clipboard. It contains `/term/access-control#`. Open `Cite`, follow `Citation record (JSON)`, and expect HTTP 200. The body `slug` is `access-control` and `primaryCitation.sourceSlug` is set. The lead sense on this entry is whichever source the compiler ranked first (NICCS in the current corpus), so do not require `rfc4949` on that first record. Screenshot `entry-access-control.png`.
 
 The acronym path is the end of the acronyms browse test: heading `BLACK`.
 

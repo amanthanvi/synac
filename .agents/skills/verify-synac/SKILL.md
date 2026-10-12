@@ -129,11 +129,14 @@ One UI feature, after doctor is `READY`:
 ```bash
 E2E_BASE_URL=http://127.0.0.1:3000 \
 VERIFY_EVIDENCE_DIR=/tmp/synac-verify/evidence \
+NODE_PATH="$PWD/apps/e2e/node_modules" \
 node apps/e2e/node_modules/@playwright/test/cli.js test \
   --config .agents/skills/verify-synac/playwright.config.mjs \
   .agents/skills/verify-synac/scripts/drive.spec.ts \
   -g "command palette"
 ```
+
+`NODE_PATH` is required. The specs import `@playwright/test`, which is installed for `@synac/e2e` and is not hoisted to the repo root. `pnpm verify:smoke` and `pnpm verify:drive` set it.
 
 Run that from the repo root. The config file is `playwright.config.mjs` next to this skill.
 
