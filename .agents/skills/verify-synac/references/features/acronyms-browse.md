@@ -15,10 +15,10 @@ Header link `Acronyms`, or `/acronyms`. The heading is `Acronyms`.
 
 `drive.spec.ts` test `acronyms browse opens BLACK`.
 
-Open `/acronyms`, click `B` in `Acronym letters`, then open `/acronym/black`. The heading is `BLACK`. Screenshot `acronym-black.png`.
+Open `/acronyms`, click `b` in `Acronym letters` (the letter text is lowercase), then open `/acronym/black`. The heading is `BLACK`. Screenshot `acronym-black.png`.
 
 ## Gotchas
 
-- Letter `B` is sorted by title. `BLACK` is near the start of that letter. If a future corpus pushes it past page 1, follow pagination `Next` until the link is visible and say so.
+- Letter `b` is sorted by title. `BLACK` is near the start of that letter. If a future corpus pushes it past page 1, follow pagination `Next` until the link is visible and say so.
 - Empty letters use the sentence `No published acronyms yet for <letter>`.
 - A hostile `letter` value falls back to A, the same way the term index does.

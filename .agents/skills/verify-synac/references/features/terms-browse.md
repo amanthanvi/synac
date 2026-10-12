@@ -18,7 +18,7 @@ Header link `Terms`, or `/terms`. The heading is `Terms`.
 
 `drive.spec.ts` test `terms browse letter, sort, filter, and a rejected letter`.
 
-Open `/terms?letter=d`. The `D` link is current and `/term/domain` is in the list. Choose `Recently updated` in `Sort` and expect `sort=updated` in the URL. Type `access` into `Filter entries` and expect `q=access`. Screenshot `terms-d.png`.
+Open `/terms?letter=d`. The letter link `d` is current and at least one `/term/` row is visible. Letter text is lowercase. `domain` is not on page 1 of D. Choose `Recently updated` in `Sort` and expect `sort=updated` in the URL. Type `domain` into `Filter entries` and expect the link `/term/domain`. Screenshot `terms-d.png`.
 
 `/terms?letter=DROP%20TABLE` falls back to letter A, which is current.
 

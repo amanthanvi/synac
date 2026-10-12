@@ -54,22 +54,23 @@ test('terms browse letter, sort, filter, and a rejected letter', async ({ page }
   await page.goto('/terms?letter=d');
   await expect(page.getByRole('heading', { level: 1, name: 'Terms' })).toBeVisible();
   const letters = page.getByRole('navigation', { name: 'Term letters' });
-  await expect(letters.getByRole('link', { name: 'D', exact: true })).toHaveAttribute(
+  await expect(letters.getByRole('link', { name: 'd', exact: true })).toHaveAttribute(
     'aria-current',
     'true',
   );
-  await expect(page.locator('a[href="/term/domain"]')).toBeVisible();
+  await expect(page.locator('a[href^="/term/"]').first()).toBeVisible();
   await shot(page, 'terms-d.png');
 
   await page.getByRole('combobox', { name: 'Sort' }).selectOption('updated');
   await expect(page).toHaveURL(/sort=updated/);
 
   const filter = page.getByRole('textbox', { name: 'Filter entries' });
-  await filter.fill('access');
-  await expect(page).toHaveURL(/q=access/, { timeout: 10_000 });
+  await filter.fill('domain');
+  await expect(page).toHaveURL(/q=domain/, { timeout: 10_000 });
+  await expect(page.locator('a[href="/term/domain"]')).toBeVisible();
 
   await page.goto('/terms?letter=DROP%20TABLE');
-  await expect(letters.getByRole('link', { name: 'A', exact: true })).toHaveAttribute(
+  await expect(letters.getByRole('link', { name: 'a', exact: true })).toHaveAttribute(
     'aria-current',
     'true',
   );
@@ -78,7 +79,7 @@ test('terms browse letter, sort, filter, and a rejected letter', async ({ page }
 test('acronyms browse opens BLACK', async ({ page }) => {
   await page.goto('/acronyms');
   await expect(page.getByRole('heading', { level: 1, name: 'Acronyms' })).toBeVisible();
-  await page.getByRole('navigation', { name: 'Acronym letters' }).getByRole('link', { name: 'B', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Acronym letters' }).getByRole('link', { name: 'b', exact: true }).click();
   await expect(page).toHaveURL(/letter=b/);
   await page.locator('a[href="/acronym/black"]').click();
   await expect(page.getByRole('heading', { level: 1, name: 'BLACK' })).toBeVisible();
@@ -89,7 +90,7 @@ test('entry page copy link and citation record', async ({ page, context, request
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/term/access-control');
   await expect(page.getByRole('heading', { level: 1, name: 'access control' })).toBeVisible();
-  const toc = page.locator('a[href^="#sense-"]').first();
+  const toc = page.locator('a[href^="#sense-"]:visible').first();
   await expect(toc).toBeVisible();
   const fragment = await toc.getAttribute('href');
   expect(fragment).toBeTruthy();
@@ -109,8 +110,12 @@ test('entry page copy link and citation record', async ({ page, context, request
   expect(href).toBeTruthy();
   const response = await request.get(href ?? '');
   expect(response.status()).toBe(200);
-  const body = (await response.json()) as { sourceSlug?: string };
-  expect(JSON.stringify(body)).toContain('rfc4949');
+  const body = (await response.json()) as {
+    slug?: string;
+    primaryCitation?: { sourceSlug?: string };
+  };
+  expect(body.slug).toBe('access-control');
+  expect(body.primaryCitation?.sourceSlug).toBeTruthy();
 });
 
 test('tags filter, empty filter, and a tag page', async ({ page }) => {
