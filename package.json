@@ -35,7 +35,12 @@
     "version:check": "node scripts/checkVersions.mjs",
     "convex:dev": "convex dev",
     "convex:validate": "convex dev --once",
-    "ingest": "corepack pnpm --filter @synac/ingest-tools ingest"
+    "ingest": "corepack pnpm --filter @synac/ingest-tools ingest",
+    "verify:launch": "node .agents/skills/verify-synac/scripts/launch.mjs",
+    "verify:doctor": "node .agents/skills/verify-synac/scripts/doctor.mjs",
+    "verify:smoke": "node .agents/skills/verify-synac/scripts/smoke.mjs",
+    "verify:drive": "node .agents/skills/verify-synac/scripts/smoke.mjs --drive",
+    "verify:cleanup": "node .agents/skills/verify-synac/scripts/cleanup.mjs"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
