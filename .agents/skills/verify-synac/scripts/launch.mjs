@@ -189,13 +189,23 @@ async function main() {
     const log = path.join(stateDir, 'synac-verify-web.log');
     const webCommand =
       mode === 'dev'
-        ? 'pnpm --filter @synac/web dev -- -H 127.0.0.1 -p 3000'
-        : 'pnpm --filter @synac/web start -- -H 127.0.0.1 -p 3000';
+        ? 'pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p 3000'
+        : 'pnpm --filter @synac/web exec next start -H 127.0.0.1 -p 3000';
     startSession(
       sessionWeb,
       `${exportPrefix()} cd ${shQuote(root)}; ${webCommand} > ${shQuote(log)} 2>&1`,
     );
-    await waitFor('web port', () => portOpen(webPort), 120_000);
+    await waitFor(
+      'web port',
+      async () => {
+        if (await portOpen(webPort)) return true;
+        if (!sessionAlive(sessionWeb)) {
+          throw new Error(`web session exited before port ${webPort} opened. See ${log}`);
+        }
+        return false;
+      },
+      120_000,
+    );
     remember(sessionWeb, 'web', webPort);
   }
 

@@ -45,7 +45,7 @@ pnpm verify:launch
 7. Run `npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev`.
 8. Run `pnpm --filter @synac/content-tools sync`. Ready means stdout contains `tag convergence: verified`. The log is copied to `/tmp/synac-verify/evidence/cli-sync.log`. That sync writes the compiled corpus into the local Convex deployment. A later search that returns `access control` is the read-back of those records.
 9. Build the web app with `pnpm --filter @synac/web build` unless `VERIFY_WEB_MODE=dev` or `VERIFY_SKIP_BUILD=1` and `apps/web/.next/BUILD_ID` already exists. The build and the server both receive `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210`, `NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000`, `SYNAC_CONVEX_SERVICE_KEY=local-dev`, and `SYNAC_RATE_LIMIT_SALT=local-dev`.
-10. Start tmux session `synac-verify-web` with `pnpm --filter @synac/web start -- -H 127.0.0.1 -p 3000`. `VERIFY_WEB_MODE=dev` uses `pnpm --filter @synac/web dev` on the same host and port instead of a production build. Say which mode the proof used. Ready means doctor is `READY`.
+10. Start tmux session `synac-verify-web` with `pnpm --filter @synac/web exec next start -H 127.0.0.1 -p 3000`. The `exec` form is required. `pnpm --filter @synac/web start -- -H 127.0.0.1` makes Next.js treat `-H` as a project directory. `VERIFY_WEB_MODE=dev` uses `pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p 3000` instead of a production build. Say which mode the proof used. Ready means doctor is `READY`.
 
 `docs/contributing/local-dev.md` is the same stack, split across terminals. Use the helper so the sessions are recorded for cleanup.
 
