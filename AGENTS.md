@@ -39,6 +39,10 @@ Source of truth: `docs/architecture/overview.md` (architecture) + `SPEC.md` (pro
 - Local backend: `CONVEX_AGENT_MODE=anonymous npx convex dev`, then `pnpm --filter @synac/content-tools sync`
 - Regenerate a bundle: `pnpm ingest -- --source rfc4949`
 
+## Verification
+
+Drive the local stack with `pnpm verify:launch`, `pnpm verify:doctor`, `pnpm verify:smoke`, `pnpm verify:drive`, and `pnpm verify:cleanup`. The procedure and the fast test groups live in `.agents/skills/verify-synac/SKILL.md`. Feature work includes a Proof section: commands, evidence paths that survive cleanup, results, and `INCONCLUSIVE` when a step could not run. While iterating, run the named fast group for the package you touched. Run `pnpm gate` once on the final head.
+
 ## Cloud Agent notes
 
 - Node must be `24` (see `.node-version`). If the base image ships an older `node` ahead of nvm on `PATH` (e.g. `/exec-daemon/node`), put the nvm Node 24 bin directory first: `export PATH="$NVM_DIR/versions/node/$(nvm version 24)/bin:$PATH"`.

@@ -1,0 +1,72 @@
+#!/usr/bin/env node
+import { existsSync, readFileSync } from 'node:fs';
+
+import {
+  evidenceDir,
+  ownedSessions,
+  readRun,
+  sessionAlive,
+  tmux,
+  writeRun,
+} from './runtime.mjs';
+
+const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
+
+Stops tmux sessions this skill started (synac-verify-convex and synac-verify-web)
+and the listener pids recorded in /tmp/synac-verify/run.json.
+
+Leaves /tmp/synac-verify/evidence/ in place.
+`;
+
+function childPids(pid) {
+  const file = `/proc/${pid}/task/${pid}/children`;
+  if (!existsSync(file)) return [];
+  return readFileSync(file, 'utf8')
+    .trim()
+    .split(/\s+/)
+    .map((part) => Number(part))
+    .filter((child) => Number.isInteger(child) && child > 1);
+}
+
+function killTree(pid) {
+  if (!Number.isInteger(pid) || pid <= 1) return;
+  for (const child of childPids(pid)) killTree(child);
+  try {
+    process.kill(pid, 'SIGTERM');
+  } catch {
+    return;
+  }
+}
+
+function main() {
+  if (process.argv.includes('--help') || process.argv.includes('-h')) {
+    process.stdout.write(help);
+    return;
+  }
+  const run = readRun();
+  const sessions = run.sessions.filter((name) => ownedSessions.has(name));
+  for (const name of sessions) {
+    if (!sessionAlive(name)) continue;
+    const result = tmux(['kill-session', '-t', name], { stdio: 'inherit' });
+    if (result.status !== 0) {
+      console.error(`cleanup: tmux kill-session ${name} exited ${result.status}`);
+    } else {
+      console.log(`stopped session ${name}`);
+    }
+  }
+
+  const recorded = [run.pids.convex, run.pids.web, run.pids.convexSite].filter(
+    (pid) => Number.isInteger(pid),
+  );
+  for (const pid of recorded) killTree(pid);
+  if (recorded.length > 0) console.log(`signaled pids ${recorded.join(', ')}`);
+
+  writeRun({
+    ...run,
+    sessions: [],
+    pids: {},
+  });
+  console.log(`evidence ${evidenceDir}`);
+}
+
+main();

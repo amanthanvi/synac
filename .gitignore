@@ -9,7 +9,8 @@ build/
 # Editor and agent scratch
 .vscode/
 .idea/
-.cursor/
+.cursor/*
+!.cursor/skills/
 .claude/
 
 # Build and test output
