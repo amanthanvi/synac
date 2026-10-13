@@ -76,6 +76,12 @@ explicit destination, release ID, and timestamp:
 corepack pnpm --dir tools/content exec tsx ../../experiments/tagging/production-backfill/emit-assignments.ts --output ../../content/tag-assignments.json --run-id synac-tags-20260810 --created-at 2026-08-10T12:00:00Z
 ```
 
+The artifact uses `schemaVersion` 2. Besides the assignments, it records
+`classifiedEntries`, the classification hash of every Entry the run saw, so
+`pnpm content:check` can tell which Entries changed afterwards and drop only
+their tags. The emitter refuses a corpus whose per-Entry hashes do not
+reproduce the manifest's corpus hash.
+
 The deterministic diff and hash inputs are written to
 `<output>.report.json`. Existing output or report files are never overwritten
 without `--replace`. On replacement, the existing checked-in artifact is the

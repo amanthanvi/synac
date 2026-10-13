@@ -9,6 +9,7 @@ const repoRoot = path.resolve(import.meta.dirname, '../../..');
 const contentDir =
   process.env.SYNAC_CONTENT_DIR ?? path.join(repoRoot, 'content');
 const emit = process.argv.includes('--emit');
+const strictTagging = process.argv.includes('--strict');
 
 const loaded = await loadContentDir(contentDir);
 if (!loaded.ok) {
@@ -19,7 +20,7 @@ if (!loaded.ok) {
   process.exit(1);
 }
 
-const result = compileContent(loaded.input);
+const result = compileContent(loaded.input, { strictTagging });
 for (const warning of result.warnings) console.warn(`  ⚠ ${warning}`);
 if (!result.ok) {
   console.error(`content check failed: ${result.errors.length} error(s)\n`);
@@ -34,7 +35,8 @@ const needsLabelEntries = new Set(
     .map((sense) => sense.entryKey),
 );
 console.log(
-  `content ok: ${dataset.entries.length} entries, ${dataset.senses.length} senses, ` +
+  `content ok${strictTagging ? ' (strict tagging)' : ''}: ` +
+    `${dataset.entries.length} entries, ${dataset.senses.length} senses, ` +
     `${dataset.tags.length} tags, ${dataset.sources.length} sources, ` +
     `${dataset.relationships.length} relationships (version ${dataset.contentVersion.slice(0, 12)})`,
 );

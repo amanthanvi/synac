@@ -183,57 +183,105 @@ const entryKeyValue = z
   .string()
   .regex(/^(TERM|ACRONYM):[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
-export const tagAssignmentsFileSchema = z
+const tagAssignmentRunFields = {
+  runId: z.string().min(1),
+  model: z.string().min(1),
+  modelHash: sha256,
+  promptHash: sha256,
+  configHash: sha256,
+  calibrationHash: sha256,
+  certificationHash: sha256,
+  thresholds: z.record(slug, z.number().min(0).max(1)),
+  thresholdsHash: sha256,
+  previousAssignmentsHash: sha256.optional(),
+  labelOrigin: z.literal('synthetic_ai_panel'),
+  createdAt: isoDateTime,
+  release: z.literal(true),
+};
+
+const tagAssignmentRowFields = {
+  assignments: z.array(
+    z
+      .object({
+        entryKey: entryKeyValue,
+        entryContentHash: sha256,
+        tagSlug: slug,
+        authority: z.enum(TAG_ASSIGNMENT_AUTHORITIES),
+        lane: z.literal('AUTO'),
+        score: z.number().min(0).max(1),
+        runId: z.string().min(1),
+      })
+      .strict(),
+  ),
+  removals: z
+    .array(
+      z
+        .object({
+          entryKey: entryKeyValue,
+          tagSlug: slug,
+          previousEntryContentHash: sha256,
+          reason: z.string().min(1),
+          runId: z.string().min(1),
+        })
+        .strict(),
+    )
+    .default([]),
+};
+
+/**
+ * The first release format. One hash covers the whole classified corpus, so
+ * any entry edit or suppression invalidates it. Compile rejects it; it stays
+ * readable so the history gate and the migration can load it.
+ */
+export const tagAssignmentsFileV1Schema = z
   .object({
     schemaVersion: z.literal(1),
     taxonomyVersion: z.string().regex(/^\d+$/),
     taxonomyHash: sha256,
-    run: z
-      .object({
-        runId: z.string().min(1),
-        corpusHash: sha256,
-        model: z.string().min(1),
-        modelHash: sha256,
-        promptHash: sha256,
-        configHash: sha256,
-        calibrationHash: sha256,
-        certificationHash: sha256,
-        thresholds: z.record(slug, z.number().min(0).max(1)),
-        thresholdsHash: sha256,
-        previousAssignmentsHash: sha256.optional(),
-        labelOrigin: z.literal('synthetic_ai_panel'),
-        createdAt: isoDateTime,
-        release: z.literal(true),
-      })
-      .strict(),
-    assignments: z.array(
-      z
-        .object({
-          entryKey: entryKeyValue,
-          entryContentHash: sha256,
-          tagSlug: slug,
-          authority: z.enum(TAG_ASSIGNMENT_AUTHORITIES),
-          lane: z.literal('AUTO'),
-          score: z.number().min(0).max(1),
-          runId: z.string().min(1),
-        })
-        .strict(),
-    ),
-    removals: z
-      .array(
-        z
-          .object({
-            entryKey: entryKeyValue,
-            tagSlug: slug,
-            previousEntryContentHash: sha256,
-            reason: z.string().min(1),
-            runId: z.string().min(1),
-          })
-          .strict(),
-      )
-      .default([]),
+    run: z.object({ ...tagAssignmentRunFields, corpusHash: sha256 }).strict(),
+    ...tagAssignmentRowFields,
   })
   .strict();
+
+export const tagAssignmentsFileV2Schema = z
+  .object({
+    schemaVersion: z.literal(2),
+    taxonomyVersion: z.string().regex(/^\d+$/),
+    taxonomyHash: sha256,
+    run: z.object(tagAssignmentRunFields).strict(),
+    ...tagAssignmentRowFields,
+    /**
+     * Every entry the run classified, with the classification hash it saw.
+     * An entry whose live hash differs is stale on its own; the rest stay valid.
+     * A list of rows rather than a key -> hash map: secret scanners read an
+     * entry key such as `ACRONYM:api` followed by a hash as a leaked API key.
+     */
+    classifiedEntries: z
+      .array(
+        z
+          .object({ entryKey: entryKeyValue, entryContentHash: sha256 })
+          .strict(),
+      )
+      .superRefine((rows, ctx) => {
+        const seen = new Set<string>();
+        for (const [index, row] of rows.entries()) {
+          if (seen.has(row.entryKey)) {
+            ctx.addIssue({
+              code: 'custom',
+              path: [index, 'entryKey'],
+              message: `duplicate classified entry ${row.entryKey}`,
+            });
+          }
+          seen.add(row.entryKey);
+        }
+      }),
+  })
+  .strict();
+
+export const tagAssignmentsFileSchema = z.discriminatedUnion('schemaVersion', [
+  tagAssignmentsFileV1Schema,
+  tagAssignmentsFileV2Schema,
+]);
 
 export const redirectsFileSchema = z
   .object({
@@ -364,6 +412,8 @@ export const overrideFileSchema = z
 export type SourceFile = z.infer<typeof sourceFileSchema>;
 export type TagsFile = z.infer<typeof tagsFileSchema>;
 export type TagAssignmentsFile = z.infer<typeof tagAssignmentsFileSchema>;
+export type TagAssignmentsFileV1 = z.infer<typeof tagAssignmentsFileV1Schema>;
+export type TagAssignmentsFileV2 = z.infer<typeof tagAssignmentsFileV2Schema>;
 export type RedirectsFile = z.infer<typeof redirectsFileSchema>;
 export type BundleFile = z.infer<typeof bundleFileSchema>;
 export type BundleEntry = z.infer<typeof bundleEntrySchema>;

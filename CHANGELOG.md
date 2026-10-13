@@ -6,6 +6,12 @@ The website also has an in-app changelog at `/changelog`. That view is curated f
 
 ## Unreleased
 
+- Editing an entry no longer fails `pnpm content:check` on tagging. Each tag
+  assignment is bound to the hash of its own entry, so an edited entry loses
+  only its own automatic tags, with a warning, until the next tagging run.
+  Takedowns are never blocked. `pnpm content:check:strict` keeps the
+  fail-closed check for tagging releases, and CI runs it on pull requests that
+  change `content/tags.json` or `content/tag-assignments.json`.
 - Vercel Web Analytics counts page views in aggregate, without cookies, with
   the same query-string removal and Global Privacy Control opt-out as Speed
   Insights. The privacy policy lists what Vercel receives.
