@@ -172,7 +172,7 @@ export function BrowseControls({
         </div>
       </div>
 
-      <nav className={styles.tags} aria-label="Tag filter">
+      <nav id="browse-tags" className={styles.tags} aria-label="Tag filter">
         {tagHrefs.map((t) => (
           <Link
             key={t.slug ?? 'all'}

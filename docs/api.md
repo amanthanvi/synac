@@ -275,6 +275,8 @@ sorted by title.
 
 `meta.total` counts the matches in that letter bucket, not the whole corpus.
 
+`meta.hasMore` is false on the last page the listing will serve. Browse stops at page 10, so a letter with more matches than that still reports `hasMore: false` on page 10 while `meta.total` stays the larger count.
+
 ## Tags
 
 `GET /api/v1/tags` takes no parameters and returns the whole directory.

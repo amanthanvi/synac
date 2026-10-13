@@ -7,9 +7,13 @@ export const BROWSE_LETTERS: readonly string[] = [
   '0-9',
 ];
 
-/** convex/publicBrowse.ts clamps the page to 10; asking past it silently
-    re-serves page 10, so the UI must not offer a page the backend will not serve. */
-const BROWSE_PAGE_MAX = 10;
+/**
+ * convex/publicBrowse.ts clamps the requested page to this value and re-serves
+ * the last page. `hasMore` can still be true there when the letter has more
+ * matches, so callers must not link past the cap. Keep this in sync with
+ * `BROWSE_PAGE_MAX` in convex/publicBrowse.ts.
+ */
+export const BROWSE_PAGE_MAX = 10;
 
 export function normalizeBrowseLetter(value: string | undefined): string {
   const letter = (value ?? 'a').trim().toLowerCase();
@@ -48,4 +52,63 @@ export function buildBrowseHref(input: {
   if (input.tagSlug) params.set('tag', input.tagSlug);
   const queryString = params.toString();
   return queryString ? `${input.basePath}?${queryString}` : input.basePath;
+}
+
+/** Another page exists and the backend will serve it, rather than clamping. */
+export function browseOffersNextPage(page: number, hasMore: boolean): boolean {
+  return hasMore && page < BROWSE_PAGE_MAX;
+}
+
+/** More matches exist, but this page is the last one browse will serve. */
+export function browseNeedsRefineHint(page: number, hasMore: boolean): boolean {
+  return hasMore && page >= BROWSE_PAGE_MAX;
+}
+
+/**
+ * Copy for the cap hint. A search or tag that is already applied is not
+ * offered again as if it were unused; the hint asks to narrow further.
+ */
+export function browseCapHint(input: {
+  plural: string;
+  hasQuery: boolean;
+  hasTag: boolean;
+}): {
+  intro: string;
+  searchLabel: string;
+  tagLabel: string;
+  closing: string;
+} {
+  const intro =
+    input.hasQuery || input.hasTag
+      ? `This is the last page browse can show. More ${input.plural} still match.`
+      : `This is the last page browse can show. More ${input.plural} match this letter.`;
+  return {
+    intro,
+    searchLabel: input.hasQuery
+      ? 'Narrow the search'
+      : 'Search within this letter',
+    tagLabel: input.hasTag ? 'choose a different tag' : 'choose a tag',
+    closing: 'to reach them.',
+  };
+}
+
+/** The only builder for the browse Next link. Undefined at the page cap. */
+export function browseNextHref(input: {
+  basePath: BrowseBasePath;
+  letter: string;
+  page: number;
+  sort: BrowseSort;
+  query: string;
+  tagSlug: string | null;
+  hasMore: boolean;
+}): string | undefined {
+  if (!browseOffersNextPage(input.page, input.hasMore)) return undefined;
+  return buildBrowseHref({
+    basePath: input.basePath,
+    letter: input.letter,
+    page: input.page + 1,
+    sort: input.sort,
+    query: input.query,
+    tagSlug: input.tagSlug,
+  });
 }
