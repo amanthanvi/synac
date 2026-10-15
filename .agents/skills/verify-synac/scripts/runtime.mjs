@@ -125,10 +125,37 @@ export function ensureState() {
   preparePrivateDir(evidenceDir);
 }
 
+function readRunFile() {
+  if (!existsSync(runFile)) return { status: 'missing' };
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(runFile, 'utf8'));
+  } catch {
+    return { status: 'unreadable' };
+  }
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { status: 'unreadable' };
+  const repoRoot = typeof raw.repoRoot === 'string' ? raw.repoRoot : '';
+  if (!repoRoot) return { status: 'legacy' };
+  if (repoRoot !== root) return { status: 'foreign', repoRoot };
+  return { status: 'ok' };
+}
+
+function backupRunFile() {
+  const id = `run-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  const dir = path.join(stateDir, 'restored', id);
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  chmodSync(dir, 0o700);
+  const dest = path.join(dir, 'run.json');
+  copyFileSync(runFile, dest);
+  return dest;
+}
+
 export function readRun() {
+  const identity = readRunFile();
+  if (identity.status === 'legacy' || identity.status === 'unreadable') return emptyRun();
   try {
     const value = JSON.parse(readFileSync(runFile, 'utf8'));
-    if (!value || typeof value !== 'object') return emptyRun();
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return emptyRun();
     const pids = value.pids && typeof value.pids === 'object' ? value.pids : {};
     return {
       sessions: Array.isArray(value.sessions) ? value.sessions : [],
@@ -173,6 +200,13 @@ function normalizePid(value) {
 
 export function writeRun(run) {
   ensureState();
+  const identity = readRunFile();
+  if (identity.status === 'legacy' || identity.status === 'unreadable') {
+    const dest = backupRunFile();
+    console.warn(
+      `warning: run state has no checkout identity. Backed up the run state to ${dest}.`,
+    );
+  }
   const next = { ...run, repoRoot: typeof run.repoRoot === 'string' && run.repoRoot ? run.repoRoot : root };
   writeFileSync(runFile, `${JSON.stringify(next, null, 2)}\n`);
 }
@@ -773,14 +807,19 @@ export function beginCleanup() {
 }
 
 export function runBelongsToCheckout() {
-  const run = readRun();
-  if (run.repoRoot && run.repoRoot !== root) {
+  const identity = readRunFile();
+  if (identity.status === 'missing' || identity.status === 'ok') return true;
+  if (identity.status === 'foreign') {
     console.warn(
-      `warning: run state is for ${run.repoRoot}, this checkout is ${root}. Not stopping those processes.`,
+      `warning: run state is for ${identity.repoRoot}, this checkout is ${root}. Not stopping those processes.`,
     );
     return false;
   }
-  return true;
+  const dest = backupRunFile();
+  const why =
+    identity.status === 'legacy' ? 'run state has no checkout identity' : 'run state is unreadable';
+  console.warn(`warning: ${why}. Not stopping those processes. Backed up the run state to ${dest}.`);
+  return false;
 }
 
 function isNewConvexSkill(rel, snap) {
@@ -853,12 +892,13 @@ export function captureToolWrites(tool) {
     if (!current || sameDescribed(current, priorStep)) continue;
     if (sameDescribed(current, snapDescribed(files, rel))) {
       delete writeMap[rel];
+      writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
       continue;
     }
     if (isNewConvexSkill(rel, files[rel])) console.warn(`warning: new convex skill file ${rel}`);
     writeMap[rel] = writeRecord(current, tool);
+    writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
   }
-  writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
   stepBaseline = described;
 }
 
@@ -934,8 +974,53 @@ export function warnUnclaimedChanges() {
   }
 }
 
+function priorRunUnfinished() {
+  if (existsSync(observedPath())) return false;
+  return loadManifest().status === 'ok';
+}
+
+export function restoreUnfinishedRun() {
+  if (!priorRunUnfinished()) return { restored: [] };
+  console.warn('warning: previous launch did not finish. Restoring tool-owned files from its snapshot.');
+  try {
+    return restoreUnfinishedInner();
+  } finally {
+    endRestoreBackup();
+  }
+}
+
+function restoreUnfinishedInner() {
+  const manifest = readManifest();
+  if (!manifest) return { restored: [] };
+  const restored = [];
+  for (const rel of watchedRels()) {
+    if (!safeRel(rel) || handMaintained.has(rel)) continue;
+    if (!toolOwns('convex', rel) && !toolOwns('next', rel)) continue;
+    const snap = manifest.files[rel] ?? absentRecord();
+    const current = describeWorktree(rel);
+    if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })) continue;
+    const liveStage = stagedRecord(rel);
+    const snapIndex = typeof snap.indexHash === 'string' ? snap.indexHash : null;
+    const snapStaged = snap.staged === true;
+    if (liveStage.indexHash !== snapIndex || liveStage.staged !== snapStaged) {
+      console.warn(`warning: ${rel} staged state changed during the run and was left in place`);
+      continue;
+    }
+    const dest = backupRel(rel);
+    if (dest) console.log(`backed up ${rel} to ${dest}`);
+    if (!placeSnapshot(rel, snap)) {
+      console.warn(`warning: ${rel} changed during the run and was left in place`);
+      continue;
+    }
+    restored.push(rel);
+    console.log(`restored ${rel} to launch snapshot`);
+  }
+  return { restored };
+}
+
 export function beginLaunch(doctorStatus) {
   if (doctorStatus === 'READY') return 'reuse';
+  restoreUnfinishedRun();
   restoreOwnedWrites();
   snapshotWatchedFiles();
   return 'snapshot';
