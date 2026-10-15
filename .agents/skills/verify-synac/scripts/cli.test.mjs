@@ -122,6 +122,41 @@ test('an indented ENOTFOUND frame does not make a parser error INCONCLUSIVE', ()
   assert.equal(ingestNetworkUnreachable(log), false);
 });
 
+test('a Node 24 fetch error dump ending in a brace is INCONCLUSIVE', () => {
+  const major = Number(process.versions.node.split('.')[0]);
+  assert.equal(major, 24);
+  const result = spawnSync(
+    process.execPath,
+    [
+      '--input-type=module',
+      '-e',
+      [
+        'try {',
+        "  await fetch('https://www.rfc-editor.invalid/rfc/rfc4949.txt');",
+        '} catch (error) {',
+        '  console.error(error);',
+        '}',
+      ].join('\n'),
+    ],
+    { encoding: 'utf8', timeout: 15000 },
+  );
+  assert.equal(result.status, 0);
+  const dump = result.stderr;
+  assert.match(dump, /^\[TypeError: fetch failed\] \{$/m);
+  assert.match(dump, /\[cause\]: Error: getaddrinfo ENOTFOUND /);
+  assert.equal(dump.trim().split('\n').at(-1), '}');
+  assert.equal(ingestNetworkUnreachable(dump), true);
+});
+
+test('the ingest CLI fetch failed line is INCONCLUSIVE', () => {
+  const log = [
+    '$ pnpm --filter @synac/ingest-tools ingest -- --source rfc4949',
+    '✗ rfc4949: fetch failed',
+  ].join('\n');
+  assert.equal(ingestNetworkUnreachable(log), true);
+  assert.equal(ingestNetworkUnreachable('✗ rfc4949: fetch failed (404)'), false);
+});
+
 test('cli.mjs --help runs through the .cursor skill symlink', () => {
   const result = spawnSync(
     process.execPath,
