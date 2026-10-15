@@ -25,6 +25,8 @@ Playwright uses a fresh browser context per test, so theme and clipboard stay in
 
 ## Launch
 
+`pnpm verify:*` is defined on the repo root. Run it from the root of this checkout. From a package directory, pnpm looks at that package's scripts and exits 254, so use `pnpm -w verify:launch` (and the same `-w` form for doctor, smoke, drive, and cleanup). Each script finds this repo from its own file path and changes to that directory before it runs a content command or Playwright.
+
 From the repo root, with Node 24 first on `PATH` (see `.node-version`):
 
 ```bash
@@ -41,22 +43,25 @@ pnpm verify:launch
 3. If port 3000 or 3210 is open and the matching tmux session is not one this skill started, exit 2 and leave that process alone.
 4. Run `pnpm install --frozen-lockfile` when `node_modules` is missing.
 5. Install Playwright Chromium with `pnpm --filter @synac/e2e exec playwright install chromium`. Set `VERIFY_SKIP_BROWSER_INSTALL=1` to skip. If Chromium's system libraries are missing, run `pnpm --filter @synac/e2e exec playwright install --with-deps chromium` once. That step needs root.
-6. Start tmux session `synac-verify-convex` with `CONVEX_AGENT_MODE=anonymous npx convex dev` when port 3210 is closed. Ready means the log line `Convex functions ready` in `/tmp/synac-verify/synac-verify-convex.log`.
+6. Start tmux session `synac-verify-convex` with `CONVEX_AGENT_MODE=anonymous npx convex dev` when port 3210 is closed. Stdin is `/dev/null`, so Convex does not run its interactive agent-file install. The session name is written to `run.json` as soon as tmux returns, before the ready check. A launch that times out still leaves the session for cleanup. Ready means the log line `Convex functions ready` in `/tmp/synac-verify/synac-verify-convex.log`. The listener pid is stored with its `/proc` start time once port 3210 is open.
 7. Run `npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev`.
 8. Run `pnpm --filter @synac/content-tools sync`. Ready means stdout contains `tag convergence: verified`. The log is copied to `/tmp/synac-verify/evidence/cli-sync.log`. That sync writes the compiled corpus into the local Convex deployment. A later search that returns `access control` is the read-back of those records.
 9. Build the web app with `pnpm --filter @synac/web build` unless `VERIFY_WEB_MODE=dev` or `VERIFY_SKIP_BUILD=1` and `apps/web/.next/BUILD_ID` already exists. The build and the server both receive `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210`, `NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000`, `SYNAC_CONVEX_SERVICE_KEY=local-dev`, and `SYNAC_RATE_LIMIT_SALT=local-dev`.
-10. Start tmux session `synac-verify-web` with `pnpm --filter @synac/web exec next start -H 127.0.0.1 -p 3000`. The `exec` form is required. `pnpm --filter @synac/web start -- -H 127.0.0.1` makes Next.js treat `-H` as a project directory. `VERIFY_WEB_MODE=dev` uses `pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p 3000` instead of a production build. Say which mode the proof used. Ready means doctor is `READY`.
+10. Start tmux session `synac-verify-web` with `pnpm --filter @synac/web exec next start -H 127.0.0.1 -p 3000`. The session is written to `run.json` before the port is open. The `exec` form is required. `pnpm --filter @synac/web start -- -H 127.0.0.1` makes Next.js treat `-H` as a project directory. `VERIFY_WEB_MODE=dev` uses `pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p 3000` instead of a production build. Say which mode the proof used. Ready means doctor is `READY`.
 
 `docs/contributing/local-dev.md` is the same stack, split across terminals. Use the helper so the sessions are recorded for cleanup.
 
 Logs and state:
 
-- `/tmp/synac-verify/run.json` lists sessions and listener pids this launch started
+- `/tmp/synac-verify` is mode `0700` and owned by the user who ran launch. Launch exits if the mode or the owner is wrong.
+- `/tmp/synac-verify/run.json` lists sessions and listener pids this launch started. Each pid keeps the process start time and command line from `/proc`.
 - `/tmp/synac-verify/synac-verify-convex.log`
 - `/tmp/synac-verify/synac-verify-web.log`
 - `/tmp/synac-verify/evidence/` is created at launch and kept by cleanup
 
 `.env.local` is written by `npx convex dev`. It is gitignored. Do not commit it.
+
+`npx convex dev` can rewrite `.agents/skills/convex*`, `convex/_generated/ai/`, and `skills-lock.json`, and it can add new skill directories. `next dev` can rewrite `AGENTS.md`, `apps/web/AGENTS.md`, and `apps/web/next-env.d.ts`. Launch redirects Convex stdin from `/dev/null` so the interactive installer does not run. Launch and cleanup then restore any of those paths that were clean when launch started. Do not commit that rewrite. After cleanup, `git status` is clean aside from changes you already had.
 
 ## Doctor
 
@@ -194,7 +199,7 @@ Side effects worth reading:
 
 The local Convex sync is the same compiler output production serves. Do not stub those reads. `POST /api/v1/internal/revalidate` needs `SYNAC_REVALIDATE_SECRET` of at least 16 characters. That route is `INCONCLUSIVE` when the secret is unset. Do not invent a secret.
 
-Live `pnpm ingest -- --source rfc4949` fetches the upstream RFC. The helper copies the source into `/tmp/synac-verify/ingest-content` so a run cannot rewrite `content/generated/` in the repo. If the fetch cannot finish, the helper records `INCONCLUSIVE` in `cli-report.json` and still requires the local rejection checks (no args, unknown source) to pass.
+Live `pnpm ingest -- --source rfc4949` fetches the upstream RFC. The helper copies the source into `/tmp/synac-verify/ingest-content` so a run cannot rewrite `content/generated/` in the repo. A non-zero ingest exit fails `pnpm verify:drive`. The log is `cli-ingest-rfc4949.log`. That result is a failure, including when the upstream fetch does not finish.
 
 ## Cleanup
 
@@ -202,7 +207,7 @@ Live `pnpm ingest -- --source rfc4949` fetches the upstream RFC. The helper copi
 pnpm verify:cleanup
 ```
 
-That runs `node .agents/skills/verify-synac/scripts/cleanup.mjs`. It `tmux kill-session`s only `synac-verify-convex` and `synac-verify-web` when `run.json` lists them, and it signals the listener pids recorded in that file. It does not kill processes by name. It leaves `/tmp/synac-verify/evidence/` in place and prints that path. After every failed launch or drive, run cleanup before starting again so a half-started session does not keep the ports.
+That runs `node .agents/skills/verify-synac/scripts/cleanup.mjs`. It `tmux kill-session`s only `synac-verify-convex` and `synac-verify-web` when `run.json` lists them. A session is listed as soon as launch starts it, so cleanup still stops a Convex or web process whose ready check never passed. Before it signals a saved pid, it reads `/proc/<pid>` and checks the start time recorded at launch (the command line when the start time was not stored). A reused pid is skipped and named in the log. It does not kill processes by name. It restores Convex and Next generated files that launch snapshotted as clean, leaves `/tmp/synac-verify/evidence/` in place, and prints that path. After every failed launch or drive, run cleanup before starting again so a half-started session does not keep the ports.
 
 Confirm the evidence directory still exists after cleanup before citing it.
 
@@ -235,7 +240,7 @@ Put a Proof section on the pull request:
 - Commands: the exact commands, including `pnpm verify:doctor` and the drive you ran
 - Evidence: command logs, screenshot paths, and trace paths that still exist after cleanup
 - Results: pass or fail per command, plus the observable end state (URL, heading, file written, record read back, attribute)
-- INCONCLUSIVE: any step that could not run, and the concrete reason (port busy, upstream fetch failed, revalidate secret unset, browser library missing)
+- INCONCLUSIVE: any step that could not run, and the concrete reason (port busy, revalidate secret unset, browser library missing). A failed ingest is a failure, not `INCONCLUSIVE`.
 ```
 
 A missing check is `INCONCLUSIVE`. Do not describe it as passed.

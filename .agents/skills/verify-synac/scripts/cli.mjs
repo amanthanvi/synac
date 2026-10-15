@@ -11,8 +11,7 @@ Runs the content CLI and checks side effects.
 
 --smoke   content:check and content:compile (writes tools/content/dist/compiled.json)
 default   smoke, plus content:history, a hostile content dir, ingest usage,
-          and an isolated rfc4949 ingest. Live upstream fetch that cannot run
-          is recorded as INCONCLUSIVE and does not fail the local checks.
+          and an isolated rfc4949 ingest. A failed ingest exits 1.
 `;
 
 const compiledPath = path.join(root, 'tools/content/dist/compiled.json');
@@ -144,14 +143,10 @@ function ingestStep(report) {
     });
     return;
   }
-  report.steps.push({
-    name: 'ingest-rfc4949',
-    status: 'INCONCLUSIVE',
-    reason:
-      'live upstream fetch did not finish in this environment. Local ingest rejection checks already passed. See cli-ingest-rfc4949.log',
-    log: result.logPath,
-  });
-  console.log('INCONCLUSIVE ingest rfc4949: upstream fetch did not finish');
+  const detail = text.trim().split('\n').slice(-8).join(' ');
+  throw new Error(
+    `ingest rfc4949 failed (exit ${result.status}). ${detail} See ${result.logPath}`,
+  );
 }
 
 function main() {

@@ -4,7 +4,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import {
   evidenceDir,
   ownedSessions,
+  processIdentity,
   readRun,
+  restoreGeneratedDrift,
+  sameProcess,
   sessionAlive,
   tmux,
   writeRun,
@@ -13,7 +16,8 @@ import {
 const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
 
 Stops tmux sessions this skill started (synac-verify-convex and synac-verify-web)
-and the listener pids recorded in /tmp/synac-verify/run.json.
+and the listener pids recorded in /tmp/synac-verify/run.json, after checking
+each pid's start time. Restores Convex and Next files this launch rewrote.
 
 Leaves /tmp/synac-verify/evidence/ in place.
 `;
@@ -55,16 +59,35 @@ function main() {
     }
   }
 
-  const recorded = [run.pids.convex, run.pids.web, run.pids.convexSite].filter(
-    (pid) => Number.isInteger(pid),
-  );
-  for (const pid of recorded) killTree(pid);
-  if (recorded.length > 0) console.log(`signaled pids ${recorded.join(', ')}`);
+  const recorded = [
+    ['convex', run.pids.convex],
+    ['web', run.pids.web],
+    ['convexSite', run.pids.convexSite],
+  ];
+  const signaled = [];
+  for (const [name, saved] of recorded) {
+    if (!saved) continue;
+    const live = processIdentity(saved.pid);
+    if (!live) {
+      console.log(`pid ${saved.pid} (${name}) already exited`);
+      continue;
+    }
+    if (!sameProcess(saved, saved.pid)) {
+      console.log(`skipped pid ${saved.pid} (${name}): it is no longer the process launch started`);
+      continue;
+    }
+    killTree(saved.pid);
+    signaled.push(saved.pid);
+  }
+  if (signaled.length > 0) console.log(`signaled pids ${signaled.join(', ')}`);
 
+  restoreGeneratedDrift();
+  const cleared = readRun();
   writeRun({
-    ...run,
+    ...cleared,
     sessions: [],
-    pids: {},
+    pids: { convex: null, web: null, convexSite: null },
+    dirtyBefore: undefined,
   });
   console.log(`evidence ${evidenceDir}`);
 }

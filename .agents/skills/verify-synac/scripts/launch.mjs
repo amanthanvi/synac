@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { runDoctor } from './doctor.mjs';
@@ -11,10 +11,13 @@ import {
   convexUrl,
   ensureState,
   evidenceDir,
-  listenerPids,
   nodeMajor,
+  noteSession,
   portOpen,
   readRun,
+  rememberListener,
+  rememberWorktree,
+  restoreGeneratedDrift,
   root,
   runLogged,
   sessionAlive,
@@ -25,7 +28,6 @@ import {
   stateDir,
   waitFor,
   webPort,
-  writeRun,
 } from './runtime.mjs';
 
 const help = `Usage: node .agents/skills/verify-synac/scripts/launch.mjs
@@ -49,8 +51,9 @@ const webEnv = {
 };
 
 function fail(message) {
-  console.error(message);
-  process.exit(2);
+  const error = new Error(message);
+  error.exitCode = 2;
+  throw error;
 }
 
 function exportPrefix() {
@@ -61,23 +64,29 @@ function exportPrefix() {
     .join(' ');
 }
 
-function remember(session, pidKey, port) {
-  const run = readRun();
-  if (!run.sessions.includes(session)) run.sessions.push(session);
-  const pids = listenerPids(port);
-  const first = pids[0];
-  if (first) run.pids[pidKey] = first;
-  run.baseUrl = baseUrl;
-  run.webMode = process.env.VERIFY_WEB_MODE === 'dev' ? 'dev' : 'start';
-  if (!run.startedAt) run.startedAt = new Date().toISOString();
-  writeRun(run);
-}
-
 async function main() {
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     process.stdout.write(help);
     return;
   }
+  try {
+    await run();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(message);
+    const exitCode = error instanceof Error && 'exitCode' in error && error.exitCode === 2 ? 2 : 1;
+    process.exitCode = exitCode;
+  } finally {
+    try {
+      restoreGeneratedDrift();
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : error);
+      if (!process.exitCode) process.exitCode = 1;
+    }
+  }
+}
+
+async function run() {
   if (nodeMajor() < 24) {
     fail(
       `node ${process.version} is below 24. Put nvm Node 24 first on PATH, then rerun.`,
@@ -88,12 +97,14 @@ async function main() {
   }
 
   ensureState();
+  if (Array.isArray(readRun().dirtyBefore)) restoreGeneratedDrift();
   const doctor = await runDoctor(baseUrl);
   if (doctor.status === 'READY') {
     console.log('REUSED');
     console.log(`evidence ${evidenceDir}`);
     return;
   }
+  rememberWorktree();
 
   const webUp = await portOpen(webPort);
   const convexUp = await portOpen(convexPort);
@@ -102,10 +113,19 @@ async function main() {
       `port ${webPort} is open (${doctor.portOwner}) and this skill did not start it. Leave it alone.`,
     );
   }
+  if (webUp) {
+    noteSession(sessionWeb);
+    rememberListener('web', webPort);
+  }
   if (convexUp && !sessionAlive(sessionConvex)) {
     fail(
       `port ${convexPort} is open and this skill did not start it. Leave it alone.`,
     );
+  }
+  if (convexUp) {
+    noteSession(sessionConvex);
+    rememberListener('convex', convexPort);
+    if (await portOpen(convexSitePort)) rememberListener('convexSite', convexSitePort);
   }
 
   if (process.env.VERIFY_SKIP_INSTALL !== '1' && !existsSync(path.join(root, 'node_modules'))) {
@@ -130,13 +150,14 @@ async function main() {
     const log = path.join(stateDir, 'synac-verify-convex.log');
     startSession(
       sessionConvex,
-      `${exportPrefix()} export CONVEX_AGENT_MODE=anonymous; cd ${shQuote(root)}; npx convex dev > ${shQuote(log)} 2>&1`,
+      `${exportPrefix()} export CONVEX_AGENT_MODE=anonymous; cd ${shQuote(root)}; npx convex dev < /dev/null > ${shQuote(log)} 2>&1`,
     );
+    noteSession(sessionConvex);
     await waitFor(
       'Convex functions ready',
       async () => {
+        if (await portOpen(convexPort)) rememberListener('convex', convexPort);
         try {
-          const { readFileSync } = await import('node:fs');
           return readFileSync(log, 'utf8').includes('Convex functions ready');
         } catch {
           return false;
@@ -145,8 +166,8 @@ async function main() {
       180_000,
     );
     if (!(await portOpen(convexPort))) fail(`convex log went ready but port ${convexPort} is closed`);
-    remember(sessionConvex, 'convex', convexPort);
-    if (await portOpen(convexSitePort)) remember(sessionConvex, 'convexSite', convexSitePort);
+    rememberListener('convex', convexPort);
+    if (await portOpen(convexSitePort)) rememberListener('convexSite', convexSitePort);
   }
 
   let envSet = 1;
@@ -195,10 +216,14 @@ async function main() {
       sessionWeb,
       `${exportPrefix()} cd ${shQuote(root)}; ${webCommand} > ${shQuote(log)} 2>&1`,
     );
+    noteSession(sessionWeb);
     await waitFor(
       'web port',
       async () => {
-        if (await portOpen(webPort)) return true;
+        if (await portOpen(webPort)) {
+          rememberListener('web', webPort);
+          return true;
+        }
         if (!sessionAlive(sessionWeb)) {
           throw new Error(`web session exited before port ${webPort} opened. See ${log}`);
         }
@@ -206,7 +231,7 @@ async function main() {
       },
       120_000,
     );
-    remember(sessionWeb, 'web', webPort);
+    rememberListener('web', webPort);
   }
 
   let ready = await runDoctor(baseUrl);

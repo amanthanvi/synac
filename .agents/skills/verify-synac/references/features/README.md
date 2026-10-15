@@ -18,7 +18,7 @@ The relevant feature file is the coverage set. When a change crosses search, an 
 - Exercise every reachable entry point the change can affect, including empty, error, and hostile inputs listed in Gotchas.
 - Record the action and the final observable state, including files written and records read back.
 - Mocks count only where the product already isolates an upstream fetch. The glossary reads the synced Convex dataset. Do not stub those reads.
-- When a path is unreachable, name it and the concrete prerequisite. Live RFC ingest is `INCONCLUSIVE` when the upstream fetch cannot finish. `POST /api/v1/internal/revalidate` is `INCONCLUSIVE` when `SYNAC_REVALIDATE_SECRET` is unset.
+- When a path is unreachable, name it and the concrete prerequisite. A live RFC ingest that does not finish fails the drive. `POST /api/v1/internal/revalidate` is `INCONCLUSIVE` when `SYNAC_REVALIDATE_SECRET` is unset.
 
 ## Full sweep
 
