@@ -76,6 +76,11 @@ test('snapshot records this checkout and restore refuses a different root', () =
   const manifest = JSON.parse(original);
   assert.equal(manifest.repoRoot, root);
   assert.equal(typeof manifest.files, 'object');
+  const flat = { 'AGENTS.md': { kind: 'file', hash: 'abc', mode: 0o644 } };
+  writeFileSync(manifestPath, `${JSON.stringify(flat)}\n`);
+  assertSnapshotCheckout();
+  assert.deepEqual(restoreOwnedWrites(), { restored: [], warned: [], backups: [] });
+  writeFileSync(manifestPath, original);
   manifest.repoRoot = '/tmp/other-checkout';
   writeFileSync(manifestPath, `${JSON.stringify(manifest)}\n`);
   assert.throws(() => assertSnapshotCheckout(), /Refusing to restore/);

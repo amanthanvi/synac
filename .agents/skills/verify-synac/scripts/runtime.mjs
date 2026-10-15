@@ -610,7 +610,7 @@ function readManifest() {
     throw new Error('snapshot manifest is unreadable. Refusing to restore.');
   }
   if (typeof raw.repoRoot !== 'string' || !raw.files || typeof raw.files !== 'object' || Array.isArray(raw.files)) {
-    throw new Error('snapshot manifest has no checkout identity. Refusing to restore.');
+    return null;
   }
   if (raw.repoRoot !== root) {
     throw new Error(
