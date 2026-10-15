@@ -57,31 +57,38 @@ const tmuxConfig = process.env.SYNAC_VERIFY_TMUX_CONFIG
     ? '/exec-daemon/tmux.portal.conf'
     : '';
 
-export function ensureState() {
-  let created = false;
-  if (!existsSync(stateDir)) {
-    mkdirSync(stateDir, { recursive: true, mode: 0o700 });
-    created = true;
-  }
-  const listed = lstatSync(stateDir);
+function assertPrivateDir(dir, created) {
+  const listed = lstatSync(dir);
   if (listed.isSymbolicLink() || !listed.isDirectory()) {
-    throw new Error(`${stateDir} is not a private directory`);
+    throw new Error(`${dir} is not a private directory`);
   }
   const uid = typeof process.getuid === 'function' ? process.getuid() : null;
   if (uid !== null && listed.uid !== uid) {
-    throw new Error(`${stateDir} is owned by uid ${listed.uid}, expected ${uid}`);
+    throw new Error(`${dir} is owned by uid ${listed.uid}, expected ${uid}`);
   }
-  if (created) chmodSync(stateDir, 0o700);
-  const mode = statSync(stateDir).mode & 0o777;
+  if (created) chmodSync(dir, 0o700);
+  const mode = statSync(dir).mode & 0o777;
   if (mode !== 0o700) {
     throw new Error(
-      `${stateDir} mode is 0${mode.toString(8)}, expected 0700. Refusing to change an existing directory.`,
+      `${dir} mode is 0${mode.toString(8)}, expected 0700. Refusing to change an existing directory.`,
     );
   }
-  if (!existsSync(evidenceDir)) {
-    mkdirSync(evidenceDir, { recursive: true, mode: 0o700 });
-    chmodSync(evidenceDir, 0o700);
+}
+
+function preparePrivateDir(dir) {
+  let created = false;
+  try {
+    lstatSync(dir);
+  } catch {
+    mkdirSync(dir, { recursive: true, mode: 0o700 });
+    created = true;
   }
+  assertPrivateDir(dir, created);
+}
+
+export function ensureState() {
+  preparePrivateDir(stateDir);
+  preparePrivateDir(evidenceDir);
 }
 
 export function readRun() {
@@ -451,6 +458,21 @@ function safeRel(rel) {
   return true;
 }
 
+function backupRunDir() {
+  const idFile = path.join(snapshotRoot(), 'backup-id');
+  let id = 'unknown';
+  try {
+    const raw = readFileSync(idFile, 'utf8').trim();
+    if (/^[\w.-]+$/.test(raw)) id = raw;
+  } catch {
+    id = 'unknown';
+  }
+  const dir = path.join(stateDir, 'restored', id);
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  chmodSync(dir, 0o700);
+  return dir;
+}
+
 function backupRel(rel) {
   const abs = path.join(root, rel);
   let listed;
@@ -459,7 +481,7 @@ function backupRel(rel) {
   } catch {
     return null;
   }
-  const dest = path.join(stateDir, 'restored', rel);
+  const dest = path.join(backupRunDir(), rel);
   mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
   rmSync(dest, { recursive: true, force: true });
   if (listed.isSymbolicLink()) {
@@ -558,6 +580,8 @@ export function snapshotWatchedFiles() {
   }
   writeFileSync(path.join(staging, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   writeFileSync(path.join(staging, 'writes.json'), '{}\n');
+  const backupId = new Date().toISOString().replace(/[:.]/g, '-');
+  writeFileSync(path.join(staging, 'backup-id'), `${backupId}\n`);
   const previous = path.join(stateDir, `${snapshotDirName}.prev`);
   rmSync(previous, { recursive: true, force: true });
   if (existsSync(snapshotRoot())) renameSync(snapshotRoot(), previous);
