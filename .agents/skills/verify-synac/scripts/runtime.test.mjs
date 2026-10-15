@@ -63,6 +63,7 @@ const {
   runBelongsToCheckout,
   writeRun,
   readRun,
+  runFile,
   stopRecordedPid,
   processIdentity,
   sessionConvex,
@@ -357,6 +358,27 @@ test('an existing evidence directory with the wrong mode is refused', () => {
   chmodSync(evidence, 0o700);
 });
 
+test('an unfinished launch restores tool writes before the next snapshot', () => {
+  const lock = path.join(root, 'skills-lock.json');
+  const original = readFileSync(lock, 'utf8');
+  const agents = path.join(root, 'AGENTS.md');
+  const agentsOriginal = readFileSync(agents, 'utf8');
+  try {
+    snapshotWatchedFiles();
+    assert.equal(readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8').trim(), '{}');
+    assert.equal(exists(path.join(state, 'snapshot/observed.json')), false);
+    writeFileSync(lock, '{"killed":true}\n');
+    writeFileSync(agents, `${agentsOriginal}human\n`);
+    assert.equal(beginLaunch('NOT_READY'), 'snapshot');
+    assert.equal(readFileSync(lock, 'utf8'), original);
+    assert.equal(readFileSync(agents, 'utf8'), `${agentsOriginal}human\n`);
+    assert.equal(readFileSync(path.join(state, 'snapshot/files/skills-lock.json'), 'utf8'), original);
+  } finally {
+    writeFileSync(lock, original);
+    writeFileSync(agents, agentsOriginal);
+  }
+});
+
 test('cleanup does not stop a run recorded for another checkout', () => {
   const warnings = [];
   const orig = console.warn;
@@ -379,6 +401,64 @@ test('cleanup does not stop a run recorded for another checkout', () => {
     sessions: [],
     pids: { convex: null, web: null, convexSite: null },
   });
+});
+
+test('a run.json with no repoRoot is not this checkout', async () => {
+  const child = spawn('sleep', ['30'], { stdio: 'ignore' });
+  try {
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('sleep did not spawn')), 2000);
+      child.once('spawn', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      child.once('error', (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+    const saved = processIdentity(child.pid);
+    assert.ok(saved);
+    ensureState();
+    writeFileSync(
+      runFile,
+      `${JSON.stringify({ sessions: [], pids: { convex: saved, web: null, convexSite: null } })}\n`,
+    );
+    const cleanup = path.join(realRoot, '.agents/skills/verify-synac/scripts/cleanup.mjs');
+    const result = spawnSync(process.execPath, [cleanup], {
+      env: {
+        ...process.env,
+        SYNAC_VERIFY_ROOT: repo,
+        SYNAC_VERIFY_STATE_DIR: state,
+        VERIFY_EVIDENCE_DIR: path.join(state, 'evidence'),
+      },
+      encoding: 'utf8',
+      timeout: 20_000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const output = `${result.stdout}\n${result.stderr}`;
+    assert.match(output, /no checkout identity/);
+    assert.match(output, /Not stopping those processes/);
+    assert.match(output, /Backed up the run state to /);
+    assert.doesNotMatch(output, new RegExp(`\\b${child.pid}\\b`));
+    assert.equal(processIdentity(child.pid)?.pid, child.pid);
+    const backedUp = output.match(/Backed up the run state to (\S+)\./);
+    assert.ok(backedUp);
+    assert.equal(readFileSync(backedUp[1], 'utf8').includes('repoRoot'), false);
+    assert.equal(readFileSync(runFile, 'utf8').includes('repoRoot'), false);
+  } finally {
+    try {
+      child.kill('SIGKILL');
+    } catch {
+      // already exited
+    }
+    writeRun({
+      ...readRun(),
+      repoRoot: root,
+      sessions: [],
+      pids: { convex: null, web: null, convexSite: null },
+    });
+  }
 });
 
 test('SIGKILL waits for the launch start time to still match', async () => {

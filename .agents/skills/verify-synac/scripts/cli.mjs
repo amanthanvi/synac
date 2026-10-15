@@ -175,9 +175,21 @@ function isWrapperLine(line) {
   return false;
 }
 
+function isNamedError(line) {
+  const match = /^(?:\[([A-Za-z_][\w$]*)|([A-Za-z_][\w$]*)): \S/.exec(line);
+  if (!match) return false;
+  const name = match[1] ?? match[2] ?? '';
+  return name.endsWith('Error') || name.endsWith('Exception');
+}
+
+function isMarkedError(line) {
+  return /^[✗✘]\s+\S/.test(line);
+}
+
 function isErrorLine(line) {
-  if (line.length === 0 || /^\s/.test(line)) return false;
-  return !isWrapperLine(line);
+  if (line.length === 0 || /^\s/.test(line) || isWrapperLine(line)) return false;
+  if (isMarkedError(line) || isNamedError(line)) return true;
+  return !/: /.test(line);
 }
 
 function isExplicitCause(line) {

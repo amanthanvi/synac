@@ -94,6 +94,20 @@ test('a later RangeError, ZodError, or IngestError wins over TypeError: fetch fa
   }
 });
 
+test('a warning line is not an error name', () => {
+  const stolen = [
+    "SyntaxError: Unexpected token '<'",
+    'warning: getaddrinfo ENOTFOUND www.rfc-editor.org',
+  ].join('\n');
+  assert.equal(ingestNetworkUnreachable(stolen), false);
+  const kept = [
+    'TypeError: fetch failed',
+    '    [cause]: Error: getaddrinfo ENOTFOUND www.rfc-editor.org',
+    'warning: leaving files in place',
+  ].join('\n');
+  assert.equal(ingestNetworkUnreachable(kept), true);
+});
+
 test('an indented ENOTFOUND frame does not make a parser error INCONCLUSIVE', () => {
   const log = [
     'TypeError: fetch failed',
