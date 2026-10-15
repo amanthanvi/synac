@@ -166,12 +166,14 @@ function ingestStep(report) {
 const networkUnreachable =
   /ENOTFOUND|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|ECONNREFUSED|ETIMEDOUT|ECONNRESET|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|getaddrinfo|Hostname did not resolve|network is unreachable|socket hang up|TypeError: fetch failed\b/;
 
+function isNamedError(line) {
+  return /^(?:\[[A-Za-z_][\w$]*|[A-Za-z_][\w$]*): \S/.test(line);
+}
+
 function isTopLevelError(line) {
-  if (/^\s/.test(line)) return false;
-  return (
-    /^[✗✘]\s+\S+:\s+\S/.test(line) ||
-    /^(?:Error|TypeError|SyntaxError|AggregateError): \S/.test(line)
-  );
+  if (/^\s/.test(line) || line.length === 0) return false;
+  if (isCauseLine(line)) return false;
+  return /^[✗✘]\s+\S+:\s+\S/.test(line) || isNamedError(line);
 }
 
 function isCauseLine(line) {

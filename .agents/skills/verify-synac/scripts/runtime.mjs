@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
-export const root = path.resolve(scriptDir, '../../../..');
+export const root = path.resolve(process.env.SYNAC_VERIFY_ROOT ?? path.resolve(scriptDir, '../../../..'));
 if (process.cwd() !== root) process.chdir(root);
 
 const namedWatched = [
@@ -116,6 +116,7 @@ export function readRun() {
       dirtyBefore: Array.isArray(value.dirtyBefore)
         ? value.dirtyBefore.filter((item) => typeof item === 'string')
         : undefined,
+      repoRoot: typeof value.repoRoot === 'string' ? value.repoRoot : '',
     };
   } catch {
     return emptyRun();
@@ -129,6 +130,7 @@ function emptyRun() {
     startedAt: '',
     webMode: 'start',
     baseUrl,
+    repoRoot: '',
   };
 }
 
@@ -144,7 +146,8 @@ function normalizePid(value) {
 
 export function writeRun(run) {
   ensureState();
-  writeFileSync(runFile, `${JSON.stringify(run, null, 2)}\n`);
+  const next = { ...run, repoRoot: typeof run.repoRoot === 'string' && run.repoRoot ? run.repoRoot : root };
+  writeFileSync(runFile, `${JSON.stringify(next, null, 2)}\n`);
 }
 
 export function shQuote(value) {
@@ -312,6 +315,7 @@ export function noteSession(session) {
   run.baseUrl = baseUrl;
   run.webMode = process.env.VERIFY_WEB_MODE === 'dev' ? 'dev' : 'start';
   if (!run.startedAt) run.startedAt = new Date().toISOString();
+  run.repoRoot = root;
   writeRun(run);
 }
 
@@ -345,6 +349,45 @@ export function sameProcess(saved, pid) {
   if (saved.startTime && live.startTime) return saved.startTime === live.startTime;
   if (saved.cmdline && live.cmdline) return saved.cmdline === live.cmdline;
   return false;
+}
+
+function childPids(pid) {
+  const file = `/proc/${pid}/task/${pid}/children`;
+  if (!existsSync(file)) return [];
+  return readFileSync(file, 'utf8')
+    .trim()
+    .split(/\s+/)
+    .map((part) => Number(part))
+    .filter((child) => Number.isInteger(child) && child > 1);
+}
+
+function signalTree(pid, signal) {
+  for (const child of childPids(pid)) signalTree(child, signal);
+  try {
+    process.kill(pid, signal);
+  } catch {
+    return;
+  }
+}
+
+function sleepMs(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+export function stopRecordedPid(saved, graceMs = 2000) {
+  if (!saved || !Number.isInteger(saved.pid) || saved.pid <= 1) return 'skip';
+  if (!processIdentity(saved.pid)) return 'exited';
+  if (!sameProcess(saved, saved.pid)) return 'reused';
+  signalTree(saved.pid, 'SIGTERM');
+  const deadline = Date.now() + graceMs;
+  while (Date.now() < deadline) {
+    if (!processIdentity(saved.pid)) return 'term';
+    sleepMs(50);
+  }
+  if (!processIdentity(saved.pid)) return 'term';
+  if (!sameProcess(saved, saved.pid)) return 'reused-before-kill';
+  signalTree(saved.pid, 'SIGKILL');
+  return 'kill';
 }
 
 export function rememberListener(pidKey, port) {
@@ -469,19 +512,35 @@ function safeRel(rel) {
   return true;
 }
 
-function backupRunDir() {
+function readBackupId() {
   const idFile = path.join(snapshotRoot(), 'backup-id');
-  let id = 'unknown';
   try {
     const raw = readFileSync(idFile, 'utf8').trim();
-    if (/^[\w.-]+$/.test(raw)) id = raw;
+    if (/^[\w.-]+$/.test(raw) && raw !== 'unknown') return raw;
   } catch {
-    id = 'unknown';
+    return null;
   }
+  return null;
+}
+
+let restoreBackupDir = null;
+
+function beginRestoreBackup() {
+  const id = readBackupId() ?? `restore-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
   const dir = path.join(stateDir, 'restored', id);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   chmodSync(dir, 0o700);
+  restoreBackupDir = dir;
   return dir;
+}
+
+function endRestoreBackup() {
+  restoreBackupDir = null;
+}
+
+function backupRunDir() {
+  if (!restoreBackupDir) beginRestoreBackup();
+  return restoreBackupDir;
 }
 
 function backupRel(rel) {
@@ -601,7 +660,10 @@ export function snapshotWatchedFiles() {
   renameSync(staging, snapshotRoot());
   rmSync(previous, { recursive: true, force: true });
   tookSnapshot = true;
+  stepBaseline = null;
 }
+
+let warnedForeignRoot = null;
 
 function readManifest() {
   if (!existsSync(manifestPath())) return null;
@@ -613,10 +675,15 @@ function readManifest() {
     return null;
   }
   if (raw.repoRoot !== root) {
-    throw new Error(
-      `snapshot repo root is ${raw.repoRoot}, this checkout is ${root}. Refusing to restore.`,
-    );
+    if (warnedForeignRoot !== raw.repoRoot) {
+      warnedForeignRoot = raw.repoRoot;
+      console.warn(
+        `warning: snapshot repo root is ${raw.repoRoot}, this checkout is ${root}. Leaving files in place.`,
+      );
+    }
+    return null;
   }
+  warnedForeignRoot = null;
   return raw;
 }
 
@@ -624,52 +691,184 @@ export function assertSnapshotCheckout() {
   readManifest();
 }
 
+export function runBelongsToCheckout() {
+  const run = readRun();
+  if (run.repoRoot && run.repoRoot !== root) {
+    console.warn(
+      `warning: run state is for ${run.repoRoot}, this checkout is ${root}. Not stopping those processes.`,
+    );
+    return false;
+  }
+  return true;
+}
+
 function isNewConvexSkill(rel, snap) {
   return rel.startsWith('.agents/skills/convex') && (!snap || snap.kind === 'absent');
 }
 
-export function noteRunWrites(options = {}) {
-  const later = options.later === true;
-  if (!later && !tookSnapshot) return;
+function toolOwns(tool, rel) {
+  if (tool === 'convex') {
+    return (
+      rel === 'skills-lock.json' ||
+      rel === '.cursor/rules/convex_rules.mdc' ||
+      rel.startsWith('.agents/skills/convex') ||
+      rel.startsWith('convex/_generated/ai/')
+    );
+  }
+  if (tool === 'next') {
+    return rel === 'apps/web/AGENTS.md' || rel === 'apps/web/next-env.d.ts';
+  }
+  return false;
+}
+
+function readWriteMap() {
+  const writes = readJson(writesPath(), {});
+  if (!writes || typeof writes !== 'object' || Array.isArray(writes)) return {};
+  return { ...writes };
+}
+
+function snapDescribed(files, rel) {
+  const snap = files[rel];
+  return snap ? { kind: snap.kind, hash: snap.hash ?? null } : { kind: 'absent', hash: null };
+}
+
+function writeRecord(current, tool) {
+  return { kind: current.kind, hash: current.hash, tool };
+}
+
+let stepBaseline = null;
+
+function describedMap() {
   const manifest = readManifest();
-  if (!manifest) return;
-  const files = manifest.files;
-  const existing = later ? readJson(writesPath(), {}) : {};
-  const writeMap = existing && typeof existing === 'object' && !Array.isArray(existing) ? { ...existing } : {};
-  const rels = new Set([...Object.keys(files), ...watchedRels()]);
+  if (!manifest) return null;
+  const described = {};
+  const rels = new Set([...Object.keys(manifest.files), ...watchedRels()]);
   for (const rel of rels) {
     if (!safeRel(rel)) continue;
     const current = describeWorktree(rel);
-    const snap = files[rel];
-    const snapDescribed = snap
-      ? { kind: snap.kind, hash: snap.hash ?? null }
-      : { kind: 'absent', hash: null };
-    if (handMaintained.has(rel)) {
+    described[rel] = { kind: current.kind, hash: current.hash };
+  }
+  return { files: manifest.files, described };
+}
+
+export function markStepBaseline() {
+  const mapped = describedMap();
+  stepBaseline = mapped ? mapped.described : null;
+}
+
+export function captureToolWrites(tool) {
+  if (tool !== 'convex' && tool !== 'next') {
+    throw new Error(`unknown verify tool ${tool}`);
+  }
+  const before = stepBaseline;
+  const mapped = describedMap();
+  if (!before || !mapped) return;
+  const { files, described } = mapped;
+  const writeMap = readWriteMap();
+  for (const rel of Object.keys(described)) {
+    if (handMaintained.has(rel) || !toolOwns(tool, rel)) continue;
+    const current = described[rel];
+    const priorStep = before[rel] ?? { kind: 'absent', hash: null };
+    if (!current || sameDescribed(current, priorStep)) continue;
+    if (sameDescribed(current, snapDescribed(files, rel))) {
       delete writeMap[rel];
-      if (!sameDescribed(current, snapDescribed)) {
-        console.warn(`warning: ${rel} changed during the run and was left in place`);
-      }
       continue;
     }
-    if (sameDescribed(current, snapDescribed)) {
-      delete writeMap[rel];
-      continue;
-    }
+    if (isNewConvexSkill(rel, files[rel])) console.warn(`warning: new convex skill file ${rel}`);
+    writeMap[rel] = writeRecord(current, tool);
+  }
+  writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
+  stepBaseline = described;
+}
+
+function observedPath() {
+  return path.join(snapshotRoot(), 'observed.json');
+}
+
+export function markObserved() {
+  if (!tookSnapshot) return;
+  const manifest = readManifest();
+  if (!manifest) return;
+  const observed = {};
+  const rels = new Set([...Object.keys(manifest.files), ...watchedRels()]);
+  for (const rel of rels) {
+    if (!safeRel(rel)) continue;
+    const current = describeWorktree(rel);
+    observed[rel] = { kind: current.kind, hash: current.hash };
+  }
+  writeFileSync(observedPath(), `${JSON.stringify(observed, null, 2)}\n`);
+}
+
+export function finishLaunchSnapshot() {
+  markObserved();
+  warnUnclaimedChanges();
+}
+
+export function noteWritesSinceObserved() {
+  const manifest = readManifest();
+  if (!manifest) return;
+  const observed = readJson(observedPath(), null);
+  if (!observed || typeof observed !== 'object' || Array.isArray(observed)) return;
+  const files = manifest.files;
+  const writeMap = readWriteMap();
+  const rels = new Set([...Object.keys(files), ...watchedRels(), ...Object.keys(observed)]);
+  for (const rel of rels) {
+    if (!safeRel(rel) || handMaintained.has(rel)) continue;
+    const tool = toolOwns('convex', rel) ? 'convex' : toolOwns('next', rel) ? 'next' : null;
+    if (!tool) continue;
+    const current = describeWorktree(rel);
+    const seen = observed[rel];
+    const seenDescribed =
+      seen && typeof seen === 'object' ? { kind: seen.kind, hash: seen.hash ?? null } : { kind: 'absent', hash: null };
+    if (sameDescribed(current, seenDescribed)) continue;
     const prior = writeMap[rel];
     const priorDescribed =
-      prior && typeof prior === 'object'
-        ? { kind: prior.kind, hash: prior.hash ?? null }
-        : null;
-    if (later && priorDescribed && !sameDescribed(current, priorDescribed)) continue;
-    if (isNewConvexSkill(rel, snap) && (!priorDescribed || !sameDescribed(current, priorDescribed))) {
-      console.warn(`warning: new convex skill file ${rel}`);
-    }
-    writeMap[rel] = { kind: current.kind, hash: current.hash };
+      prior && typeof prior === 'object' ? { kind: prior.kind, hash: prior.hash ?? null } : null;
+    if (priorDescribed && !sameDescribed(current, priorDescribed)) continue;
+    if (isNewConvexSkill(rel, files[rel])) console.warn(`warning: new convex skill file ${rel}`);
+    writeMap[rel] = writeRecord(current, tool);
   }
   writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
 }
 
+export function warnUnclaimedChanges() {
+  const manifest = readManifest();
+  if (!manifest) return;
+  const files = manifest.files;
+  const writeMap = readWriteMap();
+  const rels = new Set([...Object.keys(files), ...watchedRels()]);
+  for (const rel of rels) {
+    if (!safeRel(rel)) continue;
+    const current = describeWorktree(rel);
+    if (sameDescribed(current, snapDescribed(files, rel))) continue;
+    const write = writeMap[rel];
+    if (
+      write &&
+      typeof write === 'object' &&
+      sameDescribed(current, { kind: write.kind, hash: write.hash ?? null })
+    ) {
+      continue;
+    }
+    console.warn(`warning: ${rel} changed during the run and was left in place`);
+  }
+}
+
+export function beginLaunch(doctorStatus) {
+  if (doctorStatus === 'READY') return 'reuse';
+  restoreOwnedWrites();
+  snapshotWatchedFiles();
+  return 'snapshot';
+}
+
 export function restoreOwnedWrites() {
+  try {
+    return restoreOwnedWritesInner();
+  } finally {
+    endRestoreBackup();
+  }
+}
+
+function restoreOwnedWritesInner() {
   const manifest = readManifest();
   if (!manifest) return { restored: [], warned: [], backups: [] };
   const files = manifest.files;

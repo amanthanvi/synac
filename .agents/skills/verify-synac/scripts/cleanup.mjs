@@ -1,17 +1,16 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync } from 'node:fs';
-
 import {
   assertSnapshotCheckout,
   evidenceDir,
-  noteRunWrites,
+  noteWritesSinceObserved,
   ownedSessions,
-  processIdentity,
   readRun,
   restoreOwnedWrites,
-  sameProcess,
+  runBelongsToCheckout,
   sessionAlive,
+  stopRecordedPid,
   tmux,
+  warnUnclaimedChanges,
   writeRun,
 } from './runtime.mjs';
 
@@ -19,8 +18,10 @@ const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
 
 Stops tmux sessions this skill started (synac-verify-convex and synac-verify-web)
 and the listener pids recorded in /tmp/synac-verify/run.json, after checking
-each pid's start time. Restores a watched file to the launch snapshot when
-its current bytes still match what the run wrote. Backs that file up under
+each pid's start time. Sends SIGTERM, then SIGKILL only while that start
+time still matches. A snapshot from another checkout is left in place.
+Restores a watched file to the launch snapshot when its current bytes still
+match a recorded tool write. Backs that file up under
 /tmp/synac-verify/restored/<run-id>/ first, including when the path is a
 symlink. Never changes the git index. Any other change is left in place
 and printed as a warning.
@@ -28,32 +29,16 @@ and printed as a warning.
 Leaves /tmp/synac-verify/evidence/ in place.
 `;
 
-function childPids(pid) {
-  const file = `/proc/${pid}/task/${pid}/children`;
-  if (!existsSync(file)) return [];
-  return readFileSync(file, 'utf8')
-    .trim()
-    .split(/\s+/)
-    .map((part) => Number(part))
-    .filter((child) => Number.isInteger(child) && child > 1);
-}
-
-function killTree(pid) {
-  if (!Number.isInteger(pid) || pid <= 1) return;
-  for (const child of childPids(pid)) killTree(child);
-  try {
-    process.kill(pid, 'SIGTERM');
-  } catch {
-    return;
-  }
-}
-
 function main() {
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     process.stdout.write(help);
     return;
   }
   assertSnapshotCheckout();
+  if (!runBelongsToCheckout()) {
+    console.log(`evidence ${evidenceDir}`);
+    return;
+  }
   const run = readRun();
   const sessions = run.sessions.filter((name) => ownedSessions.has(name));
   for (const name of sessions) {
@@ -77,21 +62,24 @@ function main() {
     if (!saved) continue;
     if (seen.has(saved.pid)) continue;
     seen.add(saved.pid);
-    const live = processIdentity(saved.pid);
-    if (!live) {
+    const outcome = stopRecordedPid(saved);
+    if (outcome === 'exited') {
       console.log(`pid ${saved.pid} (${name}) already exited`);
       continue;
     }
-    if (!sameProcess(saved, saved.pid)) {
+    if (outcome === 'reused' || outcome === 'reused-before-kill') {
       console.log(`skipped pid ${saved.pid} (${name}): it is no longer the process launch started`);
       continue;
     }
-    killTree(saved.pid);
-    signaled.push(saved.pid);
+    if (outcome === 'kill') {
+      console.log(`sent SIGKILL to pid ${saved.pid} (${name}) after SIGTERM`);
+    }
+    if (outcome === 'term' || outcome === 'kill') signaled.push(saved.pid);
   }
   if (signaled.length > 0) console.log(`signaled pids ${signaled.join(', ')}`);
 
-  noteRunWrites({ later: true });
+  noteWritesSinceObserved();
+  warnUnclaimedChanges();
   restoreOwnedWrites();
   const cleared = readRun();
   writeRun({

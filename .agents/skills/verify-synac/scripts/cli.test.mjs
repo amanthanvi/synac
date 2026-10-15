@@ -52,6 +52,30 @@ test('an HTTP status in the final cause is FAIL', () => {
   assert.equal(ingestNetworkUnreachable(log), false);
 });
 
+test('RangeError on the final error is FAIL', () => {
+  const log = [
+    'retry 1 failed: getaddrinfo ENOTFOUND www.rfc-editor.org',
+    'RangeError: Invalid array length',
+  ].join('\n');
+  assert.equal(ingestNetworkUnreachable(log), false);
+});
+
+test('a custom error on the final error is FAIL', () => {
+  const log = [
+    'retry 1 failed: getaddrinfo ENOTFOUND www.rfc-editor.org',
+    'AdapterError: parser failed',
+  ].join('\n');
+  assert.equal(ingestNetworkUnreachable(log), false);
+});
+
+test('a bracketed Error after a fetch-failed retry is FAIL', () => {
+  const log = [
+    'retry 1 failed: TypeError: fetch failed',
+    "[Error: Unexpected token '<' is not valid JSON]",
+  ].join('\n');
+  assert.equal(ingestNetworkUnreachable(log), false);
+});
+
 test('cli.mjs --help runs through the .cursor skill symlink', () => {
   const result = spawnSync(
     process.execPath,
