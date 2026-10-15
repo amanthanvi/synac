@@ -9,6 +9,7 @@ import {
   rmSync,
   statSync,
   symlinkSync,
+  writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
 import { test } from 'node:test';
@@ -20,8 +21,14 @@ chmodSync(state, 0o700);
 process.env.SYNAC_VERIFY_STATE_DIR = state;
 process.env.VERIFY_EVIDENCE_DIR = path.join(state, 'evidence');
 
-const { root, ensureState, snapshotWatchedFiles, noteRunWrites, restoreOwnedWrites } =
-  await import('./runtime.mjs');
+const {
+  root,
+  ensureState,
+  snapshotWatchedFiles,
+  noteRunWrites,
+  restoreOwnedWrites,
+  assertSnapshotCheckout,
+} = await import('./runtime.mjs');
 
 const scratchDir = path.join(root, '.agents/skills/convex-backup-test');
 const linkRel = '.agents/skills/convex-backup-test/link.md';
@@ -58,6 +65,74 @@ test('each snapshot stores backups in its own directory, including symlinks', ()
     assert.equal(lstatSync(firstBackup).isSymbolicLink(), true);
     assert.equal(readlinkSync(firstBackup), 'target.txt');
   } finally {
+    rmSync(scratchDir, { recursive: true, force: true });
+  }
+});
+
+test('snapshot records this checkout and restore refuses a different root', () => {
+  snapshotWatchedFiles();
+  const manifestPath = path.join(state, 'snapshot/manifest.json');
+  const original = readFileSync(manifestPath, 'utf8');
+  const manifest = JSON.parse(original);
+  assert.equal(manifest.repoRoot, root);
+  assert.equal(typeof manifest.files, 'object');
+  manifest.repoRoot = '/tmp/other-checkout';
+  writeFileSync(manifestPath, `${JSON.stringify(manifest)}\n`);
+  assert.throws(() => assertSnapshotCheckout(), /Refusing to restore/);
+  assert.throws(() => restoreOwnedWrites(), /Refusing to restore/);
+  writeFileSync(manifestPath, original);
+  assertSnapshotCheckout();
+});
+
+test('restore keeps the executable bit and leaves hand-maintained edits', () => {
+  const scriptRel = '.agents/skills/convex-backup-test/run.sh';
+  const scriptAbs = path.join(root, scriptRel);
+  const agents = path.join(root, 'AGENTS.md');
+  const agentsOriginal = readFileSync(agents);
+  try {
+    mkdirSync(scratchDir, { recursive: true });
+    writeFileSync(scriptAbs, '#!/bin/sh\necho snapshot\n');
+    chmodSync(scriptAbs, 0o755);
+    snapshotWatchedFiles();
+    writeFileSync(scriptAbs, '#!/bin/sh\necho edited\n');
+    chmodSync(scriptAbs, 0o644);
+    writeFileSync(agents, Buffer.concat([agentsOriginal, Buffer.from('\nverify-human\n')]));
+    noteRunWrites();
+    const result = restoreOwnedWrites();
+    assert.equal(readFileSync(scriptAbs, 'utf8'), '#!/bin/sh\necho snapshot\n');
+    assert.equal(statSync(scriptAbs).mode & 0o777, 0o755);
+    assert.equal(result.restored.includes(scriptRel), true);
+    assert.equal(readFileSync(agents).equals(agentsOriginal), false);
+    assert.equal(result.restored.includes('AGENTS.md'), false);
+    assert.equal(result.warned.includes('AGENTS.md'), true);
+  } finally {
+    writeFileSync(agents, agentsOriginal);
+    rmSync(scratchDir, { recursive: true, force: true });
+  }
+});
+
+test('a convex skill file created after launch is recorded and warned', () => {
+  const rel = '.agents/skills/convex-backup-test/SKILL.md';
+  const abs = path.join(root, rel);
+  const warnings = [];
+  const orig = console.warn;
+  console.warn = (...args) => warnings.push(args.join(' '));
+  try {
+    snapshotWatchedFiles();
+    noteRunWrites();
+    mkdirSync(scratchDir, { recursive: true });
+    writeFileSync(abs, 'after launch\n');
+    noteRunWrites({ later: true });
+    const writes = JSON.parse(readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8'));
+    assert.equal(writes[rel].kind, 'file');
+    assert.equal(
+      warnings.some((line) => line.includes(`new convex skill file ${rel}`)),
+      true,
+    );
+    restoreOwnedWrites();
+    assert.equal(exists(abs), false);
+  } finally {
+    console.warn = orig;
     rmSync(scratchDir, { recursive: true, force: true });
   }
 });
