@@ -6,7 +6,7 @@ import {
   ownedSessions,
   processIdentity,
   readRun,
-  restoreGeneratedDrift,
+  restoreOwnedWrites,
   sameProcess,
   sessionAlive,
   tmux,
@@ -17,8 +17,10 @@ const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
 
 Stops tmux sessions this skill started (synac-verify-convex and synac-verify-web)
 and the listener pids recorded in /tmp/synac-verify/run.json, after checking
-each pid's start time. Backs up regenerated Convex and Next files, restores
-their worktree copies, and warns about hand-maintained files.
+each pid's start time. Restores a watched file to the launch snapshot when
+its current bytes still match what the run wrote. Backs that file up under
+/tmp/synac-verify/restored/ first. Never changes the git index. Any other
+change is left in place and printed as a warning.
 
 Leaves /tmp/synac-verify/evidence/ in place.
 `;
@@ -85,7 +87,7 @@ function main() {
   }
   if (signaled.length > 0) console.log(`signaled pids ${signaled.join(', ')}`);
 
-  restoreGeneratedDrift();
+  restoreOwnedWrites();
   const cleared = readRun();
   writeRun({
     ...cleared,

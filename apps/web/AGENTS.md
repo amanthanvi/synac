@@ -8,4 +8,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-`next dev` rewrites the marked block above. A verify run leaves that rewrite in place and prints a warning. Do not commit that rewrite with feature work.
+`next dev` rewrites the marked block above. A verify run restores this file to its launch snapshot when the bytes still match that rewrite, and prints a warning when the file changed in any other way. Do not commit a rewrite with feature work.

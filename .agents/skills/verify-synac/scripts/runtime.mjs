@@ -1,17 +1,19 @@
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import {
   chmodSync,
   copyFileSync,
-  cpSync,
   existsSync,
   lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
   readlinkSync,
+  renameSync,
   rmdirSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import net from 'node:net';
@@ -23,16 +25,19 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 export const root = path.resolve(scriptDir, '../../../..');
 if (process.cwd() !== root) process.chdir(root);
 
-const nextEnvFile = path.join(root, 'apps/web/next-env.d.ts');
-const nextEnvMeta = 'next-env.meta.json';
-const nextEnvSnapshot = 'next-env.snapshot';
-
-const handMaintained = new Set([
+const namedWatched = [
   'AGENTS.md',
   'CLAUDE.md',
   'apps/web/AGENTS.md',
+  'apps/web/CLAUDE.md',
   'convex.json',
-]);
+  'skills-lock.json',
+  'apps/web/next-env.d.ts',
+  '.cursor/rules/convex_rules.mdc',
+];
+
+const snapshotDirName = 'snapshot';
+let tookSnapshot = false;
 export const stateDir = process.env.SYNAC_VERIFY_STATE_DIR ?? '/tmp/synac-verify';
 export const evidenceDir =
   process.env.VERIFY_EVIDENCE_DIR ?? path.join(stateDir, 'evidence');
@@ -338,123 +343,157 @@ export function rememberListener(pidKey, port) {
   writeRun(run);
 }
 
-function isHandMaintained(rel) {
-  return handMaintained.has(rel);
+function sha256Bytes(bytes) {
+  return createHash('sha256').update(bytes).digest('hex');
 }
 
-function isRegenerated(rel) {
-  if (rel === 'skills-lock.json' || rel === 'apps/web/next-env.d.ts') return true;
-  if (rel.startsWith('.agents/skills/convex')) return true;
-  if (rel === 'convex/_generated/ai' || rel.startsWith('convex/_generated/ai/')) return true;
-  if (rel === '.cursor/rules/convex_rules.mdc') return true;
-  return false;
-}
-
-function backupRel(rel) {
-  const abs = path.join(root, rel);
-  if (!existsSync(abs)) return null;
-  const listed = lstatSync(abs);
-  if (listed.isSymbolicLink()) return null;
-  const dest = path.join(stateDir, 'restored', rel);
-  mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
-  if (listed.isDirectory()) cpSync(abs, dest, { recursive: true, dereference: false });
-  else copyFileSync(abs, dest);
-  return dest;
-}
-
-function worktreeEntries() {
-  const result = spawnSync('git', ['status', '--porcelain=v1', '-uall'], {
+function gitBlob(spec) {
+  const result = spawnSync('git', ['rev-parse', '-q', '--verify', spec], {
     cwd: root,
     encoding: 'utf8',
   });
-  if (result.status !== 0) {
-    throw new Error(`git status failed: ${result.stderr ?? ''}`.trim());
-  }
-  const entries = [];
-  for (const line of (result.stdout ?? '').split('\n')) {
-    if (!line) continue;
-    const code = line.slice(0, 2);
-    let rel = line.slice(3);
-    if (rel.startsWith('"') && rel.endsWith('"')) rel = rel.slice(1, -1);
-    if (rel.endsWith('/')) rel = rel.slice(0, -1);
-    if (rel.includes(' -> ')) {
-      const renamed = rel.split(' -> ').at(-1);
-      if (renamed) rel = renamed;
-    }
-    entries.push({ code, rel });
-  }
-  return entries;
+  if (result.status !== 0) return null;
+  const value = (result.stdout ?? '').trim();
+  return value || null;
 }
 
-function snapshotNextEnv() {
-  ensureState();
-  const metaPath = path.join(stateDir, nextEnvMeta);
-  const snapPath = path.join(stateDir, nextEnvSnapshot);
-  if (!existsSync(nextEnvFile)) {
-    writeFileSync(metaPath, `${JSON.stringify({ existed: false })}\n`);
-    rmSync(snapPath, { force: true });
-    return;
-  }
-  copyFileSync(nextEnvFile, snapPath);
-  writeFileSync(metaPath, `${JSON.stringify({ existed: true })}\n`);
+function stagedRecord(rel) {
+  const indexHash = gitBlob(`:${rel}`);
+  const headHash = gitBlob(`HEAD:${rel}`);
+  return { indexHash, headHash, staged: indexHash !== headHash };
 }
 
-function restoreNextEnv() {
-  const metaPath = path.join(stateDir, nextEnvMeta);
-  if (!existsSync(metaPath)) return null;
-  const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
-  const snapPath = path.join(stateDir, nextEnvSnapshot);
-  const current = existsSync(nextEnvFile) ? readFileSync(nextEnvFile) : null;
-  if (meta.existed !== true) {
-    if (!current) return null;
-    const dest = backupRel('apps/web/next-env.d.ts');
-    rmSync(nextEnvFile, { force: true });
-    return dest;
-  }
-  if (!existsSync(snapPath)) return null;
-  const previous = readFileSync(snapPath);
-  if (current && current.equals(previous)) return null;
-  const dest = current ? backupRel('apps/web/next-env.d.ts') : null;
-  copyFileSync(snapPath, nextEnvFile);
-  return dest;
-}
-
-export function rememberWorktree() {
-  const run = readRun();
-  run.dirtyBefore = worktreeEntries().map((entry) => entry.rel);
-  writeRun(run);
-  snapshotNextEnv();
-}
-
-function removeUntracked(rel) {
-  const cleaned = rel.replace(/\/+$/, '');
-  const abs = path.join(root, cleaned);
+function describeWorktree(rel) {
+  const abs = path.join(root, rel);
   let listed;
   try {
     listed = lstatSync(abs);
   } catch {
-    return;
+    return { kind: 'absent', hash: null };
   }
   if (listed.isSymbolicLink()) {
-    rmSync(abs, { force: true });
-  } else if (listed.isDirectory()) {
-    const tracked = spawnSync('git', ['ls-files', '--', cleaned], {
-      cwd: root,
-      encoding: 'utf8',
-    });
-    if ((tracked.stdout ?? '').trim().length > 0) return;
-    rmSync(abs, { recursive: true, force: true });
-    return;
-  } else {
-    rmSync(abs, { force: true });
+    const target = readlinkSync(abs);
+    return { kind: 'symlink', hash: sha256Bytes(target), target };
   }
-  let parent = path.dirname(cleaned);
-  while (parent && parent !== '.' && isRegenerated(parent)) {
-    const tracked = spawnSync('git', ['ls-files', '--', parent], {
-      cwd: root,
-      encoding: 'utf8',
-    });
-    if ((tracked.stdout ?? '').trim().length > 0) break;
+  if (!listed.isFile()) return { kind: 'other', hash: null };
+  return { kind: 'file', hash: sha256Bytes(readFileSync(abs)) };
+}
+
+function walkFiles(dir, prefix) {
+  let names = [];
+  try {
+    names = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const rels = [];
+  for (const name of names) {
+    const rel = `${prefix}/${name.name}`;
+    const abs = path.join(dir, name.name);
+    if (name.isDirectory()) rels.push(...walkFiles(abs, rel));
+    else if (name.isFile() || name.isSymbolicLink()) rels.push(rel);
+  }
+  return rels;
+}
+
+function watchedRels() {
+  const rels = new Set(namedWatched);
+  const skills = path.join(root, '.agents/skills');
+  let skillNames = [];
+  try {
+    skillNames = readdirSync(skills, { withFileTypes: true });
+  } catch {
+    skillNames = [];
+  }
+  for (const name of skillNames) {
+    if (!name.isDirectory() || !name.name.startsWith('convex')) continue;
+    for (const rel of walkFiles(path.join(skills, name.name), `.agents/skills/${name.name}`)) {
+      rels.add(rel);
+    }
+  }
+  for (const rel of walkFiles(path.join(root, 'convex/_generated/ai'), 'convex/_generated/ai')) {
+    rels.add(rel);
+  }
+  return [...rels];
+}
+
+function snapshotRoot() {
+  return path.join(stateDir, snapshotDirName);
+}
+
+function manifestPath() {
+  return path.join(snapshotRoot(), 'manifest.json');
+}
+
+function writesPath() {
+  return path.join(snapshotRoot(), 'writes.json');
+}
+
+function contentPath(rel) {
+  return path.join(snapshotRoot(), 'files', rel);
+}
+
+function readJson(file, fallback) {
+  try {
+    return JSON.parse(readFileSync(file, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function sameDescribed(left, right) {
+  return left.kind === right.kind && left.hash === right.hash;
+}
+
+function safeRel(rel) {
+  if (typeof rel !== 'string' || rel.length === 0 || path.isAbsolute(rel)) return false;
+  if (rel.includes('\\') || rel.split('/').includes('..')) return false;
+  return true;
+}
+
+function backupRel(rel) {
+  const abs = path.join(root, rel);
+  let listed;
+  try {
+    listed = lstatSync(abs);
+  } catch {
+    return null;
+  }
+  const dest = path.join(stateDir, 'restored', rel);
+  mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
+  rmSync(dest, { recursive: true, force: true });
+  if (listed.isSymbolicLink()) {
+    symlinkSync(readlinkSync(abs), dest);
+    return dest;
+  }
+  if (listed.isDirectory()) return null;
+  if (!listed.isFile()) return null;
+  copyFileSync(abs, dest);
+  return dest;
+}
+
+function absentRecord() {
+  return {
+    kind: 'absent',
+    hash: null,
+    indexHash: null,
+    headHash: null,
+    staged: false,
+  };
+}
+
+function trackedInGit(rel) {
+  const result = spawnSync('git', ['ls-files', '--', rel], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  return (result.stdout ?? '').trim().length > 0;
+}
+
+function pruneEmptyConvexSkillDirs(rel) {
+  let parent = path.dirname(rel);
+  while (parent && parent !== '.' && parent.startsWith('.agents/skills/convex')) {
+    if (trackedInGit(parent)) break;
     const absParent = path.join(root, parent);
     let names = [];
     try {
@@ -468,45 +507,130 @@ function removeUntracked(rel) {
   }
 }
 
-export function restoreGeneratedDrift() {
-  const run = readRun();
-  if (!Array.isArray(run.dirtyBefore)) return { restored: [], warned: [], backups: [] };
-  const before = new Set(run.dirtyBefore);
-  const restore = [];
-  const remove = [];
+function placeSnapshot(rel, snap) {
+  const abs = path.join(root, rel);
+  let listed = null;
+  try {
+    listed = lstatSync(abs);
+  } catch {
+    listed = null;
+  }
+  if (listed?.isDirectory()) return false;
+  if (snap.kind === 'absent') {
+    if (!listed) return true;
+    rmSync(abs, { force: true });
+    pruneEmptyConvexSkillDirs(rel);
+    return true;
+  }
+  if (snap.kind === 'symlink') {
+    if (typeof snap.target !== 'string') return false;
+    if (listed) rmSync(abs, { force: true });
+    mkdirSync(path.dirname(abs), { recursive: true });
+    symlinkSync(snap.target, abs);
+    return true;
+  }
+  if (snap.kind !== 'file') return false;
+  const src = contentPath(rel);
+  if (!existsSync(src)) return false;
+  if (listed?.isSymbolicLink()) rmSync(abs, { force: true });
+  mkdirSync(path.dirname(abs), { recursive: true });
+  copyFileSync(src, abs);
+  return true;
+}
+
+export function snapshotWatchedFiles() {
+  ensureState();
+  const staging = path.join(stateDir, `${snapshotDirName}.next`);
+  rmSync(staging, { recursive: true, force: true });
+  mkdirSync(path.join(staging, 'files'), { recursive: true, mode: 0o700 });
+  const manifest = {};
+  for (const rel of watchedRels()) {
+    if (!safeRel(rel)) continue;
+    const described = describeWorktree(rel);
+    if (described.kind === 'file') {
+      const bytes = readFileSync(path.join(root, rel));
+      described.hash = sha256Bytes(bytes);
+      const dest = path.join(staging, 'files', rel);
+      mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
+      writeFileSync(dest, bytes);
+    }
+    manifest[rel] = { ...described, ...stagedRecord(rel) };
+  }
+  writeFileSync(path.join(staging, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(path.join(staging, 'writes.json'), '{}\n');
+  const previous = path.join(stateDir, `${snapshotDirName}.prev`);
+  rmSync(previous, { recursive: true, force: true });
+  if (existsSync(snapshotRoot())) renameSync(snapshotRoot(), previous);
+  renameSync(staging, snapshotRoot());
+  rmSync(previous, { recursive: true, force: true });
+  tookSnapshot = true;
+}
+
+export function noteRunWrites() {
+  if (!tookSnapshot) return;
+  const manifest = readJson(manifestPath(), null);
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return;
+  const writes = {};
+  const rels = new Set([...Object.keys(manifest), ...watchedRels()]);
+  for (const rel of rels) {
+    if (!safeRel(rel)) continue;
+    const current = describeWorktree(rel);
+    const snap = manifest[rel];
+    const snapDescribed = snap
+      ? { kind: snap.kind, hash: snap.hash ?? null }
+      : { kind: 'absent', hash: null };
+    if (sameDescribed(current, snapDescribed)) continue;
+    writes[rel] = { kind: current.kind, hash: current.hash };
+  }
+  writeFileSync(writesPath(), `${JSON.stringify(writes, null, 2)}\n`);
+}
+
+export function restoreOwnedWrites() {
+  const manifest = readJson(manifestPath(), null);
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    return { restored: [], warned: [], backups: [] };
+  }
+  const writes = readJson(writesPath(), {});
+  const writeMap = writes && typeof writes === 'object' && !Array.isArray(writes) ? writes : {};
+  const rels = new Set([...Object.keys(manifest), ...Object.keys(writeMap)]);
+  const restored = [];
   const warned = [];
-  for (const entry of worktreeEntries()) {
-    if (before.has(entry.rel)) continue;
-    if (isHandMaintained(entry.rel)) {
-      warned.push(entry.rel);
+  const backups = [];
+  for (const rel of rels) {
+    if (!safeRel(rel)) continue;
+    const snap = manifest[rel] ?? absentRecord();
+    const liveStage = stagedRecord(rel);
+    const snapIndex = typeof snap.indexHash === 'string' ? snap.indexHash : null;
+    const snapStaged = snap.staged === true;
+    if (liveStage.indexHash !== snapIndex || liveStage.staged !== snapStaged) {
+      warned.push(rel);
+      console.warn(`warning: ${rel} staged state changed during the run and was left in place`);
       continue;
     }
-    if (!isRegenerated(entry.rel)) continue;
-    if (entry.code === '??') remove.push(entry.rel);
-    else restore.push(entry.rel);
-  }
-  const backups = [];
-  for (const rel of [...restore, ...remove]) {
-    const dest = backupRel(rel);
-    if (dest) backups.push({ rel, dest });
-  }
-  if (restore.length > 0) {
-    const result = spawnSync('git', ['restore', '--source=HEAD', '--worktree', '--', ...restore], {
-      cwd: root,
-      encoding: 'utf8',
-    });
-    if (result.status !== 0) {
-      throw new Error(`git restore failed: ${result.stderr ?? ''}`.trim());
+    const current = describeWorktree(rel);
+    if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })) continue;
+    const write = writeMap[rel];
+    const owned =
+      write &&
+      typeof write === 'object' &&
+      sameDescribed(current, { kind: write.kind, hash: write.hash ?? null });
+    if (!owned) {
+      warned.push(rel);
+      console.warn(`warning: ${rel} changed during the run and was left in place`);
+      continue;
     }
-  }
-  for (const rel of [...remove].sort((a, b) => b.length - a.length)) removeUntracked(rel);
-  const nextEnvBackup = restoreNextEnv();
-  if (nextEnvBackup) backups.push({ rel: 'apps/web/next-env.d.ts', dest: nextEnvBackup });
-  for (const item of backups) console.log(`backed up ${item.rel} to ${item.dest}`);
-  const restored = [...restore, ...remove];
-  if (restored.length > 0) console.log(`restored generated files: ${restored.join(', ')}`);
-  for (const rel of warned) {
-    console.warn(`warning: ${rel} changed during the run and was left in place`);
+    const dest = backupRel(rel);
+    if (dest) {
+      backups.push({ rel, dest });
+      console.log(`backed up ${rel} to ${dest}`);
+    }
+    if (!placeSnapshot(rel, snap)) {
+      warned.push(rel);
+      console.warn(`warning: ${rel} changed during the run and was left in place`);
+      continue;
+    }
+    restored.push(rel);
+    console.log(`restored ${rel} to launch snapshot`);
   }
   return { restored, warned, backups };
 }

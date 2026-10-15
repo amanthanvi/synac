@@ -12,13 +12,13 @@ import {
   ensureState,
   evidenceDir,
   nodeMajor,
+  noteRunWrites,
   noteSession,
   portOpen,
-  readRun,
   rememberListener,
-  rememberWorktree,
-  restoreGeneratedDrift,
+  restoreOwnedWrites,
   root,
+  snapshotWatchedFiles,
   runLogged,
   sessionAlive,
   sessionConvex,
@@ -78,7 +78,7 @@ async function main() {
     process.exitCode = exitCode;
   } finally {
     try {
-      restoreGeneratedDrift();
+      noteRunWrites();
     } catch (error) {
       console.error(error instanceof Error ? error.message : error);
       if (!process.exitCode) process.exitCode = 1;
@@ -97,14 +97,14 @@ async function run() {
   }
 
   ensureState();
-  if (Array.isArray(readRun().dirtyBefore)) restoreGeneratedDrift();
+  restoreOwnedWrites();
   const doctor = await runDoctor(baseUrl);
   if (doctor.status === 'READY') {
     console.log('REUSED');
     console.log(`evidence ${evidenceDir}`);
     return;
   }
-  rememberWorktree();
+  snapshotWatchedFiles();
 
   const webUp = await portOpen(webPort);
   const convexUp = await portOpen(convexPort);

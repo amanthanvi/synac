@@ -43,7 +43,7 @@ Source of truth: `docs/architecture/overview.md` (architecture) + `SPEC.md` (pro
 
 Drive the local stack from the repo root with `pnpm verify:launch`, `pnpm verify:doctor`, `pnpm verify:smoke`, `pnpm verify:drive`, and `pnpm verify:cleanup`. From a package directory, use the workspace form (`pnpm -w verify:doctor`, and the same `-w` prefix for the other verify scripts). The scripts `chdir` to the repo root themselves. The procedure and the fast test groups live in `.agents/skills/verify-synac/SKILL.md`. Feature work includes a Proof section: commands, evidence paths that survive cleanup, results, and `INCONCLUSIVE` when a step could not run. While iterating, run the named fast group for the package you touched. Run `pnpm gate` once on the final head.
 
-`npx convex dev` can rewrite Convex skill files, `skills-lock.json`, and `convex/_generated/ai/`. `next dev` can rewrite `apps/web/next-env.d.ts`. `pnpm verify:launch` and `pnpm verify:cleanup` back those up under `/tmp/synac-verify/restored/` and restore the worktree copy. They warn, and do not revert, changes to `AGENTS.md`, `CLAUDE.md`, `apps/web/AGENTS.md`, or `convex.json`.
+`pnpm verify:launch` snapshots the hash, contents, and staged state of `AGENTS.md`, `CLAUDE.md`, `apps/web/AGENTS.md`, `convex.json`, `skills-lock.json`, Convex skill files, `convex/_generated/ai/`, and `apps/web/next-env.d.ts`. Cleanup and the next launch restore a file to that snapshot only when its bytes still match what the run wrote. They back up the current bytes under `/tmp/synac-verify/restored/` first and never change the git index. Any other change is left in place and printed as a warning.
 
 ## Cloud Agent notes
 
