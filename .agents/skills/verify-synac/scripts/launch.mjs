@@ -10,16 +10,17 @@ import {
   convexSitePort,
   convexUrl,
   assertSnapshotCheckout,
+  beginLaunch,
+  captureToolWrites,
+  markStepBaseline,
   ensureState,
   evidenceDir,
+  finishLaunchSnapshot,
   nodeMajor,
-  noteRunWrites,
   noteSession,
   portOpen,
   rememberListener,
-  restoreOwnedWrites,
   root,
-  snapshotWatchedFiles,
   runLogged,
   sessionAlive,
   sessionConvex,
@@ -79,10 +80,23 @@ async function main() {
     process.exitCode = exitCode;
   } finally {
     try {
-      noteRunWrites();
+      finishLaunchSnapshot();
     } catch (error) {
       console.error(error instanceof Error ? error.message : error);
       if (!process.exitCode) process.exitCode = 1;
+    }
+  }
+}
+
+async function captureAfter(tool, fn) {
+  markStepBaseline();
+  try {
+    return await fn();
+  } finally {
+    try {
+      captureToolWrites(tool);
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : error);
     }
   }
 }
@@ -100,13 +114,12 @@ async function run() {
   ensureState();
   assertSnapshotCheckout();
   const doctor = await runDoctor(baseUrl);
-  if (doctor.status === 'READY') {
+  const phase = beginLaunch(doctor.status);
+  if (phase === 'reuse') {
     console.log('REUSED');
     console.log(`evidence ${evidenceDir}`);
     return;
   }
-  restoreOwnedWrites();
-  snapshotWatchedFiles();
 
   const webUp = await portOpen(webPort);
   const convexUp = await portOpen(convexPort);
@@ -149,41 +162,45 @@ async function run() {
   }
 
   if (!convexUp) {
-    const log = path.join(stateDir, 'synac-verify-convex.log');
-    startSession(
-      sessionConvex,
-      `${exportPrefix()} export CONVEX_AGENT_MODE=anonymous; cd ${shQuote(root)}; npx convex dev < /dev/null > ${shQuote(log)} 2>&1`,
-    );
-    noteSession(sessionConvex);
-    await waitFor(
-      'Convex functions ready',
-      async () => {
-        if (await portOpen(convexPort)) rememberListener('convex', convexPort);
-        try {
-          return readFileSync(log, 'utf8').includes('Convex functions ready');
-        } catch {
-          return false;
-        }
-      },
-      180_000,
-    );
-    if (!(await portOpen(convexPort))) fail(`convex log went ready but port ${convexPort} is closed`);
-    rememberListener('convex', convexPort);
-    if (await portOpen(convexSitePort)) rememberListener('convexSite', convexSitePort);
+    await captureAfter('convex', async () => {
+      const log = path.join(stateDir, 'synac-verify-convex.log');
+      startSession(
+        sessionConvex,
+        `${exportPrefix()} export CONVEX_AGENT_MODE=anonymous; cd ${shQuote(root)}; npx convex dev < /dev/null > ${shQuote(log)} 2>&1`,
+      );
+      noteSession(sessionConvex);
+      await waitFor(
+        'Convex functions ready',
+        async () => {
+          if (await portOpen(convexPort)) rememberListener('convex', convexPort);
+          try {
+            return readFileSync(log, 'utf8').includes('Convex functions ready');
+          } catch {
+            return false;
+          }
+        },
+        180_000,
+      );
+      if (!(await portOpen(convexPort))) fail(`convex log went ready but port ${convexPort} is closed`);
+      rememberListener('convex', convexPort);
+      if (await portOpen(convexSitePort)) rememberListener('convexSite', convexSitePort);
+    });
   }
 
-  let envSet = 1;
-  for (let attempt = 1; attempt <= 5; attempt += 1) {
-    const result = spawnSync(
-      'npx',
-      ['convex', 'env', 'set', 'SYNAC_CONVEX_SERVICE_KEY', 'local-dev'],
-      { cwd: root, stdio: 'inherit', env: { ...process.env, CONVEX_AGENT_MODE: 'anonymous' } },
-    );
-    envSet = result.status ?? 1;
-    if (envSet === 0) break;
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-  }
-  if (envSet !== 0) fail('npx convex env set SYNAC_CONVEX_SERVICE_KEY failed');
+  await captureAfter('convex', async () => {
+    let envSet = 1;
+    for (let attempt = 1; attempt <= 5; attempt += 1) {
+      const result = spawnSync(
+        'npx',
+        ['convex', 'env', 'set', 'SYNAC_CONVEX_SERVICE_KEY', 'local-dev'],
+        { cwd: root, stdio: 'inherit', env: { ...process.env, CONVEX_AGENT_MODE: 'anonymous' } },
+      );
+      envSet = result.status ?? 1;
+      if (envSet === 0) break;
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+    if (envSet !== 0) fail('npx convex env set SYNAC_CONVEX_SERVICE_KEY failed');
+  });
 
   const sync = runLogged(
     'pnpm',
@@ -200,40 +217,44 @@ async function run() {
   const buildId = path.join(root, 'apps/web/.next/BUILD_ID');
   const skipBuild = mode === 'dev' || (process.env.VERIFY_SKIP_BUILD === '1' && existsSync(buildId));
   if (!skipBuild) {
-    const build = spawnSync('pnpm', ['--filter', '@synac/web', 'build'], {
-      cwd: root,
-      stdio: 'inherit',
-      env: { ...process.env, ...webEnv },
+    await captureAfter('next', async () => {
+      const build = spawnSync('pnpm', ['--filter', '@synac/web', 'build'], {
+        cwd: root,
+        stdio: 'inherit',
+        env: { ...process.env, ...webEnv },
+      });
+      if (build.status !== 0) fail('web build failed');
     });
-    if (build.status !== 0) fail('web build failed');
   }
 
   if (!(await portOpen(webPort))) {
-    const log = path.join(stateDir, 'synac-verify-web.log');
-    const webCommand =
-      mode === 'dev'
-        ? 'pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p 3000'
-        : 'pnpm --filter @synac/web exec next start -H 127.0.0.1 -p 3000';
-    startSession(
-      sessionWeb,
-      `${exportPrefix()} cd ${shQuote(root)}; ${webCommand} > ${shQuote(log)} 2>&1`,
-    );
-    noteSession(sessionWeb);
-    await waitFor(
-      'web port',
-      async () => {
-        if (await portOpen(webPort)) {
-          rememberListener('web', webPort);
-          return true;
-        }
-        if (!sessionAlive(sessionWeb)) {
-          throw new Error(`web session exited before port ${webPort} opened. See ${log}`);
-        }
-        return false;
-      },
-      120_000,
-    );
-    rememberListener('web', webPort);
+    await captureAfter('next', async () => {
+      const log = path.join(stateDir, 'synac-verify-web.log');
+      const webCommand =
+        mode === 'dev'
+          ? 'pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p 3000'
+          : 'pnpm --filter @synac/web exec next start -H 127.0.0.1 -p 3000';
+      startSession(
+        sessionWeb,
+        `${exportPrefix()} cd ${shQuote(root)}; ${webCommand} > ${shQuote(log)} 2>&1`,
+      );
+      noteSession(sessionWeb);
+      await waitFor(
+        'web port',
+        async () => {
+          if (await portOpen(webPort)) {
+            rememberListener('web', webPort);
+            return true;
+          }
+          if (!sessionAlive(sessionWeb)) {
+            throw new Error(`web session exited before port ${webPort} opened. See ${log}`);
+          }
+          return false;
+        },
+        120_000,
+      );
+      rememberListener('web', webPort);
+    });
   }
 
   let ready = await runDoctor(baseUrl);

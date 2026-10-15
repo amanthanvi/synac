@@ -45,7 +45,7 @@ SYNAC_CONTENT_DIR="$dir" pnpm --filter @synac/ingest-tools ingest -- --source rf
 
 A finished run prints `rfc4949: unchanged` or `rfc4949: updated` and leaves `$dir/generated/rfc4949.json` in place. Hash `content/generated/rfc4949.json` before and after. The repo file stays the same.
 
-If the network is unreachable, record `INCONCLUSIVE` and keep the log `cli-ingest-rfc4949.log`. The drive still exits 0. Classification uses only the final thrown error and its cause. Any HTTP status is a failure. A parser error is a failure even when an earlier retry mentions a network error. Any other non-zero ingest fails the drive. The usage and missing-source checks still have to pass on the way to the live fetch.
+If the network is unreachable, record `INCONCLUSIVE` and keep the log `cli-ingest-rfc4949.log`. The drive still exits 0. Classification uses only the final thrown error and its cause. That error is the last unindented `Name: message` line or `[Name: message]` line. Any HTTP status is a failure. A parser error is a failure even when an earlier retry mentions a network error. Any other non-zero ingest fails the drive. The usage and missing-source checks still have to pass on the way to the live fetch.
 
 ## Gotchas
 

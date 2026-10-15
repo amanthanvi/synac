@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   chmodSync,
   lstatSync,
@@ -12,25 +12,65 @@ import {
   writeFileSync,
 } from 'node:fs';
 import path from 'node:path';
-import { test } from 'node:test';
+import { after, test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
+const realRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+const repo = `/tmp/synac-verify-repo-${process.pid}`;
 const state = `/tmp/synac-verify-test-${process.pid}`;
+const scratchDir = path.join(repo, '.agents/skills/convex-backup-test');
+
+function git(args) {
+  const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+}
+
+rmSync(repo, { recursive: true, force: true });
 rmSync(state, { recursive: true, force: true });
-mkdirSync(state, { recursive: true, mode: 0o700 });
-chmodSync(state, 0o700);
+mkdirSync(path.join(repo, 'apps/web'), { recursive: true });
+mkdirSync(path.join(repo, '.agents/skills'), { recursive: true });
+mkdirSync(path.join(repo, 'convex/_generated/ai'), { recursive: true });
+writeFileSync(path.join(repo, 'AGENTS.md'), 'agents\n');
+writeFileSync(path.join(repo, 'CLAUDE.md'), 'claude\n');
+writeFileSync(path.join(repo, 'apps/web/AGENTS.md'), 'web agents\n');
+writeFileSync(path.join(repo, 'apps/web/CLAUDE.md'), '@AGENTS.md\n');
+writeFileSync(path.join(repo, 'skills-lock.json'), '{}\n');
+writeFileSync(path.join(repo, 'convex/_generated/ai/guidelines.md'), 'guide\n');
+git(['init']);
+git(['config', 'user.email', 'verify@example.com']);
+git(['config', 'user.name', 'verify']);
+git(['add', '.']);
+git(['-c', 'commit.gpgsign=false', 'commit', '-m', 'init']);
+
+process.env.SYNAC_VERIFY_ROOT = repo;
 process.env.SYNAC_VERIFY_STATE_DIR = state;
 process.env.VERIFY_EVIDENCE_DIR = path.join(state, 'evidence');
 
+// runtime.mjs binds the checkout and chdir at import, so this import stays
+// after SYNAC_VERIFY_ROOT points at the temp repo.
 const {
   root,
   ensureState,
   snapshotWatchedFiles,
-  noteRunWrites,
+  captureToolWrites,
+  markStepBaseline,
+  markObserved,
+  noteWritesSinceObserved,
   restoreOwnedWrites,
   assertSnapshotCheckout,
+  beginLaunch,
+  runBelongsToCheckout,
+  writeRun,
+  readRun,
+  stopRecordedPid,
+  processIdentity,
 } = await import('./runtime.mjs');
 
-const scratchDir = path.join(root, '.agents/skills/convex-backup-test');
+after(() => {
+  rmSync(repo, { recursive: true, force: true });
+  rmSync(state, { recursive: true, force: true });
+});
+
 const linkRel = '.agents/skills/convex-backup-test/link.md';
 const linkAbs = path.join(root, linkRel);
 
@@ -38,13 +78,23 @@ function backupId() {
   return readFileSync(path.join(state, 'snapshot/backup-id'), 'utf8').trim();
 }
 
+function exists(file) {
+  try {
+    lstatSync(file);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 test('each snapshot stores backups in its own directory, including symlinks', () => {
   try {
     snapshotWatchedFiles();
     const firstId = backupId();
+    markStepBaseline();
     mkdirSync(scratchDir, { recursive: true });
     symlinkSync('target.txt', linkAbs);
-    noteRunWrites();
+    captureToolWrites('convex');
     const first = restoreOwnedWrites();
     const firstBackup = path.join(state, 'restored', firstId, linkRel);
     assert.equal(first.restored.includes(linkRel), true);
@@ -55,9 +105,10 @@ test('each snapshot stores backups in its own directory, including symlinks', ()
     snapshotWatchedFiles();
     const secondId = backupId();
     assert.notEqual(secondId, firstId);
+    markStepBaseline();
     mkdirSync(scratchDir, { recursive: true });
     symlinkSync('other.txt', linkAbs);
-    noteRunWrites();
+    captureToolWrites('convex');
     restoreOwnedWrites();
     const secondBackup = path.join(state, 'restored', secondId, linkRel);
     assert.equal(lstatSync(secondBackup).isSymbolicLink(), true);
@@ -69,49 +120,103 @@ test('each snapshot stores backups in its own directory, including symlinks', ()
   }
 });
 
-test('snapshot records this checkout and restore refuses a different root', () => {
+test('snapshot records this checkout and a different root is left in place', () => {
   snapshotWatchedFiles();
   const manifestPath = path.join(state, 'snapshot/manifest.json');
   const original = readFileSync(manifestPath, 'utf8');
   const manifest = JSON.parse(original);
   assert.equal(manifest.repoRoot, root);
-  assert.equal(typeof manifest.files, 'object');
+  assert.equal(manifest.files['apps/web/CLAUDE.md'].kind, 'file');
+  assert.equal(manifest.files['.cursor/rules/convex_rules.mdc'].kind, 'absent');
   const flat = { 'AGENTS.md': { kind: 'file', hash: 'abc', mode: 0o644 } };
   writeFileSync(manifestPath, `${JSON.stringify(flat)}\n`);
   assertSnapshotCheckout();
   assert.deepEqual(restoreOwnedWrites(), { restored: [], warned: [], backups: [] });
   writeFileSync(manifestPath, original);
+  const lock = path.join(root, 'skills-lock.json');
+  const before = readFileSync(lock, 'utf8');
+  markStepBaseline();
+  writeFileSync(lock, '{"tool":true}\n');
+  captureToolWrites('convex');
   manifest.repoRoot = '/tmp/other-checkout';
   writeFileSync(manifestPath, `${JSON.stringify(manifest)}\n`);
-  assert.throws(() => assertSnapshotCheckout(), /Refusing to restore/);
-  assert.throws(() => restoreOwnedWrites(), /Refusing to restore/);
+  const warnings = [];
+  const origWarn = console.warn;
+  console.warn = (...args) => warnings.push(args.join(' '));
+  try {
+    assert.doesNotThrow(() => assertSnapshotCheckout());
+    assert.deepEqual(restoreOwnedWrites(), { restored: [], warned: [], backups: [] });
+  } finally {
+    console.warn = origWarn;
+  }
+  assert.equal(readFileSync(lock, 'utf8'), '{"tool":true}\n');
+  assert.equal(warnings.some((line) => line.includes('Leaving files in place')), true);
   writeFileSync(manifestPath, original);
+  writeFileSync(lock, before);
   assertSnapshotCheckout();
 });
 
-test('restore keeps the executable bit and leaves hand-maintained edits', () => {
-  const scriptRel = '.agents/skills/convex-backup-test/run.sh';
-  const scriptAbs = path.join(root, scriptRel);
+test('a hand edit survives and a tool write is restored', () => {
   const agents = path.join(root, 'AGENTS.md');
   const agentsOriginal = readFileSync(agents);
+  const lock = path.join(root, 'skills-lock.json');
+  const lockOriginal = readFileSync(lock);
+  const claude = path.join(root, 'apps/web/CLAUDE.md');
+  const claudeOriginal = readFileSync(claude);
+  try {
+    snapshotWatchedFiles();
+    writeFileSync(agents, Buffer.concat([agentsOriginal, Buffer.from('verify-human\n')]));
+    writeFileSync(lock, '{"human":true}\n');
+    writeFileSync(claude, '@AGENTS.md\nverify-human\n');
+    markStepBaseline();
+    captureToolWrites('next');
+    markObserved();
+    noteWritesSinceObserved();
+    const left = restoreOwnedWrites();
+    assert.equal(readFileSync(agents, 'utf8').includes('verify-human'), true);
+    assert.equal(readFileSync(lock, 'utf8'), '{"human":true}\n');
+    assert.equal(readFileSync(claude, 'utf8').includes('verify-human'), true);
+    assert.equal(left.restored.includes('AGENTS.md'), false);
+    assert.equal(left.restored.includes('skills-lock.json'), false);
+    assert.equal(left.restored.includes('apps/web/CLAUDE.md'), false);
+    assert.equal(left.warned.includes('AGENTS.md'), true);
+    assert.equal(left.warned.includes('skills-lock.json'), true);
+
+    writeFileSync(agents, agentsOriginal);
+    writeFileSync(lock, lockOriginal);
+    writeFileSync(claude, claudeOriginal);
+    snapshotWatchedFiles();
+    markStepBaseline();
+    writeFileSync(lock, '{"tool":true}\n');
+    captureToolWrites('convex');
+    const restored = restoreOwnedWrites();
+    assert.equal(readFileSync(lock, 'utf8'), lockOriginal.toString());
+    assert.equal(restored.restored.includes('skills-lock.json'), true);
+  } finally {
+    writeFileSync(agents, agentsOriginal);
+    writeFileSync(lock, lockOriginal);
+    writeFileSync(claude, claudeOriginal);
+  }
+});
+
+test('restore keeps the executable bit and a reused stack is not restored', () => {
+  const scriptRel = '.agents/skills/convex-backup-test/run.sh';
+  const scriptAbs = path.join(root, scriptRel);
   try {
     mkdirSync(scratchDir, { recursive: true });
     writeFileSync(scriptAbs, '#!/bin/sh\necho snapshot\n');
     chmodSync(scriptAbs, 0o755);
     snapshotWatchedFiles();
+    markStepBaseline();
     writeFileSync(scriptAbs, '#!/bin/sh\necho edited\n');
     chmodSync(scriptAbs, 0o644);
-    writeFileSync(agents, Buffer.concat([agentsOriginal, Buffer.from('\nverify-human\n')]));
-    noteRunWrites();
-    const result = restoreOwnedWrites();
+    captureToolWrites('convex');
+    assert.equal(beginLaunch('READY'), 'reuse');
+    assert.equal(readFileSync(scriptAbs, 'utf8'), '#!/bin/sh\necho edited\n');
+    assert.equal(beginLaunch('NOT_READY'), 'snapshot');
     assert.equal(readFileSync(scriptAbs, 'utf8'), '#!/bin/sh\necho snapshot\n');
     assert.equal(statSync(scriptAbs).mode & 0o777, 0o755);
-    assert.equal(result.restored.includes(scriptRel), true);
-    assert.equal(readFileSync(agents).equals(agentsOriginal), false);
-    assert.equal(result.restored.includes('AGENTS.md'), false);
-    assert.equal(result.warned.includes('AGENTS.md'), true);
   } finally {
-    writeFileSync(agents, agentsOriginal);
     rmSync(scratchDir, { recursive: true, force: true });
   }
 });
@@ -124,12 +229,13 @@ test('a convex skill file created after launch is recorded and warned', () => {
   console.warn = (...args) => warnings.push(args.join(' '));
   try {
     snapshotWatchedFiles();
-    noteRunWrites();
+    markObserved();
     mkdirSync(scratchDir, { recursive: true });
     writeFileSync(abs, 'after launch\n');
-    noteRunWrites({ later: true });
+    noteWritesSinceObserved();
     const writes = JSON.parse(readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8'));
     assert.equal(writes[rel].kind, 'file');
+    assert.equal(writes[rel].tool, 'convex');
     assert.equal(
       warnings.some((line) => line.includes(`new convex skill file ${rel}`)),
       true,
@@ -138,6 +244,36 @@ test('a convex skill file created after launch is recorded and warned', () => {
     assert.equal(exists(abs), false);
   } finally {
     console.warn = orig;
+    rmSync(scratchDir, { recursive: true, force: true });
+  }
+});
+
+test('a missing backup id does not reuse one directory', () => {
+  const rel = '.agents/skills/convex-backup-test/extra.md';
+  const abs = path.join(root, rel);
+  try {
+    snapshotWatchedFiles();
+    markStepBaseline();
+    mkdirSync(scratchDir, { recursive: true });
+    writeFileSync(abs, 'one\n');
+    captureToolWrites('convex');
+    rmSync(path.join(state, 'snapshot/backup-id'));
+    const first = restoreOwnedWrites();
+    snapshotWatchedFiles();
+    markStepBaseline();
+    mkdirSync(scratchDir, { recursive: true });
+    writeFileSync(abs, 'two\n');
+    captureToolWrites('convex');
+    rmSync(path.join(state, 'snapshot/backup-id'));
+    const second = restoreOwnedWrites();
+    assert.equal(first.backups.length, 1);
+    assert.equal(second.backups.length, 1);
+    const firstDir = path.dirname(first.backups[0].dest);
+    const secondDir = path.dirname(second.backups[0].dest);
+    assert.notEqual(firstDir, secondDir);
+    assert.equal(firstDir.includes(`${path.sep}unknown`), false);
+    assert.equal(secondDir.includes(`${path.sep}unknown`), false);
+  } finally {
     rmSync(scratchDir, { recursive: true, force: true });
   }
 });
@@ -151,20 +287,65 @@ test('an existing evidence directory with the wrong mode is refused', () => {
   chmodSync(evidence, 0o700);
 });
 
-function exists(file) {
+test('cleanup does not stop a run recorded for another checkout', () => {
+  const warnings = [];
+  const orig = console.warn;
+  console.warn = (...args) => warnings.push(args.join(' '));
   try {
-    lstatSync(file);
-    return true;
-  } catch {
-    return false;
+    writeRun({
+      ...readRun(),
+      repoRoot: '/tmp/other-checkout',
+      sessions: [],
+      pids: { convex: null, web: null, convexSite: null },
+    });
+    assert.equal(runBelongsToCheckout(), false);
+  } finally {
+    console.warn = orig;
   }
-}
-
-test('runtime checks leave the worktree clean', () => {
-  rmSync(scratchDir, { recursive: true, force: true });
-  const status = spawnSync('git', ['status', '--porcelain=v1', '--', linkRel], {
-    cwd: root,
-    encoding: 'utf8',
+  assert.equal(warnings.some((line) => line.includes('Not stopping those processes')), true);
+  writeRun({
+    ...readRun(),
+    repoRoot: root,
+    sessions: [],
+    pids: { convex: null, web: null, convexSite: null },
   });
-  assert.equal(status.stdout, '');
+});
+
+test('SIGKILL waits for the launch start time to still match', async () => {
+  const child = spawn('bash', ['-c', 'trap "" TERM; while true; do sleep 30; done'], {
+    stdio: 'ignore',
+  });
+  try {
+    await new Promise((resolve, reject) => {
+      child.once('spawn', resolve);
+      child.once('error', reject);
+    });
+    const saved = processIdentity(child.pid);
+    assert.ok(saved);
+    assert.notEqual(saved.startTime, '');
+    const wrong = { ...saved, startTime: '1' };
+    assert.equal(stopRecordedPid(wrong, 200), 'reused');
+    assert.equal(processIdentity(child.pid)?.pid, child.pid);
+    assert.equal(stopRecordedPid(saved, 400), 'kill');
+    const ended = await new Promise((resolve) => {
+      if (child.exitCode !== null || child.signalCode !== null) {
+        resolve({ code: child.exitCode, signal: child.signalCode });
+        return;
+      }
+      child.once('exit', (code, signal) => resolve({ code, signal }));
+    });
+    assert.equal(ended.signal, 'SIGKILL');
+  } finally {
+    try {
+      child.kill('SIGKILL');
+    } catch {
+      // already exited
+    }
+  }
+});
+
+test('runtime checks use the temp repo and leave the real checkout alone', () => {
+  rmSync(scratchDir, { recursive: true, force: true });
+  assert.equal(root, repo);
+  assert.equal(exists(path.join(realRoot, '.agents/skills/convex-backup-test')), false);
 });
