@@ -65,8 +65,11 @@ function main() {
     ['convexSite', run.pids.convexSite],
   ];
   const signaled = [];
+  const seen = new Set();
   for (const [name, saved] of recorded) {
     if (!saved) continue;
+    if (seen.has(saved.pid)) continue;
+    seen.add(saved.pid);
     const live = processIdentity(saved.pid);
     if (!live) {
       console.log(`pid ${saved.pid} (${name}) already exited`);
