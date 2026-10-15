@@ -378,13 +378,50 @@ test('cleanup does not stop a run recorded for another checkout', () => {
 });
 
 test('SIGKILL waits for the launch start time to still match', async () => {
-  const child = spawn('bash', ['-c', 'trap "" TERM; while true; do sleep 30; done'], {
-    stdio: 'ignore',
+  mkdirSync(state, { recursive: true });
+  const ready = path.join(state, 'sigkill-ready');
+  rmSync(ready, { force: true });
+  const child = spawn(
+    process.execPath,
+    [
+      '-e',
+      'const fs = require("node:fs"); process.on("SIGTERM", () => {}); fs.writeFileSync(process.env.SYNAC_SIGKILL_READY, "ok"); setInterval(() => {}, 1e9);',
+    ],
+    {
+      env: { ...process.env, SYNAC_SIGKILL_READY: ready },
+      stdio: ['ignore', 'ignore', 'pipe'],
+    },
+  );
+  let stderr = '';
+  child.stderr.setEncoding('utf8');
+  child.stderr.on('data', (chunk) => {
+    stderr += chunk;
   });
   try {
     await new Promise((resolve, reject) => {
-      child.once('spawn', resolve);
-      child.once('error', reject);
+      let settled = false;
+      let timer;
+      const finish = (error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (error) reject(error);
+        else resolve();
+      };
+      timer = setTimeout(() => finish(new Error(`signal fixture did not become ready\n${stderr}`)), 5000);
+      const wait = () => {
+        if (settled) return;
+        if (exists(ready)) {
+          finish();
+          return;
+        }
+        setTimeout(wait, 20);
+      };
+      child.once('error', (error) => finish(error));
+      child.once('exit', (code, signal) => {
+        finish(new Error(`signal fixture exited early code=${code} signal=${signal}\n${stderr}`));
+      });
+      wait();
     });
     const saved = processIdentity(child.pid);
     assert.ok(saved);
@@ -393,12 +430,17 @@ test('SIGKILL waits for the launch start time to still match', async () => {
     assert.equal(stopRecordedPid(wrong, 200), 'reused');
     assert.equal(processIdentity(child.pid)?.pid, child.pid);
     assert.equal(stopRecordedPid(saved, 400), 'kill');
-    const ended = await new Promise((resolve) => {
+    const ended = await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('signal fixture survived SIGKILL')), 2000);
+      const done = (code, signal) => {
+        clearTimeout(timer);
+        resolve({ code, signal });
+      };
       if (child.exitCode !== null || child.signalCode !== null) {
-        resolve({ code: child.exitCode, signal: child.signalCode });
+        done(child.exitCode, child.signalCode);
         return;
       }
-      child.once('exit', (code, signal) => resolve({ code, signal }));
+      child.once('exit', done);
     });
     assert.equal(ended.signal, 'SIGKILL');
   } finally {
