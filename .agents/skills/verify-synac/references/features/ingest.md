@@ -36,7 +36,7 @@ Exit 1. Output contains `no source registry file`.
 Live fetch, isolated so the repo bundle cannot change:
 
 ```bash
-dir=/tmp/synac-verify/ingest-content
+dir=/tmp/synac-verify-<hash>/ingest-content
 mkdir -p "$dir/sources" "$dir/generated"
 cp content/sources/rfc4949.json "$dir/sources/"
 cp content/generated/rfc4949.json "$dir/generated/"
@@ -45,7 +45,7 @@ SYNAC_CONTENT_DIR="$dir" pnpm --filter @synac/ingest-tools ingest -- --source rf
 
 A finished run prints `rfc4949: unchanged` or `rfc4949: updated` and leaves `$dir/generated/rfc4949.json` in place. Hash `content/generated/rfc4949.json` before and after. The repo file stays the same.
 
-If the network is unreachable, record `INCONCLUSIVE` and keep the log `cli-ingest-rfc4949.log`. The drive still exits 0. Classification uses only the final thrown error and its cause. That error is the last unindented `Name: message` line or `[Name: message]` line. Any HTTP status is a failure. A parser error is a failure even when an earlier retry mentions a network error. Any other non-zero ingest fails the drive. The usage and missing-source checks still have to pass on the way to the live fetch.
+If the network is unreachable, record `INCONCLUSIVE` and keep the log `cli-ingest-rfc4949.log`. The drive still exits 0. Classification uses only the last unindented error and an explicit cause line such as `[cause]:`. A later `RangeError`, `ZodError`, `IngestError`, `[Error: ...]`, or unprefixed message wins over an earlier `TypeError: fetch failed`. Indented stack frames are ignored, so `ENOTFOUND` in a frame does not make a parser error inconclusive. Any HTTP status is a failure. A parser error is a failure even when an earlier retry mentions a network error. Any other non-zero ingest fails the drive. The usage and missing-source checks still have to pass on the way to the live fetch.
 
 ## Gotchas
 

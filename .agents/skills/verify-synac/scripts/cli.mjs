@@ -14,8 +14,8 @@ Runs the content CLI and checks side effects.
 default   smoke, plus content:history, a hostile content dir, ingest usage,
           and an isolated rfc4949 ingest. A network-unreachable ingest is
           INCONCLUSIVE when the final thrown error and its cause are a
-          network failure with no HTTP status. Any HTTP status, parser
-          error, or other failure exits 1.
+          network failure with no HTTP status. Indented stack frames are
+          ignored. Any HTTP status, parser error, or other failure exits 1.
 `;
 
 const compiledPath = path.join(root, 'tools/content/dist/compiled.json');
@@ -166,43 +166,48 @@ function ingestStep(report) {
 const networkUnreachable =
   /ENOTFOUND|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|ECONNREFUSED|ETIMEDOUT|ECONNRESET|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|getaddrinfo|Hostname did not resolve|network is unreachable|socket hang up|TypeError: fetch failed\b/;
 
-function isNamedError(line) {
-  return /^(?:\[[A-Za-z_][\w$]*|[A-Za-z_][\w$]*): \S/.test(line);
+function isWrapperLine(line) {
+  if (line.length === 0 || line === '^' || line.startsWith('\u2009')) return true;
+  if (/^\$\s/.test(line) || /^>\s/.test(line)) return true;
+  if (/^exit\s+\d+$/.test(line) || /^Exit status\b/.test(line)) return true;
+  if (/^(?:npm|pnpm)\s/.test(line)) return true;
+  if (/^\/\S+:$/.test(line)) return true;
+  return false;
 }
 
-function isTopLevelError(line) {
-  if (/^\s/.test(line) || line.length === 0) return false;
-  if (isCauseLine(line)) return false;
-  return /^[✗✘]\s+\S+:\s+\S/.test(line) || isNamedError(line);
+function isErrorLine(line) {
+  if (line.length === 0 || /^\s/.test(line)) return false;
+  return !isWrapperLine(line);
 }
 
-function isCauseLine(line) {
-  return (
-    /^\s+\S/.test(line) ||
-    /^\[cause\]:/i.test(line) ||
-    /^caused by:/i.test(line) ||
-    /^cause:/i.test(line)
-  );
+function isExplicitCause(line) {
+  const trimmed = line.trim();
+  return /^\[cause\]:/i.test(trimmed) || /^caused by:/i.test(trimmed) || /^cause:/i.test(trimmed);
+}
+
+function isStackFrame(line) {
+  return /^\s+at\s/.test(line);
 }
 
 export function finalThrownError(text) {
   const lines = text.split(/\r?\n/);
   let start = -1;
   for (let i = 0; i < lines.length; i += 1) {
-    if (isTopLevelError(lines[i] ?? '')) start = i;
+    if (isErrorLine(lines[i] ?? '')) start = i;
   }
   if (start === -1) return '';
   const block = [lines[start] ?? ''];
   for (let i = start + 1; i < lines.length; i += 1) {
     const line = lines[i] ?? '';
-    if (isCauseLine(line)) {
+    if (isExplicitCause(line)) {
       block.push(line);
       continue;
     }
-    if (line.trim() === '' && isCauseLine(lines[i + 1] ?? '')) {
+    if (line.trim() === '' && isExplicitCause(lines[i + 1] ?? '')) {
       block.push(line);
       continue;
     }
+    if (isStackFrame(line)) continue;
     break;
   }
   return block.join('\n');

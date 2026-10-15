@@ -9,6 +9,7 @@ import {
   readdirSync,
   readFileSync,
   readlinkSync,
+  realpathSync,
   renameSync,
   rmdirSync,
   rmSync,
@@ -24,6 +25,31 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const root = path.resolve(process.env.SYNAC_VERIFY_ROOT ?? path.resolve(scriptDir, '../../../..'));
 if (process.cwd() !== root) process.chdir(root);
+
+function canonicalRoot(repoRoot) {
+  const resolved = path.resolve(repoRoot);
+  try {
+    return realpathSync(resolved);
+  } catch {
+    return resolved;
+  }
+}
+
+export function checkoutKey(repoRoot) {
+  return createHash('sha256').update(canonicalRoot(repoRoot)).digest('hex').slice(0, 12);
+}
+
+export function stateDirFor(repoRoot) {
+  return path.join('/tmp', `synac-verify-${checkoutKey(repoRoot)}`);
+}
+
+export function sessionsFor(repoRoot) {
+  const key = checkoutKey(repoRoot);
+  return {
+    convex: `synac-v-${key}-convex`,
+    web: `synac-v-${key}-web`,
+  };
+}
 
 const namedWatched = [
   'AGENTS.md',
@@ -45,7 +71,7 @@ const handMaintained = new Set([
 
 const snapshotDirName = 'snapshot';
 let tookSnapshot = false;
-export const stateDir = process.env.SYNAC_VERIFY_STATE_DIR ?? '/tmp/synac-verify';
+export const stateDir = process.env.SYNAC_VERIFY_STATE_DIR ?? stateDirFor(root);
 export const evidenceDir =
   process.env.VERIFY_EVIDENCE_DIR ?? path.join(stateDir, 'evidence');
 export const runFile = path.join(stateDir, 'run.json');
@@ -54,8 +80,9 @@ export const webPort = 3000;
 export const convexPort = 3210;
 export const convexSitePort = 3211;
 export const convexUrl = 'http://127.0.0.1:3210';
-export const sessionConvex = 'synac-verify-convex';
-export const sessionWeb = 'synac-verify-web';
+const ownSessions = sessionsFor(root);
+export const sessionConvex = ownSessions.convex;
+export const sessionWeb = ownSessions.web;
 export const ownedSessions = new Set([sessionConvex, sessionWeb]);
 
 const tmuxConfig = process.env.SYNAC_VERIFY_TMUX_CONFIG

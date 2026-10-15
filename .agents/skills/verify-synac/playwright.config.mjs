@@ -1,8 +1,9 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { evidenceDir } from './scripts/runtime.mjs';
+
 const skillDir = path.dirname(fileURLToPath(import.meta.url));
-const evidenceDir = process.env.VERIFY_EVIDENCE_DIR ?? '/tmp/synac-verify/evidence';
 
 export default {
   testDir: path.join(skillDir, 'scripts'),
