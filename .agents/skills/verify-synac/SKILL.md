@@ -53,7 +53,7 @@ pnpm verify:launch
 
 Logs and state:
 
-- `/tmp/synac-verify` is mode `0700` and owned by the user who ran launch. Launch exits if the mode or the owner is wrong.
+- `/tmp/synac-verify` is created mode `0700` and must be owned by the user who ran launch. If that directory already exists with another mode or owner, launch exits and does not change its permissions.
 - `/tmp/synac-verify/run.json` lists sessions and listener pids this launch started. Each pid keeps the process start time and command line from `/proc`.
 - `/tmp/synac-verify/synac-verify-convex.log`
 - `/tmp/synac-verify/synac-verify-web.log`
@@ -61,7 +61,7 @@ Logs and state:
 
 `.env.local` is written by `npx convex dev`. It is gitignored. Do not commit it.
 
-`npx convex dev` can rewrite `.agents/skills/convex*`, `convex/_generated/ai/`, and `skills-lock.json`, and it can add new skill directories. `next dev` can rewrite `AGENTS.md`, `apps/web/AGENTS.md`, and `apps/web/next-env.d.ts`. Launch redirects Convex stdin from `/dev/null` so the interactive installer does not run. Launch and cleanup then restore any of those paths that were clean when launch started. Do not commit that rewrite. After cleanup, `git status` is clean aside from changes you already had.
+`npx convex dev` can rewrite `.agents/skills/convex*`, `convex/_generated/ai/`, and `skills-lock.json`, and it can add new skill directories. `next dev` can rewrite `apps/web/next-env.d.ts`. Launch redirects Convex stdin from `/dev/null` so the interactive installer does not run. Launch and cleanup copy those regenerated paths to `/tmp/synac-verify/restored/` and list each backup, then put the worktree copy back. They do not restore the git index. `AGENTS.md`, `CLAUDE.md`, `apps/web/AGENTS.md`, and `convex.json` are hand-maintained. A change to one of those during the run is left in place and printed as a warning.
 
 ## Doctor
 
@@ -199,7 +199,7 @@ Side effects worth reading:
 
 The local Convex sync is the same compiler output production serves. Do not stub those reads. `POST /api/v1/internal/revalidate` needs `SYNAC_REVALIDATE_SECRET` of at least 16 characters. That route is `INCONCLUSIVE` when the secret is unset. Do not invent a secret.
 
-Live `pnpm ingest -- --source rfc4949` fetches the upstream RFC. The helper copies the source into `/tmp/synac-verify/ingest-content` so a run cannot rewrite `content/generated/` in the repo. A non-zero ingest exit fails `pnpm verify:drive`. The log is `cli-ingest-rfc4949.log`. That result is a failure, including when the upstream fetch does not finish.
+Live `pnpm ingest -- --source rfc4949` fetches the upstream RFC. The helper copies the source into `/tmp/synac-verify/ingest-content` so a run cannot rewrite `content/generated/` in the repo. When the network is unreachable (`ENOTFOUND`, `ECONNREFUSED`, `ENETUNREACH`, a connect timeout, or `TypeError: fetch failed` with no HTTP status), the step is `INCONCLUSIVE` and the drive continues. Any other non-zero ingest, including `fetch failed (404)` or a parser error, fails `pnpm verify:drive`. The log is `cli-ingest-rfc4949.log`.
 
 ## Cleanup
 
@@ -207,7 +207,7 @@ Live `pnpm ingest -- --source rfc4949` fetches the upstream RFC. The helper copi
 pnpm verify:cleanup
 ```
 
-That runs `node .agents/skills/verify-synac/scripts/cleanup.mjs`. It `tmux kill-session`s only `synac-verify-convex` and `synac-verify-web` when `run.json` lists them. A session is listed as soon as launch starts it, so cleanup still stops a Convex or web process whose ready check never passed. Before it signals a saved pid, it reads `/proc/<pid>` and checks the start time recorded at launch (the command line when the start time was not stored). A reused pid is skipped and named in the log. The same pid is signaled once when two ports share it. It does not kill processes by name. It restores Convex and Next generated files that launch snapshotted as clean, leaves `/tmp/synac-verify/evidence/` in place, and prints that path. After every failed launch or drive, run cleanup before starting again so a half-started session does not keep the ports.
+That runs `node .agents/skills/verify-synac/scripts/cleanup.mjs`. It `tmux kill-session`s only `synac-verify-convex` and `synac-verify-web` when `run.json` lists them. A session is listed as soon as launch starts it, so cleanup still stops a Convex or web process whose ready check never passed. Before it signals a saved pid, it reads `/proc/<pid>` and checks the start time recorded at launch (the command line when the start time was not stored). A reused pid is skipped and named in the log. The same pid is signaled once when two ports share it. It does not kill processes by name. It backs up regenerated Convex skill files, `skills-lock.json`, `convex/_generated/ai/`, and `apps/web/next-env.d.ts` under `/tmp/synac-verify/restored/`, lists those backups, and restores only the worktree. It warns and leaves `AGENTS.md`, `CLAUDE.md`, `apps/web/AGENTS.md`, and `convex.json` in place. It leaves `/tmp/synac-verify/evidence/` in place and prints that path. After every failed launch or drive, run cleanup before starting again so a half-started session does not keep the ports.
 
 Confirm the evidence directory still exists after cleanup before citing it.
 
@@ -240,7 +240,7 @@ Put a Proof section on the pull request:
 - Commands: the exact commands, including `pnpm verify:doctor` and the drive you ran
 - Evidence: command logs, screenshot paths, and trace paths that still exist after cleanup
 - Results: pass or fail per command, plus the observable end state (URL, heading, file written, record read back, attribute)
-- INCONCLUSIVE: any step that could not run, and the concrete reason (port busy, revalidate secret unset, browser library missing). A failed ingest is a failure, not `INCONCLUSIVE`.
+- INCONCLUSIVE: any step that could not run, and the concrete reason (port busy, revalidate secret unset, browser library missing, ingest network unreachable). Any other ingest failure is a failure.
 ```
 
 A missing check is `INCONCLUSIVE`. Do not describe it as passed.

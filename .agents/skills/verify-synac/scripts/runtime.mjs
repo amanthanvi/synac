@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import {
   chmodSync,
   copyFileSync,
+  cpSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -26,12 +27,10 @@ const nextEnvFile = path.join(root, 'apps/web/next-env.d.ts');
 const nextEnvMeta = 'next-env.meta.json';
 const nextEnvSnapshot = 'next-env.snapshot';
 
-const generatedFiles = new Set([
-  'skills-lock.json',
+const handMaintained = new Set([
   'AGENTS.md',
   'CLAUDE.md',
   'apps/web/AGENTS.md',
-  'apps/web/next-env.d.ts',
   'convex.json',
 ]);
 export const stateDir = process.env.SYNAC_VERIFY_STATE_DIR ?? '/tmp/synac-verify';
@@ -54,7 +53,11 @@ const tmuxConfig = process.env.SYNAC_VERIFY_TMUX_CONFIG
     : '';
 
 export function ensureState() {
-  mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+  let created = false;
+  if (!existsSync(stateDir)) {
+    mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+    created = true;
+  }
   const listed = lstatSync(stateDir);
   if (listed.isSymbolicLink() || !listed.isDirectory()) {
     throw new Error(`${stateDir} is not a private directory`);
@@ -63,12 +66,17 @@ export function ensureState() {
   if (uid !== null && listed.uid !== uid) {
     throw new Error(`${stateDir} is owned by uid ${listed.uid}, expected ${uid}`);
   }
-  chmodSync(stateDir, 0o700);
+  if (created) chmodSync(stateDir, 0o700);
   const mode = statSync(stateDir).mode & 0o777;
   if (mode !== 0o700) {
-    throw new Error(`${stateDir} mode is 0${mode.toString(8)}, expected 0700`);
+    throw new Error(
+      `${stateDir} mode is 0${mode.toString(8)}, expected 0700. Refusing to change an existing directory.`,
+    );
   }
-  mkdirSync(evidenceDir, { recursive: true, mode: 0o700 });
+  if (!existsSync(evidenceDir)) {
+    mkdirSync(evidenceDir, { recursive: true, mode: 0o700 });
+    chmodSync(evidenceDir, 0o700);
+  }
 }
 
 export function readRun() {
@@ -330,12 +338,28 @@ export function rememberListener(pidKey, port) {
   writeRun(run);
 }
 
-function generatedDrift(rel) {
-  if (generatedFiles.has(rel)) return true;
+function isHandMaintained(rel) {
+  return handMaintained.has(rel);
+}
+
+function isRegenerated(rel) {
+  if (rel === 'skills-lock.json' || rel === 'apps/web/next-env.d.ts') return true;
   if (rel.startsWith('.agents/skills/convex')) return true;
   if (rel === 'convex/_generated/ai' || rel.startsWith('convex/_generated/ai/')) return true;
   if (rel === '.cursor/rules/convex_rules.mdc') return true;
   return false;
+}
+
+function backupRel(rel) {
+  const abs = path.join(root, rel);
+  if (!existsSync(abs)) return null;
+  const listed = lstatSync(abs);
+  if (listed.isSymbolicLink()) return null;
+  const dest = path.join(stateDir, 'restored', rel);
+  mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
+  if (listed.isDirectory()) cpSync(abs, dest, { recursive: true, dereference: false });
+  else copyFileSync(abs, dest);
+  return dest;
 }
 
 function worktreeEntries() {
@@ -377,15 +401,22 @@ function snapshotNextEnv() {
 
 function restoreNextEnv() {
   const metaPath = path.join(stateDir, nextEnvMeta);
-  if (!existsSync(metaPath)) return;
+  if (!existsSync(metaPath)) return null;
   const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
   const snapPath = path.join(stateDir, nextEnvSnapshot);
+  const current = existsSync(nextEnvFile) ? readFileSync(nextEnvFile) : null;
   if (meta.existed !== true) {
-    if (existsSync(nextEnvFile)) rmSync(nextEnvFile, { force: true });
-    return;
+    if (!current) return null;
+    const dest = backupRel('apps/web/next-env.d.ts');
+    rmSync(nextEnvFile, { force: true });
+    return dest;
   }
-  if (!existsSync(snapPath)) return;
+  if (!existsSync(snapPath)) return null;
+  const previous = readFileSync(snapPath);
+  if (current && current.equals(previous)) return null;
+  const dest = current ? backupRel('apps/web/next-env.d.ts') : null;
   copyFileSync(snapPath, nextEnvFile);
+  return dest;
 }
 
 export function rememberWorktree() {
@@ -418,7 +449,7 @@ function removeUntracked(rel) {
     rmSync(abs, { force: true });
   }
   let parent = path.dirname(cleaned);
-  while (parent && parent !== '.' && generatedDrift(parent)) {
+  while (parent && parent !== '.' && isRegenerated(parent)) {
     const tracked = spawnSync('git', ['ls-files', '--', parent], {
       cwd: root,
       encoding: 'utf8',
@@ -439,28 +470,43 @@ function removeUntracked(rel) {
 
 export function restoreGeneratedDrift() {
   const run = readRun();
-  if (!Array.isArray(run.dirtyBefore)) return [];
+  if (!Array.isArray(run.dirtyBefore)) return { restored: [], warned: [], backups: [] };
   const before = new Set(run.dirtyBefore);
   const restore = [];
   const remove = [];
+  const warned = [];
   for (const entry of worktreeEntries()) {
-    if (before.has(entry.rel) || !generatedDrift(entry.rel)) continue;
+    if (before.has(entry.rel)) continue;
+    if (isHandMaintained(entry.rel)) {
+      warned.push(entry.rel);
+      continue;
+    }
+    if (!isRegenerated(entry.rel)) continue;
     if (entry.code === '??') remove.push(entry.rel);
     else restore.push(entry.rel);
   }
+  const backups = [];
+  for (const rel of [...restore, ...remove]) {
+    const dest = backupRel(rel);
+    if (dest) backups.push({ rel, dest });
+  }
   if (restore.length > 0) {
-    const result = spawnSync(
-      'git',
-      ['restore', '--source=HEAD', '--worktree', '--staged', '--', ...restore],
-      { cwd: root, encoding: 'utf8' },
-    );
+    const result = spawnSync('git', ['restore', '--source=HEAD', '--worktree', '--', ...restore], {
+      cwd: root,
+      encoding: 'utf8',
+    });
     if (result.status !== 0) {
       throw new Error(`git restore failed: ${result.stderr ?? ''}`.trim());
     }
   }
   for (const rel of [...remove].sort((a, b) => b.length - a.length)) removeUntracked(rel);
-  restoreNextEnv();
-  const touched = [...restore, ...remove];
-  if (touched.length > 0) console.log(`restored generated files: ${touched.join(', ')}`);
-  return touched;
+  const nextEnvBackup = restoreNextEnv();
+  if (nextEnvBackup) backups.push({ rel: 'apps/web/next-env.d.ts', dest: nextEnvBackup });
+  for (const item of backups) console.log(`backed up ${item.rel} to ${item.dest}`);
+  const restored = [...restore, ...remove];
+  if (restored.length > 0) console.log(`restored generated files: ${restored.join(', ')}`);
+  for (const rel of warned) {
+    console.warn(`warning: ${rel} changed during the run and was left in place`);
+  }
+  return { restored, warned, backups };
 }
