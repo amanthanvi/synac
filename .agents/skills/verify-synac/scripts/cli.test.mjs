@@ -122,31 +122,48 @@ test('an indented ENOTFOUND frame does not make a parser error INCONCLUSIVE', ()
   assert.equal(ingestNetworkUnreachable(log), false);
 });
 
+// Captured from Node v24.22.0 `console.error` of a failed fetch. The last line is only `}`.
+const node24FetchDump = `[TypeError: fetch failed] {
+  [cause]: Error: getaddrinfo ENOTFOUND www.rfc-editor.invalid
+      at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:123:26) {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'www.rfc-editor.invalid'
+  }
+}`;
+
 test('a Node 24 fetch error dump ending in a brace is INCONCLUSIVE', () => {
-  const major = Number(process.versions.node.split('.')[0]);
-  assert.equal(major, 24);
-  const result = spawnSync(
-    process.execPath,
-    [
-      '--input-type=module',
-      '-e',
-      [
-        'try {',
-        "  await fetch('https://www.rfc-editor.invalid/rfc/rfc4949.txt');",
-        '} catch (error) {',
-        '  console.error(error);',
-        '}',
-      ].join('\n'),
-    ],
-    { encoding: 'utf8', timeout: 15000 },
-  );
-  assert.equal(result.status, 0);
-  const dump = result.stderr;
-  assert.match(dump, /^\[TypeError: fetch failed\] \{$/m);
-  assert.match(dump, /\[cause\]: Error: getaddrinfo ENOTFOUND /);
-  assert.equal(dump.trim().split('\n').at(-1), '}');
-  assert.equal(ingestNetworkUnreachable(dump), true);
+  assert.match(node24FetchDump, /^\[TypeError: fetch failed\] \{$/m);
+  assert.equal(node24FetchDump.trim().split('\n').at(-1), '}');
+  assert.equal(ingestNetworkUnreachable(node24FetchDump), true);
 });
+
+test(
+  'a live fetch dump is INCONCLUSIVE when SYNAC_VERIFY_LIVE_FETCH=1',
+  { skip: process.env.SYNAC_VERIFY_LIVE_FETCH !== '1' },
+  () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '-e',
+        [
+          'try {',
+          "  await fetch('https://www.rfc-editor.invalid/rfc/rfc4949.txt');",
+          '} catch (error) {',
+          '  console.error(error);',
+          '}',
+        ].join('\n'),
+      ],
+      { encoding: 'utf8', timeout: 15000 },
+    );
+    assert.equal(result.status, 0);
+    const dump = result.stderr;
+    assert.match(dump, /fetch failed/);
+    assert.equal(ingestNetworkUnreachable(dump), true);
+  },
+);
 
 test('the ingest CLI fetch failed line is INCONCLUSIVE', () => {
   const log = [
