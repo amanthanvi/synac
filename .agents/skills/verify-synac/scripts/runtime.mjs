@@ -1,10 +1,16 @@
 import { spawnSync } from 'node:child_process';
 import {
+  chmodSync,
+  copyFileSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
   readlinkSync,
+  rmdirSync,
+  rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import net from 'node:net';
@@ -14,6 +20,20 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 export const root = path.resolve(scriptDir, '../../../..');
+if (process.cwd() !== root) process.chdir(root);
+
+const nextEnvFile = path.join(root, 'apps/web/next-env.d.ts');
+const nextEnvMeta = 'next-env.meta.json';
+const nextEnvSnapshot = 'next-env.snapshot';
+
+const generatedFiles = new Set([
+  'skills-lock.json',
+  'AGENTS.md',
+  'CLAUDE.md',
+  'apps/web/AGENTS.md',
+  'apps/web/next-env.d.ts',
+  'convex.json',
+]);
 export const stateDir = process.env.SYNAC_VERIFY_STATE_DIR ?? '/tmp/synac-verify';
 export const evidenceDir =
   process.env.VERIFY_EVIDENCE_DIR ?? path.join(stateDir, 'evidence');
@@ -34,20 +54,41 @@ const tmuxConfig = process.env.SYNAC_VERIFY_TMUX_CONFIG
     : '';
 
 export function ensureState() {
-  mkdirSync(stateDir, { recursive: true });
-  mkdirSync(evidenceDir, { recursive: true });
+  mkdirSync(stateDir, { recursive: true, mode: 0o700 });
+  const listed = lstatSync(stateDir);
+  if (listed.isSymbolicLink() || !listed.isDirectory()) {
+    throw new Error(`${stateDir} is not a private directory`);
+  }
+  const uid = typeof process.getuid === 'function' ? process.getuid() : null;
+  if (uid !== null && listed.uid !== uid) {
+    throw new Error(`${stateDir} is owned by uid ${listed.uid}, expected ${uid}`);
+  }
+  chmodSync(stateDir, 0o700);
+  const mode = statSync(stateDir).mode & 0o777;
+  if (mode !== 0o700) {
+    throw new Error(`${stateDir} mode is 0${mode.toString(8)}, expected 0700`);
+  }
+  mkdirSync(evidenceDir, { recursive: true, mode: 0o700 });
 }
 
 export function readRun() {
   try {
     const value = JSON.parse(readFileSync(runFile, 'utf8'));
     if (!value || typeof value !== 'object') return emptyRun();
+    const pids = value.pids && typeof value.pids === 'object' ? value.pids : {};
     return {
       sessions: Array.isArray(value.sessions) ? value.sessions : [],
-      pids: value.pids && typeof value.pids === 'object' ? value.pids : {},
+      pids: {
+        convex: normalizePid(pids.convex),
+        web: normalizePid(pids.web),
+        convexSite: normalizePid(pids.convexSite),
+      },
       startedAt: typeof value.startedAt === 'string' ? value.startedAt : '',
       webMode: value.webMode === 'dev' ? 'dev' : 'start',
       baseUrl: typeof value.baseUrl === 'string' ? value.baseUrl : baseUrl,
+      dirtyBefore: Array.isArray(value.dirtyBefore)
+        ? value.dirtyBefore.filter((item) => typeof item === 'string')
+        : undefined,
     };
   } catch {
     return emptyRun();
@@ -57,11 +98,21 @@ export function readRun() {
 function emptyRun() {
   return {
     sessions: [],
-    pids: {},
+    pids: { convex: null, web: null, convexSite: null },
     startedAt: '',
     webMode: 'start',
     baseUrl,
   };
+}
+
+function normalizePid(value) {
+  if (!value || typeof value !== 'object') return null;
+  const pid = value.pid;
+  if (!Number.isInteger(pid) || pid <= 1) return null;
+  const startTime = typeof value.startTime === 'string' ? value.startTime : '';
+  const cmdline = typeof value.cmdline === 'string' ? value.cmdline : '';
+  if (!startTime && !cmdline) return null;
+  return { pid, startTime, cmdline };
 }
 
 export function writeRun(run) {
@@ -223,4 +274,193 @@ export function runLogged(command, args, logName, options = {}) {
 
 export function nodeMajor() {
   return Number(process.versions.node.split('.')[0] ?? 0);
+}
+
+export function noteSession(session) {
+  if (!ownedSessions.has(session)) {
+    throw new Error(`refusing to record unknown session ${session}`);
+  }
+  const run = readRun();
+  if (!run.sessions.includes(session)) run.sessions.push(session);
+  run.baseUrl = baseUrl;
+  run.webMode = process.env.VERIFY_WEB_MODE === 'dev' ? 'dev' : 'start';
+  if (!run.startedAt) run.startedAt = new Date().toISOString();
+  writeRun(run);
+}
+
+export function processIdentity(pid) {
+  if (!Number.isInteger(pid) || pid <= 1) return null;
+  let cmdline = '';
+  try {
+    cmdline = readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' ').trim();
+  } catch {
+    return null;
+  }
+  let startTime = '';
+  try {
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+    const end = stat.lastIndexOf(')');
+    if (end !== -1) {
+      const fields = stat.slice(end + 2).trim().split(/\s+/);
+      startTime = fields[19] ?? '';
+    }
+  } catch {
+    startTime = '';
+  }
+  if (!cmdline && !startTime) return null;
+  return { pid, startTime, cmdline };
+}
+
+export function sameProcess(saved, pid) {
+  if (!saved || saved.pid !== pid) return false;
+  const live = processIdentity(pid);
+  if (!live) return false;
+  if (saved.startTime && live.startTime) return saved.startTime === live.startTime;
+  if (saved.cmdline && live.cmdline) return saved.cmdline === live.cmdline;
+  return false;
+}
+
+export function rememberListener(pidKey, port) {
+  const pid = listenerPids(port)[0];
+  if (!pid) return;
+  const identity = processIdentity(pid);
+  if (!identity || (!identity.startTime && !identity.cmdline)) return;
+  const run = readRun();
+  run.pids[pidKey] = identity;
+  writeRun(run);
+}
+
+function generatedDrift(rel) {
+  if (generatedFiles.has(rel)) return true;
+  if (rel.startsWith('.agents/skills/convex')) return true;
+  if (rel === 'convex/_generated/ai' || rel.startsWith('convex/_generated/ai/')) return true;
+  if (rel === '.cursor/rules/convex_rules.mdc') return true;
+  return false;
+}
+
+function worktreeEntries() {
+  const result = spawnSync('git', ['status', '--porcelain=v1', '-uall'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) {
+    throw new Error(`git status failed: ${result.stderr ?? ''}`.trim());
+  }
+  const entries = [];
+  for (const line of (result.stdout ?? '').split('\n')) {
+    if (!line) continue;
+    const code = line.slice(0, 2);
+    let rel = line.slice(3);
+    if (rel.startsWith('"') && rel.endsWith('"')) rel = rel.slice(1, -1);
+    if (rel.endsWith('/')) rel = rel.slice(0, -1);
+    if (rel.includes(' -> ')) {
+      const renamed = rel.split(' -> ').at(-1);
+      if (renamed) rel = renamed;
+    }
+    entries.push({ code, rel });
+  }
+  return entries;
+}
+
+function snapshotNextEnv() {
+  ensureState();
+  const metaPath = path.join(stateDir, nextEnvMeta);
+  const snapPath = path.join(stateDir, nextEnvSnapshot);
+  if (!existsSync(nextEnvFile)) {
+    writeFileSync(metaPath, `${JSON.stringify({ existed: false })}\n`);
+    rmSync(snapPath, { force: true });
+    return;
+  }
+  copyFileSync(nextEnvFile, snapPath);
+  writeFileSync(metaPath, `${JSON.stringify({ existed: true })}\n`);
+}
+
+function restoreNextEnv() {
+  const metaPath = path.join(stateDir, nextEnvMeta);
+  if (!existsSync(metaPath)) return;
+  const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
+  const snapPath = path.join(stateDir, nextEnvSnapshot);
+  if (meta.existed !== true) {
+    if (existsSync(nextEnvFile)) rmSync(nextEnvFile, { force: true });
+    return;
+  }
+  if (!existsSync(snapPath)) return;
+  copyFileSync(snapPath, nextEnvFile);
+}
+
+export function rememberWorktree() {
+  const run = readRun();
+  run.dirtyBefore = worktreeEntries().map((entry) => entry.rel);
+  writeRun(run);
+  snapshotNextEnv();
+}
+
+function removeUntracked(rel) {
+  const cleaned = rel.replace(/\/+$/, '');
+  const abs = path.join(root, cleaned);
+  let listed;
+  try {
+    listed = lstatSync(abs);
+  } catch {
+    return;
+  }
+  if (listed.isSymbolicLink()) {
+    rmSync(abs, { force: true });
+  } else if (listed.isDirectory()) {
+    const tracked = spawnSync('git', ['ls-files', '--', cleaned], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    if ((tracked.stdout ?? '').trim().length > 0) return;
+    rmSync(abs, { recursive: true, force: true });
+    return;
+  } else {
+    rmSync(abs, { force: true });
+  }
+  let parent = path.dirname(cleaned);
+  while (parent && parent !== '.' && generatedDrift(parent)) {
+    const tracked = spawnSync('git', ['ls-files', '--', parent], {
+      cwd: root,
+      encoding: 'utf8',
+    });
+    if ((tracked.stdout ?? '').trim().length > 0) break;
+    const absParent = path.join(root, parent);
+    let names = [];
+    try {
+      names = readdirSync(absParent);
+    } catch {
+      break;
+    }
+    if (names.length > 0) break;
+    rmdirSync(absParent);
+    parent = path.dirname(parent);
+  }
+}
+
+export function restoreGeneratedDrift() {
+  const run = readRun();
+  if (!Array.isArray(run.dirtyBefore)) return [];
+  const before = new Set(run.dirtyBefore);
+  const restore = [];
+  const remove = [];
+  for (const entry of worktreeEntries()) {
+    if (before.has(entry.rel) || !generatedDrift(entry.rel)) continue;
+    if (entry.code === '??') remove.push(entry.rel);
+    else restore.push(entry.rel);
+  }
+  if (restore.length > 0) {
+    const result = spawnSync(
+      'git',
+      ['restore', '--source=HEAD', '--worktree', '--staged', '--', ...restore],
+      { cwd: root, encoding: 'utf8' },
+    );
+    if (result.status !== 0) {
+      throw new Error(`git restore failed: ${result.stderr ?? ''}`.trim());
+    }
+  }
+  for (const rel of [...remove].sort((a, b) => b.length - a.length)) removeUntracked(rel);
+  restoreNextEnv();
+  const touched = [...restore, ...remove];
+  if (touched.length > 0) console.log(`restored generated files: ${touched.join(', ')}`);
+  return touched;
 }

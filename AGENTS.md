@@ -41,7 +41,9 @@ Source of truth: `docs/architecture/overview.md` (architecture) + `SPEC.md` (pro
 
 ## Verification
 
-Drive the local stack with `pnpm verify:launch`, `pnpm verify:doctor`, `pnpm verify:smoke`, `pnpm verify:drive`, and `pnpm verify:cleanup`. The procedure and the fast test groups live in `.agents/skills/verify-synac/SKILL.md`. Feature work includes a Proof section: commands, evidence paths that survive cleanup, results, and `INCONCLUSIVE` when a step could not run. While iterating, run the named fast group for the package you touched. Run `pnpm gate` once on the final head.
+Drive the local stack from the repo root with `pnpm verify:launch`, `pnpm verify:doctor`, `pnpm verify:smoke`, `pnpm verify:drive`, and `pnpm verify:cleanup`. From a package directory, use the workspace form (`pnpm -w verify:doctor`, and the same `-w` prefix for the other verify scripts). The scripts `chdir` to the repo root themselves. The procedure and the fast test groups live in `.agents/skills/verify-synac/SKILL.md`. Feature work includes a Proof section: commands, evidence paths that survive cleanup, results, and `INCONCLUSIVE` when a step could not run. While iterating, run the named fast group for the package you touched. Run `pnpm gate` once on the final head.
+
+`npx convex dev` can rewrite Convex skill files, `skills-lock.json`, and `convex/_generated/ai/`. `next dev` can rewrite `AGENTS.md`, `apps/web/AGENTS.md`, and `apps/web/next-env.d.ts`. `pnpm verify:launch` and `pnpm verify:cleanup` put those paths back. Do not commit that rewrite.
 
 ## Cloud Agent notes
 
