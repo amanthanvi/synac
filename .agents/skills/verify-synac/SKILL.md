@@ -110,7 +110,7 @@ While iterating, run one named group and stay inside its budget:
 | `content-check` | `pnpm content:check` | 1 minute |
 | `verify-smoke` | `pnpm verify:smoke` with the stack already up | 4 minutes |
 
-`pnpm gate` runs lint, convex lint, format, typecheck, convex typecheck, test, tagging check, content check, content history, and build. It does not launch the site and it does not run `verify:drive`. The end-to-end suite in `apps/e2e` stays `E2E_BASE_URL=http://127.0.0.1:3000 pnpm --filter @synac/e2e test:e2e` against this same stack. Use it when the change touches accessibility or a route the feature map does not list.
+`pnpm gate` runs lint, convex lint, format, typecheck, convex typecheck, test, tagging check, content check, content history, and build. It does not launch the site, it does not run `verify:drive`, and it does not need tmux. The checkout session test is `pnpm test:verify-tmux`. That command needs tmux on `PATH`. The optional verify-smoke workflow installs tmux and runs it. The end-to-end suite in `apps/e2e` stays `E2E_BASE_URL=http://127.0.0.1:3000 pnpm --filter @synac/e2e test:e2e` against this same stack. Use it when the change touches accessibility or a route the feature map does not list.
 
 ## Drive
 

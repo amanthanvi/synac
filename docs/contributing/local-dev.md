@@ -69,7 +69,9 @@ CI runs the same list, so a green local gate means a green CI. Run the gate
 before you push, not after CI tells you.
 
 `pnpm gate` does not run the end-to-end suite. The `Quality` workflow runs
-that.
+that. `pnpm gate` also does not need tmux. The verification skill's checkout
+session test is `pnpm test:verify-tmux`, and that command needs tmux on
+`PATH`.
 
 ## End-to-end tests
 
