@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { evidenceDir, ensureState, root, runLogged, stateDir } from './runtime.mjs';
 
@@ -11,7 +12,8 @@ Runs the content CLI and checks side effects.
 
 --smoke   content:check and content:compile (writes tools/content/dist/compiled.json)
 default   smoke, plus content:history, a hostile content dir, ingest usage,
-          and an isolated rfc4949 ingest. A failed ingest exits 1.
+          and an isolated rfc4949 ingest. A network-unreachable ingest is
+          INCONCLUSIVE. Any other ingest failure exits 1.
 `;
 
 const compiledPath = path.join(root, 'tools/content/dist/compiled.json');
@@ -144,9 +146,28 @@ function ingestStep(report) {
     return;
   }
   const detail = text.trim().split('\n').slice(-8).join(' ');
+  if (ingestNetworkUnreachable(text)) {
+    report.steps.push({
+      name: 'ingest-rfc4949',
+      status: 'INCONCLUSIVE',
+      reason: `network unreachable (exit ${result.status}). ${detail}`,
+      log: result.logPath,
+    });
+    console.log(`INCONCLUSIVE ingest rfc4949: network unreachable. See ${result.logPath}`);
+    return;
+  }
   throw new Error(
     `ingest rfc4949 failed (exit ${result.status}). ${detail} See ${result.logPath}`,
   );
+}
+
+const httpFetchFailed = /fetch failed \(\d{3}\)/;
+const networkUnreachable =
+  /ENOTFOUND|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|ECONNREFUSED|ETIMEDOUT|ECONNRESET|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|getaddrinfo|Hostname did not resolve|network is unreachable|socket hang up|TypeError: fetch failed\b/;
+
+export function ingestNetworkUnreachable(text) {
+  if (httpFetchFailed.test(text)) return false;
+  return networkUnreachable.test(text);
 }
 
 function main() {
@@ -178,4 +199,6 @@ function main() {
   console.log(`cli report ${path.join(evidenceDir, 'cli-report.json')}`);
 }
 
-main();
+const invokedDirectly =
+  process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedDirectly) main();
