@@ -7,6 +7,9 @@ import {
   readRun,
   restoreOwnedWrites,
   sessionAlive,
+  sessionConvex,
+  sessionWeb,
+  stateDir,
   stopRecordedPid,
   tmux,
   warnUnclaimedChanges,
@@ -15,18 +18,19 @@ import {
 
 const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
 
-Stops tmux sessions this skill started (synac-verify-convex and synac-verify-web)
-and the listener pids recorded in /tmp/synac-verify/run.json, after checking
-each pid's start time. Sends SIGTERM, then SIGKILL only while that start
-time still matches. A foreign or legacy snapshot is backed up and not restored. Processes
+Stops tmux sessions this skill started for this checkout (${sessionConvex} and
+${sessionWeb}) and the listener pids recorded in ${stateDir}/run.json, after
+checking each pid's start time. Sends SIGTERM, then SIGKILL only while that
+start time still matches. Another checkout's sessions and pids are left
+alone. A foreign or legacy snapshot is backed up and not restored. Processes
 recorded for this checkout are still stopped.
 Restores a watched file to the launch snapshot when its current bytes still
 match a recorded tool write. Backs that file up under
-/tmp/synac-verify/restored/<run-id>/ first, including when the path is a
+${stateDir}/restored/<run-id>/ first, including when the path is a
 symlink. Never changes the git index. Any other change is left in place
 and printed as a warning.
 
-Leaves /tmp/synac-verify/evidence/ in place.
+Leaves ${stateDir}/evidence/ in place.
 `;
 
 function main() {

@@ -34,8 +34,9 @@ import {
 
 const help = `Usage: node .agents/skills/verify-synac/scripts/launch.mjs
 
-Starts the local SynAc stack in tmux sessions synac-verify-convex and
-synac-verify-web, syncs repo content, and waits until doctor is READY.
+Starts the local SynAc stack in tmux sessions ${sessionConvex} and
+${sessionWeb}, syncs repo content, and waits until doctor is READY.
+State for this checkout is ${stateDir}.
 
 Env:
   VERIFY_WEB_MODE=start|dev     start is a production build (default)

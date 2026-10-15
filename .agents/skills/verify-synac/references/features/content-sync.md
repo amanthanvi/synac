@@ -14,7 +14,7 @@ A maintainer runs sync after `npx convex dev` and `npx convex env set SYNAC_CONV
 
 ## Driving it with the CLI
 
-`pnpm verify:launch` runs sync once and copies stdout to `/tmp/synac-verify/evidence/cli-sync.log`.
+`pnpm verify:launch` runs sync once and copies stdout to `/tmp/synac-verify-<hash>/evidence/cli-sync.log`. `<hash>` is the first 12 hex characters of sha256 of the repo root.
 
 ```bash
 pnpm --filter @synac/content-tools sync

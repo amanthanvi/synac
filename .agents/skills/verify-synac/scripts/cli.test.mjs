@@ -76,6 +76,38 @@ test('a bracketed Error after a fetch-failed retry is FAIL', () => {
   assert.equal(ingestNetworkUnreachable(log), false);
 });
 
+test('a later RangeError, ZodError, or IngestError wins over TypeError: fetch failed', () => {
+  const earlier = [
+    'TypeError: fetch failed',
+    '    at node:internal/deps/undici/undici:14902:13',
+    '    [cause]: Error: getaddrinfo ENOTFOUND www.rfc-editor.org',
+  ];
+  for (const finalLine of [
+    'RangeError: Invalid array length',
+    'ZodError: invalid document',
+    'IngestError: parser rejected the document',
+    "[Error: Unexpected token '<' is not valid JSON]",
+    "Unexpected token '<' is not valid JSON",
+  ]) {
+    const log = [...earlier, finalLine].join('\n');
+    assert.equal(ingestNetworkUnreachable(log), false, finalLine);
+  }
+});
+
+test('an indented ENOTFOUND frame does not make a parser error INCONCLUSIVE', () => {
+  const log = [
+    'TypeError: fetch failed',
+    '    at node:internal/deps/undici/undici:14902:13',
+    '    Error: getaddrinfo ENOTFOUND www.rfc-editor.org',
+    "SyntaxError: Unexpected token '<'",
+    '    at JSON.parse (<anonymous>)',
+    '    at parse (ingest.js:10:5)',
+    '    Error: getaddrinfo ENOTFOUND www.rfc-editor.org',
+    '\u2009ELIFECYCLE\u2009 Command failed with exit code 1.',
+  ].join('\n');
+  assert.equal(ingestNetworkUnreachable(log), false);
+});
+
 test('cli.mjs --help runs through the .cursor skill symlink', () => {
   const result = spawnSync(
     process.execPath,

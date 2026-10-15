@@ -59,11 +59,15 @@ jobs:
         if: always()
         run: pnpm verify:cleanup
 
+      - name: Resolve evidence dir
+        if: always()
+        run: node --input-type=module -e 'import { evidenceDir } from "./.agents/skills/verify-synac/scripts/runtime.mjs"; import { appendFileSync } from "node:fs"; appendFileSync(process.env.GITHUB_ENV, `VERIFY_EVIDENCE_DIR=${evidenceDir}\n`);'
+
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
           name: verify-smoke-evidence
-          path: /tmp/synac-verify/evidence
+          path: ${{ env.VERIFY_EVIDENCE_DIR }}
           if-no-files-found: ignore
           retention-days: 7

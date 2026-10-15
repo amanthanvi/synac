@@ -13,7 +13,7 @@ A maintainer runs it from the repo root after editing `content/`. Readers never 
 
 ## Driving it with the CLI
 
-`pnpm verify:smoke` runs this as the first CLI step. The log is `/tmp/synac-verify/evidence/cli-content-check.log`.
+`pnpm verify:smoke` runs this as the first CLI step. The log is `/tmp/synac-verify-<hash>/evidence/cli-content-check.log`.
 
 ```bash
 pnpm content:check
@@ -24,7 +24,7 @@ Stdout contains `content ok:` and `(version ` plus 12 hex characters. Exit 0.
 The hostile check uses a scratch directory so the repo stays untouched:
 
 ```bash
-dir=/tmp/synac-verify/hostile-content
+dir=/tmp/synac-verify-<hash>/hostile-content
 mkdir -p "$dir"
 printf '{' > "$dir/tags.json"
 SYNAC_CONTENT_DIR="$dir" pnpm content:check
