@@ -164,7 +164,7 @@ function ingestStep(report) {
 }
 
 const networkUnreachable =
-  /ENOTFOUND|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|ECONNREFUSED|ETIMEDOUT|ECONNRESET|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|getaddrinfo|Hostname did not resolve|network is unreachable|socket hang up|TypeError: fetch failed\b/;
+  /ENOTFOUND|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|ECONNREFUSED|ETIMEDOUT|ECONNRESET|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|getaddrinfo|Hostname did not resolve|network is unreachable|socket hang up|TypeError: fetch failed\b|[✗✘]\s+\S+:\s+fetch failed\b/;
 
 function isWrapperLine(line) {
   if (line.length === 0 || line === '^' || line.startsWith('\u2009')) return true;
@@ -186,8 +186,14 @@ function isMarkedError(line) {
   return /^[✗✘]\s+\S/.test(line);
 }
 
+function isBraceOrPunctuation(line) {
+  return /^[^\p{L}\p{N}]+$/u.test(line);
+}
+
 function isErrorLine(line) {
-  if (line.length === 0 || /^\s/.test(line) || isWrapperLine(line)) return false;
+  if (line.length === 0 || /^\s/.test(line) || isWrapperLine(line) || isBraceOrPunctuation(line)) {
+    return false;
+  }
   if (isMarkedError(line) || isNamedError(line)) return true;
   return !/: /.test(line);
 }
@@ -219,7 +225,7 @@ export function finalThrownError(text) {
       block.push(line);
       continue;
     }
-    if (isStackFrame(line)) continue;
+    if (isStackFrame(line) || isBraceOrPunctuation(line)) continue;
     break;
   }
   return block.join('\n');
