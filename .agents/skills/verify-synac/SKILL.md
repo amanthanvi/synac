@@ -39,7 +39,7 @@ pnpm verify:launch
 `pnpm verify:launch` is `node .agents/skills/verify-synac/scripts/launch.mjs`. It does the following:
 
 1. Exit 2 when Node is older than 24.
-2. If the saved snapshot names a different repo root, exit and do not restore. If doctor is `READY`, print `REUSED` and exit 0. A live stack is left as it is: launch does not restore files and does not take a new snapshot.
+2. If the saved snapshot names a different repo root, exit and do not restore. A snapshot that does not name a repo root is ignored. If doctor is `READY`, print `REUSED` and exit 0. A live stack is left as it is: launch does not restore files and does not take a new snapshot.
 3. Otherwise restore tool-owned files from the previous snapshot when their current bytes still match what that run wrote, then snapshot the hash, contents, mode, staged state, and repo root of the watched files listed below. When launch returns, record tool-owned bytes that differ from that snapshot. `AGENTS.md`, `CLAUDE.md`, `apps/web/CLAUDE.md`, and `convex.json` are left in place and warned. Cleanup records tool writes that appear after launch returns, and it warns about a new Convex skill file. Leave those bytes in the worktree until cleanup or the next launch that does not reuse a live stack.
 4. If port 3000 or 3210 is open and the matching tmux session is not one this skill started, exit 2 and leave that process alone.
 5. Run `pnpm install --frozen-lockfile` when `node_modules` is missing.
