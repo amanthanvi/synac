@@ -58,6 +58,7 @@ const {
   noteWritesSinceObserved,
   restoreOwnedWrites,
   assertSnapshotCheckout,
+  beginCleanup,
   beginLaunch,
   runBelongsToCheckout,
   writeRun,
@@ -120,7 +121,7 @@ test('each snapshot stores backups in its own directory, including symlinks', ()
   }
 });
 
-test('snapshot records this checkout and a different root is left in place', () => {
+test('launch refuses a foreign or legacy manifest and says how to clear it', () => {
   snapshotWatchedFiles();
   const manifestPath = path.join(state, 'snapshot/manifest.json');
   const original = readFileSync(manifestPath, 'utf8');
@@ -128,32 +129,97 @@ test('snapshot records this checkout and a different root is left in place', () 
   assert.equal(manifest.repoRoot, root);
   assert.equal(manifest.files['apps/web/CLAUDE.md'].kind, 'file');
   assert.equal(manifest.files['.cursor/rules/convex_rules.mdc'].kind, 'absent');
-  const flat = { 'AGENTS.md': { kind: 'file', hash: 'abc', mode: 0o644 } };
-  writeFileSync(manifestPath, `${JSON.stringify(flat)}\n`);
+  const launch = path.join(realRoot, '.agents/skills/verify-synac/scripts/launch.mjs');
+  const env = {
+    ...process.env,
+    SYNAC_VERIFY_ROOT: repo,
+    SYNAC_VERIFY_STATE_DIR: state,
+    VERIFY_EVIDENCE_DIR: path.join(state, 'evidence'),
+  };
+  try {
+    writeFileSync(manifestPath, `${JSON.stringify({ 'AGENTS.md': { kind: 'file', hash: 'abc' } })}\n`);
+    assert.throws(() => assertSnapshotCheckout(), /no checkout identity/);
+    assert.throws(() => assertSnapshotCheckout(), /Remove .*snapshot/);
+    const legacy = spawnSync(process.execPath, [launch], { env, encoding: 'utf8' });
+    assert.notEqual(legacy.status, 0);
+    assert.match(legacy.stderr, /Refusing to launch/);
+    assert.match(legacy.stderr, /Remove .*snapshot/);
+    const legacyGate = beginCleanup();
+    assert.equal(legacyGate.restore, false);
+    assert.equal(legacyGate.stopOwn, true);
+    assert.equal(readFileSync(legacyGate.backup, 'utf8').includes('AGENTS.md'), true);
+
+    manifest.repoRoot = '/tmp/other-checkout';
+    writeFileSync(manifestPath, `${JSON.stringify(manifest)}\n`);
+    assert.throws(() => assertSnapshotCheckout(), /Refusing to launch/);
+    const foreign = spawnSync(process.execPath, [launch], { env, encoding: 'utf8' });
+    assert.notEqual(foreign.status, 0);
+    assert.match(foreign.stderr, /\/tmp\/other-checkout/);
+    assert.match(foreign.stderr, /Remove .*snapshot/);
+    assert.equal(readFileSync(manifestPath, 'utf8').includes('/tmp/other-checkout'), true);
+  } finally {
+    writeFileSync(manifestPath, original);
+  }
   assertSnapshotCheckout();
-  assert.deepEqual(restoreOwnedWrites(), { restored: [], warned: [], backups: [] });
-  writeFileSync(manifestPath, original);
+});
+
+test('cleanup stops this checkout and only skips restore for a foreign manifest', async () => {
+  snapshotWatchedFiles();
+  const manifestPath = path.join(state, 'snapshot/manifest.json');
+  const original = readFileSync(manifestPath, 'utf8');
   const lock = path.join(root, 'skills-lock.json');
   const before = readFileSync(lock, 'utf8');
-  markStepBaseline();
-  writeFileSync(lock, '{"tool":true}\n');
-  captureToolWrites('convex');
-  manifest.repoRoot = '/tmp/other-checkout';
-  writeFileSync(manifestPath, `${JSON.stringify(manifest)}\n`);
-  const warnings = [];
-  const origWarn = console.warn;
-  console.warn = (...args) => warnings.push(args.join(' '));
+  const child = spawn('sleep', ['30'], { stdio: 'ignore' });
   try {
-    assert.doesNotThrow(() => assertSnapshotCheckout());
-    assert.deepEqual(restoreOwnedWrites(), { restored: [], warned: [], backups: [] });
+    await new Promise((resolve, reject) => {
+      child.once('spawn', resolve);
+      child.once('error', reject);
+    });
+    const saved = processIdentity(child.pid);
+    writeFileSync(lock, '{"keep":true}\n');
+    const manifest = JSON.parse(original);
+    manifest.repoRoot = '/tmp/other-checkout';
+    writeFileSync(manifestPath, `${JSON.stringify(manifest)}\n`);
+    writeRun({
+      ...readRun(),
+      repoRoot: root,
+      sessions: [],
+      pids: { convex: saved, web: null, convexSite: null },
+    });
+    const cleanup = path.join(realRoot, '.agents/skills/verify-synac/scripts/cleanup.mjs');
+    const result = spawnSync(process.execPath, [cleanup], {
+      env: {
+        ...process.env,
+        SYNAC_VERIFY_ROOT: repo,
+        SYNAC_VERIFY_STATE_DIR: state,
+        VERIFY_EVIDENCE_DIR: path.join(state, 'evidence'),
+      },
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr);
+    const output = `${result.stdout}\n${result.stderr}`;
+    assert.match(output, /Leaving files in place/);
+    assert.match(output, /Backed up the manifest to /);
+    assert.match(output, new RegExp(`signaled pids ${child.pid}`));
+    assert.equal(readFileSync(lock, 'utf8'), '{"keep":true}\n');
+    await new Promise((resolve) => {
+      if (child.exitCode !== null || child.signalCode !== null) resolve();
+      else child.once('exit', () => resolve());
+    });
+    assert.equal(processIdentity(child.pid), null);
+    const backedUp = output.match(/Backed up the manifest to (\S+)\./);
+    assert.ok(backedUp);
+    assert.equal(readFileSync(backedUp[1], 'utf8').includes('/tmp/other-checkout'), true);
+    assert.equal(readFileSync(manifestPath, 'utf8').includes('/tmp/other-checkout'), true);
   } finally {
-    console.warn = origWarn;
+    try {
+      child.kill('SIGKILL');
+    } catch {
+      // already exited
+    }
+    writeFileSync(manifestPath, original);
+    writeFileSync(lock, before);
   }
-  assert.equal(readFileSync(lock, 'utf8'), '{"tool":true}\n');
-  assert.equal(warnings.some((line) => line.includes('Leaving files in place')), true);
-  writeFileSync(manifestPath, original);
-  writeFileSync(lock, before);
-  assertSnapshotCheckout();
 });
 
 test('a hand edit survives and a tool write is restored', () => {

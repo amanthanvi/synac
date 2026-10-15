@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 import {
-  assertSnapshotCheckout,
+  beginCleanup,
   evidenceDir,
   noteWritesSinceObserved,
   ownedSessions,
   readRun,
   restoreOwnedWrites,
-  runBelongsToCheckout,
   sessionAlive,
   stopRecordedPid,
   tmux,
@@ -19,7 +18,8 @@ const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
 Stops tmux sessions this skill started (synac-verify-convex and synac-verify-web)
 and the listener pids recorded in /tmp/synac-verify/run.json, after checking
 each pid's start time. Sends SIGTERM, then SIGKILL only while that start
-time still matches. A snapshot from another checkout is left in place.
+time still matches. A foreign or legacy snapshot is backed up and not restored. Processes
+recorded for this checkout are still stopped.
 Restores a watched file to the launch snapshot when its current bytes still
 match a recorded tool write. Backs that file up under
 /tmp/synac-verify/restored/<run-id>/ first, including when the path is a
@@ -34,8 +34,8 @@ function main() {
     process.stdout.write(help);
     return;
   }
-  assertSnapshotCheckout();
-  if (!runBelongsToCheckout()) {
+  const gate = beginCleanup();
+  if (!gate.stopOwn) {
     console.log(`evidence ${evidenceDir}`);
     return;
   }
@@ -78,9 +78,11 @@ function main() {
   }
   if (signaled.length > 0) console.log(`signaled pids ${signaled.join(', ')}`);
 
-  noteWritesSinceObserved();
-  warnUnclaimedChanges();
-  restoreOwnedWrites();
+  if (gate.restore) {
+    noteWritesSinceObserved();
+    warnUnclaimedChanges();
+    restoreOwnedWrites();
+  }
   const cleared = readRun();
   writeRun({
     ...cleared,

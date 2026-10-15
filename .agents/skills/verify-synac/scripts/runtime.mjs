@@ -374,17 +374,32 @@ function sleepMs(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
+function processState(pid) {
+  try {
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+    const end = stat.lastIndexOf(')');
+    if (end === -1) return '';
+    return stat.slice(end + 2).trim().split(/\s+/)[0] ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function deadProcess(pid) {
+  return !processIdentity(pid) || processState(pid) === 'Z';
+}
+
 export function stopRecordedPid(saved, graceMs = 2000) {
   if (!saved || !Number.isInteger(saved.pid) || saved.pid <= 1) return 'skip';
-  if (!processIdentity(saved.pid)) return 'exited';
+  if (deadProcess(saved.pid)) return 'exited';
   if (!sameProcess(saved, saved.pid)) return 'reused';
   signalTree(saved.pid, 'SIGTERM');
   const deadline = Date.now() + graceMs;
   while (Date.now() < deadline) {
-    if (!processIdentity(saved.pid)) return 'term';
+    if (deadProcess(saved.pid)) return 'term';
     sleepMs(50);
   }
-  if (!processIdentity(saved.pid)) return 'term';
+  if (deadProcess(saved.pid)) return 'term';
   if (!sameProcess(saved, saved.pid)) return 'reused-before-kill';
   signalTree(saved.pid, 'SIGKILL');
   return 'kill';
@@ -663,32 +678,71 @@ export function snapshotWatchedFiles() {
   stepBaseline = null;
 }
 
-let warnedForeignRoot = null;
+function loadManifest() {
+  if (!existsSync(manifestPath())) return { status: 'missing' };
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(manifestPath(), 'utf8'));
+  } catch {
+    return { status: 'unreadable' };
+  }
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { status: 'unreadable' };
+  if (typeof raw.repoRoot !== 'string' || !raw.files || typeof raw.files !== 'object' || Array.isArray(raw.files)) {
+    return { status: 'legacy' };
+  }
+  if (raw.repoRoot !== root) return { status: 'foreign', repoRoot: raw.repoRoot };
+  return { status: 'ok', raw };
+}
 
 function readManifest() {
-  if (!existsSync(manifestPath())) return null;
-  const raw = readJson(manifestPath(), null);
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-    throw new Error('snapshot manifest is unreadable. Refusing to restore.');
-  }
-  if (typeof raw.repoRoot !== 'string' || !raw.files || typeof raw.files !== 'object' || Array.isArray(raw.files)) {
-    return null;
-  }
-  if (raw.repoRoot !== root) {
-    if (warnedForeignRoot !== raw.repoRoot) {
-      warnedForeignRoot = raw.repoRoot;
-      console.warn(
-        `warning: snapshot repo root is ${raw.repoRoot}, this checkout is ${root}. Leaving files in place.`,
-      );
-    }
-    return null;
-  }
-  warnedForeignRoot = null;
-  return raw;
+  const loaded = loadManifest();
+  if (loaded.status !== 'ok') return null;
+  return loaded.raw;
+}
+
+function clearSnapshotHint() {
+  return `Remove ${snapshotRoot()} or move it aside, then launch again.`;
 }
 
 export function assertSnapshotCheckout() {
-  readManifest();
+  const loaded = loadManifest();
+  if (loaded.status === 'missing' || loaded.status === 'ok') return;
+  if (loaded.status === 'foreign') {
+    throw new Error(
+      `snapshot repo root is ${loaded.repoRoot}, this checkout is ${root}. Refusing to launch. ${clearSnapshotHint()}`,
+    );
+  }
+  if (loaded.status === 'legacy') {
+    throw new Error(`snapshot manifest has no checkout identity. Refusing to launch. ${clearSnapshotHint()}`);
+  }
+  throw new Error(`snapshot manifest is unreadable. Refusing to launch. ${clearSnapshotHint()}`);
+}
+
+function backupRejectedManifest() {
+  const id = `manifest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  const dir = path.join(stateDir, 'restored', id);
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
+  chmodSync(dir, 0o700);
+  const dest = path.join(dir, 'manifest.json');
+  copyFileSync(manifestPath(), dest);
+  return dest;
+}
+
+export function beginCleanup() {
+  const loaded = loadManifest();
+  const stopOwn = runBelongsToCheckout();
+  if (loaded.status === 'missing' || loaded.status === 'ok') {
+    return { restore: loaded.status === 'ok', stopOwn, backup: null };
+  }
+  const dest = backupRejectedManifest();
+  const why =
+    loaded.status === 'foreign'
+      ? `snapshot repo root is ${loaded.repoRoot}, this checkout is ${root}`
+      : loaded.status === 'legacy'
+        ? 'snapshot manifest has no checkout identity'
+        : 'snapshot manifest is unreadable';
+  console.warn(`warning: ${why}. Leaving files in place. Backed up the manifest to ${dest}.`);
+  return { restore: false, stopOwn, backup: dest };
 }
 
 export function runBelongsToCheckout() {
