@@ -17,7 +17,8 @@ const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
 
 Stops tmux sessions this skill started (synac-verify-convex and synac-verify-web)
 and the listener pids recorded in /tmp/synac-verify/run.json, after checking
-each pid's start time. Restores Convex and Next files this launch rewrote.
+each pid's start time. Backs up regenerated Convex and Next files, restores
+their worktree copies, and warns about hand-maintained files.
 
 Leaves /tmp/synac-verify/evidence/ in place.
 `;
