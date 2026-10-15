@@ -28,14 +28,20 @@
     "lint:convex": "eslint convex tests",
     "typecheck": "corepack pnpm -r typecheck",
     "typecheck:convex": "tsc -p convex/tsconfig.json --noEmit",
-    "test": "corepack pnpm -r --workspace-concurrency=1 test && corepack pnpm test:convex",
+    "test": "corepack pnpm -r --workspace-concurrency=1 test && corepack pnpm test:convex && node --test .agents/skills/verify-synac/scripts/cli.test.mjs .agents/skills/verify-synac/scripts/runtime.test.mjs",
+    "test:verify-tmux": "node --test .agents/skills/verify-synac/scripts/runtime.tmux.test.mjs",
     "test:convex": "vitest run -c vitest.convex.config.ts",
     "tagging:check": "corepack pnpm --dir experiments/tagging/synthetic-reference run check && corepack pnpm --dir experiments/tagging/production-backfill run check",
     "format": "corepack pnpm -r format",
     "version:check": "node scripts/checkVersions.mjs",
     "convex:dev": "convex dev",
     "convex:validate": "convex dev --once",
-    "ingest": "corepack pnpm --filter @synac/ingest-tools ingest"
+    "ingest": "corepack pnpm --filter @synac/ingest-tools ingest",
+    "verify:launch": "node .agents/skills/verify-synac/scripts/launch.mjs",
+    "verify:doctor": "node .agents/skills/verify-synac/scripts/doctor.mjs",
+    "verify:smoke": "node .agents/skills/verify-synac/scripts/smoke.mjs",
+    "verify:drive": "node .agents/skills/verify-synac/scripts/smoke.mjs --drive",
+    "verify:cleanup": "node .agents/skills/verify-synac/scripts/cleanup.mjs"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
