@@ -2,7 +2,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 
 import {
+  assertSnapshotCheckout,
   evidenceDir,
+  noteRunWrites,
   ownedSessions,
   processIdentity,
   readRun,
@@ -51,6 +53,7 @@ function main() {
     process.stdout.write(help);
     return;
   }
+  assertSnapshotCheckout();
   const run = readRun();
   const sessions = run.sessions.filter((name) => ownedSessions.has(name));
   for (const name of sessions) {
@@ -88,6 +91,7 @@ function main() {
   }
   if (signaled.length > 0) console.log(`signaled pids ${signaled.join(', ')}`);
 
+  noteRunWrites({ later: true });
   restoreOwnedWrites();
   const cleared = readRun();
   writeRun({

@@ -36,6 +36,13 @@ const namedWatched = [
   '.cursor/rules/convex_rules.mdc',
 ];
 
+const handMaintained = new Set([
+  'AGENTS.md',
+  'CLAUDE.md',
+  'apps/web/CLAUDE.md',
+  'convex.json',
+]);
+
 const snapshotDirName = 'snapshot';
 let tookSnapshot = false;
 export const stateDir = process.env.SYNAC_VERIFY_STATE_DIR ?? '/tmp/synac-verify';
@@ -383,7 +390,11 @@ function describeWorktree(rel) {
     return { kind: 'symlink', hash: sha256Bytes(target), target };
   }
   if (!listed.isFile()) return { kind: 'other', hash: null };
-  return { kind: 'file', hash: sha256Bytes(readFileSync(abs)) };
+  return {
+    kind: 'file',
+    hash: sha256Bytes(readFileSync(abs)),
+    mode: listed.mode & 0o777,
+  };
 }
 
 function walkFiles(dir, prefix) {
@@ -557,6 +568,7 @@ function placeSnapshot(rel, snap) {
   if (listed?.isSymbolicLink()) rmSync(abs, { force: true });
   mkdirSync(path.dirname(abs), { recursive: true });
   copyFileSync(src, abs);
+  if (typeof snap.mode === 'number') chmodSync(abs, snap.mode);
   return true;
 }
 
@@ -565,7 +577,7 @@ export function snapshotWatchedFiles() {
   const staging = path.join(stateDir, `${snapshotDirName}.next`);
   rmSync(staging, { recursive: true, force: true });
   mkdirSync(path.join(staging, 'files'), { recursive: true, mode: 0o700 });
-  const manifest = {};
+  const files = {};
   for (const rel of watchedRels()) {
     if (!safeRel(rel)) continue;
     const described = describeWorktree(rel);
@@ -576,8 +588,9 @@ export function snapshotWatchedFiles() {
       mkdirSync(path.dirname(dest), { recursive: true, mode: 0o700 });
       writeFileSync(dest, bytes);
     }
-    manifest[rel] = { ...described, ...stagedRecord(rel) };
+    files[rel] = { ...described, ...stagedRecord(rel) };
   }
+  const manifest = { repoRoot: root, files };
   writeFileSync(path.join(staging, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   writeFileSync(path.join(staging, 'writes.json'), '{}\n');
   const backupId = new Date().toISOString().replace(/[:.]/g, '-');
@@ -590,39 +603,93 @@ export function snapshotWatchedFiles() {
   tookSnapshot = true;
 }
 
-export function noteRunWrites() {
-  if (!tookSnapshot) return;
-  const manifest = readJson(manifestPath(), null);
-  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return;
-  const writes = {};
-  const rels = new Set([...Object.keys(manifest), ...watchedRels()]);
+function readManifest() {
+  if (!existsSync(manifestPath())) return null;
+  const raw = readJson(manifestPath(), null);
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error('snapshot manifest is unreadable. Refusing to restore.');
+  }
+  if (typeof raw.repoRoot !== 'string' || !raw.files || typeof raw.files !== 'object' || Array.isArray(raw.files)) {
+    throw new Error('snapshot manifest has no checkout identity. Refusing to restore.');
+  }
+  if (raw.repoRoot !== root) {
+    throw new Error(
+      `snapshot repo root is ${raw.repoRoot}, this checkout is ${root}. Refusing to restore.`,
+    );
+  }
+  return raw;
+}
+
+export function assertSnapshotCheckout() {
+  readManifest();
+}
+
+function isNewConvexSkill(rel, snap) {
+  return rel.startsWith('.agents/skills/convex') && (!snap || snap.kind === 'absent');
+}
+
+export function noteRunWrites(options = {}) {
+  const later = options.later === true;
+  if (!later && !tookSnapshot) return;
+  const manifest = readManifest();
+  if (!manifest) return;
+  const files = manifest.files;
+  const existing = later ? readJson(writesPath(), {}) : {};
+  const writeMap = existing && typeof existing === 'object' && !Array.isArray(existing) ? { ...existing } : {};
+  const rels = new Set([...Object.keys(files), ...watchedRels()]);
   for (const rel of rels) {
     if (!safeRel(rel)) continue;
     const current = describeWorktree(rel);
-    const snap = manifest[rel];
+    const snap = files[rel];
     const snapDescribed = snap
       ? { kind: snap.kind, hash: snap.hash ?? null }
       : { kind: 'absent', hash: null };
-    if (sameDescribed(current, snapDescribed)) continue;
-    writes[rel] = { kind: current.kind, hash: current.hash };
+    if (handMaintained.has(rel)) {
+      delete writeMap[rel];
+      if (!sameDescribed(current, snapDescribed)) {
+        console.warn(`warning: ${rel} changed during the run and was left in place`);
+      }
+      continue;
+    }
+    if (sameDescribed(current, snapDescribed)) {
+      delete writeMap[rel];
+      continue;
+    }
+    const prior = writeMap[rel];
+    const priorDescribed =
+      prior && typeof prior === 'object'
+        ? { kind: prior.kind, hash: prior.hash ?? null }
+        : null;
+    if (later && priorDescribed && !sameDescribed(current, priorDescribed)) continue;
+    if (isNewConvexSkill(rel, snap) && (!priorDescribed || !sameDescribed(current, priorDescribed))) {
+      console.warn(`warning: new convex skill file ${rel}`);
+    }
+    writeMap[rel] = { kind: current.kind, hash: current.hash };
   }
-  writeFileSync(writesPath(), `${JSON.stringify(writes, null, 2)}\n`);
+  writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
 }
 
 export function restoreOwnedWrites() {
-  const manifest = readJson(manifestPath(), null);
-  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
-    return { restored: [], warned: [], backups: [] };
-  }
+  const manifest = readManifest();
+  if (!manifest) return { restored: [], warned: [], backups: [] };
+  const files = manifest.files;
   const writes = readJson(writesPath(), {});
   const writeMap = writes && typeof writes === 'object' && !Array.isArray(writes) ? writes : {};
-  const rels = new Set([...Object.keys(manifest), ...Object.keys(writeMap)]);
+  const rels = new Set([...Object.keys(files), ...Object.keys(writeMap)]);
   const restored = [];
   const warned = [];
   const backups = [];
   for (const rel of rels) {
     if (!safeRel(rel)) continue;
-    const snap = manifest[rel] ?? absentRecord();
+    const snap = files[rel] ?? absentRecord();
+    const current = describeWorktree(rel);
+    if (handMaintained.has(rel)) {
+      if (!sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })) {
+        warned.push(rel);
+        console.warn(`warning: ${rel} changed during the run and was left in place`);
+      }
+      continue;
+    }
     const liveStage = stagedRecord(rel);
     const snapIndex = typeof snap.indexHash === 'string' ? snap.indexHash : null;
     const snapStaged = snap.staged === true;
@@ -631,7 +698,6 @@ export function restoreOwnedWrites() {
       console.warn(`warning: ${rel} staged state changed during the run and was left in place`);
       continue;
     }
-    const current = describeWorktree(rel);
     if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })) continue;
     const write = writeMap[rel];
     const owned =

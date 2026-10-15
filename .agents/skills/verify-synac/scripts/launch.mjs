@@ -9,6 +9,7 @@ import {
   convexPort,
   convexSitePort,
   convexUrl,
+  assertSnapshotCheckout,
   ensureState,
   evidenceDir,
   nodeMajor,
@@ -97,13 +98,14 @@ async function run() {
   }
 
   ensureState();
-  restoreOwnedWrites();
+  assertSnapshotCheckout();
   const doctor = await runDoctor(baseUrl);
   if (doctor.status === 'READY') {
     console.log('REUSED');
     console.log(`evidence ${evidenceDir}`);
     return;
   }
+  restoreOwnedWrites();
   snapshotWatchedFiles();
 
   const webUp = await portOpen(webPort);
