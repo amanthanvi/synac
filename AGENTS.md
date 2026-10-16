@@ -32,7 +32,7 @@ Source of truth: `docs/architecture/overview.md` (architecture) + `SPEC.md` (pro
 
 ## Golden commands
 
-- Full verification gate: `pnpm gate`. It runs, in order: `lint`, `lint:convex`, `format`, `typecheck`, `typecheck:convex`, `test`, `tagging:check`, `content:check`, `content:history`, `build`.
+- Full verification gate: `pnpm gate`. It runs, in order: `lint`, `lint:convex`, `format`, `typecheck`, `typecheck:convex`, `test`, `tagging:check`, `content:check`, `content:history`, `build`, `lint:strict`. How that list differs from the required CI checks is `docs/agents/gate-vs-ci.md`.
 - End-to-end suite: `pnpm --filter @synac/e2e test:e2e`. It needs a running local stack and is not part of `pnpm gate`.
 - Content validation: `pnpm content:check`
 - Convex tests: `pnpm test:convex`

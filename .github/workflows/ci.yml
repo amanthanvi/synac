@@ -43,8 +43,9 @@ jobs:
       - name: Validate Convex functions
         run: CONVEX_AGENT_MODE=anonymous npx convex dev --once
 
-      # The steps below are exactly `pnpm gate`, split for clearer logs.
-      # Keep this list and the `gate` script in package.json identical.
+      # Most of the steps below match `pnpm gate`, split for clearer logs.
+      # `pnpm test:verify-tmux` stays outside the gate. See
+      # docs/agents/gate-vs-ci.md.
       - name: Lint
         run: pnpm lint
 
@@ -82,7 +83,7 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Not part of `pnpm gate`: warnings are advisory on a pull request but
-      # must not accumulate, so CI holds the line at zero.
+      # Also the last step of `pnpm gate`. Kept as its own step so the log
+      # names the warning check.
       - name: Lint (no warnings)
         run: pnpm lint:strict

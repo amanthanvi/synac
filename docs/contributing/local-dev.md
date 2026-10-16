@@ -64,9 +64,10 @@ backend that the Convex CLI downloads and runs for you.
 8. `pnpm content:check`
 9. `pnpm content:history`
 10. `pnpm build`
+11. `pnpm lint:strict`
 
-CI runs the same list, so a green local gate means a green CI. Run the gate
-before you push, not after CI tells you.
+`docs/agents/gate-vs-ci.md` lists how this differs from the required CI
+checks. Run the gate before you push, not after CI tells you.
 
 `pnpm gate` does not run the end-to-end suite. The `Quality` workflow runs
 that. `pnpm gate` also does not need tmux. The verification skill's checkout
