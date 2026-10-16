@@ -23,7 +23,7 @@ This file records the gap. It does not make the gate identical to CI. That redes
 | Required check | In `pnpm gate` | Notes |
 | --- | --- | --- |
 | `ci`: lint, convex lint, format, typecheck, convex typecheck, test, tagging check, content check, content history, build | yes | Same commands as the `ci` job, split there for logs. |
-| `ci`: lint with no warnings (`pnpm lint:strict`) | yes | Added to the gate in this change. The `ci` job still runs it as its own step. |
+| `ci`: lint with no warnings (`pnpm lint:strict`) | yes | Last step of `pnpm gate`. The `ci` job still runs it as its own step. |
 | `ci`: validate Convex functions (`npx convex dev --once`) | no | Step 3. Needs a throwaway local backend. |
 | `ci`: `SYNAC_ASSIGNMENTS_BASE_REF` on content history | no | Step 3. CI sets the pull request base SHA, or `github.event.before` on a push. The local command uses `git merge-base HEAD origin/main`, then `HEAD`. |
 | Analyze | no | Step 3. CodeQL `security-extended` for JavaScript, TypeScript, and Actions. |
@@ -35,7 +35,7 @@ This file records the gap. It does not make the gate identical to CI. That redes
 
 ## Intentionally outside the gate
 
-`pnpm test:verify-tmux` needs tmux on `PATH`. `pnpm test` and `pnpm gate` stay on Node and pnpm. This branch's `ci` job installs tmux and runs that command after `pnpm test`. The default branch workflow does not. It is not its own required check, and step 3 should leave it out of `pnpm gate`.
+`pnpm test:verify-tmux` needs tmux on `PATH`. `pnpm test` and `pnpm gate` stay on Node and pnpm. The `ci` job installs tmux and runs `pnpm test:verify-tmux` after `pnpm test`. That command is not its own required check. Step 3 should leave it out of `pnpm gate`.
 
 ## Remaining for step 3
 
