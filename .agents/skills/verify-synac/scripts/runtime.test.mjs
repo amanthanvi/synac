@@ -66,6 +66,12 @@ const {
   runFile,
   stopRecordedPid,
   processIdentity,
+  exactOwnedTarget,
+  sessionAlive,
+  sessionConvex,
+  startSession,
+  stopOwnedSession,
+  tmux,
 } = await import('./runtime.mjs');
 
 after(() => {
@@ -530,6 +536,28 @@ test('SIGKILL waits for the launch start time to still match', async () => {
       // already exited
     }
   }
+});
+
+test('session commands refuse a session this checkout did not create', () => {
+  const foreign = `foreign-dev-${process.pid}`;
+  const prefixTrap = `${sessionConvex}-extra`;
+  assert.equal(sessionAlive(foreign), false);
+  assert.equal(sessionAlive(prefixTrap), false);
+  assert.equal(exactOwnedTarget(sessionConvex), `=${sessionConvex}`);
+  assert.throws(() => exactOwnedTarget(foreign), /refusing to touch session/);
+  assert.throws(() => exactOwnedTarget(prefixTrap), /refusing to touch session/);
+  assert.throws(() => stopOwnedSession(foreign), /refusing to touch session/);
+  assert.throws(() => stopOwnedSession(prefixTrap), /refusing to touch session/);
+  assert.throws(() => startSession(foreign, 'sleep 30'), /refusing to start unknown session/);
+  assert.throws(() => startSession(prefixTrap, 'sleep 30'), /refusing to start unknown session/);
+  assert.throws(() => tmux(['kill-session', '-t', sessionConvex]), /exact session name/);
+  assert.throws(() => tmux(['attach-session', '-t', `=${foreign}`]), /refusing tmux attach-session/);
+  assert.throws(() => tmux(['attach', '-t', foreign]), /refusing tmux attach/);
+  assert.throws(() => tmux(['kill-server']), /refusing tmux kill-server/);
+  assert.throws(
+    () => tmux(['new-session', '-A', '-s', sessionConvex]),
+    /refusing to attach a tmux session/,
+  );
 });
 
 test('runtime checks use the temp repo and leave the real checkout alone', () => {
