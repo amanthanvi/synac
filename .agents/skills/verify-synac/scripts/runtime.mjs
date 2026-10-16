@@ -85,7 +85,7 @@ export const sessionConvex = ownSessions.convex;
 export const sessionWeb = ownSessions.web;
 export const ownedSessions = new Set([sessionConvex, sessionWeb]);
 
-const tmuxConfig = process.env.SYNAC_VERIFY_TMUX_CONFIG
+export const tmuxConfig = process.env.SYNAC_VERIFY_TMUX_CONFIG
   ? process.env.SYNAC_VERIFY_TMUX_CONFIG
   : existsSync('/exec-daemon/tmux.portal.conf')
     ? '/exec-daemon/tmux.portal.conf'
@@ -215,7 +215,62 @@ export function shQuote(value) {
   return `'${String(value).replace(/'/g, `'\\''`)}'`;
 }
 
+const ownedSessionName = /^synac-v-[0-9a-f]{12}-(?:convex|web)$/;
+
+function isOwnedSessionName(name) {
+  return ownedSessions.has(name) && ownedSessionName.test(name);
+}
+
+// tmux treats an unqualified target as a unique prefix. `=name` is exact, so
+// a longer session this checkout did not create cannot be selected.
+export function exactOwnedTarget(name) {
+  if (!isOwnedSessionName(name)) {
+    throw new Error(`refusing to touch session ${name}`);
+  }
+  return `=${name}`;
+}
+
+function guardTmuxArgs(args) {
+  const command = args[0];
+  if (command === 'has-session' || command === 'kill-session') {
+    const target = args[2];
+    if (args.length !== 3 || args[1] !== '-t' || typeof target !== 'string' || !target.startsWith('=')) {
+      throw new Error(`refusing tmux ${command} without an exact session name`);
+    }
+    const name = target.slice(1);
+    if (!isOwnedSessionName(name)) throw new Error(`refusing to touch session ${name}`);
+    return;
+  }
+  if (command === 'new-session') {
+    if (args.includes('-A') || args.includes('-t')) {
+      throw new Error('refusing to attach a tmux session');
+    }
+    const name = args[3];
+    const detached =
+      args[1] === '-d' &&
+      args[2] === '-s' &&
+      isOwnedSessionName(name) &&
+      args[4] === '-c' &&
+      args[5] === root &&
+      args[6] === '--' &&
+      args[7] === 'bash' &&
+      args[8] === '-c' &&
+      typeof args[9] === 'string' &&
+      args.length === 10;
+    if (!detached) {
+      throw new Error(
+        isOwnedSessionName(name)
+          ? 'refusing tmux new-session'
+          : `refusing to start unknown session ${String(name)}`,
+      );
+    }
+    return;
+  }
+  throw new Error(`refusing tmux ${String(command)}`);
+}
+
 export function tmux(args, options = {}) {
+  guardTmuxArgs(args);
   const prefix = tmuxConfig ? ['-f', tmuxConfig] : [];
   return spawnSync('tmux', [...prefix, ...args], {
     encoding: 'utf8',
@@ -224,13 +279,17 @@ export function tmux(args, options = {}) {
 }
 
 export function sessionAlive(name) {
-  if (!ownedSessions.has(name)) return false;
-  const result = tmux(['has-session', '-t', name], { stdio: 'ignore' });
+  if (!isOwnedSessionName(name)) return false;
+  const result = tmux(['has-session', '-t', exactOwnedTarget(name)], { stdio: 'ignore' });
   return result.status === 0;
 }
 
+export function stopOwnedSession(name) {
+  return tmux(['kill-session', '-t', exactOwnedTarget(name)], { stdio: 'inherit' });
+}
+
 export function startSession(name, script) {
-  if (!ownedSessions.has(name)) {
+  if (!isOwnedSessionName(name)) {
     throw new Error(`refusing to start unknown session ${name}`);
   }
   const result = tmux(

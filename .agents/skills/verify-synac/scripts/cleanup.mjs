@@ -10,8 +10,8 @@ import {
   sessionConvex,
   sessionWeb,
   stateDir,
+  stopOwnedSession,
   stopRecordedPid,
-  tmux,
   warnUnclaimedChanges,
   writeRun,
 } from './runtime.mjs';
@@ -20,9 +20,11 @@ const help = `Usage: node .agents/skills/verify-synac/scripts/cleanup.mjs
 
 Stops tmux sessions this skill started for this checkout (${sessionConvex} and
 ${sessionWeb}) and the listener pids recorded in ${stateDir}/run.json, after
-checking each pid's start time. Sends SIGTERM, then SIGKILL only while that
-start time still matches. Another checkout's sessions and pids are left
-alone. A foreign or legacy snapshot is backed up and not restored. Processes
+checking each pid's start time. Kill uses an exact tmux target, so a session
+this checkout did not create is not stopped, including one whose name only
+starts with that string. These scripts never attach. Sends SIGTERM, then
+SIGKILL only while that start time still matches. Another checkout's
+sessions and pids are left alone. A foreign or legacy snapshot is backed up and not restored. Processes
 recorded for this checkout are still stopped.
 Restores a watched file to the launch snapshot when its current bytes still
 match a recorded tool write. Backs that file up under
@@ -47,7 +49,7 @@ function main() {
   const sessions = run.sessions.filter((name) => ownedSessions.has(name));
   for (const name of sessions) {
     if (!sessionAlive(name)) continue;
-    const result = tmux(['kill-session', '-t', name], { stdio: 'inherit' });
+    const result = stopOwnedSession(name);
     if (result.status !== 0) {
       console.error(`cleanup: tmux kill-session ${name} exited ${result.status}`);
     } else {
