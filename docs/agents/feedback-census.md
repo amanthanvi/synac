@@ -27,7 +27,8 @@ Each item is listed under one theme. A later comment that only repeats a rule is
 | Classification stays offline and rollouts stay staged | 2 |
 | Missing input and local errors fail closed | 2 |
 | Tests cover the caller-visible behavior | 2 |
-| An older writer does not replace a newer result | 2 |
+| An older ingest publication must not replace a newer one | 1 |
+| Rate-limit scopes overlap across a split deploy | 1 |
 
 ## Synthetic reference stays labeled synthetic (6)
 
@@ -100,10 +101,13 @@ The same offline rule is restated in the [183 close](https://github.com/amanthan
 - Browse tests covered `browseOffersNextPage` and the Convex query, and never called `browseResponse`, so a wrong `meta.hasMore` could still pass. [Greptile on #238, 4239207406](https://github.com/amanthanvi/synac/pull/238#discussion_r4239207406).
 - A tmux session test inside `pnpm test` and `pnpm gate` fails where the documented setup is only Node and pnpm. The checker accepted the split: `test:verify-tmux` is a separate script, and required CI runs it after `pnpm test`. [Greptile P1, 4285174751](https://github.com/amanthanvi/synac/pull/242#discussion_r4285174751).
 
-## An older writer does not replace a newer result (2)
+## An older ingest publication must not replace a newer one (1)
 
 - Per-source ingest locks stop simultaneous writes and still allow an older scheduled run to publish over a newer dispatch of the same source. [Greptile P1 on #239, 4239263202](https://github.com/amanthanvi/synac/pull/239#discussion_r4239263202).
-- Removing the `api_v1_search` rate-limit scope while Convex and Vercel deploy separately makes uncached `/api/v1` reads return 500 until both sides match. Stage the scope: accept the old and new names, ship the web app, then remove the old name. [Greptile P1 on #240, 4239250455](https://github.com/amanthanvi/synac/pull/240#discussion_r4239250455). `docs/RELEASING.md` is the rollout doc Greptile cited.
+
+## Rate-limit scopes overlap across a split deploy (1)
+
+- Removing the `api_v1_search` rate-limit scope while Convex and Vercel deploy separately makes uncached `/api/v1` reads return 500 until both sides match. Accept the old and new scope names, ship the web app, then remove the old name. [Greptile P1 on #240, 4239250455](https://github.com/amanthanvi/synac/pull/240#discussion_r4239250455). `docs/RELEASING.md` is the rollout doc Greptile cited. The two-phase content rollout in the offline-classification theme is a separate owner rule.
 
 ## Rules later steps can turn into checks
 
@@ -118,6 +122,8 @@ Candidates only. This file does not add the checks.
 7. On a tagging release, enforce the strict publication floor against the served corpus. Keep ordinary takedown PRs on the lenient check, matching the #241 withdrawal.
 8. Refuse a dependency pin that resolves to an older version than the ref `main` already uses.
 9. In verify launch and cleanup, record the session before the readiness wait, bind restore state to one checkout path, and signal a PID only after a start-time identity check.
+10. Reject an older ingest publication that would replace a newer result for the same source.
+11. Accept both the old and the new rate-limit scope names until Convex and the web app have both shipped, then remove the old name.
 
 ## What this census leaves out
 
