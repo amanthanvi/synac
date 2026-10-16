@@ -427,7 +427,7 @@ describe('rateLimit', () => {
     const t = await seeded();
     const args = {
       serviceKey: 'test-service-key',
-      scope: 'api_v1_search' as const,
+      scope: 'search' as const,
       key: `ip:${'a'.repeat(64)}`,
     };
     await expect(

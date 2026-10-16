@@ -1,6 +1,16 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { describe, expect, test } from 'vitest';
 
+import { RATE_LIMIT_PER_MINUTE } from '../../../../convex/rateLimitPolicy';
 import { buildOpenApiDocument } from './openapi';
+
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../..',
+);
 
 /**
  * The contract the document keeps: adding a route without describing it here
@@ -54,6 +64,36 @@ describe('buildOpenApiDocument', () => {
         expect(Object.keys(operation.responses), path).toContain('200');
       }
     }
+  });
+
+  test('documents the separate search and read budgets', () => {
+    const description = document.info.description;
+    expect(description).toContain(
+      `${RATE_LIMIT_PER_MINUTE.search} requests per minute`,
+    );
+    expect(description).toContain(
+      `${RATE_LIMIT_PER_MINUTE.api_read} requests per minute`,
+    );
+    expect(description).toContain(
+      'Exhausting one budget does not exhaust the other',
+    );
+    expect(
+      document.paths['/api/v1/search']?.get?.responses['429']?.description,
+    ).toContain(`${RATE_LIMIT_PER_MINUTE.search} requests per minute`);
+    expect(
+      document.paths['/api/v1/terms']?.get?.responses['429']?.description,
+    ).toContain(`${RATE_LIMIT_PER_MINUTE.api_read} per minute`);
+
+    const apiDoc = readFileSync(path.join(repoRoot, 'docs/api.md'), 'utf8');
+    expect(apiDoc).toContain(
+      `${RATE_LIMIT_PER_MINUTE.search} requests per minute`,
+    );
+    expect(apiDoc).toContain(
+      `${RATE_LIMIT_PER_MINUTE.api_read} requests per minute`,
+    );
+    expect(apiDoc).toContain(
+      `${RATE_LIMIT_PER_MINUTE.csp_report} requests per minute`,
+    );
   });
 
   test('every $ref points at a schema that exists', () => {

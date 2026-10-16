@@ -6,6 +6,10 @@ The website also has an in-app changelog at `/changelog`. That view is curated f
 
 ## Unreleased
 
+- Rate limits are split by route. Search (`GET /api/v1/search` and the
+  `/search` page) allows 120 requests per minute, other `/api/v1` reads allow
+  60, and CSP reports allow 30. Exhausting one budget no longer answers 429
+  for the others.
 - Vercel Web Analytics counts page views in aggregate, without cookies, with
   the same query-string removal and Global Privacy Control opt-out as Speed
   Insights. The privacy policy lists what Vercel receives.

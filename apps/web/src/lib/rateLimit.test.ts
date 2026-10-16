@@ -1,6 +1,21 @@
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { deriveRateLimitKey, RATE_LIMIT_KEY_PATTERN } from './rateLimit';
+import {
+  deriveRateLimitKey,
+  enforcePageRateLimit,
+  enforceRateLimit,
+  RATE_LIMIT_KEY_PATTERN,
+} from './rateLimit';
+
+const consumeRateLimit = vi.hoisted(() => vi.fn());
+
+vi.mock('./convex', () => ({
+  consumeRateLimit,
+}));
+
+beforeEach(() => {
+  consumeRateLimit.mockReset();
+});
 
 afterEach(() => {
   delete process.env.SYNAC_TRUSTED_PROXY_HOPS;
@@ -41,6 +56,39 @@ describe('deriveRateLimitKey', () => {
     expect(deriveRateLimitKey(headers({}))).toMatch(RATE_LIMIT_KEY_PATTERN);
     expect(deriveRateLimitKey(headers({ 'x-forwarded-for': ' , , ' }))).toMatch(
       RATE_LIMIT_KEY_PATTERN,
+    );
+  });
+});
+
+describe('enforceRateLimit', () => {
+  test.each(['search', 'api_read', 'csp_report'] as const)(
+    'charges the %s scope and returns the verdict',
+    async (scope) => {
+      consumeRateLimit.mockResolvedValueOnce({
+        allowed: false,
+        retryAfterSeconds: 7,
+      });
+      const verdict = await enforceRateLimit(
+        headers({ 'x-forwarded-for': '203.0.113.9' }),
+        scope,
+      );
+      expect(verdict).toEqual({ allowed: false, retryAfterSeconds: 7 });
+      expect(consumeRateLimit).toHaveBeenCalledWith(
+        expect.stringMatching(RATE_LIMIT_KEY_PATTERN),
+        scope,
+      );
+    },
+  );
+
+  test('the search page spends the search scope and fails open when the limiter is down', async () => {
+    consumeRateLimit.mockRejectedValueOnce(new Error('limiter down'));
+    const verdict = await enforcePageRateLimit(
+      headers({ 'x-forwarded-for': '203.0.113.9' }),
+    );
+    expect(verdict).toEqual({ allowed: true, retryAfterSeconds: 0 });
+    expect(consumeRateLimit).toHaveBeenCalledWith(
+      expect.stringMatching(RATE_LIMIT_KEY_PATTERN),
+      'search',
     );
   });
 });
