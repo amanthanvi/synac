@@ -76,7 +76,7 @@ From the PR Checker verdict on #242. The 11:57 ET and 19:39 ET snapshots were CH
 - Greptile has reviewed that SHA. A pass on an older SHA does not carry. The re-gate stayed open until `@greptileai review` produced a success on `488d579` ("45 files reviewed, 0 comments added").
 - An open P1 from an older commit is fixed on the head, with an author reply. Thread [4285174751](https://github.com/amanthanvi/synac/pull/242#discussion_r4285174751) ("Tests now require tmux") stayed open until `pnpm test` and `pnpm gate` stopped invoking tmux and `pnpm test:verify-tmux` ran as its own required CI step. Author reply [4285216833](https://github.com/amanthanvi/synac/pull/242#discussion_r4285216833).
 
-The same verdict records that CodeRabbit is skipped on this repo and is not an approval gate. Opus and Sol reviews were unavailable for that check.
+The same verdict records that auto-review is skipped. A manual `@coderabbitai review` does run, and CodeRabbit is not a required gate. Opus and Sol reviews were unavailable for that check.
 
 ## Public text matches the pin or the bound (3)
 
@@ -131,4 +131,10 @@ Candidates only. This file does not add the checks.
 - Issues [#190](https://github.com/amanthanvi/synac/issues/190), [#193](https://github.com/amanthanvi/synac/issues/193), and [#199](https://github.com/amanthanvi/synac/issues/199) had no `amanthanvi` comment. #199 and #200 are Dependabot pull requests inside that issue range.
 - Thirteen `amanthanvi` comments are status or execution logs: eight on [#189](https://github.com/amanthanvi/synac/issues/189), the raw-batch note and the campaign-complete note on [#191](https://github.com/amanthanvi/synac/issues/191), the batch-submitted note on [#192](https://github.com/amanthanvi/synac/issues/192), the real-run start on [#194](https://github.com/amanthanvi/synac/issues/194), and the execution-ready confirmation on [#198](https://github.com/amanthanvi/synac/issues/198).
 - Sourcery is outside the source list. One Sourcery note on #239, about the ingest concurrency group dropping a pending dispatch, is omitted.
-- The #242 verdict says earlier optional P3 items still stood if open. Those P3 texts are not in the attached verdict, so they are not itemized here.
+
+## Optional #242 checker notes (2)
+
+These two notes are the optional P3 items from the #242 PR Checker verdict. They sit outside the table total of 36.
+
+- P3-r. A line made only of symbols or emoji, for example a lone "❌", is never treated as an error line.
+- P3-s. The ingest CLI prints only `error.message`, so any undici "fetch failed", including a TLS certificate error, is classed `INCONCLUSIVE`, not only an unreachable network.
