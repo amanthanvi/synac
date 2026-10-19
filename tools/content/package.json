@@ -16,15 +16,15 @@
     "format:write": "prettier . --write --ignore-path ../../.prettierignore"
   },
   "dependencies": {
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^25.9.9",
     "eslint": "^9.39.5",
-    "prettier": "^3.9.9",
+    "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.5"
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
