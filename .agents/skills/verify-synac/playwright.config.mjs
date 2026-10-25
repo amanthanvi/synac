@@ -3,6 +3,10 @@ import { fileURLToPath } from 'node:url';
 
 import { evidenceDir } from './scripts/runtime.mjs';
 
+// Specs are compiled to CommonJS, which cannot import this ESM config's
+// runtime module. Hand them the same directory through the environment.
+process.env.VERIFY_EVIDENCE_DIR ??= evidenceDir;
+
 const skillDir = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
