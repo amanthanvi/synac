@@ -417,6 +417,25 @@ test('an unfinished launch restores tool writes before the next snapshot', () =>
   }
 });
 
+test('a second beginLaunch does not restore or snapshot again', () => {
+  const lock = path.join(root, 'skills-lock.json');
+  const original = readFileSync(lock, 'utf8');
+  try {
+    snapshotWatchedFiles();
+    markObserved();
+    assert.equal(beginLaunch('NOT_READY'), 'snapshot');
+    const id = backupId();
+    writeFileSync(lock, '{"dirty":true}\n');
+    assert.equal(beginLaunch('NOT_READY'), 'snapshot');
+    assert.equal(readFileSync(lock, 'utf8'), '{"dirty":true}\n');
+    assert.equal(backupId(), id);
+    assert.equal(beginLaunch('READY'), 'reuse');
+  } finally {
+    writeFileSync(lock, original);
+    markObserved();
+  }
+});
+
 test('cleanup does not stop a run recorded for another checkout', () => {
   const warnings = [];
   const orig = console.warn;

@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { after, describe, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -159,7 +165,7 @@ describe('port 3000 ownership', { concurrency: false }, () => {
     );
   });
 
-  test('checkout revision is HEAD plus a hash of git diff HEAD', () => {
+  test('checkout revision hashes tracked diffs and untracked files', () => {
     const rel = path.join(repo, 'README.md');
     const clean = checkoutRevision();
     assert.match(clean.head, /^[0-9a-f]{40}$/);
@@ -180,9 +186,68 @@ describe('port 3000 ownership', { concurrency: false }, () => {
       writeFileSync(rel, 'launch\n');
     }
     assert.equal(checkoutMatchesRun(), true);
+
+    const extra = path.join(repo, 'notes.txt');
+    const link = path.join(repo, 'link.txt');
+    writeFileSync(extra, 'untracked\n');
+    try {
+      const withFile = checkoutRevision();
+      assert.notEqual(withFile.diffHash, clean.diffHash);
+      assert.equal(checkoutMatchesRun(), false);
+      writeFileSync(extra, 'untracked\nchanged\n');
+      assert.notEqual(checkoutRevision().diffHash, withFile.diffHash);
+      rmSync(extra);
+      symlinkSync('README.md', link);
+      const linked = checkoutRevision();
+      assert.notEqual(linked.diffHash, clean.diffHash);
+      symlinkSync('missing', path.join(repo, 'other-link.txt'));
+      assert.notEqual(checkoutRevision().diffHash, linked.diffHash);
+    } finally {
+      rmSync(extra, { force: true });
+      rmSync(link, { force: true });
+      rmSync(path.join(repo, 'other-link.txt'), { force: true });
+    }
+    assert.equal(checkoutMatchesRun(), true);
+
+    writeFileSync(path.join(repo, '.gitignore'), 'ignored.txt\n');
+    git(['add', '.gitignore']);
+    git(['-c', 'commit.gpgsign=false', 'commit', '-m', 'ignore']);
+    const ignoredBaseline = checkoutRevision();
+    writeFileSync(path.join(repo, 'ignored.txt'), 'secret\n');
+    try {
+      assert.equal(checkoutRevision().diffHash, ignoredBaseline.diffHash);
+    } finally {
+      rmSync(path.join(repo, 'ignored.txt'), { force: true });
+    }
+
     const recorded = recordCheckoutRevision();
-    assert.equal(recorded.head, clean.head);
-    assert.equal(readRun().head, clean.head);
-    assert.equal(readRun().diffHash, clean.diffHash);
+    assert.equal(recorded.head, ignoredBaseline.head);
+    assert.equal(readRun().head, ignoredBaseline.head);
+    assert.equal(readRun().diffHash, ignoredBaseline.diffHash);
+  });
+
+  test('a listener on 3211 that this checkout does not own is refused', async () => {
+    if (server) {
+      const closing = server;
+      server = null;
+      await new Promise((resolve) => closing.close(() => resolve()));
+    }
+    server = createServer((_request, response) => {
+      response.writeHead(200);
+      response.end('site');
+    });
+    await new Promise((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(3211, '127.0.0.1', resolve);
+    });
+
+    const started = Date.now();
+    const result = await runLaunch(launchEnv());
+    assert.equal(result.status, 2, `${result.stdout}\n${result.stderr}`);
+    assert.ok(Date.now() - started < 4000, result.stderr);
+    assert.doesNotMatch(result.stdout ?? '', /REUSED/);
+    assert.match(result.stderr, /port 3211 is open/);
+    assert.match(result.stderr, /Leave it alone/);
+    assert.equal(existsSync(path.join(state, 'snapshot')), false);
   });
 });

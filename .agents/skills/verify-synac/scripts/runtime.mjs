@@ -76,6 +76,7 @@ const handMaintained = new Set([
 
 const snapshotDirName = 'snapshot';
 let tookSnapshot = false;
+let launchOpen = false;
 export const stateDir = process.env.SYNAC_VERIFY_STATE_DIR ?? stateDirFor(root);
 export const evidenceDir =
   process.env.VERIFY_EVIDENCE_DIR ?? path.join(stateDir, 'evidence');
@@ -545,23 +546,77 @@ export function ownsRecordedListener(session, saved, port) {
   return listenerPids(port).some((pid) => sameProcess(saved, pid));
 }
 
+function gitOutput(args) {
+  const result = spawnSync('git', args, {
+    cwd: root,
+    maxBuffer: 32 * 1024 * 1024,
+  });
+  if (result.status !== 0 || result.error) return null;
+  return result.stdout ?? Buffer.alloc(0);
+}
+
+function hashWorktreeFile(hash, rel) {
+  if (!safeRel(rel)) return false;
+  let info;
+  try {
+    info = lstatSync(path.join(root, rel));
+  } catch {
+    return false;
+  }
+  hash.update(rel);
+  hash.update('\0');
+  if (info.isSymbolicLink()) {
+    hash.update('symlink\0');
+    try {
+      hash.update(readlinkSync(path.join(root, rel)));
+    } catch {
+      return false;
+    }
+  } else if (info.isFile()) {
+    hash.update('file\0');
+    try {
+      hash.update(readFileSync(path.join(root, rel)));
+    } catch {
+      return false;
+    }
+  } else {
+    hash.update('other\0');
+    hash.update(String(info.mode));
+  }
+  hash.update('\0');
+  return true;
+}
+
 export function checkoutRevision() {
   const head = spawnSync('git', ['rev-parse', 'HEAD'], {
     cwd: root,
     encoding: 'utf8',
   });
-  const diff = spawnSync('git', ['diff', '--no-ext-diff', 'HEAD'], {
-    cwd: root,
-    maxBuffer: 32 * 1024 * 1024,
-  });
   const headValue = head.status === 0 ? (head.stdout ?? '').trim() : '';
-  const diffBytes =
-    diff.status === 0 && diff.stdout ? diff.stdout : Buffer.alloc(0);
-  const diffHash =
-    diff.status === 0
-      ? createHash('sha256').update(diffBytes).digest('hex')
-      : '';
-  return { head: headValue, diffHash };
+  const diffBytes = gitOutput(['diff', '--no-ext-diff', 'HEAD']);
+  const statusBytes = gitOutput(['status', '--porcelain=v1', '-uall']);
+  const untracked = gitOutput(['ls-files', '-o', '--exclude-standard', '-z']);
+  if (diffBytes === null || statusBytes === null || untracked === null) {
+    return { head: headValue, diffHash: '' };
+  }
+  const hash = createHash('sha256');
+  hash.update('diff\0');
+  hash.update(diffBytes);
+  hash.update('\0status\0');
+  hash.update(statusBytes);
+  hash.update('\0untracked\0');
+  const paths = [
+    ...new Set(
+      untracked
+        .toString('utf8')
+        .split('\0')
+        .filter((rel) => rel.length > 0),
+    ),
+  ].sort();
+  for (const rel of paths) {
+    if (!hashWorktreeFile(hash, rel)) return { head: headValue, diffHash: '' };
+  }
+  return { head: headValue, diffHash: hash.digest('hex') };
 }
 
 export function checkoutMatchesRun(run = readRun()) {
@@ -824,6 +879,7 @@ function placeSnapshot(rel, snap) {
 }
 
 export function snapshotWatchedFiles() {
+  launchOpen = false;
   ensureState();
   const staging = path.join(stateDir, `${snapshotDirName}.next`);
   rmSync(staging, { recursive: true, force: true });
@@ -1048,6 +1104,7 @@ function observedPath() {
 }
 
 export function markObserved() {
+  launchOpen = false;
   if (!tookSnapshot) return;
   const manifest = readManifest();
   if (!manifest) return;
@@ -1185,9 +1242,11 @@ function restoreUnfinishedInner() {
 
 export function beginLaunch(doctorStatus) {
   if (doctorStatus === 'READY') return 'reuse';
+  if (launchOpen) return 'snapshot';
   restoreUnfinishedRun();
   restoreOwnedWrites();
   snapshotWatchedFiles();
+  launchOpen = true;
   return 'snapshot';
 }
 

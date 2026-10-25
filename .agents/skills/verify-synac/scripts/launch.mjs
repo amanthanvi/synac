@@ -21,6 +21,7 @@ import {
   noteSession,
   ownsRecordedListener,
   portOpen,
+  portOwner,
   readRun,
   recordCheckoutRevision,
   rememberListener,
@@ -166,9 +167,22 @@ async function run() {
     recorded.pids.convex,
     convexPort,
   );
+  const siteOwned = ownsRecordedListener(
+    sessionConvex,
+    recorded.pids.convexSite,
+    convexSitePort,
+  );
+  let webUp = await portOpen(webPort);
+  let convexUp = await portOpen(convexPort);
+  const siteUp = await portOpen(convexSitePort);
   const revisionOk =
-    webOwned || convexOwned ? checkoutMatchesRun(recorded) : true;
-  if (doctor.status === 'READY' && webOwned && revisionOk) {
+    webOwned || convexOwned || siteOwned ? checkoutMatchesRun(recorded) : true;
+  if (
+    doctor.status === 'READY' &&
+    webOwned &&
+    revisionOk &&
+    (!siteUp || siteOwned)
+  ) {
     const phase = beginLaunch('READY');
     if (phase === 'reuse') {
       console.log('REUSED');
@@ -177,8 +191,6 @@ async function run() {
     }
   }
 
-  let webUp = await portOpen(webPort);
-  let convexUp = await portOpen(convexPort);
   if (webUp && !webOwned) {
     const whose = sessionAlive(sessionWeb)
       ? 'the listener pid does not match the pid recorded for this checkout'
@@ -187,9 +199,20 @@ async function run() {
       `port ${webPort} is open (${doctor.portOwner}) and ${whose}. Leave it alone.`,
     );
   }
-  if (convexUp && !sessionAlive(sessionConvex)) {
+  if (convexUp && !convexOwned) {
+    const whose = sessionAlive(sessionConvex)
+      ? 'the listener pid does not match the pid recorded for this checkout'
+      : 'this skill did not start it';
     fail(
-      `port ${convexPort} is open and this skill did not start it. Leave it alone.`,
+      `port ${convexPort} is open (${portOwner(convexPort)}) and ${whose}. Leave it alone.`,
+    );
+  }
+  if (siteUp && !siteOwned) {
+    const whose = sessionAlive(sessionConvex)
+      ? 'the listener pid does not match the pid recorded for this checkout'
+      : 'this skill did not start it';
+    fail(
+      `port ${convexSitePort} is open (${portOwner(convexSitePort)}) and ${whose}. Leave it alone.`,
     );
   }
   if (!revisionOk) {
@@ -197,7 +220,7 @@ async function run() {
       await releaseOwned(sessionWeb, ['web'], [webPort]);
       webUp = false;
     }
-    if (convexOwned) {
+    if (convexOwned || siteOwned) {
       await releaseOwned(
         sessionConvex,
         ['convex', 'convexSite'],

@@ -69,10 +69,10 @@ CI runs the same list, so a green local gate means a green CI. Run the gate
 before you push, not after CI tells you.
 
 `pnpm gate` does not run the end-to-end suite. The `Quality` workflow runs
-that. `pnpm gate` also does not need tmux. The verification skill's checkout
-session test is `pnpm test:verify-tmux`, and that command needs tmux on
-`PATH`. Required CI does not install tmux. The optional verify-smoke workflow
-installs tmux and runs that command on `workflow_dispatch`.
+that. `pnpm gate` does not need tmux. Required CI installs tmux when it is missing,
+with `command -v tmux || (sudo apt-get update && sudo apt-get install -y tmux)`,
+and then runs `pnpm test:verify-tmux`. The verify-smoke workflow uses the same
+install and the same test on `workflow_dispatch`.
 
 ## End-to-end tests
 
