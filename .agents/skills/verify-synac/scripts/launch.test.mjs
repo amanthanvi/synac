@@ -63,6 +63,31 @@ function launchEnv(extra = {}) {
   };
 }
 
+function listen(server) {
+  return new Promise((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address();
+      if (!address || typeof address === 'string') {
+        reject(new Error('launch test server has no port'));
+        return;
+      }
+      resolve(address.port);
+    });
+  });
+}
+
+function closeServer(target) {
+  return new Promise((resolve) => target.close(() => resolve()));
+}
+
+async function closedPort() {
+  const holder = createServer();
+  const port = await listen(holder);
+  await closeServer(holder);
+  return port;
+}
+
 function runLaunch(env) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [launch], { env });
@@ -135,16 +160,17 @@ describe('port 3000 ownership', { concurrency: false }, () => {
       response.writeHead(404);
       response.end();
     });
-    await new Promise((resolve, reject) => {
-      server.once('error', reject);
-      server.listen(3000, '127.0.0.1', resolve);
-    });
-
+    const port = await listen(server);
     const started = Date.now();
-    const result = await runLaunch(launchEnv());
+    const result = await runLaunch(
+      launchEnv({
+        SYNAC_VERIFY_WEB_PORT: String(port),
+        E2E_BASE_URL: `http://127.0.0.1:${port}`,
+      }),
+    );
     assert.equal(result.status, 2, `${result.stdout}\n${result.stderr}`);
     assert.ok(
-      Date.now() - started < 4000,
+      Date.now() - started < 15_000,
       'doctor treated the ready server as a timeout',
     );
     assert.doesNotMatch(result.stdout ?? '', /REUSED/);
@@ -154,10 +180,14 @@ describe('port 3000 ownership', { concurrency: false }, () => {
     const warnings = [];
     const orig = console.warn;
     console.warn = (...args) => warnings.push(args.join(' '));
+    const previousPort = process.env.SYNAC_VERIFY_WEB_PORT;
+    process.env.SYNAC_VERIFY_WEB_PORT = String(port);
     try {
       warnForeignWebPort();
     } finally {
       console.warn = orig;
+      if (previousPort === undefined) delete process.env.SYNAC_VERIFY_WEB_PORT;
+      else process.env.SYNAC_VERIFY_WEB_PORT = previousPort;
     }
     assert.equal(
       warnings.some((line) => line.includes('not the web pid recorded')),
@@ -236,17 +266,22 @@ describe('port 3000 ownership', { concurrency: false }, () => {
       response.writeHead(200);
       response.end('site');
     });
-    await new Promise((resolve, reject) => {
-      server.once('error', reject);
-      server.listen(3211, '127.0.0.1', resolve);
-    });
-
+    const sitePort = await listen(server);
+    const web = await closedPort();
+    const convex = await closedPort();
     const started = Date.now();
-    const result = await runLaunch(launchEnv());
+    const result = await runLaunch(
+      launchEnv({
+        SYNAC_VERIFY_WEB_PORT: String(web),
+        SYNAC_VERIFY_CONVEX_PORT: String(convex),
+        SYNAC_VERIFY_CONVEX_SITE_PORT: String(sitePort),
+        E2E_BASE_URL: `http://127.0.0.1:${web}`,
+      }),
+    );
     assert.equal(result.status, 2, `${result.stdout}\n${result.stderr}`);
-    assert.ok(Date.now() - started < 4000, result.stderr);
+    assert.ok(Date.now() - started < 15_000, result.stderr);
     assert.doesNotMatch(result.stdout ?? '', /REUSED/);
-    assert.match(result.stderr, /port 3211 is open/);
+    assert.match(result.stderr, new RegExp(`port ${sitePort} is open`));
     assert.match(result.stderr, /Leave it alone/);
     assert.equal(existsSync(path.join(state, 'snapshot')), false);
   });

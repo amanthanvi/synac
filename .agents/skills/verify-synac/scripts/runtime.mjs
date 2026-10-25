@@ -82,10 +82,32 @@ export const evidenceDir =
   process.env.VERIFY_EVIDENCE_DIR ?? path.join(stateDir, 'evidence');
 export const runFile = path.join(stateDir, 'run.json');
 export const baseUrl = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:3000';
-export const webPort = 3000;
-export const convexPort = 3210;
-export const convexSitePort = 3211;
-export const convexUrl = 'http://127.0.0.1:3210';
+
+function portFromEnv(name, fallback) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === '') return fallback;
+  if (!/^[1-9][0-9]*$/.test(raw)) return fallback;
+  const value = Number(raw);
+  if (value > 65535) return fallback;
+  return value;
+}
+
+export function listenWebPort() {
+  return portFromEnv('SYNAC_VERIFY_WEB_PORT', 3000);
+}
+
+export function listenConvexPort() {
+  return portFromEnv('SYNAC_VERIFY_CONVEX_PORT', 3210);
+}
+
+export function listenConvexSitePort() {
+  return portFromEnv('SYNAC_VERIFY_CONVEX_SITE_PORT', 3211);
+}
+
+export const webPort = listenWebPort();
+export const convexPort = listenConvexPort();
+export const convexSitePort = listenConvexSitePort();
+export const convexUrl = `http://127.0.0.1:${convexPort}`;
 const ownSessions = sessionsFor(root);
 export const sessionConvex = ownSessions.convex;
 export const sessionWeb = ownSessions.web;
@@ -1128,6 +1150,7 @@ export function markObserved() {
 
 export function finishLaunchSnapshot() {
   markObserved();
+  if (!tookSnapshot) return;
   warnUnclaimedChanges();
 }
 

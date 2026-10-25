@@ -12,7 +12,6 @@ import {
   stateDir,
   stopRecordedPid,
   tmux,
-  warnUnclaimedChanges,
   writeRun,
 } from './runtime.mjs';
 
@@ -88,7 +87,6 @@ function main() {
 
   if (gate.restore) {
     noteWritesSinceObserved();
-    warnUnclaimedChanges();
     restoreOwnedWrites();
   }
   const cleared = readRun();

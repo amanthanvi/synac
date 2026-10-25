@@ -15,7 +15,7 @@ Home link `View all` under Recently updated, or the palette row `Recent updates`
 
 `drive.spec.ts` test `recent page paginates inside the cap`.
 
-`/recent` shows pagination text `Page 1`. `/recent?page=99` redirects to `/recent?page=4`. Screenshot `recent.png`.
+`/recent` shows pagination text `Page 1`. The drive reads `meta.total` from `GET /api/v1/terms?pageSize=1` and `GET /api/v1/acronyms?pageSize=1`, and expects `/recent?page=99` to land on `min(4, max(1, ceil((terms + acronyms) / 50)))`. Screenshot `recent.png`.
 
 ## Gotchas
 

@@ -185,7 +185,38 @@ test('sources list opens RFC 4949', async ({ page }) => {
   await shot(page, 'source-rfc4949.png');
 });
 
-test('recent page paginates inside the cap', async ({ page }) => {
+function browseTotal(body: unknown): number {
+  if (!body || typeof body !== 'object' || !('meta' in body)) {
+    throw new Error('browse response has no meta');
+  }
+  const meta = body.meta;
+  if (!meta || typeof meta !== 'object' || !('total' in meta)) {
+    throw new Error('browse response has no meta.total');
+  }
+  const total = meta.total;
+  if (typeof total !== 'number') {
+    throw new Error('browse meta.total is not a number');
+  }
+  return total;
+}
+
+test('recent page paginates inside the cap', async ({ page, request }) => {
+  const pageSize = 50;
+  const maxPage = 4;
+  const terms = await request.get('/api/v1/terms?pageSize=1');
+  const acronyms = await request.get('/api/v1/acronyms?pageSize=1');
+  expect(terms.ok()).toBe(true);
+  expect(acronyms.ok()).toBe(true);
+  const last = Math.min(
+    maxPage,
+    Math.max(
+      1,
+      Math.ceil(
+        (browseTotal(await terms.json()) + browseTotal(await acronyms.json())) /
+          pageSize,
+      ),
+    ),
+  );
   await page.goto('/recent');
   await expect(
     page.getByRole('heading', { level: 1, name: 'Recently updated' }),
@@ -194,7 +225,7 @@ test('recent page paginates inside the cap', async ({ page }) => {
     page.getByRole('navigation', { name: 'Pagination' }),
   ).toContainText('Page 1');
   await page.goto('/recent?page=99');
-  await expect(page).toHaveURL(/\/recent\?page=4/);
+  await expect(page).toHaveURL(new RegExp(`/recent\\?page=${last}$`));
   await shot(page, 'recent.png');
 });
 

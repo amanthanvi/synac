@@ -80,6 +80,37 @@ test('a response body that cannot be read is classified', async () => {
   }
 });
 
+test(
+  'a body that stalls past 5 seconds is a timeout',
+  { timeout: 20_000 },
+  async () => {
+    const sockets = new Set();
+    const server = createServer((_request, response) => {
+      response.writeHead(200, {
+        'content-type': 'text/plain',
+        'content-length': '100',
+      });
+      response.write('partial');
+    });
+    server.on('connection', (socket) => {
+      sockets.add(socket);
+      socket.on('close', () => sockets.delete(socket));
+    });
+    const port = await listen(server);
+    try {
+      const started = Date.now();
+      const report = await runDoctor(`http://127.0.0.1:${port}`);
+      const elapsed = Date.now() - started;
+      assert.equal(report.status, 'NOT_READY');
+      assert.equal(report.code, 'timeout');
+      assert.ok(elapsed >= 4500, `elapsed ${elapsed}`);
+      assert.ok(elapsed < 12_000, `elapsed ${elapsed}`);
+    } finally {
+      await close(server, sockets);
+    }
+  },
+);
+
 test('a closed port stays unreachable', async () => {
   const server = createServer();
   const port = await listen(server);

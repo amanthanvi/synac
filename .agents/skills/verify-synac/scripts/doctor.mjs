@@ -14,7 +14,8 @@ READY (exit 0) requires all of the following:
   GET /api/v1/search?q=soc is 200 and meta.total is greater than 0
 
 Anything else prints NOT_READY and exits 2.
-Each request aborts after 5 seconds. That result is code timeout.
+Each request aborts after 5 seconds. A body that does not finish within 5
+seconds is the same result. That result is code timeout.
 `;
 
 function argValue(name) {
@@ -40,6 +41,30 @@ function isTimeout(error) {
 
 function fetchTimed(url) {
   return fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(5000) });
+}
+
+async function readBody(response) {
+  const timeoutError = new Error('The operation was aborted due to timeout');
+  timeoutError.name = 'TimeoutError';
+  let timedOut = false;
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      timedOut = true;
+      response.body?.cancel(timeoutError).catch(() => {});
+      reject(timeoutError);
+    }, 5000);
+  });
+  const reading = response.text();
+  try {
+    return await Promise.race([reading, timeout]);
+  } catch (error) {
+    if (timedOut) throw timeoutError;
+    throw error;
+  } finally {
+    clearTimeout(timer);
+    reading.catch(() => {});
+  }
 }
 
 export async function runDoctor(url = baseUrl) {
@@ -70,11 +95,12 @@ export async function runDoctor(url = baseUrl) {
   let homeText;
   let searchText;
   try {
-    healthText = await health.text();
-    homeText = await home.text();
-    searchText = await search.text();
+    healthText = await readBody(health);
+    homeText = await readBody(home);
+    searchText = await readBody(search);
   } catch (error) {
-    report.code = 'unreachable';
+    if (isTimeout(error)) report.code = 'timeout';
+    else report.code = 'unreachable';
     report.detail = error instanceof Error ? error.message : String(error);
     return report;
   }

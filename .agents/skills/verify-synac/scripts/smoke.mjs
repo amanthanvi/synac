@@ -11,9 +11,9 @@ import {
   listenerPids,
   portOwner,
   readRun,
+  listenWebPort,
   root,
   sameProcess,
-  webPort,
 } from './runtime.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
@@ -26,14 +26,15 @@ Runs doctor, then the CLI checks, then Playwright.
 `;
 
 export function warnForeignWebPort() {
+  const port = listenWebPort();
   const saved = readRun().pids.web;
-  const live = listenerPids(webPort);
+  const live = listenerPids(port);
   const matches = saved
     ? live.some((pid) => sameProcess(saved, pid))
     : live.length === 0;
   if (matches) return;
   console.warn(
-    `warning: port ${webPort} owner (${portOwner(webPort)}) is not the web pid recorded for this checkout.`,
+    `warning: port ${port} owner (${portOwner(port)}) is not the web pid recorded for this checkout.`,
   );
 }
 

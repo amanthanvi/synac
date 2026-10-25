@@ -6,9 +6,9 @@ import path from 'node:path';
 import { runDoctor } from './doctor.mjs';
 import {
   baseUrl,
-  convexPort,
-  convexSitePort,
-  convexUrl,
+  listenConvexPort,
+  listenConvexSitePort,
+  listenWebPort,
   assertSnapshotCheckout,
   beginLaunch,
   captureToolWrites,
@@ -36,7 +36,6 @@ import {
   stopRecordedPid,
   tmux,
   waitFor,
-  webPort,
 } from './runtime.mjs';
 
 const help = `Usage: node .agents/skills/verify-synac/scripts/launch.mjs
@@ -52,21 +51,13 @@ Env:
   VERIFY_SKIP_INSTALL=1         skip pnpm install
 `;
 
-const webEnv = {
-  NEXT_PUBLIC_CONVEX_URL: convexUrl,
-  NEXT_PUBLIC_SITE_URL: baseUrl,
-  SYNAC_CONVEX_SERVICE_KEY: 'local-dev',
-  SYNAC_RATE_LIMIT_SALT: 'local-dev',
-  E2E_BASE_URL: baseUrl,
-};
-
 function fail(message) {
   const error = new Error(message);
   error.exitCode = 2;
   throw error;
 }
 
-function exportPrefix() {
+function exportPrefix(webEnv) {
   const pathEnv = process.env.PATH ?? '';
   const pairs = { PATH: pathEnv, ...webEnv };
   return Object.entries(pairs)
@@ -142,6 +133,16 @@ async function releaseOwned(session, pidKeys, ports) {
 }
 
 async function run() {
+  const webPort = listenWebPort();
+  const convexPort = listenConvexPort();
+  const convexSitePort = listenConvexSitePort();
+  const webEnv = {
+    NEXT_PUBLIC_CONVEX_URL: `http://127.0.0.1:${convexPort}`,
+    NEXT_PUBLIC_SITE_URL: baseUrl,
+    SYNAC_CONVEX_SERVICE_KEY: 'local-dev',
+    SYNAC_RATE_LIMIT_SALT: 'local-dev',
+    E2E_BASE_URL: baseUrl,
+  };
   if (nodeMajor() < 24) {
     fail(
       `node ${process.version} is below 24. Put nvm Node 24 first on PATH, then rerun.`,
@@ -149,11 +150,11 @@ async function run() {
   }
   const origin = ownedOrigin(baseUrl);
   if (
-    origin !== 'http://127.0.0.1:3000' &&
-    origin !== 'http://localhost:3000'
+    origin !== `http://127.0.0.1:${webPort}` &&
+    origin !== `http://localhost:${webPort}`
   ) {
     fail(
-      `refusing base URL ${baseUrl}. This skill owns http://127.0.0.1:3000.`,
+      `refusing base URL ${baseUrl}. This skill owns http://127.0.0.1:${webPort}.`,
     );
   }
 
@@ -269,7 +270,7 @@ async function run() {
       const log = path.join(stateDir, 'synac-verify-convex.log');
       startSession(
         sessionConvex,
-        `${exportPrefix()} export CONVEX_AGENT_MODE=anonymous; cd ${shQuote(root)}; npx convex dev < /dev/null > ${shQuote(log)} 2>&1`,
+        `${exportPrefix(webEnv)} export CONVEX_AGENT_MODE=anonymous; cd ${shQuote(root)}; npx convex dev < /dev/null > ${shQuote(log)} 2>&1`,
       );
       noteSession(sessionConvex);
       await waitFor(
@@ -334,6 +335,9 @@ async function run() {
   const skipBuild =
     mode === 'dev' ||
     (process.env.VERIFY_SKIP_BUILD === '1' && existsSync(buildId));
+  if (!skipBuild && (await portOpen(webPort))) {
+    await releaseOwned(sessionWeb, ['web'], [webPort]);
+  }
   if (!skipBuild) {
     await captureAfter('next', async () => {
       const build = spawnSync('pnpm', ['--filter', '@synac/web', 'build'], {
@@ -345,16 +349,33 @@ async function run() {
     });
   }
 
+  const webLog = path.join(stateDir, 'synac-verify-web.log');
+  let nextWatchOpen = false;
+  const openNextWatch = () => {
+    if (nextWatchOpen) return;
+    markStepBaseline();
+    nextWatchOpen = true;
+  };
+  const closeNextWatch = () => {
+    if (!nextWatchOpen) return;
+    nextWatchOpen = false;
+    try {
+      captureToolWrites('next');
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : error);
+    }
+  };
+
   if (!(await portOpen(webPort))) {
-    await captureAfter('next', async () => {
-      const log = path.join(stateDir, 'synac-verify-web.log');
+    openNextWatch();
+    try {
       const webCommand =
         mode === 'dev'
-          ? 'pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p 3000'
-          : 'pnpm --filter @synac/web exec next start -H 127.0.0.1 -p 3000';
+          ? `pnpm --filter @synac/web exec next dev -H 127.0.0.1 -p ${webPort}`
+          : `pnpm --filter @synac/web exec next start -H 127.0.0.1 -p ${webPort}`;
       startSession(
         sessionWeb,
-        `${exportPrefix()} cd ${shQuote(root)}; ${webCommand} > ${shQuote(log)} 2>&1`,
+        `${exportPrefix(webEnv)} cd ${shQuote(root)}; ${webCommand} > ${shQuote(webLog)} 2>&1`,
       );
       noteSession(sessionWeb);
       await waitFor(
@@ -366,7 +387,7 @@ async function run() {
           }
           if (!sessionAlive(sessionWeb)) {
             throw new Error(
-              `web session exited before port ${webPort} opened. See ${log}`,
+              `web session exited before port ${webPort} opened. See ${webLog}`,
             );
           }
           return false;
@@ -374,22 +395,58 @@ async function run() {
         120_000,
       );
       rememberListener('web', webPort);
-    });
+    } catch (error) {
+      closeNextWatch();
+      throw error;
+    }
+  } else {
+    openNextWatch();
   }
 
-  let ready = await runDoctor(baseUrl);
-  const doctorDeadline = Date.now() + 60_000;
-  while (ready.status !== 'READY' && Date.now() < doctorDeadline) {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    ready = await runDoctor(baseUrl);
-  }
-  if (ready.status !== 'READY') {
-    console.error(JSON.stringify(ready, null, 2));
-    fail(`doctor is ${ready.code} after launch. Logs are in ${stateDir}`);
+  try {
+    let ready = await runDoctor(baseUrl);
+    const doctorDeadline = Date.now() + 60_000;
+    while (ready.status !== 'READY' && Date.now() < doctorDeadline) {
+      if (!sessionAlive(sessionWeb)) {
+        fail(`web session exited before doctor was READY. See ${webLog}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      ready = await runDoctor(baseUrl);
+    }
+    if (ready.status !== 'READY') {
+      if (!sessionAlive(sessionWeb)) {
+        fail(`web session exited before doctor was READY. See ${webLog}`);
+      }
+      console.error(JSON.stringify(ready, null, 2));
+      fail(`doctor is ${ready.code} after launch. Logs are in ${stateDir}`);
+    }
+    if (mode === 'dev') await waitForDevAgentWrite(webLog);
+  } finally {
+    closeNextWatch();
   }
   recordCheckoutRevision();
   console.log('STARTED');
   console.log(`evidence ${evidenceDir}`);
+}
+
+async function waitForDevAgentWrite(webLog) {
+  const deadline = Date.now() + 20_000;
+  let seenAt = 0;
+  while (Date.now() < deadline) {
+    if (!sessionAlive(sessionWeb)) return;
+    let text = '';
+    try {
+      text = readFileSync(webLog, 'utf8');
+    } catch {
+      text = '';
+    }
+    if (text.includes('Generated AGENTS.md')) {
+      if (seenAt === 0) seenAt = text.length;
+      else if (text.length === seenAt) return;
+      else seenAt = text.length;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
 }
 
 await main();
