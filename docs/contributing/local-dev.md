@@ -57,7 +57,7 @@ backend that the Convex CLI downloads and runs for you.
 1. `pnpm lint`
 2. `pnpm lint:convex`
 3. `pnpm format`
-4. `pnpm typecheck`
+4. `pnpm typecheck` (this also runs `pnpm typecheck:verify` for `.agents/skills/verify-synac`)
 5. `pnpm typecheck:convex`
 6. `pnpm test`
 7. `pnpm tagging:check`

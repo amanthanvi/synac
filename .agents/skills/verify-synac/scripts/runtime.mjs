@@ -1052,6 +1052,14 @@ function writeRecord(current, tool) {
   return { kind: current.kind, hash: current.hash, tool };
 }
 
+function recordedWriteMatches(write, current) {
+  return (
+    write &&
+    typeof write === 'object' &&
+    sameDescribed(current, { kind: write.kind, hash: write.hash ?? null })
+  );
+}
+
 let stepBaseline = null;
 
 function describedMap() {
@@ -1130,7 +1138,6 @@ export function noteWritesSinceObserved() {
   if (!observed || typeof observed !== 'object' || Array.isArray(observed))
     return;
   const files = manifest.files;
-  const writeMap = readWriteMap();
   const rels = new Set([
     ...Object.keys(files),
     ...watchedRels(),
@@ -1138,12 +1145,7 @@ export function noteWritesSinceObserved() {
   ]);
   for (const rel of rels) {
     if (!safeRel(rel) || handMaintained.has(rel)) continue;
-    const tool = toolOwns('convex', rel)
-      ? 'convex'
-      : toolOwns('next', rel)
-        ? 'next'
-        : null;
-    if (!tool) continue;
+    if (!toolOwns('convex', rel) && !toolOwns('next', rel)) continue;
     const current = describeWorktree(rel);
     const seen = observed[rel];
     const seenDescribed =
@@ -1151,17 +1153,9 @@ export function noteWritesSinceObserved() {
         ? { kind: seen.kind, hash: seen.hash ?? null }
         : { kind: 'absent', hash: null };
     if (sameDescribed(current, seenDescribed)) continue;
-    const prior = writeMap[rel];
-    const priorDescribed =
-      prior && typeof prior === 'object'
-        ? { kind: prior.kind, hash: prior.hash ?? null }
-        : null;
-    if (priorDescribed && !sameDescribed(current, priorDescribed)) continue;
     if (isNewConvexSkill(rel, files[rel]))
       console.warn(`warning: new convex skill file ${rel}`);
-    writeMap[rel] = writeRecord(current, tool);
   }
-  writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
 }
 
 export function warnUnclaimedChanges() {
@@ -1208,14 +1202,22 @@ export function restoreUnfinishedRun() {
 function restoreUnfinishedInner() {
   const manifest = readManifest();
   if (!manifest) return { restored: [] };
+  const files = manifest.files;
+  const writeMap = readWriteMap();
   const restored = [];
-  for (const rel of watchedRels()) {
+  for (const rel of Object.keys(writeMap)) {
     if (!safeRel(rel) || handMaintained.has(rel)) continue;
     if (!toolOwns('convex', rel) && !toolOwns('next', rel)) continue;
-    const snap = manifest.files[rel] ?? absentRecord();
+    const snap = files[rel] ?? absentRecord();
     const current = describeWorktree(rel);
     if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null }))
       continue;
+    if (!recordedWriteMatches(writeMap[rel], current)) {
+      console.warn(
+        `warning: ${rel} changed during the run and was left in place`,
+      );
+      continue;
+    }
     const liveStage = stagedRecord(rel);
     const snapIndex =
       typeof snap.indexHash === 'string' ? snap.indexHash : null;
@@ -1299,12 +1301,7 @@ function restoreOwnedWritesInner() {
     }
     if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null }))
       continue;
-    const write = writeMap[rel];
-    const owned =
-      write &&
-      typeof write === 'object' &&
-      sameDescribed(current, { kind: write.kind, hash: write.hash ?? null });
-    if (!owned) {
+    if (!recordedWriteMatches(writeMap[rel], current)) {
       warned.push(rel);
       console.warn(
         `warning: ${rel} changed during the run and was left in place`,

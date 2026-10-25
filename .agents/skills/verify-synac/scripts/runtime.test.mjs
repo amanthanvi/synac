@@ -322,7 +322,7 @@ test('restore keeps the executable bit and a reused stack is not restored', () =
   }
 });
 
-test('a convex skill file created after launch is recorded and warned', () => {
+test('a convex skill file created after launch is warned and left in place', () => {
   const rel = '.agents/skills/convex-backup-test/SKILL.md';
   const abs = path.join(root, rel);
   const warnings = [];
@@ -337,14 +337,13 @@ test('a convex skill file created after launch is recorded and warned', () => {
     const writes = JSON.parse(
       readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8'),
     );
-    assert.equal(writes[rel].kind, 'file');
-    assert.equal(writes[rel].tool, 'convex');
+    assert.equal(writes[rel], undefined);
     assert.equal(
       warnings.some((line) => line.includes(`new convex skill file ${rel}`)),
       true,
     );
     restoreOwnedWrites();
-    assert.equal(exists(abs), false);
+    assert.equal(readFileSync(abs, 'utf8'), 'after launch\n');
   } finally {
     console.warn = orig;
     rmSync(scratchDir, { recursive: true, force: true });
@@ -390,19 +389,21 @@ test('an existing evidence directory with the wrong mode is refused', () => {
   chmodSync(evidence, 0o700);
 });
 
-test('an unfinished launch restores tool writes before the next snapshot', () => {
+test('an unfinished launch restores only a recorded tool write', () => {
   const lock = path.join(root, 'skills-lock.json');
   const original = readFileSync(lock, 'utf8');
   const agents = path.join(root, 'AGENTS.md');
   const agentsOriginal = readFileSync(agents, 'utf8');
   try {
     snapshotWatchedFiles();
+    markStepBaseline();
     assert.equal(
       readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8').trim(),
       '{}',
     );
     assert.equal(exists(path.join(state, 'snapshot/observed.json')), false);
     writeFileSync(lock, '{"killed":true}\n');
+    captureToolWrites('convex');
     writeFileSync(agents, `${agentsOriginal}human\n`);
     assert.equal(beginLaunch('NOT_READY'), 'snapshot');
     assert.equal(readFileSync(lock, 'utf8'), original);
@@ -414,6 +415,51 @@ test('an unfinished launch restores tool writes before the next snapshot', () =>
   } finally {
     writeFileSync(lock, original);
     writeFileSync(agents, agentsOriginal);
+  }
+});
+
+test('a user edit after launch survives cleanup', () => {
+  const lock = path.join(root, 'skills-lock.json');
+  const original = readFileSync(lock, 'utf8');
+  try {
+    snapshotWatchedFiles();
+    markStepBaseline();
+    writeFileSync(lock, '{"tool":true}\n');
+    captureToolWrites('convex');
+    markObserved();
+    writeFileSync(lock, '{"human":true}\n');
+    noteWritesSinceObserved();
+    const restored = restoreOwnedWrites();
+    assert.equal(readFileSync(lock, 'utf8'), '{"human":true}\n');
+    assert.equal(restored.restored.includes('skills-lock.json'), false);
+
+    writeFileSync(lock, original);
+    snapshotWatchedFiles();
+    markObserved();
+    writeFileSync(lock, '{"human-only":true}\n');
+    noteWritesSinceObserved();
+    const unrecorded = restoreOwnedWrites();
+    assert.equal(readFileSync(lock, 'utf8'), '{"human-only":true}\n');
+    assert.equal(unrecorded.restored.includes('skills-lock.json'), false);
+  } finally {
+    writeFileSync(lock, original);
+  }
+});
+
+test('a user edit after an interrupted tool write survives the next launch', () => {
+  const lock = path.join(root, 'skills-lock.json');
+  const original = readFileSync(lock, 'utf8');
+  try {
+    snapshotWatchedFiles();
+    markStepBaseline();
+    writeFileSync(lock, '{"tool":true}\n');
+    captureToolWrites('convex');
+    writeFileSync(lock, '{"human":true}\n');
+    assert.equal(exists(path.join(state, 'snapshot/observed.json')), false);
+    assert.equal(beginLaunch('NOT_READY'), 'snapshot');
+    assert.equal(readFileSync(lock, 'utf8'), '{"human":true}\n');
+  } finally {
+    writeFileSync(lock, original);
   }
 });
 

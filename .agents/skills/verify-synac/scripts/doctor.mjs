@@ -66,8 +66,18 @@ export async function runDoctor(url = baseUrl) {
     return report;
   }
 
-  const healthText = await health.text();
-  const homeText = await home.text();
+  let healthText;
+  let homeText;
+  let searchText;
+  try {
+    healthText = await health.text();
+    homeText = await home.text();
+    searchText = await search.text();
+  } catch (error) {
+    report.code = 'unreachable';
+    report.detail = error instanceof Error ? error.message : String(error);
+    return report;
+  }
   let healthBody = null;
   try {
     healthBody = JSON.parse(healthText);
@@ -76,7 +86,7 @@ export async function runDoctor(url = baseUrl) {
   }
   let searchBody = null;
   try {
-    searchBody = JSON.parse(await search.text());
+    searchBody = JSON.parse(searchText);
   } catch {
     searchBody = null;
   }
@@ -96,7 +106,7 @@ export async function runDoctor(url = baseUrl) {
   };
   report.search = { status: search.status, total };
 
-  if (health.status === 503 || healthBody?.ok === false) {
+  if (health.status !== 200 || healthBody?.ok !== true) {
     report.code = 'empty-dataset';
     return report;
   }
