@@ -140,6 +140,19 @@ describe('port 3000 ownership', { concurrency: false }, () => {
     assert.doesNotMatch(result.stdout ?? '', /REUSED/);
   });
 
+  test('an invalid test-only port is an error', () => {
+    for (const value of ['0', '65536', 'abc', '3000x']) {
+      const result = spawnSync(process.execPath, [launch], {
+        env: launchEnv({ SYNAC_VERIFY_WEB_PORT: value }),
+        encoding: 'utf8',
+        timeout: 15_000,
+      });
+      assert.notEqual(result.status, 0, `${value}\n${result.stderr}`);
+      assert.match(result.stderr, /SYNAC_VERIFY_WEB_PORT/, value);
+      assert.match(result.stderr, /test-only/, value);
+    }
+  });
+
   test('a fake ready server on 3000 is refused', async () => {
     server = createServer((request, response) => {
       if (request.url === '/api/healthz') {
@@ -169,10 +182,9 @@ describe('port 3000 ownership', { concurrency: false }, () => {
       }),
     );
     assert.equal(result.status, 2, `${result.stdout}\n${result.stderr}`);
-    assert.ok(
-      Date.now() - started < 15_000,
-      'doctor treated the ready server as a timeout',
-    );
+    assert.match(result.stderr, /doctor ready/);
+    assert.doesNotMatch(result.stderr, /doctor timeout/);
+    assert.ok(Date.now() - started < 15_000, result.stderr);
     assert.doesNotMatch(result.stdout ?? '', /REUSED/);
     assert.match(result.stderr, /Leave it alone/);
     assert.equal(existsSync(path.join(state, 'snapshot')), false);

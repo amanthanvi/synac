@@ -21,6 +21,8 @@ This skill owns one stack:
 
 A second checkout cannot bind those ports. Launch refuses to start when port 3000 or 3210 is already taken by a process this skill did not start. Doctor may read an existing server. Cleanup never stops it.
 
+`SYNAC_VERIFY_WEB_PORT`, `SYNAC_VERIFY_CONVEX_PORT`, and `SYNAC_VERIFY_CONVEX_SITE_PORT` are test-only. Unset, launch uses 3000, 3210, and 3211. A value that is not an integer from 1 to 65535 is an error. `SYNAC_VERIFY_WEB_PORT` is passed to `next -p`. `SYNAC_VERIFY_CONVEX_PORT` and `SYNAC_VERIFY_CONVEX_SITE_PORT` only change which listeners launch checks. They are not passed to `npx convex dev`, and `NEXT_PUBLIC_CONVEX_URL` stays `http://127.0.0.1:3210`.
+
 Playwright uses a fresh browser context per test, so theme and clipboard stay inside that context. The Convex dataset is the synced repo content and is shared by every context on this machine.
 
 ## Launch

@@ -86,10 +86,12 @@ export const baseUrl = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:3000';
 function portFromEnv(name, fallback) {
   const raw = process.env[name];
   if (raw === undefined || raw === '') return fallback;
-  if (!/^[1-9][0-9]*$/.test(raw)) return fallback;
-  const value = Number(raw);
-  if (value > 65535) return fallback;
-  return value;
+  if (!/^[1-9][0-9]*$/.test(raw) || Number(raw) > 65535) {
+    throw new Error(
+      `${name}=${raw} is not a TCP port. Expected an integer from 1 to 65535. SYNAC_VERIFY_WEB_PORT, SYNAC_VERIFY_CONVEX_PORT, and SYNAC_VERIFY_CONVEX_SITE_PORT are test-only.`,
+    );
+  }
+  return Number(raw);
 }
 
 export function listenWebPort() {
@@ -107,7 +109,7 @@ export function listenConvexSitePort() {
 export const webPort = listenWebPort();
 export const convexPort = listenConvexPort();
 export const convexSitePort = listenConvexSitePort();
-export const convexUrl = `http://127.0.0.1:${convexPort}`;
+export const convexUrl = 'http://127.0.0.1:3210';
 const ownSessions = sessionsFor(root);
 export const sessionConvex = ownSessions.convex;
 export const sessionWeb = ownSessions.web;

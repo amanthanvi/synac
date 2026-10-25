@@ -6,6 +6,7 @@ import path from 'node:path';
 import { runDoctor } from './doctor.mjs';
 import {
   baseUrl,
+  convexUrl,
   listenConvexPort,
   listenConvexSitePort,
   listenWebPort,
@@ -49,6 +50,15 @@ Env:
   VERIFY_SKIP_BUILD=1           reuse apps/web/.next when present
   VERIFY_SKIP_BROWSER_INSTALL=1 skip Playwright Chromium install
   VERIFY_SKIP_INSTALL=1         skip pnpm install
+
+Test-only. Unset means 3000, 3210, and 3211. An invalid value is an error.
+SYNAC_VERIFY_CONVEX_PORT and SYNAC_VERIFY_CONVEX_SITE_PORT only change
+which listeners launch checks. They are not passed to npx convex dev, and
+NEXT_PUBLIC_CONVEX_URL stays http://127.0.0.1:3210.
+SYNAC_VERIFY_WEB_PORT is passed to next -p.
+  SYNAC_VERIFY_WEB_PORT
+  SYNAC_VERIFY_CONVEX_PORT
+  SYNAC_VERIFY_CONVEX_SITE_PORT
 `;
 
 function fail(message) {
@@ -137,7 +147,7 @@ async function run() {
   const convexPort = listenConvexPort();
   const convexSitePort = listenConvexSitePort();
   const webEnv = {
-    NEXT_PUBLIC_CONVEX_URL: `http://127.0.0.1:${convexPort}`,
+    NEXT_PUBLIC_CONVEX_URL: convexUrl,
     NEXT_PUBLIC_SITE_URL: baseUrl,
     SYNAC_CONVEX_SERVICE_KEY: 'local-dev',
     SYNAC_RATE_LIMIT_SALT: 'local-dev',
@@ -197,7 +207,7 @@ async function run() {
       ? 'the listener pid does not match the pid recorded for this checkout'
       : 'this skill did not start it';
     fail(
-      `port ${webPort} is open (${doctor.portOwner}) and ${whose}. Leave it alone.`,
+      `port ${webPort} is open (${doctor.portOwner}; doctor ${doctor.code}) and ${whose}. Leave it alone.`,
     );
   }
   if (convexUp && !convexOwned) {
