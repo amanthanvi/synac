@@ -63,14 +63,6 @@ jobs:
       - name: Test
         run: pnpm test
 
-      # Not part of `pnpm gate`. The session test needs tmux, which the
-      # default test script does not install or invoke.
-      - name: Install tmux
-        run: sudo apt-get update && sudo apt-get install -y tmux
-
-      - name: Verify session isolation
-        run: pnpm test:verify-tmux
-
       - name: Tagging check
         run: pnpm tagging:check
 

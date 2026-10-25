@@ -39,12 +39,12 @@ pnpm verify:launch
 `pnpm verify:launch` is `node .agents/skills/verify-synac/scripts/launch.mjs`. It does the following:
 
 1. Exit 2 when Node is older than 24.
-2. If the saved snapshot names a different repo root, has no checkout identity, or cannot be read, exit and do not restore. The message names `/tmp/synac-verify-<hash>/snapshot` and tells you to remove that directory or move it aside, then launch again. If doctor is `READY`, print `REUSED` and exit 0. A live stack is left as it is: launch does not restore files and does not take a new snapshot.
+2. If the saved snapshot names a different repo root, has no checkout identity, or cannot be read, exit and do not restore. The message names `/tmp/synac-verify-<hash>/snapshot` and tells you to remove that directory or move it aside, then launch again. Print `REUSED` and exit 0 only when doctor is `READY`, this checkout's recorded web tmux session is alive, the process listening on port 3000 is the pid stored in `run.json`, and the recorded `git rev-parse HEAD` and the sha256 of `git diff HEAD` still match. That path does not restore files and does not take a new snapshot. Any other listener on port 3000 is left alone and launch exits 2. When this checkout still owns the listeners and the recorded HEAD or diff hash changed, launch stops those sessions and rebuilds.
 3. Otherwise, if the previous launch was killed before it wrote its end-of-launch observation, restore every tool-owned file that differs from that snapshot. Then restore tool-owned files from a finished snapshot when their current bytes still match what that run wrote, and snapshot the hash, contents, mode, staged state, and repo root of the watched files listed below. Right after `npx convex dev` and `npx convex env set`, record only the Convex-owned paths that changed during that step (`skills-lock.json`, `.agents/skills/convex*`, `convex/_generated/ai/`, `.cursor/rules/convex_rules.mdc`) and write each claim to `writes.json` as soon as it is recorded. Right after `next build` or the Next server start, record only `apps/web/AGENTS.md` and `apps/web/next-env.d.ts` when those changed during that step, the same way. Any other change is warned and left in place, including `AGENTS.md`, `CLAUDE.md`, `apps/web/CLAUDE.md`, and `convex.json`. Cleanup records generator-owned files that change after launch returns, and it warns about a new Convex skill file. Leave those bytes in the worktree until cleanup or the next launch that does not reuse a live stack.
-4. If port 3000 or 3210 is open and the matching tmux session is not one this skill started, exit 2 and leave that process alone.
+4. If port 3000 is open and the listener is not the recorded web pid, or port 3210 is open and the matching tmux session is not one this skill started, exit 2 and leave that process alone. A live web session whose listener pid does not match `run.pids.web` is not reused.
 5. Run `pnpm install --frozen-lockfile` when `node_modules` is missing.
 6. Install Playwright Chromium with `pnpm --filter @synac/e2e exec playwright install chromium`. Set `VERIFY_SKIP_BROWSER_INSTALL=1` to skip. If Chromium's system libraries are missing, run `pnpm --filter @synac/e2e exec playwright install --with-deps chromium` once. That step needs root.
-7. Start tmux session `synac-v-<hash>-convex` with `CONVEX_AGENT_MODE=anonymous npx convex dev` when port 3210 is closed. Stdin is `/dev/null`, so Convex does not run its interactive agent-file install. The session name is written to `run.json` as soon as tmux returns, before the ready check. A launch that times out still leaves the session for cleanup. Ready means the log line `Convex functions ready` in `/tmp/synac-verify-<hash>/synac-verify-convex.log`. The listener pid is stored with its `/proc` start time once port 3210 is open.
+7. Start tmux session `synac-v-<hash>-convex` with `CONVEX_AGENT_MODE=anonymous npx convex dev` when port 3210 is closed. Stdin is `/dev/null`, so Convex does not run its interactive agent-file install. The session name is written to `run.json` as soon as tmux returns, before the ready check. A launch that times out still leaves the session for cleanup. Ready means the log line `Convex functions ready` in `/tmp/synac-verify-<hash>/synac-verify-convex.log`. If that tmux session exits before the line appears, launch fails with the log path instead of waiting out the timeout. The listener pid is stored with its `/proc` start time once port 3210 is open. The command line itself is not stored.
 8. Run `npx convex env set SYNAC_CONVEX_SERVICE_KEY local-dev`.
 9. Run `pnpm --filter @synac/content-tools sync`. Ready means stdout contains `tag convergence: verified`. The log is copied to `/tmp/synac-verify-<hash>/evidence/cli-sync.log`. That sync writes the compiled corpus into the local Convex deployment. A later search that returns `access control` is the read-back of those records.
 10. Build the web app with `pnpm --filter @synac/web build` unless `VERIFY_WEB_MODE=dev` or `VERIFY_SKIP_BUILD=1` and `apps/web/.next/BUILD_ID` already exists. The build and the server both receive `NEXT_PUBLIC_CONVEX_URL=http://127.0.0.1:3210`, `NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000`, `SYNAC_CONVEX_SERVICE_KEY=local-dev`, and `SYNAC_RATE_LIMIT_SALT=local-dev`.
@@ -55,7 +55,7 @@ pnpm verify:launch
 Logs and state. `<hash>` is the first 12 hex characters of sha256 of this repo root. A second worktree gets its own directory and its own tmux session names. `SYNAC_VERIFY_STATE_DIR` overrides the directory.
 
 - `/tmp/synac-verify-<hash>` is created mode `0700` and must be owned by the user who ran launch. If that directory already exists with another mode or owner, launch exits and does not change its permissions.
-- `/tmp/synac-verify-<hash>/run.json` lists sessions and listener pids this launch started. Each pid keeps the process start time and command line from `/proc`.
+- `/tmp/synac-verify-<hash>/run.json` lists sessions and listener pids this launch started. Each pid keeps the process start time, `argv0`, and a sha256 of the `/proc` command line. The command line itself is not stored, because `npx convex dev` puts `--instance-secret` on its argv. The file also stores `git rev-parse HEAD` and the sha256 of `git diff HEAD` from the moment the stack became `READY`.
 - `/tmp/synac-verify-<hash>/synac-verify-convex.log`
 - `/tmp/synac-verify-<hash>/synac-verify-web.log`
 - `/tmp/synac-verify-<hash>/evidence/` is created mode `0700` at launch and kept by cleanup. If that directory already exists with another mode, launch exits and does not change its permissions.
@@ -80,20 +80,21 @@ pnpm verify:doctor
 
 Anything else prints `NOT_READY` and exits 2.
 
-| Code | Meaning |
-| --- | --- |
-| `unreachable` | Nothing answered on the base URL |
-| `empty-dataset` | `/api/healthz` is 503 or `ok` is false. The content backend did not answer |
-| `home-unhealthy` | The home page is up without the glossary search landmark |
-| `search-unreadable` | Home rendered, and the search response was not the expected JSON |
-| `search-empty` | Health and home are fine, and `q=soc` has `meta.total` 0 |
+| Code                | Meaning                                                                    |
+| ------------------- | -------------------------------------------------------------------------- |
+| `unreachable`       | Nothing answered on the base URL                                           |
+| `timeout`           | A request exceeded 5 seconds                                               |
+| `empty-dataset`     | `/api/healthz` is 503 or `ok` is false. The content backend did not answer |
+| `home-unhealthy`    | The home page is up without the glossary search landmark                   |
+| `search-unreadable` | Home rendered, and the search response was not the expected JSON           |
+| `search-empty`      | Health and home are fine, and `q=soc` has `meta.total` 0                   |
 
 ```bash
 node .agents/skills/verify-synac/scripts/doctor.mjs --help
 node .agents/skills/verify-synac/scripts/doctor.mjs --json
 ```
 
-Doctor prints who is listening on port 3000. A screenshot taken while doctor is `NOT_READY` is not evidence.
+Doctor prints who is listening on port 3000. Each GET uses `AbortSignal.timeout(5000)`. A timed-out request is code `timeout`. A screenshot taken while doctor is `NOT_READY` is not evidence. `pnpm verify:smoke` warns when the port 3000 listener is not the web pid recorded for this checkout.
 
 ## Checkpoint
 
@@ -101,16 +102,16 @@ Doctor prints who is listening on port 3000. A screenshot taken while doctor is 
 
 While iterating, run one named group and stay inside its budget:
 
-| Group | Command | Budget |
-| --- | --- | --- |
-| `web` | `pnpm --filter @synac/web test` | 2 minutes |
-| `content` | `pnpm --filter @synac/content-tools test` | 2 minutes |
-| `ingest` | `pnpm --filter @synac/ingest-tools test` | 2 minutes |
-| `convex` | `pnpm test:convex` | 3 minutes |
-| `content-check` | `pnpm content:check` | 1 minute |
-| `verify-smoke` | `pnpm verify:smoke` with the stack already up | 4 minutes |
+| Group           | Command                                       | Budget    |
+| --------------- | --------------------------------------------- | --------- |
+| `web`           | `pnpm --filter @synac/web test`               | 2 minutes |
+| `content`       | `pnpm --filter @synac/content-tools test`     | 2 minutes |
+| `ingest`        | `pnpm --filter @synac/ingest-tools test`      | 2 minutes |
+| `convex`        | `pnpm test:convex`                            | 3 minutes |
+| `content-check` | `pnpm content:check`                          | 1 minute  |
+| `verify-smoke`  | `pnpm verify:smoke` with the stack already up | 4 minutes |
 
-`pnpm gate` runs lint, convex lint, format, typecheck, convex typecheck, test, tagging check, content check, content history, and build. It does not launch the site, it does not run `verify:drive`, and it does not need tmux. The checkout session test is `pnpm test:verify-tmux`. That command needs tmux on `PATH`. Required CI installs tmux and runs it after `pnpm test`. The optional verify-smoke workflow does the same. The end-to-end suite in `apps/e2e` stays `E2E_BASE_URL=http://127.0.0.1:3000 pnpm --filter @synac/e2e test:e2e` against this same stack. Use it when the change touches accessibility or a route the feature map does not list.
+`pnpm gate` runs lint, convex lint, format, typecheck, convex typecheck, test, tagging check, content check, content history, and build. It does not launch the site, it does not run `verify:drive`, and it does not need tmux. The checkout session test is `pnpm test:verify-tmux`. That command needs tmux on `PATH`. Required CI does not install tmux and does not run that command. The optional verify-smoke workflow installs tmux and runs it, on `workflow_dispatch` only. Skill unit tests stay in `pnpm test` only when they need no apt packages. The end-to-end suite in `apps/e2e` stays `E2E_BASE_URL=http://127.0.0.1:3000 pnpm --filter @synac/e2e test:e2e` against this same stack. Use it when the change touches accessibility or a route the feature map does not list.
 
 ## Drive
 
@@ -208,19 +209,19 @@ Live `pnpm ingest -- --source rfc4949` fetches the upstream RFC. The helper copi
 pnpm verify:cleanup
 ```
 
-That runs `node .agents/skills/verify-synac/scripts/cleanup.mjs`. It `tmux kill-session`s only `synac-v-<hash>-convex` and `synac-v-<hash>-web` when this checkout's `run.json` lists them. `<hash>` is the first 12 hex characters of sha256 of this repo root. Another worktree has a different directory and different session names, so cleanup does not stop that worktree's sessions or pids. A `run.json` with no repo root is not this checkout. Cleanup warns, copies that file aside, and does not signal its pids. A session is listed as soon as launch starts it, so cleanup still stops a Convex or web process whose ready check never passed. Before it signals a saved pid, it reads `/proc/<pid>` and checks the start time recorded at launch (the command line when the start time was not stored). It sends SIGTERM, then SIGKILL only if that same start time is still the process. A reused pid is skipped and named in the log, including when the pid is reused during the wait before SIGKILL. The same pid is signaled once when two ports share it. It does not kill processes by name. When the snapshot is foreign, legacy, or unreadable, it warns, copies that manifest aside, skips the file restore, and still stops processes recorded for this checkout. A run state from another checkout is not used to stop processes. It records generator-owned writes that appeared after launch returned, warns about a new Convex skill file, and restores a tool-owned file, including `.cursor/rules/convex_rules.mdc`, to the launch snapshot only when the current bytes still match that record. A missing backup id gets its own directory instead of a shared `unknown` directory. The restored file keeps the mode from the snapshot. `AGENTS.md`, `CLAUDE.md`, `apps/web/CLAUDE.md`, and `convex.json` are left in place and warned. It copies the current path, symlink or file, to `/tmp/synac-verify-<hash>/restored/<run-id>/` and lists each backup before writing the snapshot back. It never changes the git index. Any other change is left in place and printed as a warning. It leaves `/tmp/synac-verify-<hash>/evidence/` in place and prints that path. After every failed launch or drive, run cleanup before starting again so a half-started session does not keep the ports.
+That runs `node .agents/skills/verify-synac/scripts/cleanup.mjs`. It `tmux kill-session`s only `synac-v-<hash>-convex` and `synac-v-<hash>-web` when this checkout's `run.json` lists them. `<hash>` is the first 12 hex characters of sha256 of this repo root. Another worktree has a different directory and different session names, so cleanup does not stop that worktree's sessions or pids. A `run.json` with no repo root is not this checkout. Cleanup warns, copies that file aside, and does not signal its pids. A session is listed as soon as launch starts it, so cleanup still stops a Convex or web process whose ready check never passed. Before it signals a saved pid, it reads `/proc/<pid>` and checks the start time recorded at launch (the hash of the command line when the start time was not stored). It sends SIGTERM, then SIGKILL only if that same start time is still the process. A reused pid is skipped and named in the log, including when the pid is reused during the wait before SIGKILL. The same pid is signaled once when two ports share it. It does not kill processes by name. When the snapshot is foreign, legacy, or unreadable, it warns, copies that manifest aside, skips the file restore, and still stops processes recorded for this checkout. A run state from another checkout is not used to stop processes. It records generator-owned writes that appeared after launch returned, warns about a new Convex skill file, and restores a tool-owned file, including `.cursor/rules/convex_rules.mdc`, to the launch snapshot only when the current bytes still match that record. A missing backup id gets its own directory instead of a shared `unknown` directory. The restored file keeps the mode from the snapshot. `AGENTS.md`, `CLAUDE.md`, `apps/web/CLAUDE.md`, and `convex.json` are left in place and warned. It copies the current path, symlink or file, to `/tmp/synac-verify-<hash>/restored/<run-id>/` and lists each backup before writing the snapshot back. It never changes the git index. Any other change is left in place and printed as a warning. It leaves `/tmp/synac-verify-<hash>/evidence/` in place and prints that path. After every failed launch or drive, run cleanup before starting again so a half-started session does not keep the ports.
 
 Confirm the evidence directory still exists after cleanup before citing it.
 
 ## Helpers
 
-| Command | Script |
-| --- | --- |
-| `pnpm verify:launch` | `scripts/launch.mjs` |
-| `pnpm verify:doctor` | `scripts/doctor.mjs` |
-| `pnpm verify:smoke` | `scripts/smoke.mjs` (doctor, CLI smoke, `smoke.spec.ts`) |
-| `pnpm verify:drive` | `scripts/smoke.mjs --drive` (doctor, full CLI, `drive.spec.ts`) |
-| `pnpm verify:cleanup` | `scripts/cleanup.mjs` |
+| Command               | Script                                                          |
+| --------------------- | --------------------------------------------------------------- |
+| `pnpm verify:launch`  | `scripts/launch.mjs`                                            |
+| `pnpm verify:doctor`  | `scripts/doctor.mjs`                                            |
+| `pnpm verify:smoke`   | `scripts/smoke.mjs` (doctor, CLI smoke, `smoke.spec.ts`)        |
+| `pnpm verify:drive`   | `scripts/smoke.mjs --drive` (doctor, full CLI, `drive.spec.ts`) |
+| `pnpm verify:cleanup` | `scripts/cleanup.mjs`                                           |
 
 ```bash
 node .agents/skills/verify-synac/scripts/launch.mjs --help
@@ -238,6 +239,7 @@ Put a Proof section on the pull request:
 
 ```markdown
 ### Proof
+
 - Commands: the exact commands, including `pnpm verify:doctor` and the drive you ran
 - Evidence: command logs, screenshot paths, and trace paths that still exist after cleanup
 - Results: pass or fail per command, plus the observable end state (URL, heading, file written, record read back, attribute)

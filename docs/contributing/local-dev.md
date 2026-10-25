@@ -71,7 +71,8 @@ before you push, not after CI tells you.
 `pnpm gate` does not run the end-to-end suite. The `Quality` workflow runs
 that. `pnpm gate` also does not need tmux. The verification skill's checkout
 session test is `pnpm test:verify-tmux`, and that command needs tmux on
-`PATH`. Required CI installs tmux and runs that command after `pnpm test`.
+`PATH`. Required CI does not install tmux. The optional verify-smoke workflow
+installs tmux and runs that command on `workflow_dispatch`.
 
 ## End-to-end tests
 

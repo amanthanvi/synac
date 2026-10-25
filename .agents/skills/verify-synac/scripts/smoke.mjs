@@ -1,10 +1,20 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
+import { realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { runDoctor } from './doctor.mjs';
-import { baseUrl, evidenceDir, ensureState, root } from './runtime.mjs';
+import {
+  baseUrl,
+  evidenceDir,
+  ensureState,
+  listenerPids,
+  portOwner,
+  readRun,
+  root,
+  sameProcess,
+  webPort,
+} from './runtime.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const skillDir = path.resolve(scriptDir, '..');
@@ -15,18 +25,35 @@ Runs doctor, then the CLI checks, then Playwright.
 --drive walks the feature map. The default is the short smoke path.
 `;
 
+export function warnForeignWebPort() {
+  const saved = readRun().pids.web;
+  const live = listenerPids(webPort);
+  const matches = saved
+    ? live.some((pid) => sameProcess(saved, pid))
+    : live.length === 0;
+  if (matches) return;
+  console.warn(
+    `warning: port ${webPort} owner (${portOwner(webPort)}) is not the web pid recorded for this checkout.`,
+  );
+}
+
 function main() {
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     process.stdout.write(help);
     return;
   }
   ensureState();
+  warnForeignWebPort();
   const drive = process.argv.includes('--drive');
-  const doctor = spawnSync(process.execPath, [path.join(scriptDir, 'doctor.mjs')], {
-    cwd: root,
-    stdio: 'inherit',
-    env: process.env,
-  });
+  const doctor = spawnSync(
+    process.execPath,
+    [path.join(scriptDir, 'doctor.mjs')],
+    {
+      cwd: root,
+      stdio: 'inherit',
+      env: process.env,
+    },
+  );
   if (doctor.status !== 0) {
     console.error('doctor is not READY. Browser and CLI drives were skipped.');
     process.exit(doctor.status ?? 2);
@@ -43,7 +70,10 @@ function main() {
 
   const spec = path.join(scriptDir, drive ? 'drive.spec.ts' : 'smoke.spec.ts');
   const config = path.join(skillDir, 'playwright.config.mjs');
-  const playwright = path.join(root, 'apps/e2e/node_modules/@playwright/test/cli.js');
+  const playwright = path.join(
+    root,
+    'apps/e2e/node_modules/@playwright/test/cli.js',
+  );
   const result = spawnSync(
     process.execPath,
     [playwright, 'test', '--config', config, spec],
@@ -61,4 +91,15 @@ function main() {
   process.exit(result.status ?? 1);
 }
 
-main();
+function sameFile(left, right) {
+  try {
+    return realpathSync(left) === realpathSync(right);
+  } catch {
+    return false;
+  }
+}
+
+const invoked =
+  process.argv[1] !== undefined &&
+  sameFile(process.argv[1], fileURLToPath(import.meta.url));
+if (invoked) main();

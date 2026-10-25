@@ -11,6 +11,8 @@ build/
 .idea/
 .cursor/*
 !.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/verify-synac
 .claude/
 
 # Build and test output

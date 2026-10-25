@@ -12,13 +12,17 @@ import {
   assertSnapshotCheckout,
   beginLaunch,
   captureToolWrites,
+  checkoutMatchesRun,
   markStepBaseline,
   ensureState,
   evidenceDir,
   finishLaunchSnapshot,
   nodeMajor,
   noteSession,
+  ownsRecordedListener,
   portOpen,
+  readRun,
+  recordCheckoutRevision,
   rememberListener,
   root,
   runLogged,
@@ -28,6 +32,8 @@ import {
   shQuote,
   startSession,
   stateDir,
+  stopRecordedPid,
+  tmux,
   waitFor,
   webPort,
 } from './runtime.mjs';
@@ -77,7 +83,10 @@ async function main() {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(message);
-    const exitCode = error instanceof Error && 'exitCode' in error && error.exitCode === 2 ? 2 : 1;
+    const exitCode =
+      error instanceof Error && 'exitCode' in error && error.exitCode === 2
+        ? 2
+        : 1;
     process.exitCode = exitCode;
   } finally {
     try {
@@ -102,49 +111,119 @@ async function captureAfter(tool, fn) {
   }
 }
 
+function ownedOrigin(url) {
+  try {
+    return new URL(url).origin;
+  } catch {
+    return '';
+  }
+}
+
+async function releaseOwned(session, pidKeys, ports) {
+  if (sessionAlive(session)) {
+    const result = tmux(['kill-session', '-t', session], { stdio: 'inherit' });
+    if (result.status !== 0)
+      fail(`could not stop session ${session} to rebuild`);
+  }
+  const recorded = readRun();
+  for (const key of pidKeys) {
+    const saved = recorded.pids[key];
+    if (saved) stopRecordedPid(saved);
+  }
+  for (const port of ports) {
+    if (!(await portOpen(port))) continue;
+    await waitFor(
+      `port ${port} to close`,
+      async () => !(await portOpen(port)),
+      20_000,
+    );
+  }
+}
+
 async function run() {
   if (nodeMajor() < 24) {
     fail(
       `node ${process.version} is below 24. Put nvm Node 24 first on PATH, then rerun.`,
     );
   }
-  if (!baseUrl.startsWith('http://127.0.0.1:3000') && baseUrl !== 'http://localhost:3000') {
-    fail(`refusing base URL ${baseUrl}. This skill owns http://127.0.0.1:3000.`);
+  const origin = ownedOrigin(baseUrl);
+  if (
+    origin !== 'http://127.0.0.1:3000' &&
+    origin !== 'http://localhost:3000'
+  ) {
+    fail(
+      `refusing base URL ${baseUrl}. This skill owns http://127.0.0.1:3000.`,
+    );
   }
 
   ensureState();
   assertSnapshotCheckout();
   const doctor = await runDoctor(baseUrl);
-  const phase = beginLaunch(doctor.status);
-  if (phase === 'reuse') {
-    console.log('REUSED');
-    console.log(`evidence ${evidenceDir}`);
-    return;
+  const recorded = readRun();
+  const webOwned = ownsRecordedListener(sessionWeb, recorded.pids.web, webPort);
+  const convexOwned = ownsRecordedListener(
+    sessionConvex,
+    recorded.pids.convex,
+    convexPort,
+  );
+  const revisionOk =
+    webOwned || convexOwned ? checkoutMatchesRun(recorded) : true;
+  if (doctor.status === 'READY' && webOwned && revisionOk) {
+    const phase = beginLaunch('READY');
+    if (phase === 'reuse') {
+      console.log('REUSED');
+      console.log(`evidence ${evidenceDir}`);
+      return;
+    }
   }
 
-  const webUp = await portOpen(webPort);
-  const convexUp = await portOpen(convexPort);
-  if (webUp && !sessionAlive(sessionWeb)) {
+  let webUp = await portOpen(webPort);
+  let convexUp = await portOpen(convexPort);
+  if (webUp && !webOwned) {
+    const whose = sessionAlive(sessionWeb)
+      ? 'the listener pid does not match the pid recorded for this checkout'
+      : 'this skill did not start it';
     fail(
-      `port ${webPort} is open (${doctor.portOwner}) and this skill did not start it. Leave it alone.`,
+      `port ${webPort} is open (${doctor.portOwner}) and ${whose}. Leave it alone.`,
     );
-  }
-  if (webUp) {
-    noteSession(sessionWeb);
-    rememberListener('web', webPort);
   }
   if (convexUp && !sessionAlive(sessionConvex)) {
     fail(
       `port ${convexPort} is open and this skill did not start it. Leave it alone.`,
     );
   }
+  if (!revisionOk) {
+    if (webOwned) {
+      await releaseOwned(sessionWeb, ['web'], [webPort]);
+      webUp = false;
+    }
+    if (convexOwned) {
+      await releaseOwned(
+        sessionConvex,
+        ['convex', 'convexSite'],
+        [convexPort, convexSitePort],
+      );
+      convexUp = false;
+    }
+  }
+
+  beginLaunch('NOT_READY');
+
+  if (webUp) {
+    noteSession(sessionWeb);
+    rememberListener('web', webPort);
+  }
   if (convexUp) {
     noteSession(sessionConvex);
     rememberListener('convex', convexPort);
-    if (await portOpen(convexSitePort)) rememberListener('convexSite', convexSitePort);
+    if (await portOpen(convexSitePort))
+      rememberListener('convexSite', convexSitePort);
   }
 
-  if (process.env.VERIFY_SKIP_INSTALL !== '1' && !existsSync(path.join(root, 'node_modules'))) {
+  if (
+    process.env.VERIFY_SKIP_INSTALL !== '1' &&
+    !existsSync(path.join(root, 'node_modules'))
+  ) {
     const install = spawnSync('pnpm', ['install', '--frozen-lockfile'], {
       cwd: root,
       stdio: 'inherit',
@@ -173,7 +252,13 @@ async function run() {
       await waitFor(
         'Convex functions ready',
         async () => {
-          if (await portOpen(convexPort)) rememberListener('convex', convexPort);
+          if (!sessionAlive(sessionConvex)) {
+            throw new Error(
+              `convex session exited before it was ready. See ${log}`,
+            );
+          }
+          if (await portOpen(convexPort))
+            rememberListener('convex', convexPort);
           try {
             return readFileSync(log, 'utf8').includes('Convex functions ready');
           } catch {
@@ -182,9 +267,11 @@ async function run() {
         },
         180_000,
       );
-      if (!(await portOpen(convexPort))) fail(`convex log went ready but port ${convexPort} is closed`);
+      if (!(await portOpen(convexPort)))
+        fail(`convex log went ready but port ${convexPort} is closed`);
       rememberListener('convex', convexPort);
-      if (await portOpen(convexSitePort)) rememberListener('convexSite', convexSitePort);
+      if (await portOpen(convexSitePort))
+        rememberListener('convexSite', convexSitePort);
     });
   }
 
@@ -194,13 +281,18 @@ async function run() {
       const result = spawnSync(
         'npx',
         ['convex', 'env', 'set', 'SYNAC_CONVEX_SERVICE_KEY', 'local-dev'],
-        { cwd: root, stdio: 'inherit', env: { ...process.env, CONVEX_AGENT_MODE: 'anonymous' } },
+        {
+          cwd: root,
+          stdio: 'inherit',
+          env: { ...process.env, CONVEX_AGENT_MODE: 'anonymous' },
+        },
       );
       envSet = result.status ?? 1;
       if (envSet === 0) break;
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
-    if (envSet !== 0) fail('npx convex env set SYNAC_CONVEX_SERVICE_KEY failed');
+    if (envSet !== 0)
+      fail('npx convex env set SYNAC_CONVEX_SERVICE_KEY failed');
   });
 
   const sync = runLogged(
@@ -216,7 +308,9 @@ async function run() {
 
   const mode = process.env.VERIFY_WEB_MODE === 'dev' ? 'dev' : 'start';
   const buildId = path.join(root, 'apps/web/.next/BUILD_ID');
-  const skipBuild = mode === 'dev' || (process.env.VERIFY_SKIP_BUILD === '1' && existsSync(buildId));
+  const skipBuild =
+    mode === 'dev' ||
+    (process.env.VERIFY_SKIP_BUILD === '1' && existsSync(buildId));
   if (!skipBuild) {
     await captureAfter('next', async () => {
       const build = spawnSync('pnpm', ['--filter', '@synac/web', 'build'], {
@@ -248,7 +342,9 @@ async function run() {
             return true;
           }
           if (!sessionAlive(sessionWeb)) {
-            throw new Error(`web session exited before port ${webPort} opened. See ${log}`);
+            throw new Error(
+              `web session exited before port ${webPort} opened. See ${log}`,
+            );
           }
           return false;
         },
@@ -268,6 +364,7 @@ async function run() {
     console.error(JSON.stringify(ready, null, 2));
     fail(`doctor is ${ready.code} after launch. Logs are in ${stateDir}`);
   }
+  recordCheckoutRevision();
   console.log('STARTED');
   console.log(`evidence ${evidenceDir}`);
 }

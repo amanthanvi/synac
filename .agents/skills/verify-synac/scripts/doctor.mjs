@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import { baseUrl, portOwner, webPort } from './runtime.mjs';
 
 const help = `Usage: node .agents/skills/verify-synac/scripts/doctor.mjs [--json] [--base-url URL]
@@ -11,12 +14,32 @@ READY (exit 0) requires all of the following:
   GET /api/v1/search?q=soc is 200 and meta.total is greater than 0
 
 Anything else prints NOT_READY and exits 2.
+Each request aborts after 5 seconds. That result is code timeout.
 `;
 
 function argValue(name) {
   const index = process.argv.indexOf(name);
   if (index < 0) return undefined;
   return process.argv[index + 1];
+}
+
+function isTimeout(error) {
+  if (!error || typeof error !== 'object') return false;
+  if ('name' in error && error.name === 'TimeoutError') return true;
+  if (
+    'cause' in error &&
+    error.cause &&
+    typeof error.cause === 'object' &&
+    'name' in error.cause &&
+    error.cause.name === 'TimeoutError'
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function fetchTimed(url) {
+  return fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(5000) });
 }
 
 export async function runDoctor(url = baseUrl) {
@@ -34,10 +57,11 @@ export async function runDoctor(url = baseUrl) {
   let home;
   let search;
   try {
-    health = await fetch(`${url}/api/healthz`, { redirect: 'manual' });
-    home = await fetch(`${url}/`, { redirect: 'manual' });
-    search = await fetch(`${url}/api/v1/search?q=soc`, { redirect: 'manual' });
+    health = await fetchTimed(`${url}/api/healthz`);
+    home = await fetchTimed(`${url}/`);
+    search = await fetchTimed(`${url}/api/v1/search?q=soc`);
   } catch (error) {
+    if (isTimeout(error)) report.code = 'timeout';
     report.detail = error instanceof Error ? error.message : String(error);
     return report;
   }
@@ -107,10 +131,14 @@ function printHuman(report) {
     console.log(`healthz ${report.healthz.status} ok=${report.healthz.ok}`);
   }
   if (report.home) {
-    console.log(`home ${report.home.status} glossary-search=${report.home.hasSearch}`);
+    console.log(
+      `home ${report.home.status} glossary-search=${report.home.hasSearch}`,
+    );
   }
   if (report.search) {
-    console.log(`search ${report.search.status} total=${report.search.total ?? 'none'}`);
+    console.log(
+      `search ${report.search.status} total=${report.search.total ?? 'none'}`,
+    );
   }
 }
 
@@ -129,7 +157,15 @@ async function main() {
   process.exit(report.status === 'READY' ? 0 : 2);
 }
 
+function sameFile(left, right) {
+  try {
+    return realpathSync(left) === realpathSync(right);
+  } catch {
+    return false;
+  }
+}
+
 const invoked =
-  process.argv[1] &&
-  (process.argv[1].endsWith('/doctor.mjs') || process.argv[1].endsWith('doctor.mjs'));
+  process.argv[1] !== undefined &&
+  sameFile(process.argv[1], fileURLToPath(import.meta.url));
 if (invoked) await main();

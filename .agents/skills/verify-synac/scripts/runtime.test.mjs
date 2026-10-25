@@ -15,7 +15,10 @@ import path from 'node:path';
 import { after, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const realRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+const realRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../..',
+);
 const repo = `/tmp/synac-verify-repo-${process.pid}`;
 const state = `/tmp/synac-verify-test-${process.pid}`;
 const scratchDir = path.join(repo, '.agents/skills/convex-backup-test');
@@ -66,6 +69,7 @@ const {
   runFile,
   stopRecordedPid,
   processIdentity,
+  sameProcess,
 } = await import('./runtime.mjs');
 
 after(() => {
@@ -130,7 +134,10 @@ test('launch refuses a foreign or legacy manifest and says how to clear it', () 
   assert.equal(manifest.repoRoot, root);
   assert.equal(manifest.files['apps/web/CLAUDE.md'].kind, 'file');
   assert.equal(manifest.files['.cursor/rules/convex_rules.mdc'].kind, 'absent');
-  const launch = path.join(realRoot, '.agents/skills/verify-synac/scripts/launch.mjs');
+  const launch = path.join(
+    realRoot,
+    '.agents/skills/verify-synac/scripts/launch.mjs',
+  );
   const env = {
     ...process.env,
     SYNAC_VERIFY_ROOT: repo,
@@ -138,26 +145,41 @@ test('launch refuses a foreign or legacy manifest and says how to clear it', () 
     VERIFY_EVIDENCE_DIR: path.join(state, 'evidence'),
   };
   try {
-    writeFileSync(manifestPath, `${JSON.stringify({ 'AGENTS.md': { kind: 'file', hash: 'abc' } })}\n`);
+    writeFileSync(
+      manifestPath,
+      `${JSON.stringify({ 'AGENTS.md': { kind: 'file', hash: 'abc' } })}\n`,
+    );
     assert.throws(() => assertSnapshotCheckout(), /no checkout identity/);
     assert.throws(() => assertSnapshotCheckout(), /Remove .*snapshot/);
-    const legacy = spawnSync(process.execPath, [launch], { env, encoding: 'utf8' });
+    const legacy = spawnSync(process.execPath, [launch], {
+      env,
+      encoding: 'utf8',
+    });
     assert.notEqual(legacy.status, 0);
     assert.match(legacy.stderr, /Refusing to launch/);
     assert.match(legacy.stderr, /Remove .*snapshot/);
     const legacyGate = beginCleanup();
     assert.equal(legacyGate.restore, false);
     assert.equal(legacyGate.stopOwn, true);
-    assert.equal(readFileSync(legacyGate.backup, 'utf8').includes('AGENTS.md'), true);
+    assert.equal(
+      readFileSync(legacyGate.backup, 'utf8').includes('AGENTS.md'),
+      true,
+    );
 
     manifest.repoRoot = '/tmp/other-checkout';
     writeFileSync(manifestPath, `${JSON.stringify(manifest)}\n`);
     assert.throws(() => assertSnapshotCheckout(), /Refusing to launch/);
-    const foreign = spawnSync(process.execPath, [launch], { env, encoding: 'utf8' });
+    const foreign = spawnSync(process.execPath, [launch], {
+      env,
+      encoding: 'utf8',
+    });
     assert.notEqual(foreign.status, 0);
     assert.match(foreign.stderr, /\/tmp\/other-checkout/);
     assert.match(foreign.stderr, /Remove .*snapshot/);
-    assert.equal(readFileSync(manifestPath, 'utf8').includes('/tmp/other-checkout'), true);
+    assert.equal(
+      readFileSync(manifestPath, 'utf8').includes('/tmp/other-checkout'),
+      true,
+    );
   } finally {
     writeFileSync(manifestPath, original);
   }
@@ -187,7 +209,10 @@ test('cleanup stops this checkout and only skips restore for a foreign manifest'
       sessions: [],
       pids: { convex: saved, web: null, convexSite: null },
     });
-    const cleanup = path.join(realRoot, '.agents/skills/verify-synac/scripts/cleanup.mjs');
+    const cleanup = path.join(
+      realRoot,
+      '.agents/skills/verify-synac/scripts/cleanup.mjs',
+    );
     const result = spawnSync(process.execPath, [cleanup], {
       env: {
         ...process.env,
@@ -210,8 +235,14 @@ test('cleanup stops this checkout and only skips restore for a foreign manifest'
     assert.equal(processIdentity(child.pid), null);
     const backedUp = output.match(/Backed up the manifest to (\S+)\./);
     assert.ok(backedUp);
-    assert.equal(readFileSync(backedUp[1], 'utf8').includes('/tmp/other-checkout'), true);
-    assert.equal(readFileSync(manifestPath, 'utf8').includes('/tmp/other-checkout'), true);
+    assert.equal(
+      readFileSync(backedUp[1], 'utf8').includes('/tmp/other-checkout'),
+      true,
+    );
+    assert.equal(
+      readFileSync(manifestPath, 'utf8').includes('/tmp/other-checkout'),
+      true,
+    );
   } finally {
     try {
       child.kill('SIGKILL');
@@ -232,7 +263,10 @@ test('a hand edit survives and a tool write is restored', () => {
   const claudeOriginal = readFileSync(claude);
   try {
     snapshotWatchedFiles();
-    writeFileSync(agents, Buffer.concat([agentsOriginal, Buffer.from('verify-human\n')]));
+    writeFileSync(
+      agents,
+      Buffer.concat([agentsOriginal, Buffer.from('verify-human\n')]),
+    );
     writeFileSync(lock, '{"human":true}\n');
     writeFileSync(claude, '@AGENTS.md\nverify-human\n');
     markStepBaseline();
@@ -300,7 +334,9 @@ test('a convex skill file created after launch is recorded and warned', () => {
     mkdirSync(scratchDir, { recursive: true });
     writeFileSync(abs, 'after launch\n');
     noteWritesSinceObserved();
-    const writes = JSON.parse(readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8'));
+    const writes = JSON.parse(
+      readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8'),
+    );
     assert.equal(writes[rel].kind, 'file');
     assert.equal(writes[rel].tool, 'convex');
     assert.equal(
@@ -361,14 +397,20 @@ test('an unfinished launch restores tool writes before the next snapshot', () =>
   const agentsOriginal = readFileSync(agents, 'utf8');
   try {
     snapshotWatchedFiles();
-    assert.equal(readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8').trim(), '{}');
+    assert.equal(
+      readFileSync(path.join(state, 'snapshot/writes.json'), 'utf8').trim(),
+      '{}',
+    );
     assert.equal(exists(path.join(state, 'snapshot/observed.json')), false);
     writeFileSync(lock, '{"killed":true}\n');
     writeFileSync(agents, `${agentsOriginal}human\n`);
     assert.equal(beginLaunch('NOT_READY'), 'snapshot');
     assert.equal(readFileSync(lock, 'utf8'), original);
     assert.equal(readFileSync(agents, 'utf8'), `${agentsOriginal}human\n`);
-    assert.equal(readFileSync(path.join(state, 'snapshot/files/skills-lock.json'), 'utf8'), original);
+    assert.equal(
+      readFileSync(path.join(state, 'snapshot/files/skills-lock.json'), 'utf8'),
+      original,
+    );
   } finally {
     writeFileSync(lock, original);
     writeFileSync(agents, agentsOriginal);
@@ -390,7 +432,10 @@ test('cleanup does not stop a run recorded for another checkout', () => {
   } finally {
     console.warn = orig;
   }
-  assert.equal(warnings.some((line) => line.includes('Not stopping those processes')), true);
+  assert.equal(
+    warnings.some((line) => line.includes('Not stopping those processes')),
+    true,
+  );
   writeRun({
     ...readRun(),
     repoRoot: root,
@@ -403,7 +448,10 @@ test('a run.json with no repoRoot is not this checkout', async () => {
   const child = spawn('sleep', ['30'], { stdio: 'ignore' });
   try {
     await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('sleep did not spawn')), 2000);
+      const timer = setTimeout(
+        () => reject(new Error('sleep did not spawn')),
+        2000,
+      );
       child.once('spawn', () => {
         clearTimeout(timer);
         resolve();
@@ -420,7 +468,10 @@ test('a run.json with no repoRoot is not this checkout', async () => {
       runFile,
       `${JSON.stringify({ sessions: [], pids: { convex: saved, web: null, convexSite: null } })}\n`,
     );
-    const cleanup = path.join(realRoot, '.agents/skills/verify-synac/scripts/cleanup.mjs');
+    const cleanup = path.join(
+      realRoot,
+      '.agents/skills/verify-synac/scripts/cleanup.mjs',
+    );
     const result = spawnSync(process.execPath, [cleanup], {
       env: {
         ...process.env,
@@ -488,7 +539,11 @@ test('SIGKILL waits for the launch start time to still match', async () => {
         if (error) reject(error);
         else resolve();
       };
-      timer = setTimeout(() => finish(new Error(`signal fixture did not become ready\n${stderr}`)), 5000);
+      timer = setTimeout(
+        () =>
+          finish(new Error(`signal fixture did not become ready\n${stderr}`)),
+        5000,
+      );
       const wait = () => {
         if (settled) return;
         if (exists(ready)) {
@@ -499,7 +554,11 @@ test('SIGKILL waits for the launch start time to still match', async () => {
       };
       child.once('error', (error) => finish(error));
       child.once('exit', (code, signal) => {
-        finish(new Error(`signal fixture exited early code=${code} signal=${signal}\n${stderr}`));
+        finish(
+          new Error(
+            `signal fixture exited early code=${code} signal=${signal}\n${stderr}`,
+          ),
+        );
       });
       wait();
     });
@@ -511,7 +570,10 @@ test('SIGKILL waits for the launch start time to still match', async () => {
     assert.equal(processIdentity(child.pid)?.pid, child.pid);
     assert.equal(stopRecordedPid(saved, 400), 'kill');
     const ended = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('signal fixture survived SIGKILL')), 2000);
+      const timer = setTimeout(
+        () => reject(new Error('signal fixture survived SIGKILL')),
+        2000,
+      );
       const done = (code, signal) => {
         clearTimeout(timer);
         resolve({ code, signal });
@@ -532,8 +594,60 @@ test('SIGKILL waits for the launch start time to still match', async () => {
   }
 });
 
+test('a recorded pid stores argv0 and a hash, not the command line', async () => {
+  const secret = 'super-secret-instance-value';
+  const child = spawn(
+    process.execPath,
+    ['-e', 'setInterval(() => {}, 1e9)', '--instance-secret', secret],
+    {
+      stdio: 'ignore',
+    },
+  );
+  try {
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error('secret fixture did not spawn')),
+        2000,
+      );
+      child.once('spawn', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      child.once('error', (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+    const saved = processIdentity(child.pid);
+    assert.ok(saved);
+    assert.equal(saved.argv0, process.execPath);
+    assert.equal(Object.hasOwn(saved, 'cmdline'), false);
+    assert.equal(JSON.stringify(saved).includes(secret), false);
+    assert.match(saved.cmdlineHash, /^[0-9a-f]{64}$/);
+    writeRun({
+      ...readRun(),
+      repoRoot: root,
+      sessions: [],
+      pids: { convex: saved, web: null, convexSite: null },
+    });
+    const disk = readFileSync(runFile, 'utf8');
+    assert.equal(disk.includes(secret), false);
+    assert.equal(disk.includes('"cmdline"'), false);
+    assert.equal(sameProcess(readRun().pids.convex, child.pid), true);
+  } finally {
+    try {
+      child.kill('SIGKILL');
+    } catch {
+      // already exited
+    }
+  }
+});
+
 test('runtime checks use the temp repo and leave the real checkout alone', () => {
   rmSync(scratchDir, { recursive: true, force: true });
   assert.equal(root, repo);
-  assert.equal(exists(path.join(realRoot, '.agents/skills/convex-backup-test')), false);
+  assert.equal(
+    exists(path.join(realRoot, '.agents/skills/convex-backup-test')),
+    false,
+  );
 });

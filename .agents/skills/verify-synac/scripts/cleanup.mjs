@@ -49,7 +49,9 @@ function main() {
     if (!sessionAlive(name)) continue;
     const result = tmux(['kill-session', '-t', name], { stdio: 'inherit' });
     if (result.status !== 0) {
-      console.error(`cleanup: tmux kill-session ${name} exited ${result.status}`);
+      console.error(
+        `cleanup: tmux kill-session ${name} exited ${result.status}`,
+      );
     } else {
       console.log(`stopped session ${name}`);
     }
@@ -72,7 +74,9 @@ function main() {
       continue;
     }
     if (outcome === 'reused' || outcome === 'reused-before-kill') {
-      console.log(`skipped pid ${saved.pid} (${name}): it is no longer the process launch started`);
+      console.log(
+        `skipped pid ${saved.pid} (${name}): it is no longer the process launch started`,
+      );
       continue;
     }
     if (outcome === 'kill') {

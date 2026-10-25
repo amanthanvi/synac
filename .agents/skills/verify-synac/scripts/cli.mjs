@@ -1,10 +1,24 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { cpSync, existsSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { evidenceDir, ensureState, root, runLogged, stateDir } from './runtime.mjs';
+import {
+  evidenceDir,
+  ensureState,
+  root,
+  runLogged,
+  stateDir,
+} from './runtime.mjs';
 
 const help = `Usage: node .agents/skills/verify-synac/scripts/cli.mjs [--smoke]
 
@@ -29,7 +43,9 @@ function requireOk(step, result, needle) {
     throw new Error(`${step} exited ${result.status}. See ${result.logPath}`);
   }
   if (needle && !`${result.stdout}\n${result.stderr}`.includes(needle)) {
-    throw new Error(`${step} output missing ${JSON.stringify(needle)}. See ${result.logPath}`);
+    throw new Error(
+      `${step} output missing ${JSON.stringify(needle)}. See ${result.logPath}`,
+    );
   }
   return result;
 }
@@ -42,7 +58,8 @@ function smokeSteps(report) {
   );
   const versionMatch = check.stdout.match(/\(version ([0-9a-f]{12})\)/);
   const version = versionMatch?.[1];
-  if (!version) throw new Error('content:check did not print a content version');
+  if (!version)
+    throw new Error('content:check did not print a content version');
 
   requireOk(
     'content:compile',
@@ -50,8 +67,13 @@ function smokeSteps(report) {
     'compiled dataset written to tools/content/dist/compiled.json',
   );
   const compiled = JSON.parse(readFileSync(compiledPath, 'utf8'));
-  if (typeof compiled.contentVersion !== 'string' || !compiled.contentVersion.startsWith(version)) {
-    throw new Error('compiled.json contentVersion does not match content:check');
+  if (
+    typeof compiled.contentVersion !== 'string' ||
+    !compiled.contentVersion.startsWith(version)
+  ) {
+    throw new Error(
+      'compiled.json contentVersion does not match content:check',
+    );
   }
   if (!Array.isArray(compiled.entries) || compiled.entries.length === 0) {
     throw new Error('compiled.json has no entries');
@@ -71,7 +93,11 @@ function historyStep(report) {
     runLogged('pnpm', ['content:history'], 'cli-content-history.log'),
     'tag assignment history ok:',
   );
-  report.steps.push({ name: 'content-history', status: 'pass', log: result.logPath });
+  report.steps.push({
+    name: 'content-history',
+    status: 'pass',
+    log: result.logPath,
+  });
 }
 
 function hostileStep(report) {
@@ -86,10 +112,19 @@ function hostileStep(report) {
     throw new Error('content:check accepted a hostile content dir');
   }
   const text = `${bad.stdout}\n${bad.stderr}`;
-  if (!text.includes('content check failed') && !text.includes('invalid JSON')) {
-    throw new Error(`hostile content:check did not report a schema failure. See ${bad.logPath}`);
+  if (
+    !text.includes('content check failed') &&
+    !text.includes('invalid JSON')
+  ) {
+    throw new Error(
+      `hostile content:check did not report a schema failure. See ${bad.logPath}`,
+    );
   }
-  report.steps.push({ name: 'content-hostile', status: 'pass', log: bad.logPath });
+  report.steps.push({
+    name: 'content-hostile',
+    status: 'pass',
+    log: bad.logPath,
+  });
 
   const usage = runLogged(
     'pnpm',
@@ -98,21 +133,43 @@ function hostileStep(report) {
   );
   const usageText = `${usage.stdout}\n${usage.stderr}`;
   if (usage.status === 0 || !usageText.includes('usage: ingest')) {
-    throw new Error(`ingest with no args did not print usage. See ${usage.logPath}`);
+    throw new Error(
+      `ingest with no args did not print usage. See ${usage.logPath}`,
+    );
   }
-  report.steps.push({ name: 'ingest-usage', status: 'pass', log: usage.logPath });
+  report.steps.push({
+    name: 'ingest-usage',
+    status: 'pass',
+    log: usage.logPath,
+  });
 
   const missing = runLogged(
     'pnpm',
-    ['--filter', '@synac/ingest-tools', 'ingest', '--', '--source', 'not-a-source'],
+    [
+      '--filter',
+      '@synac/ingest-tools',
+      'ingest',
+      '--',
+      '--source',
+      'not-a-source',
+    ],
     'cli-ingest-missing.log',
     { env: { SYNAC_CONTENT_DIR: dir } },
   );
   const missingText = `${missing.stdout}\n${missing.stderr}`;
-  if (missing.status === 0 || !missingText.includes('no source registry file')) {
-    throw new Error(`missing ingest source was not rejected. See ${missing.logPath}`);
+  if (
+    missing.status === 0 ||
+    !missingText.includes('no source registry file')
+  ) {
+    throw new Error(
+      `missing ingest source was not rejected. See ${missing.logPath}`,
+    );
   }
-  report.steps.push({ name: 'ingest-missing-source', status: 'pass', log: missing.logPath });
+  report.steps.push({
+    name: 'ingest-missing-source',
+    status: 'pass',
+    log: missing.logPath,
+  });
 }
 
 function ingestStep(report) {
@@ -134,11 +191,17 @@ function ingestStep(report) {
   );
   const after = sha256(bundle);
   if (before !== after) {
-    throw new Error('isolated ingest modified content/generated/rfc4949.json in the repo');
+    throw new Error(
+      'isolated ingest modified content/generated/rfc4949.json in the repo',
+    );
   }
   const text = `${result.stdout}\n${result.stderr}`;
   const wrote = existsSync(path.join(dir, 'generated/rfc4949.json'));
-  if (result.status === 0 && wrote && /rfc4949: (unchanged|updated|skipped)/.test(text)) {
+  if (
+    result.status === 0 &&
+    wrote &&
+    /rfc4949: (unchanged|updated|skipped)/.test(text)
+  ) {
     report.steps.push({
       name: 'ingest-rfc4949',
       status: 'pass',
@@ -155,7 +218,9 @@ function ingestStep(report) {
       reason: `network unreachable (exit ${result.status}). ${detail}`,
       log: result.logPath,
     });
-    console.log(`INCONCLUSIVE ingest rfc4949: network unreachable. See ${result.logPath}`);
+    console.log(
+      `INCONCLUSIVE ingest rfc4949: network unreachable. See ${result.logPath}`,
+    );
     return;
   }
   throw new Error(
@@ -167,7 +232,8 @@ const networkUnreachable =
   /ENOTFOUND|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|ECONNREFUSED|ETIMEDOUT|ECONNRESET|UND_ERR_CONNECT_TIMEOUT|UND_ERR_SOCKET|getaddrinfo|Hostname did not resolve|network is unreachable|socket hang up|TypeError: fetch failed\b|[✗✘]\s+\S+:\s+fetch failed\b/;
 
 function isWrapperLine(line) {
-  if (line.length === 0 || line === '^' || line.startsWith('\u2009')) return true;
+  if (line.length === 0 || line === '^' || line.startsWith('\u2009'))
+    return true;
   if (/^\$\s/.test(line) || /^>\s/.test(line)) return true;
   if (/^exit\s+\d+$/.test(line) || /^Exit status\b/.test(line)) return true;
   if (/^(?:npm|pnpm)\s/.test(line)) return true;
@@ -191,7 +257,12 @@ function isBraceOrPunctuation(line) {
 }
 
 function isErrorLine(line) {
-  if (line.length === 0 || /^\s/.test(line) || isWrapperLine(line) || isBraceOrPunctuation(line)) {
+  if (
+    line.length === 0 ||
+    /^\s/.test(line) ||
+    isWrapperLine(line) ||
+    isBraceOrPunctuation(line)
+  ) {
     return false;
   }
   if (isMarkedError(line) || isNamedError(line)) return true;
@@ -200,7 +271,11 @@ function isErrorLine(line) {
 
 function isExplicitCause(line) {
   const trimmed = line.trim();
-  return /^\[cause\]:/i.test(trimmed) || /^caused by:/i.test(trimmed) || /^cause:/i.test(trimmed);
+  return (
+    /^\[cause\]:/i.test(trimmed) ||
+    /^caused by:/i.test(trimmed) ||
+    /^cause:/i.test(trimmed)
+  );
 }
 
 function isStackFrame(line) {
@@ -268,11 +343,17 @@ function main() {
       status: 'fail',
       reason: error instanceof Error ? error.message : String(error),
     });
-    writeFileSync(path.join(evidenceDir, 'cli-report.json'), `${JSON.stringify(report, null, 2)}\n`);
+    writeFileSync(
+      path.join(evidenceDir, 'cli-report.json'),
+      `${JSON.stringify(report, null, 2)}\n`,
+    );
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);
   }
-  writeFileSync(path.join(evidenceDir, 'cli-report.json'), `${JSON.stringify(report, null, 2)}\n`);
+  writeFileSync(
+    path.join(evidenceDir, 'cli-report.json'),
+    `${JSON.stringify(report, null, 2)}\n`,
+  );
   console.log(`cli report ${path.join(evidenceDir, 'cli-report.json')}`);
 }
 
@@ -285,5 +366,6 @@ function sameFile(left, right) {
 }
 
 const invokedDirectly =
-  process.argv[1] !== undefined && sameFile(process.argv[1], fileURLToPath(import.meta.url));
+  process.argv[1] !== undefined &&
+  sameFile(process.argv[1], fileURLToPath(import.meta.url));
 if (invokedDirectly) main();

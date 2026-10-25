@@ -171,14 +171,20 @@ test('the ingest CLI fetch failed line is INCONCLUSIVE', () => {
     '✗ rfc4949: fetch failed',
   ].join('\n');
   assert.equal(ingestNetworkUnreachable(log), true);
-  assert.equal(ingestNetworkUnreachable('✗ rfc4949: fetch failed (404)'), false);
+  assert.equal(
+    ingestNetworkUnreachable('✗ rfc4949: fetch failed (404)'),
+    false,
+  );
 });
 
 test('cli.mjs --help runs through the .cursor skill symlink', () => {
   const result = spawnSync(
     process.execPath,
     ['.cursor/skills/verify-synac/scripts/cli.mjs', '--help'],
-    { cwd: fileURLToPath(new URL('../../../..', import.meta.url)), encoding: 'utf8' },
+    {
+      cwd: fileURLToPath(new URL('../../../..', import.meta.url)),
+      encoding: 'utf8',
+    },
   );
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Usage: node/);

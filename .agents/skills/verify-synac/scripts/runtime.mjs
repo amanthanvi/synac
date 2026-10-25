@@ -23,7 +23,9 @@ import { fileURLToPath } from 'node:url';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
-export const root = path.resolve(process.env.SYNAC_VERIFY_ROOT ?? path.resolve(scriptDir, '../../../..'));
+export const root = path.resolve(
+  process.env.SYNAC_VERIFY_ROOT ?? path.resolve(scriptDir, '../../../..'),
+);
 if (process.cwd() !== root) process.chdir(root);
 
 function canonicalRoot(repoRoot) {
@@ -36,7 +38,10 @@ function canonicalRoot(repoRoot) {
 }
 
 export function checkoutKey(repoRoot) {
-  return createHash('sha256').update(canonicalRoot(repoRoot)).digest('hex').slice(0, 12);
+  return createHash('sha256')
+    .update(canonicalRoot(repoRoot))
+    .digest('hex')
+    .slice(0, 12);
 }
 
 export function stateDirFor(repoRoot) {
@@ -133,7 +138,8 @@ function readRunFile() {
   } catch {
     return { status: 'unreadable' };
   }
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { status: 'unreadable' };
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+    return { status: 'unreadable' };
   const repoRoot = typeof raw.repoRoot === 'string' ? raw.repoRoot : '';
   if (!repoRoot) return { status: 'legacy' };
   if (repoRoot !== root) return { status: 'foreign', repoRoot };
@@ -152,10 +158,12 @@ function backupRunFile() {
 
 export function readRun() {
   const identity = readRunFile();
-  if (identity.status === 'legacy' || identity.status === 'unreadable') return emptyRun();
+  if (identity.status === 'legacy' || identity.status === 'unreadable')
+    return emptyRun();
   try {
     const value = JSON.parse(readFileSync(runFile, 'utf8'));
-    if (!value || typeof value !== 'object' || Array.isArray(value)) return emptyRun();
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+      return emptyRun();
     const pids = value.pids && typeof value.pids === 'object' ? value.pids : {};
     return {
       sessions: Array.isArray(value.sessions) ? value.sessions : [],
@@ -171,6 +179,8 @@ export function readRun() {
         ? value.dirtyBefore.filter((item) => typeof item === 'string')
         : undefined,
       repoRoot: typeof value.repoRoot === 'string' ? value.repoRoot : '',
+      head: typeof value.head === 'string' ? value.head : '',
+      diffHash: typeof value.diffHash === 'string' ? value.diffHash : '',
     };
   } catch {
     return emptyRun();
@@ -185,6 +195,8 @@ function emptyRun() {
     webMode: 'start',
     baseUrl,
     repoRoot: '',
+    head: '',
+    diffHash: '',
   };
 }
 
@@ -193,9 +205,22 @@ function normalizePid(value) {
   const pid = value.pid;
   if (!Number.isInteger(pid) || pid <= 1) return null;
   const startTime = typeof value.startTime === 'string' ? value.startTime : '';
-  const cmdline = typeof value.cmdline === 'string' ? value.cmdline : '';
-  if (!startTime && !cmdline) return null;
-  return { pid, startTime, cmdline };
+  const argv0 = typeof value.argv0 === 'string' ? value.argv0 : '';
+  const cmdlineHash =
+    typeof value.cmdlineHash === 'string' ? value.cmdlineHash : '';
+  if (!startTime && !argv0 && !cmdlineHash) return null;
+  return { pid, startTime, argv0, cmdlineHash };
+}
+
+function storedPid(value) {
+  const normalized = normalizePid(value);
+  if (!normalized) return null;
+  return {
+    pid: normalized.pid,
+    startTime: normalized.startTime,
+    argv0: normalized.argv0,
+    cmdlineHash: normalized.cmdlineHash,
+  };
 }
 
 export function writeRun(run) {
@@ -207,7 +232,19 @@ export function writeRun(run) {
       `warning: run state has no checkout identity. Backed up the run state to ${dest}.`,
     );
   }
-  const next = { ...run, repoRoot: typeof run.repoRoot === 'string' && run.repoRoot ? run.repoRoot : root };
+  const pids = run.pids && typeof run.pids === 'object' ? run.pids : {};
+  const next = {
+    ...run,
+    repoRoot:
+      typeof run.repoRoot === 'string' && run.repoRoot ? run.repoRoot : root,
+    head: typeof run.head === 'string' ? run.head : '',
+    diffHash: typeof run.diffHash === 'string' ? run.diffHash : '',
+    pids: {
+      convex: storedPid(pids.convex),
+      web: storedPid(pids.web),
+      convexSite: storedPid(pids.convexSite),
+    },
+  };
   writeFileSync(runFile, `${JSON.stringify(next, null, 2)}\n`);
 }
 
@@ -292,7 +329,8 @@ function pidForInode(inode) {
     }
     for (const fd of fds) {
       try {
-        if (readlinkSync(`/proc/${pid}/fd/${fd}`) === needle) return Number(pid);
+        if (readlinkSync(`/proc/${pid}/fd/${fd}`) === needle)
+          return Number(pid);
       } catch {
         continue;
       }
@@ -316,7 +354,9 @@ export function portOwner(port) {
     .map((pid) => {
       let cmd = '';
       try {
-        cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8').replace(/\0/g, ' ').trim();
+        cmd = readFileSync(`/proc/${pid}/cmdline`, 'utf8')
+          .replace(/\0/g, ' ')
+          .trim();
       } catch {
         cmd = '';
       }
@@ -360,7 +400,13 @@ export function runLogged(command, args, logName, options = {}) {
   const stderr = result.stderr ?? '';
   const header = `$ ${command} ${args.join(' ')}\nexit ${result.status ?? 'null'}\n`;
   writeFileSync(logPath, `${header}\n${stdout}\n${stderr}`);
-  return { status: result.status ?? 1, stdout, stderr, logPath, error: result.error };
+  return {
+    status: result.status ?? 1,
+    stdout,
+    stderr,
+    logPath,
+    error: result.error,
+  };
 }
 
 export function nodeMajor() {
@@ -382,33 +428,42 @@ export function noteSession(session) {
 
 export function processIdentity(pid) {
   if (!Number.isInteger(pid) || pid <= 1) return null;
-  let cmdline = '';
+  let raw;
   try {
-    cmdline = readFileSync(`/proc/${pid}/cmdline`, 'utf8').replaceAll('\0', ' ').trim();
+    raw = readFileSync(`/proc/${pid}/cmdline`);
   } catch {
     return null;
   }
+  const cmdlineHash = createHash('sha256').update(raw).digest('hex');
+  const zero = raw.indexOf(0);
+  const argv0 = (zero === -1 ? raw : raw.subarray(0, zero)).toString('utf8');
   let startTime = '';
   try {
     const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
     const end = stat.lastIndexOf(')');
     if (end !== -1) {
-      const fields = stat.slice(end + 2).trim().split(/\s+/);
+      const fields = stat
+        .slice(end + 2)
+        .trim()
+        .split(/\s+/);
       startTime = fields[19] ?? '';
     }
   } catch {
     startTime = '';
   }
-  if (!cmdline && !startTime) return null;
-  return { pid, startTime, cmdline };
+  if (!argv0 && !startTime && !cmdlineHash) return null;
+  return { pid, startTime, argv0, cmdlineHash };
 }
 
 export function sameProcess(saved, pid) {
   if (!saved || saved.pid !== pid) return false;
   const live = processIdentity(pid);
   if (!live) return false;
-  if (saved.startTime && live.startTime) return saved.startTime === live.startTime;
-  if (saved.cmdline && live.cmdline) return saved.cmdline === live.cmdline;
+  if (saved.startTime && live.startTime)
+    return saved.startTime === live.startTime;
+  if (saved.cmdlineHash && live.cmdlineHash)
+    return saved.cmdlineHash === live.cmdlineHash;
+  if (saved.argv0 && live.argv0) return saved.argv0 === live.argv0;
   return false;
 }
 
@@ -440,7 +495,12 @@ function processState(pid) {
     const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
     const end = stat.lastIndexOf(')');
     if (end === -1) return '';
-    return stat.slice(end + 2).trim().split(/\s+/)[0] ?? '';
+    return (
+      stat
+        .slice(end + 2)
+        .trim()
+        .split(/\s+/)[0] ?? ''
+    );
   } catch {
     return '';
   }
@@ -470,10 +530,53 @@ export function rememberListener(pidKey, port) {
   const pid = listenerPids(port)[0];
   if (!pid) return;
   const identity = processIdentity(pid);
-  if (!identity || (!identity.startTime && !identity.cmdline)) return;
+  if (
+    !identity ||
+    (!identity.startTime && !identity.argv0 && !identity.cmdlineHash)
+  )
+    return;
   const run = readRun();
   run.pids[pidKey] = identity;
   writeRun(run);
+}
+
+export function ownsRecordedListener(session, saved, port) {
+  if (!sessionAlive(session) || !saved) return false;
+  return listenerPids(port).some((pid) => sameProcess(saved, pid));
+}
+
+export function checkoutRevision() {
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  const diff = spawnSync('git', ['diff', '--no-ext-diff', 'HEAD'], {
+    cwd: root,
+    maxBuffer: 32 * 1024 * 1024,
+  });
+  const headValue = head.status === 0 ? (head.stdout ?? '').trim() : '';
+  const diffBytes =
+    diff.status === 0 && diff.stdout ? diff.stdout : Buffer.alloc(0);
+  const diffHash =
+    diff.status === 0
+      ? createHash('sha256').update(diffBytes).digest('hex')
+      : '';
+  return { head: headValue, diffHash };
+}
+
+export function checkoutMatchesRun(run = readRun()) {
+  if (!run.head || !run.diffHash) return false;
+  const current = checkoutRevision();
+  return current.head === run.head && current.diffHash === run.diffHash;
+}
+
+export function recordCheckoutRevision() {
+  const run = readRun();
+  const revision = checkoutRevision();
+  run.head = revision.head;
+  run.diffHash = revision.diffHash;
+  writeRun(run);
+  return revision;
 }
 
 function sha256Bytes(bytes) {
@@ -544,11 +647,17 @@ function watchedRels() {
   }
   for (const name of skillNames) {
     if (!name.isDirectory() || !name.name.startsWith('convex')) continue;
-    for (const rel of walkFiles(path.join(skills, name.name), `.agents/skills/${name.name}`)) {
+    for (const rel of walkFiles(
+      path.join(skills, name.name),
+      `.agents/skills/${name.name}`,
+    )) {
       rels.add(rel);
     }
   }
-  for (const rel of walkFiles(path.join(root, 'convex/_generated/ai'), 'convex/_generated/ai')) {
+  for (const rel of walkFiles(
+    path.join(root, 'convex/_generated/ai'),
+    'convex/_generated/ai',
+  )) {
     rels.add(rel);
   }
   return [...rels];
@@ -583,7 +692,8 @@ function sameDescribed(left, right) {
 }
 
 function safeRel(rel) {
-  if (typeof rel !== 'string' || rel.length === 0 || path.isAbsolute(rel)) return false;
+  if (typeof rel !== 'string' || rel.length === 0 || path.isAbsolute(rel))
+    return false;
   if (rel.includes('\\') || rel.split('/').includes('..')) return false;
   return true;
 }
@@ -602,7 +712,9 @@ function readBackupId() {
 let restoreBackupDir = null;
 
 function beginRestoreBackup() {
-  const id = readBackupId() ?? `restore-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  const id =
+    readBackupId() ??
+    `restore-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
   const dir = path.join(stateDir, 'restored', id);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   chmodSync(dir, 0o700);
@@ -660,7 +772,11 @@ function trackedInGit(rel) {
 
 function pruneEmptyConvexSkillDirs(rel) {
   let parent = path.dirname(rel);
-  while (parent && parent !== '.' && parent.startsWith('.agents/skills/convex')) {
+  while (
+    parent &&
+    parent !== '.' &&
+    parent.startsWith('.agents/skills/convex')
+  ) {
     if (trackedInGit(parent)) break;
     const absParent = path.join(root, parent);
     let names = [];
@@ -726,7 +842,10 @@ export function snapshotWatchedFiles() {
     files[rel] = { ...described, ...stagedRecord(rel) };
   }
   const manifest = { repoRoot: root, files };
-  writeFileSync(path.join(staging, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(
+    path.join(staging, 'manifest.json'),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+  );
   writeFileSync(path.join(staging, 'writes.json'), '{}\n');
   const backupId = new Date().toISOString().replace(/[:.]/g, '-');
   writeFileSync(path.join(staging, 'backup-id'), `${backupId}\n`);
@@ -747,11 +866,18 @@ function loadManifest() {
   } catch {
     return { status: 'unreadable' };
   }
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return { status: 'unreadable' };
-  if (typeof raw.repoRoot !== 'string' || !raw.files || typeof raw.files !== 'object' || Array.isArray(raw.files)) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw))
+    return { status: 'unreadable' };
+  if (
+    typeof raw.repoRoot !== 'string' ||
+    !raw.files ||
+    typeof raw.files !== 'object' ||
+    Array.isArray(raw.files)
+  ) {
     return { status: 'legacy' };
   }
-  if (raw.repoRoot !== root) return { status: 'foreign', repoRoot: raw.repoRoot };
+  if (raw.repoRoot !== root)
+    return { status: 'foreign', repoRoot: raw.repoRoot };
   return { status: 'ok', raw };
 }
 
@@ -774,9 +900,13 @@ export function assertSnapshotCheckout() {
     );
   }
   if (loaded.status === 'legacy') {
-    throw new Error(`snapshot manifest has no checkout identity. Refusing to launch. ${clearSnapshotHint()}`);
+    throw new Error(
+      `snapshot manifest has no checkout identity. Refusing to launch. ${clearSnapshotHint()}`,
+    );
   }
-  throw new Error(`snapshot manifest is unreadable. Refusing to launch. ${clearSnapshotHint()}`);
+  throw new Error(
+    `snapshot manifest is unreadable. Refusing to launch. ${clearSnapshotHint()}`,
+  );
 }
 
 function backupRejectedManifest() {
@@ -802,7 +932,9 @@ export function beginCleanup() {
       : loaded.status === 'legacy'
         ? 'snapshot manifest has no checkout identity'
         : 'snapshot manifest is unreadable';
-  console.warn(`warning: ${why}. Leaving files in place. Backed up the manifest to ${dest}.`);
+  console.warn(
+    `warning: ${why}. Leaving files in place. Backed up the manifest to ${dest}.`,
+  );
   return { restore: false, stopOwn, backup: dest };
 }
 
@@ -817,13 +949,19 @@ export function runBelongsToCheckout() {
   }
   const dest = backupRunFile();
   const why =
-    identity.status === 'legacy' ? 'run state has no checkout identity' : 'run state is unreadable';
-  console.warn(`warning: ${why}. Not stopping those processes. Backed up the run state to ${dest}.`);
+    identity.status === 'legacy'
+      ? 'run state has no checkout identity'
+      : 'run state is unreadable';
+  console.warn(
+    `warning: ${why}. Not stopping those processes. Backed up the run state to ${dest}.`,
+  );
   return false;
 }
 
 function isNewConvexSkill(rel, snap) {
-  return rel.startsWith('.agents/skills/convex') && (!snap || snap.kind === 'absent');
+  return (
+    rel.startsWith('.agents/skills/convex') && (!snap || snap.kind === 'absent')
+  );
 }
 
 function toolOwns(tool, rel) {
@@ -849,7 +987,9 @@ function readWriteMap() {
 
 function snapDescribed(files, rel) {
   const snap = files[rel];
-  return snap ? { kind: snap.kind, hash: snap.hash ?? null } : { kind: 'absent', hash: null };
+  return snap
+    ? { kind: snap.kind, hash: snap.hash ?? null }
+    : { kind: 'absent', hash: null };
 }
 
 function writeRecord(current, tool) {
@@ -895,7 +1035,8 @@ export function captureToolWrites(tool) {
       writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
       continue;
     }
-    if (isNewConvexSkill(rel, files[rel])) console.warn(`warning: new convex skill file ${rel}`);
+    if (isNewConvexSkill(rel, files[rel]))
+      console.warn(`warning: new convex skill file ${rel}`);
     writeMap[rel] = writeRecord(current, tool);
     writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
   }
@@ -929,24 +1070,38 @@ export function noteWritesSinceObserved() {
   const manifest = readManifest();
   if (!manifest) return;
   const observed = readJson(observedPath(), null);
-  if (!observed || typeof observed !== 'object' || Array.isArray(observed)) return;
+  if (!observed || typeof observed !== 'object' || Array.isArray(observed))
+    return;
   const files = manifest.files;
   const writeMap = readWriteMap();
-  const rels = new Set([...Object.keys(files), ...watchedRels(), ...Object.keys(observed)]);
+  const rels = new Set([
+    ...Object.keys(files),
+    ...watchedRels(),
+    ...Object.keys(observed),
+  ]);
   for (const rel of rels) {
     if (!safeRel(rel) || handMaintained.has(rel)) continue;
-    const tool = toolOwns('convex', rel) ? 'convex' : toolOwns('next', rel) ? 'next' : null;
+    const tool = toolOwns('convex', rel)
+      ? 'convex'
+      : toolOwns('next', rel)
+        ? 'next'
+        : null;
     if (!tool) continue;
     const current = describeWorktree(rel);
     const seen = observed[rel];
     const seenDescribed =
-      seen && typeof seen === 'object' ? { kind: seen.kind, hash: seen.hash ?? null } : { kind: 'absent', hash: null };
+      seen && typeof seen === 'object'
+        ? { kind: seen.kind, hash: seen.hash ?? null }
+        : { kind: 'absent', hash: null };
     if (sameDescribed(current, seenDescribed)) continue;
     const prior = writeMap[rel];
     const priorDescribed =
-      prior && typeof prior === 'object' ? { kind: prior.kind, hash: prior.hash ?? null } : null;
+      prior && typeof prior === 'object'
+        ? { kind: prior.kind, hash: prior.hash ?? null }
+        : null;
     if (priorDescribed && !sameDescribed(current, priorDescribed)) continue;
-    if (isNewConvexSkill(rel, files[rel])) console.warn(`warning: new convex skill file ${rel}`);
+    if (isNewConvexSkill(rel, files[rel]))
+      console.warn(`warning: new convex skill file ${rel}`);
     writeMap[rel] = writeRecord(current, tool);
   }
   writeFileSync(writesPath(), `${JSON.stringify(writeMap, null, 2)}\n`);
@@ -970,7 +1125,9 @@ export function warnUnclaimedChanges() {
     ) {
       continue;
     }
-    console.warn(`warning: ${rel} changed during the run and was left in place`);
+    console.warn(
+      `warning: ${rel} changed during the run and was left in place`,
+    );
   }
 }
 
@@ -981,7 +1138,9 @@ function priorRunUnfinished() {
 
 export function restoreUnfinishedRun() {
   if (!priorRunUnfinished()) return { restored: [] };
-  console.warn('warning: previous launch did not finish. Restoring tool-owned files from its snapshot.');
+  console.warn(
+    'warning: previous launch did not finish. Restoring tool-owned files from its snapshot.',
+  );
   try {
     return restoreUnfinishedInner();
   } finally {
@@ -998,18 +1157,24 @@ function restoreUnfinishedInner() {
     if (!toolOwns('convex', rel) && !toolOwns('next', rel)) continue;
     const snap = manifest.files[rel] ?? absentRecord();
     const current = describeWorktree(rel);
-    if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })) continue;
+    if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null }))
+      continue;
     const liveStage = stagedRecord(rel);
-    const snapIndex = typeof snap.indexHash === 'string' ? snap.indexHash : null;
+    const snapIndex =
+      typeof snap.indexHash === 'string' ? snap.indexHash : null;
     const snapStaged = snap.staged === true;
     if (liveStage.indexHash !== snapIndex || liveStage.staged !== snapStaged) {
-      console.warn(`warning: ${rel} staged state changed during the run and was left in place`);
+      console.warn(
+        `warning: ${rel} staged state changed during the run and was left in place`,
+      );
       continue;
     }
     const dest = backupRel(rel);
     if (dest) console.log(`backed up ${rel} to ${dest}`);
     if (!placeSnapshot(rel, snap)) {
-      console.warn(`warning: ${rel} changed during the run and was left in place`);
+      console.warn(
+        `warning: ${rel} changed during the run and was left in place`,
+      );
       continue;
     }
     restored.push(rel);
@@ -1039,7 +1204,10 @@ function restoreOwnedWritesInner() {
   if (!manifest) return { restored: [], warned: [], backups: [] };
   const files = manifest.files;
   const writes = readJson(writesPath(), {});
-  const writeMap = writes && typeof writes === 'object' && !Array.isArray(writes) ? writes : {};
+  const writeMap =
+    writes && typeof writes === 'object' && !Array.isArray(writes)
+      ? writes
+      : {};
   const rels = new Set([...Object.keys(files), ...Object.keys(writeMap)]);
   const restored = [];
   const warned = [];
@@ -1049,21 +1217,29 @@ function restoreOwnedWritesInner() {
     const snap = files[rel] ?? absentRecord();
     const current = describeWorktree(rel);
     if (handMaintained.has(rel)) {
-      if (!sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })) {
+      if (
+        !sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })
+      ) {
         warned.push(rel);
-        console.warn(`warning: ${rel} changed during the run and was left in place`);
+        console.warn(
+          `warning: ${rel} changed during the run and was left in place`,
+        );
       }
       continue;
     }
     const liveStage = stagedRecord(rel);
-    const snapIndex = typeof snap.indexHash === 'string' ? snap.indexHash : null;
+    const snapIndex =
+      typeof snap.indexHash === 'string' ? snap.indexHash : null;
     const snapStaged = snap.staged === true;
     if (liveStage.indexHash !== snapIndex || liveStage.staged !== snapStaged) {
       warned.push(rel);
-      console.warn(`warning: ${rel} staged state changed during the run and was left in place`);
+      console.warn(
+        `warning: ${rel} staged state changed during the run and was left in place`,
+      );
       continue;
     }
-    if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null })) continue;
+    if (sameDescribed(current, { kind: snap.kind, hash: snap.hash ?? null }))
+      continue;
     const write = writeMap[rel];
     const owned =
       write &&
@@ -1071,7 +1247,9 @@ function restoreOwnedWritesInner() {
       sameDescribed(current, { kind: write.kind, hash: write.hash ?? null });
     if (!owned) {
       warned.push(rel);
-      console.warn(`warning: ${rel} changed during the run and was left in place`);
+      console.warn(
+        `warning: ${rel} changed during the run and was left in place`,
+      );
       continue;
     }
     const dest = backupRel(rel);
@@ -1081,7 +1259,9 @@ function restoreOwnedWritesInner() {
     }
     if (!placeSnapshot(rel, snap)) {
       warned.push(rel);
-      console.warn(`warning: ${rel} changed during the run and was left in place`);
+      console.warn(
+        `warning: ${rel} changed during the run and was left in place`,
+      );
       continue;
     }
     restored.push(rel);

@@ -7,7 +7,8 @@ Unauthenticated read API. The pages and the API read the same synced generation.
 - health: `GET /api/healthz` (doctor uses this)
 - search: `GET /api/v1/search`
 - entry: `GET /api/v1/entries/by-slug`
-- lists: `GET /api/v1/terms`, `/api/v1/acronyms`, `/api/v1/tags`, `/api/v1/sources`, `/api/v1/sources/rfc4949`
+- lists: `GET /api/v1/terms`, `/api/v1/acronyms`, `/api/v1/sources`, `/api/v1/sources/rfc4949`
+- tags: `GET /api/v1/tags` is advertised by `listTags` in `apps/web/src/lib/openapi.ts` and in `docs/api.md`. There is no `apps/web/src/app/api/v1/tags/route.ts`, so the route is 404. The drive does not request it.
 - citation: `GET /api/v1/senses/citation.json`
 - export: `GET /api/v1/export/entries.json`
 - document: `GET /api/v1/openapi.json`
@@ -33,6 +34,7 @@ Readers do not see a separate API screen. The search page, the palette, and the 
 ## Gotchas
 
 - A refused query (empty, one character, stopword) is 200 with an empty `results` array. It is not a 400.
+- `GET /api/v1/tags` stays 404 until a route exists. Do not assert 200 from the OpenAPI entry or from `docs/api.md`. The drive does not call it.
 - Search is limited to 60 calls a minute per caller. A sweep that loops will start returning 429. Stay on the calls listed above.
 - `POST /api/v1/internal/revalidate` stays dark unless `SYNAC_REVALIDATE_SECRET` is set and at least 16 characters. That path is `INCONCLUSIVE` without the secret. Do not send a guessed bearer token.
 - Export page 1 returns real rows on `results`. Count that array. Do not download the whole corpus in a smoke run.

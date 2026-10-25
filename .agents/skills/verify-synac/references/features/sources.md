@@ -18,7 +18,7 @@ Header link `Sources`. Open a source name. RFC 4949 is the seeded source.
 
 Open `/sources`, click the link whose name contains `RFC 4949`, and expect `/sources/rfc4949` plus the region `Source facts`. Screenshot `source-rfc4949.png`.
 
-The read-back for the same source is `GET /api/v1/sources/rfc4949` (covered with the public API sweep).
+The read-back for the same source is `GET /api/v1/sources/rfc4949`. The public API drive does not request that route.
 
 ## Gotchas
 
