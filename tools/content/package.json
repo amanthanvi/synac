@@ -16,7 +16,7 @@
     "format:write": "prettier . --write --ignore-path ../../.prettierignore"
   },
   "dependencies": {
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^25.9.9",
