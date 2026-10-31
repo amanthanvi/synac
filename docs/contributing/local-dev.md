@@ -57,7 +57,7 @@ backend that the Convex CLI downloads and runs for you.
 1. `pnpm lint`
 2. `pnpm lint:convex`
 3. `pnpm format`
-4. `pnpm typecheck`
+4. `pnpm typecheck` (this also runs `pnpm typecheck:verify` for `.agents/skills/verify-synac`)
 5. `pnpm typecheck:convex`
 6. `pnpm test`
 7. `pnpm tagging:check`
@@ -69,7 +69,10 @@ CI runs the same list, so a green local gate means a green CI. Run the gate
 before you push, not after CI tells you.
 
 `pnpm gate` does not run the end-to-end suite. The `Quality` workflow runs
-that.
+that. `pnpm gate` does not need tmux. Required CI installs tmux when it is missing,
+with `command -v tmux || (sudo apt-get update && sudo apt-get install -y tmux)`,
+and then runs `pnpm test:verify-tmux`. The verify-smoke workflow uses the same
+install and the same test on `workflow_dispatch`.
 
 ## End-to-end tests
 

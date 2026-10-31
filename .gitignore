@@ -9,7 +9,10 @@ build/
 # Editor and agent scratch
 .vscode/
 .idea/
-.cursor/
+.cursor/*
+!.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/verify-synac
 .claude/
 
 # Build and test output
