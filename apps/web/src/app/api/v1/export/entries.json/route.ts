@@ -1,7 +1,7 @@
 import { readEntryPage, readEntrySlugs, type EntryType } from '@/lib/convex';
 
 import {
-  handleReadRequest,
+  handleApiReadRequest,
   jsonResponse,
   optionsResponse,
   parsePage,
@@ -28,7 +28,7 @@ const LICENSE = {
 } as const;
 
 export function GET(request: Request): Promise<Response> {
-  return handleReadRequest(request, 'export.entries', async (url) => {
+  return handleApiReadRequest(request, 'export.entries', async (url) => {
     // listRecent cannot serve the whole corpus, so the page is cut from the
     // sitemap slug lists: all terms first, then all acronyms.
     const [terms, acronyms] = await Promise.all([

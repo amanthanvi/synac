@@ -1,6 +1,9 @@
 import crypto from 'node:crypto';
 
+import type { RateLimitScope } from '../../../../convex/rateLimitPolicy';
 import { consumeRateLimit } from './convex';
+
+export type { RateLimitScope };
 
 /** Convex rejects anything else, so the derivation below must always match. */
 export const RATE_LIMIT_KEY_PATTERN = /^(ip|ua):[a-f0-9]{64}$/;
@@ -55,22 +58,24 @@ function hash(value: string): string {
 
 type RateLimitVerdict = { allowed: boolean; retryAfterSeconds: number };
 
-/** Limits per scope are configured in convex/rateLimit.ts. */
+/** Limits per scope are configured in convex/rateLimitPolicy.ts. */
 export async function enforceRateLimit(
   headers: Headers,
+  scope: RateLimitScope,
 ): Promise<RateLimitVerdict> {
-  return consumeRateLimit(deriveRateLimitKey(headers));
+  return consumeRateLimit(deriveRateLimitKey(headers), scope);
 }
 
 /**
- * Page variant: a limiter that is unreachable must not turn a reader's search
- * into a 500, so an error here fails open and only a real refusal blocks.
+ * Search page variant. It spends the same `search` budget as GET /api/v1/search.
+ * A limiter that is unreachable must not turn a reader's search into a 500, so
+ * an error here fails open and only a real refusal blocks.
  */
 export async function enforcePageRateLimit(
   headers: Headers,
 ): Promise<RateLimitVerdict> {
   try {
-    return await enforceRateLimit(headers);
+    return await enforceRateLimit(headers, 'search');
   } catch {
     return { allowed: true, retryAfterSeconds: 0 };
   }

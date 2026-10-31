@@ -428,8 +428,9 @@ content sync finishes.
 `POST /api/v1/csp-report` is the sink for browser CSP violation reports, in
 either the `application/csp-report` or the `application/reports+json` shape. It
 always answers `204` with no body, and a body over 32 KiB is dropped without
-being parsed. It shares the `/api/v1` rate limit and answers a bare `429` with
-a `retry-after` header when the caller is over budget.
+being parsed. It has its own budget of 30 requests per minute per caller, and
+answers a bare `429` with a `retry-after` header when that budget is spent.
+Search and the other reads do not spend it.
 
 ## Caching
 
@@ -447,12 +448,23 @@ cheapest way to poll for updates.
 
 ## Rate limits
 
-All `/api/v1` routes share one budget: 60 requests per minute per caller, in a
-fixed window. The caller is identified by a salted hash of the client address
-taken from `x-forwarded-for`, falling back to a hash of the user agent when no
-address is present. `/api/healthz` is outside the budget.
+Budgets are fixed windows per caller, and they are separate: spending one does
+not spend the others. The caller is identified by a salted hash of the client
+address taken from `x-forwarded-for`, falling back to a hash of the user agent
+when no address is present. `/api/healthz` and
+`POST /api/v1/internal/revalidate` are outside every budget.
 
-An over-budget request answers `429`:
+| Routes                                      | Budget                  |
+| ------------------------------------------- | ----------------------- |
+| `GET /api/v1/search` and the `/search` page | 120 requests per minute |
+| Every other `GET /api/v1` read              | 60 requests per minute  |
+| `POST /api/v1/csp-report`                   | 30 requests per minute  |
+
+The `/search` page and the search palette both spend the search budget. A fast
+series of palette queries can exhaust search without affecting a terms listing
+or a CSP report from the same caller.
+
+An over-budget read answers `429`:
 
 ```json
 { "error": "rate_limited", "requestId": "abc123", "retryAfterSeconds": 12 }
@@ -490,7 +502,7 @@ characters of `A-Za-z0-9`, `.`, `_`, or `-`, and is `unknown` otherwise.
 | `invalid_body`   | 400    | Revalidate only: the body is not JSON, or the tags are bad. |
 | `unauthorized`   | 401    | Revalidate only: the bearer token does not match.           |
 | `not_found`      | 404    | No such entry, sense, or source in the published corpus.    |
-| `rate_limited`   | 429    | Over the shared `/api/v1` budget.                           |
+| `rate_limited`   | 429    | Over that route's own budget.                               |
 | `internal_error` | 500    | An upstream read failed. No internal detail is exposed.     |
 
 ## Licensing
