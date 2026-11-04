@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { TagAssignmentsFile } from './model.js';
+import type { TagAssignmentsFileV1, TagAssignmentsFileV2 } from './model.js';
 import { stableJsonHash } from './tagging.js';
 import {
   EMPTY_TREE_SHA,
@@ -11,15 +11,14 @@ import {
 function artifact(
   runId: string,
   pairs: Array<[string, string]>,
-): TagAssignmentsFile {
+): TagAssignmentsFileV2 {
   const thresholds = { malware: 0.98 };
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     taxonomyVersion: '2',
     taxonomyHash: 'a'.repeat(64),
     run: {
       runId,
-      corpusHash: 'b'.repeat(64),
       model: 'test',
       modelHash: 'c'.repeat(64),
       promptHash: 'd'.repeat(64),
@@ -42,6 +41,25 @@ function artifact(
       runId,
     })),
     removals: [],
+    classifiedEntries: pairs.map(([entryKey]) => ({
+      entryKey,
+      entryContentHash: '2'.repeat(64),
+    })),
+  };
+}
+
+function legacyArtifact(
+  runId: string,
+  pairs: Array<[string, string]>,
+): TagAssignmentsFileV1 {
+  const current = artifact(runId, pairs);
+  return {
+    schemaVersion: 1,
+    taxonomyVersion: current.taxonomyVersion,
+    taxonomyHash: current.taxonomyHash,
+    run: { ...current.run, corpusHash: 'b'.repeat(64) },
+    assignments: current.assignments,
+    removals: current.removals,
   };
 }
 
@@ -53,6 +71,19 @@ describe('validateAssignmentHistory', () => {
         undefined,
       ),
     ).toEqual([]);
+  });
+
+  it('accepts a schemaVersion 2 successor to a schemaVersion 1 artifact', () => {
+    const previous = legacyArtifact('previous', [['TERM:alpha', 'malware']]);
+    const current = artifact('previous', [['TERM:alpha', 'malware']]);
+    current.run.previousAssignmentsHash = stableJsonHash(previous);
+    expect(validateAssignmentHistory(current, previous)).toEqual([]);
+
+    const dropped = artifact('next', []);
+    dropped.run.previousAssignmentsHash = stableJsonHash(previous);
+    expect(validateAssignmentHistory(dropped, previous)).toEqual([
+      'silent assignment loss: TERM:alpha -> malware',
+    ]);
   });
 
   it('rejects silent loss and a wrong predecessor hash', () => {

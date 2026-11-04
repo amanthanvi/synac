@@ -45,6 +45,8 @@ backend that the Convex CLI downloads and runs for you.
 
 - `pnpm gate` runs the full verification gate. Run it before every PR.
 - `pnpm content:check` validates and compiles `content/` only.
+- `pnpm content:check:strict` also fails when the content has drifted from the
+  last tagging run or misses a release floor. Run it before a tagging release.
 - `pnpm test:convex` runs the backend test suite with convex-test. No running
   backend needed.
 - `pnpm ingest -- --source rfc4949` regenerates one source bundle from
@@ -65,8 +67,10 @@ backend that the Convex CLI downloads and runs for you.
 9. `pnpm content:history`
 10. `pnpm build`
 
-CI runs the same list, so a green local gate means a green CI. Run the gate
-before you push, not after CI tells you.
+CI runs the same list. It also runs `pnpm lint:strict`, and it runs
+`pnpm content:check:strict` on pull requests that change `content/tags.json`
+or `content/tag-assignments.json`. Run the gate before you push, not after CI
+tells you.
 
 `pnpm gate` does not run the end-to-end suite. The `Quality` workflow runs
 that.

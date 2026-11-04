@@ -121,7 +121,7 @@ A fully specified Tag that may be annotated and evaluated but is not visible to 
 _Avoid_: Draft Tag
 
 **Published Tag**:
-A fully specified Tag with at least 25 accepted Entry assignments that is visible in SynAc's public taxonomy.
+A fully specified Tag, released with at least 25 accepted Entry assignments, that is visible in SynAc's public taxonomy.
 _Avoid_: Active Tag
 
 **Retired Tag**:

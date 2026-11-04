@@ -25,6 +25,11 @@ deployment when changes land on `main`. Git history is the audit log.
   tagging backfill, review its deterministic diff report, and merge it through
   the normal content PR. Manual `addTags` and `removeTags` overrides remain
   authoritative; a manual removal wins.
+- Editing an entry's text drops its automatic tags until the next tagging run.
+  `pnpm content:check` warns and names each dropped pair; an `addTags` override
+  keeps a tag in the meantime. Tagging never blocks a `suppress` override.
+  `pnpm content:check:strict` fails on this drift and runs in CI on tagging
+  releases. See `docs/RELEASING.md`.
 - Tag inference is sparse and event-triggered, never scheduled or request-time.
   Reclassify changed Entries incrementally. A taxonomy, rubric, prompt, model,
   feature, calibration, threshold, or output-schema change requires a full

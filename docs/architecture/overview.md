@@ -18,8 +18,9 @@ tools/ingest
   content only when enabled with complete license terms.
 - `content/tags.json` is the curated taxonomy.
 - `content/tag-assignments.json` holds reviewed, content-addressed automatic tag
-  assignments and classifier provenance. Manual add/remove overrides remain
-  authoritative.
+  assignments and classifier provenance. Each assignment is bound to the hash
+  of its own entry, so an edited entry loses only its own automatic tags until
+  the next tagging run. Manual add/remove overrides remain authoritative.
 - `content/generated/<source>.json` holds machine-owned per-source bundles
   (entries, senses, citations). Written only by `tools/ingest`; deterministic,
   so unchanged upstream content produces zero diff.
