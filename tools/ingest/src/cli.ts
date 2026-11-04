@@ -4,12 +4,16 @@
  * Usage:
  *   pnpm --filter @synac/ingest-tools ingest -- --source rfc4949
  *   pnpm --filter @synac/ingest-tools ingest -- --all
+ *   pnpm --filter @synac/ingest-tools ingest -- --list [--source <slug>]
+ *
+ * `--list` prints the ingestable source slugs as a JSON array without fetching
+ * anything; the scheduled workflow builds its per-source job matrix from it.
  *
  * Bundles are deterministic: a run against unchanged upstream content leaves
  * the files byte-identical, so the scheduled workflow only opens a PR when
  * something really changed.
  */
-import { readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -25,6 +29,11 @@ import { runNistGlossary } from './adapters/nistGlossary.js';
 import { runNiccsGlossary } from './adapters/niccsGlossary.js';
 import { runOwaspVulnerabilities } from './adapters/owaspVulnerabilities.js';
 import { runMitreAttackCti } from './adapters/mitreAttackCti.js';
+import {
+  isIngestable,
+  loadSourceRegistry,
+  selectIngestSources,
+} from './sources.js';
 
 const ADAPTERS: Record<string, Adapter> = {
   rfc4949Glossary: runRfc4949,
@@ -55,7 +64,7 @@ async function loadSource(slug: string): Promise<SourceFile | null> {
 async function runSource(
   source: SourceFile,
 ): Promise<'updated' | 'unchanged' | 'skipped'> {
-  if (!source.enabled || !source.ingest) return 'skipped';
+  if (!isIngestable(source)) return 'skipped';
   const adapter = ADAPTERS[source.ingest.adapter];
   if (!adapter)
     throw new Error(`${source.slug}: unknown adapter ${source.ingest.adapter}`);
@@ -78,15 +87,31 @@ async function runSource(
 
 const args = process.argv.slice(2);
 const all = args.includes('--all');
+const list = args.includes('--list');
 const sourceFlag = args.indexOf('--source');
 const requested = sourceFlag >= 0 ? args[sourceFlag + 1] : undefined;
 
-if (!all && !requested) {
-  console.error('usage: ingest --source <slug> | --all');
+if (sourceFlag >= 0 && (!requested || requested.startsWith('--'))) {
+  console.error('usage: --source needs a source slug');
   process.exit(1);
 }
 
-const { readdir } = await import('node:fs/promises');
+if (list) {
+  try {
+    const registry = await loadSourceRegistry(contentDir);
+    console.log(JSON.stringify(selectIngestSources(registry, requested)));
+  } catch (error) {
+    console.error(`✗ ${(error as Error).message}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (!all && !requested) {
+  console.error('usage: ingest --source <slug> | --all | --list');
+  process.exit(1);
+}
+
 const slugs = all
   ? (await readdir(path.join(contentDir, 'sources')))
       .filter((f) => f.endsWith('.json'))
