@@ -5,6 +5,9 @@ import { formatDate } from '@/lib/dates';
 import { entryPath } from '@/lib/publicEntryPage';
 import {
   BROWSE_LETTERS,
+  browseCapHint,
+  browseNeedsRefineHint,
+  browseNextHref,
   buildBrowseHref,
   normalizeBrowseLetter,
   normalizeBrowsePage,
@@ -83,6 +86,11 @@ export async function BrowsePage({
   );
 
   const tagSlug = activeTag?.slug ?? null;
+  const capHint = browseCapHint({
+    plural: config.plural,
+    hasQuery: query.length > 0,
+    hasTag: tagSlug !== null,
+  });
   const hrefFor = (nextPage: number, nextLetter: string) =>
     buildBrowseHref({
       basePath: config.basePath,
@@ -141,8 +149,29 @@ export async function BrowsePage({
           <Pagination
             page={page}
             prevHref={page > 1 ? hrefFor(page - 1, letter) : undefined}
-            nextHref={hasMore ? hrefFor(page + 1, letter) : undefined}
+            nextHref={browseNextHref({
+              basePath: config.basePath,
+              letter,
+              page,
+              sort,
+              query,
+              tagSlug,
+              hasMore,
+            })}
           />
+          {browseNeedsRefineHint(page, hasMore) ? (
+            <p className={styles.capNote}>
+              {capHint.intro}{' '}
+              <a className={styles.capLink} href="#browse-filter">
+                {capHint.searchLabel}
+              </a>{' '}
+              or{' '}
+              <a className={styles.capLink} href="#browse-tags">
+                {capHint.tagLabel}
+              </a>{' '}
+              {capHint.closing}
+            </p>
+          ) : null}
         </>
       )}
     </div>

@@ -40,3 +40,22 @@
   font-size: var(--text-body);
   line-height: var(--text-body-lh);
 }
+
+.capNote {
+  margin-top: var(--space-3);
+  max-width: var(--measure);
+  color: var(--fg-muted);
+  font-size: var(--text-body);
+  line-height: var(--text-body-lh);
+}
+
+.capLink {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--border-strong);
+}
+
+.capLink:hover {
+  color: var(--fg);
+}

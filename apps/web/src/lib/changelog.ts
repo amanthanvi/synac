@@ -37,6 +37,12 @@ export const CHANGELOG: ChangelogEntry[] = [
           'Search, browse, and citation data are compiled and validated before publish, so broken references cannot ship.',
         ],
       },
+      {
+        title: 'Browse',
+        items: [
+          'Letter indexes stop at page 10. When more entries match, the page says how to narrow them, and the browse API reports hasMore as false on that last page so a client does not request a page that repeats the same rows.',
+        ],
+      },
     ],
   },
   {
